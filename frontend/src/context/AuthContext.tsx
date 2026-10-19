@@ -33,6 +33,38 @@ export function encodeEmailKey(email: string): string {
   return email.trim().toLowerCase().replace(/[.#$[\]/]/g, '_');
 }
 
+import { getLocalDatabase } from '@/services/localDatabaseService';
+
+function createMockStudentUser(student: { uid: string; displayName: string; email: string }): User {
+  return {
+    uid: student.uid || 'local-student-01',
+    displayName: student.displayName || 'Estudiante de Prueba',
+    email: student.email || 'ivan@ipt.local',
+    emailVerified: true,
+    isAnonymous: false,
+    metadata: {},
+    providerData: [],
+    refreshToken: '',
+    tenantId: null,
+    delete: async () => {},
+    getIdToken: async () => 'mock-token',
+    getIdTokenResult: async () => ({
+      authTime: '',
+      claims: {},
+      expirationTime: '',
+      issuedAtTime: '',
+      signInProvider: 'mock',
+      signInSecondFactor: null,
+      token: 'mock-token',
+    }),
+    reload: async () => {},
+    toJSON: () => ({}),
+    phoneNumber: null,
+    photoURL: null,
+    providerId: 'local',
+  } as unknown as User;
+}
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -87,8 +119,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       unsubs = [];
 
       if (!currentUser) {
-        setUserRole('student');
-        setIsAdmin(false);
+        const localDb = getLocalDatabase();
+        const localStudent = localDb.student;
+        const mockUser = createMockStudentUser(localStudent);
+        setUser(mockUser);
+        const role = normalizeUserRole(localStudent.role);
+        setUserRole(role);
+        setIsAdmin(role === 'owner' || role === 'instructor');
         setIsOperator(false);
         setUserLicenses({});
         setLoading(false);

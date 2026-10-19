@@ -57,7 +57,7 @@ export default function LegalComplianceSystem() {
 
   // 2. Verificar que todo usuario autenticado tenga su registro de aceptación legal en Firebase RTDB
   useEffect(() => {
-    if (!user) {
+    if (!user || user.uid.startsWith('local-')) {
       setNeedsSessionConsent(false);
       return;
     }
