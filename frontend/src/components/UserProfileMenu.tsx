@@ -45,18 +45,20 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar al hacer clic afuera
+  // Cerrar al hacer clic o tocar afuera
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: Event) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [isOpen]);
 
@@ -155,7 +157,7 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 mt-2.5 w-80 bg-white rounded-2xl shadow-2xl border border-[#d1d2e0] py-3 text-[#2a2b3f] z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+          <div className="absolute right-0 mt-2.5 w-[min(calc(100vw-32px),320px)] bg-white rounded-2xl shadow-2xl border border-[#d1d2e0] py-3 text-[#2a2b3f] z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
             
             <div className="px-4 py-3 bg-[#f6f7f9] border-b border-[#e9eaf2] flex items-center gap-3">
               <div className="w-11 h-11 rounded-full overflow-hidden bg-[#202230] text-white flex items-center justify-center font-extrabold text-base shrink-0 border-2 border-[#6d28d2]">

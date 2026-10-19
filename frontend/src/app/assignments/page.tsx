@@ -292,8 +292,16 @@ function StudentAssignmentsContent() {
                   return (
                     <div
                       key={asg.id}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => handleSelectAssignment(asg.id)}
-                      className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleSelectAssignment(asg.id);
+                        }
+                      }}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer active:scale-[0.98] select-none ${
                         isSelected
                           ? 'bg-white border-2 border-[#065fd4] shadow-sm ring-4 ring-[#065fd4]/5'
                           : 'bg-[#fafafa] border-[#e5e5e5] hover:bg-white hover:border-[#cccccc]'
@@ -574,9 +582,9 @@ function StudentAssignmentsContent() {
                   <button
                     type="submit"
                     disabled={isSubmitting || !uploadFileName}
-                    className={`w-full py-3.5 px-6 rounded-2xl text-xs font-bold inline-flex items-center justify-center gap-2 transition-all ${
+                    className={`w-full py-3.5 px-6 rounded-2xl text-xs font-bold inline-flex items-center justify-center gap-2 transition-all min-h-[48px] ${
                       uploadFileName && !isSubmitting
-                        ? 'bg-[#065fd4] hover:bg-[#004dc0] text-white shadow-sm cursor-pointer'
+                        ? 'bg-[#065fd4] hover:bg-[#004dc0] active:scale-[0.98] text-white shadow-sm cursor-pointer'
                         : 'bg-[#f2f2f2] text-[#909090] cursor-not-allowed'
                     }`}
                   >

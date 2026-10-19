@@ -110,15 +110,118 @@ export default function StudentPortalShell({
     router.push(`/?q=${encodeURIComponent(q)}`);
   };
 
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  const toggleSidebarOrDrawer = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setMobileDrawerOpen((prev) => !prev);
+    } else {
+      setSidebarOpen((prev) => !prev);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#ffffff] text-[#0f0f0f] flex flex-col font-sans">
-      {/* Barra superior única estilo YouTube para todo el portal estudiantil */}
-      <header className="sticky top-0 z-40 h-14 bg-[#ffffff] px-4 flex items-center justify-between gap-4 border-b border-[#e5e5e5] print:hidden">
-        <div className="flex items-center gap-3">
+      {/* Drawer lateral para móviles con backdrop táctil */}
+      {mobileDrawerOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs md:hidden"
+          onClick={() => setMobileDrawerOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white text-[#0f0f0f] border-r border-[#e5e5e5] flex flex-col transition-transform duration-250 ease-out md:hidden shadow-2xl ${
+          mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full pointer-events-none'
+        }`}
+        aria-label="Menú principal móvil"
+      >
+        <div className="h-16 px-4 border-b border-[#e5e5e5] flex items-center justify-between shrink-0">
+          <Link
+            href="/"
+            prefetch={true}
+            onClick={() => setMobileDrawerOpen(false)}
+            className="flex items-center gap-2.5 min-w-0"
+          >
+            <img
+              src="/logo.png"
+              alt="IPT Course"
+              className="h-8 w-auto object-contain"
+            />
+            <span className="font-extrabold text-sm text-[#0f0f0f] truncate">
+              IPT Course
+            </span>
+          </Link>
           <button
             type="button"
-            onClick={() => setSidebarOpen((v) => !v)}
-            className="p-2 rounded-full hover:bg-[#f2f2f2] text-[#0f0f0f] cursor-pointer"
+            onClick={() => setMobileDrawerOpen(false)}
+            className="p-2 rounded-xl text-[#606060] hover:text-[#0f0f0f] hover:bg-[#f2f2f2] cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Cerrar menú móvil"
+          >
+            <span className="text-xl font-bold leading-none">✕</span>
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+          <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-[#909090] mb-2">
+            Navegación del Estudiante
+          </p>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = isRouteActive(item.match);
+            return (
+              <Link
+                key={item.match}
+                href={item.href}
+                prefetch={true}
+                onClick={() => setMobileDrawerOpen(false)}
+                className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] ${
+                  active
+                    ? 'bg-[#f2f2f2] text-[#0f0f0f] font-bold shadow-2xs'
+                    : 'text-[#0f0f0f] hover:bg-[#f8f8f8] active:bg-[#f0f0f0]'
+                }`}
+              >
+                <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-[#065fd4]' : 'text-[#606060]'}`} />
+                <span className="flex-1 truncate">{item.label}</span>
+                {item.badge && (
+                  <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-[#cc0000] text-white">
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="p-3 border-t border-[#e5e5e5] bg-[#fafafa] space-y-2">
+          {user ? (
+            <div className="px-3 py-2 rounded-xl bg-white border border-[#e5e5e5] flex items-center justify-between text-xs">
+              <span className="text-[#606060] truncate">{user.email}</span>
+              <span className="text-[10px] font-extrabold uppercase text-[#065fd4] bg-blue-50 px-2 py-0.5 rounded">
+                Estudiante
+              </span>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              prefetch={true}
+              onClick={() => setMobileDrawerOpen(false)}
+              className="w-full py-2.5 px-4 rounded-xl bg-[#065fd4] text-white text-xs font-bold flex items-center justify-center gap-2"
+            >
+              Iniciar sesión
+            </Link>
+          )}
+        </div>
+      </aside>
+
+      {/* Barra superior única estilo YouTube para todo el portal estudiantil */}
+      <header className="sticky top-0 z-40 h-14 bg-[#ffffff] px-4 flex items-center justify-between gap-4 border-b border-[#e5e5e5] print:hidden">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleSidebarOrDrawer}
+            className="p-2 rounded-full hover:bg-[#f2f2f2] text-[#0f0f0f] cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95 transition-transform"
             aria-label="Mostrar u ocultar menú lateral"
           >
             <Menu className="w-5 h-5" />
@@ -135,7 +238,7 @@ export default function StudentPortalShell({
         {/* Buscador central tipo píldora de YouTube */}
         <form
           onSubmit={handleGlobalSearch}
-          className="flex-1 max-w-[600px] flex items-center"
+          className="flex-1 max-w-[600px] hidden sm:flex items-center"
         >
           <div className="flex w-full items-center border border-[#ccc] rounded-full overflow-hidden focus-within:border-[#1c62b9] bg-[#ffffff]">
             <input
@@ -147,7 +250,7 @@ export default function StudentPortalShell({
             />
             <button
               type="submit"
-              className="h-10 px-5 bg-[#f8f8f8] hover:bg-[#f0f0f0] border-l border-[#ccc] flex items-center justify-center text-[#0f0f0f] cursor-pointer"
+              className="h-10 px-5 bg-[#f8f8f8] hover:bg-[#f0f0f0] border-l border-[#ccc] flex items-center justify-center text-[#0f0f0f] cursor-pointer min-h-[40px] min-w-[44px]"
               aria-label="Buscar"
             >
               <Search className="w-4 h-4" />
@@ -156,14 +259,14 @@ export default function StudentPortalShell({
         </form>
 
         {/* Acciones derechas */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {user ? (
             <UserProfileMenu />
           ) : (
             <Link
               href="/login"
               prefetch={true}
-              className="px-4 py-1.5 rounded-full border border-[#d9d9d9] hover:bg-[#def1ff] hover:border-transparent text-xs font-semibold text-[#065fd4] transition-colors"
+              className="px-4 py-2 rounded-full border border-[#d9d9d9] hover:bg-[#def1ff] hover:border-transparent text-xs font-semibold text-[#065fd4] transition-colors min-h-[44px] inline-flex items-center justify-center"
             >
               Iniciar sesión
             </Link>
@@ -214,16 +317,16 @@ export default function StudentPortalShell({
           })}
         </aside>
 
-        {/* Contenido principal unificado */}
-        <div className="flex-1 min-w-0 bg-[#ffffff] flex flex-col">
+        {/* Contenido principal unificado con padding inferior para no solapar la barra fija en móvil */}
+        <div className="flex-1 min-w-0 bg-[#ffffff] flex flex-col pb-20 md:pb-0">
           {children}
         </div>
       </div>
 
-      {/* Barra inferior móvil estilo YouTube */}
+      {/* Barra inferior móvil estilo YouTube con targets táctiles confortables */}
       <nav
         aria-label="Navegación móvil"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#ffffff] border-t border-[#e5e5e5] px-2 py-1 grid grid-cols-6 gap-1 print:hidden"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#ffffff] border-t border-[#e5e5e5] px-1 py-1 grid grid-cols-6 gap-0.5 print:hidden shadow-lg"
       >
         {navItems.slice(0, 6).map((item) => {
           const Icon = item.icon;
@@ -233,12 +336,12 @@ export default function StudentPortalShell({
               key={item.match}
               href={item.href}
               prefetch={true}
-              className={`min-h-[48px] flex flex-col items-center justify-center rounded-lg px-1 py-1 text-[10px] ${
+              className={`min-h-[50px] flex flex-col items-center justify-center rounded-xl px-1 py-1 text-[10px] active:bg-[#f2f2f2] transition-colors ${
                 active ? 'font-bold text-[#0f0f0f]' : 'font-normal text-[#606060]'
               }`}
             >
-              <Icon className="w-4 h-4 mb-0.5 shrink-0" />
-              <span className="truncate max-w-full">{item.label}</span>
+              <Icon className={`w-4 h-4 mb-0.5 shrink-0 ${active ? 'text-[#065fd4]' : 'text-[#606060]'}`} />
+              <span className="truncate max-w-full text-center leading-tight">{item.label}</span>
             </Link>
           );
         })}

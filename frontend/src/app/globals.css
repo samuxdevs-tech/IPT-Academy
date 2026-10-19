@@ -49,6 +49,8 @@
 }
 
 :root {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   /* Colors */
   --color-ink: #2a2b3f;
   --color-obsidian: #202230;
