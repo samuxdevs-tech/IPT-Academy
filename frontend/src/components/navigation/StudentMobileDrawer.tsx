@@ -7,8 +7,7 @@ import { useLms } from '@/context/LmsContext';
 import { useAuth } from '@/context/AuthContext';
 import { resolveStudentNavItems } from '@/services/studentNavigationService';
 import StudentNavButton from '@/components/navigation/StudentNavButton';
-import { setLocalStudentName } from '@/services/localDatabaseService';
-import { Edit3, Check, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface StudentMobileDrawerProps {
   isOpen: boolean;
@@ -20,9 +19,6 @@ export default function StudentMobileDrawer({ isOpen, onClose }: StudentMobileDr
   const { courses, assignments } = useLms();
   const { user } = useAuth();
 
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState('');
-
   // 1. Obtener la lista centralizada de botones
   const navItems = resolveStudentNavItems({
     courses,
@@ -30,16 +26,7 @@ export default function StudentMobileDrawer({ isOpen, onClose }: StudentMobileDr
     currentPathname: pathname,
   });
 
-  const studentDisplayName = user?.displayName || 'Estudiante de Prueba';
-
-  const handleSaveName = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (nameInput.trim()) {
-      setLocalStudentName(nameInput.trim());
-      setIsEditingName(false);
-      window.location.reload();
-    }
-  };
+  const studentDisplayName = user?.displayName || 'Estudiante';
 
   return (
     <>
@@ -102,59 +89,17 @@ export default function StudentMobileDrawer({ isOpen, onClose }: StudentMobileDr
           ))}
         </div>
 
-        {/* Pie del Drawer con selector/edición de estudiante sin contraseña */}
-        <div className="p-3 border-t border-[#e5e5e5] bg-[#fafafa]">
-          {isEditingName ? (
-            <form onSubmit={handleSaveName} className="space-y-2">
-              <label className="text-[10px] font-bold text-[#606060] uppercase block">
-                Nombre de Estudiante de Prueba:
-              </label>
-              <input
-                type="text"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                placeholder="Escribe tu nombre..."
-                autoFocus
-                className="w-full text-xs px-2.5 py-1.5 bg-white border border-[#065fd4] rounded-lg outline-none text-[#0f0f0f]"
-              />
-              <div className="flex items-center gap-2">
-                <button
-                  type="submit"
-                  className="flex-1 py-1.5 bg-[#065fd4] text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Aplicar</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingName(false)}
-                  className="px-3 py-1.5 text-xs text-[#606060] hover:text-[#0f0f0f] rounded-lg cursor-pointer"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          ) : (
+        {/* Pie del Drawer con perfil del usuario */}
+        {user && (
+          <div className="p-3 border-t border-[#e5e5e5] bg-[#fafafa]">
             <div className="px-3 py-2.5 rounded-xl bg-white border border-[#e5e5e5] flex items-center justify-between text-xs gap-2">
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-[#0f0f0f] truncate">{studentDisplayName}</p>
-                <p className="text-[10px] text-[#606060] truncate">{user?.email || 'ivan@ipt.local'}</p>
+                <p className="text-[10px] text-[#606060] truncate">{user.email || 'Estudiante'}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setNameInput(studentDisplayName);
-                  setIsEditingName(true);
-                }}
-                title="Cambiar nombre de estudiante"
-                className="p-1.5 text-[#065fd4] hover:bg-blue-50 rounded-lg cursor-pointer"
-                aria-label="Editar nombre de estudiante"
-              >
-                <Edit3 className="w-4 h-4" />
-              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </aside>
     </>
   );

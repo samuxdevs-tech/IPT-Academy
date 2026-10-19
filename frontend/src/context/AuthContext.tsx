@@ -119,13 +119,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       unsubs = [];
 
       if (!currentUser) {
-        const localDb = getLocalDatabase();
-        const localStudent = localDb.student;
-        const mockUser = createMockStudentUser(localStudent);
-        setUser(mockUser);
-        const role = normalizeUserRole(localStudent.role);
-        setUserRole(role);
-        setIsAdmin(role === 'owner' || role === 'instructor');
+        setUser(null);
+        setUserRole('student');
+        setIsAdmin(false);
         setIsOperator(false);
         setUserLicenses({});
         setLoading(false);
