@@ -270,13 +270,35 @@ export interface ScenarioOption {
 
 export interface Scenario {
   id: string;
+  title?: string;
+  category?: string;
+  description?: string;
+  difficulty?: string;
   courseSlug?: string;
-  imageUrl: string;
-  context: string;
-  question: string;
-  options: ScenarioOption[];
-  explanation: string;
+  imageUrl?: string;
+  context?: string;
+  question?: string;
+  options?: ScenarioOption[];
+  explanation?: string;
   metricId?: string;
+  nodes?: Array<{
+    id: string;
+    stepNumber?: number;
+    title?: string;
+    situation?: string;
+    options?: Array<{
+      id: string;
+      label?: string;
+      text?: string;
+      isOptimal?: boolean;
+      isCorrect?: boolean;
+      feedback?: string;
+      nextNodeId?: string;
+      budgetDelta?: number;
+      healthDelta?: number;
+      productivityDelta?: number;
+    }>;
+  }>;
 }
 
 export interface MissionRule {

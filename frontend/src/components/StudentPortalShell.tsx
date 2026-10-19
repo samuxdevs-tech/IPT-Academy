@@ -57,17 +57,6 @@ export default function StudentPortalShell({
     ? `/course?course=${encodeURIComponent(primaryCourse.slug)}`
     : '/course?course=datagan-master-pro';
 
-  const handleNavClick = (e: React.MouseEvent, href: string) => {
-    e.preventDefault();
-    if (pathname === href || (href.startsWith('/course') && pathname.startsWith('/course'))) {
-      setMobileDrawerOpen(false);
-      return;
-    }
-    router.push(href);
-    setTimeout(() => {
-      setMobileDrawerOpen(false);
-    }, 120);
-  };
 
   const navItems = [
     {
@@ -160,7 +149,7 @@ export default function StudentPortalShell({
           <Link
             href="/"
             prefetch={true}
-            onClick={(e) => handleNavClick(e, '/')}
+            onClick={() => setMobileDrawerOpen(false)}
             className="flex items-center gap-2.5 min-w-0 cursor-pointer"
           >
             <img
@@ -194,7 +183,7 @@ export default function StudentPortalShell({
                 key={item.match}
                 href={item.href}
                 prefetch={true}
-                onClick={(e) => handleNavClick(e, item.href)}
+                onClick={() => setMobileDrawerOpen(false)}
                 className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] cursor-pointer select-none ${
                   active
                     ? 'bg-[#f2f2f2] text-[#0f0f0f] font-bold shadow-2xs'
@@ -355,7 +344,7 @@ export default function StudentPortalShell({
               key={item.match}
               href={item.href}
               prefetch={true}
-              onClick={(e) => handleNavClick(e, item.href)}
+              onClick={() => setMobileDrawerOpen(false)}
               className={`min-h-[52px] flex flex-col items-center justify-center rounded-xl px-1 py-1 text-[11px] active:bg-[#f2f2f2] transition-colors cursor-pointer relative ${
                 active ? 'font-bold text-[#0f0f0f]' : 'font-normal text-[#606060]'
               }`}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -11,6 +11,13 @@ import { Scenario, Metric, Course } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { normalizeCourse } from '@/lib/courseUtils';
 import { verifyUserHasCourseLicense, generateCourseLicenseToken } from '@/lib/licenseUtils';
+
+interface NormalizedOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+  feedback: string;
+}
 
 export default function ScenariosPage() {
   return (
@@ -88,13 +95,42 @@ function ScenariosContent() {
   const currentScenario = scenarios[currentIndex];
   const isFinished = currentIndex >= scenarios.length && scenarios.length > 0;
 
+  const nodes = Array.isArray(currentScenario?.nodes) ? currentScenario.nodes : [];
+  const hasNodes = nodes.length > 0;
+  const activeNode = hasNodes ? nodes[0] : null;
+
+  const rawOptions = activeNode?.options || currentScenario?.options || [];
+  const normalizedOptions: NormalizedOption[] = useMemo(() => {
+    const list = Array.isArray(rawOptions) ? rawOptions : Object.values(rawOptions || {});
+    return list.map((opt: any, idx: number): NormalizedOption => ({
+      id: String(opt.id || idx),
+      text: String(opt.label || opt.text || `Opción ${idx + 1}`),
+      isCorrect: Boolean(opt.isOptimal ?? opt.isCorrect ?? false),
+      feedback: String(opt.feedback || currentScenario?.explanation || ''),
+    }));
+  }, [rawOptions, currentScenario?.explanation]);
+
+  const activeQuestion =
+    activeNode?.situation ||
+    currentScenario?.question ||
+    '¿Qué decisión técnica o de gestión tomas ante esta situación?';
+  const activeContext =
+    currentScenario?.description ||
+    currentScenario?.context ||
+    activeNode?.title ||
+    'Caso práctico de aplicación profesional.';
+  const activeExplanation =
+    currentScenario?.explanation ||
+    (nodes[0]?.options as any[])?.find((o: any) => o.isOptimal)?.feedback ||
+    '';
+
   const handleSelectOption = (optionId: string) => {
     if (isAnswered) return;
     setSelectedOption(optionId);
     setIsAnswered(true);
 
-    const isCorrect = currentScenario.options.find(o => o.id === optionId)?.isCorrect;
-    if (isCorrect) setScore(prev => prev + 1);
+    const isCorrect = normalizedOptions.find((o: NormalizedOption) => o.id === optionId)?.isCorrect;
+    if (isCorrect) setScore((prev) => prev + 1);
   };
 
   const handleNext = () => {
@@ -289,31 +325,47 @@ function ScenariosContent() {
             </div>
 
             <div className="relative bg-black flex items-center justify-center min-h-[320px]">
-              <Image
-                src={currentScenario.imageUrl}
-                alt="Escenario"
-                width={800}
-                height={500}
-                className="max-h-[480px] w-auto max-w-full object-contain"
-                unoptimized
-              />
+              {currentScenario?.imageUrl ? (
+                <Image
+                  src={currentScenario.imageUrl}
+                  alt="Escenario"
+                  width={800}
+                  height={500}
+                  className="max-h-[480px] w-auto max-w-full object-contain"
+                  unoptimized
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center p-8 text-center text-white/80 space-y-3">
+                  <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+                    <Sparkles className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <p className="text-sm font-bold max-w-md text-white/90">
+                    {currentScenario?.title || 'Simulación de Caso Práctico'}
+                  </p>
+                  {currentScenario?.category && (
+                    <span className="text-[11px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full border border-blue-400/30">
+                      {currentScenario.category}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           <div className="lg:col-span-5 bg-[#ffffff] rounded-2xl border border-[#e5e5e5] p-5 space-y-4">
             <div>
               <span className="text-[11px] font-bold text-[#606060] uppercase">Contexto</span>
-              <p className="text-xs text-[#0f0f0f] mt-1 leading-relaxed">{currentScenario.context}</p>
+              <p className="text-xs text-[#0f0f0f] mt-1 leading-relaxed">{activeContext}</p>
             </div>
 
             <div className="pt-3 border-t border-[#f0f0f0]">
               <h3 className="text-sm font-bold text-[#0f0f0f] leading-snug">
-                {currentScenario.question}
+                {activeQuestion}
               </h3>
             </div>
 
             <div className="space-y-2 pt-1">
-              {currentScenario.options.map((opt) => {
+              {normalizedOptions.map((opt: NormalizedOption) => {
                 const isSelected = selectedOption === opt.id;
                 let btnStyle = "border-[#e5e5e5] bg-[#f9f9f9] text-[#0f0f0f] hover:bg-[#f2f2f2]";
 
@@ -346,10 +398,10 @@ function ScenariosContent() {
               })}
             </div>
 
-            {isAnswered && currentScenario.explanation && (
+            {isAnswered && (normalizedOptions.find((o: NormalizedOption) => o.id === selectedOption)?.feedback || activeExplanation) && (
               <div className="p-3.5 bg-[#f9f9f9] rounded-xl border border-[#e5e5e5] text-xs text-[#0f0f0f] leading-relaxed">
-                <strong className="block mb-1">Explicación:</strong>
-                {currentScenario.explanation}
+                <strong className="block mb-1">Explicación y Retroalimentación:</strong>
+                {normalizedOptions.find((o: NormalizedOption) => o.id === selectedOption)?.feedback || activeExplanation}
               </div>
             )}
 
