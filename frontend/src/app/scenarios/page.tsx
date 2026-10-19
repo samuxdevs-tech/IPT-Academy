@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle2, XCircle, MousePointerClick, RefreshCcw, Loader2, Sparkles, Lock, ChevronLeft } from 'lucide-react';
+import { CheckCircle2, XCircle, MousePointerClick, RefreshCcw, Loader2, Sparkles, Lock, ChevronLeft, Home } from 'lucide-react';
 import { ref, get } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { Scenario, Metric, Course } from '@/types';
@@ -247,6 +247,15 @@ function ScenariosContent() {
   return (
     <div className="flex-1 bg-[#ffffff] text-[#0f0f0f]">
       <main className="max-w-[1300px] mx-auto py-5 px-4 lg:px-6 space-y-5">
+        <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-[#606060]">
+          <Link href="/" className="hover:text-[#0f0f0f] flex items-center gap-1 font-medium">
+            <Home className="w-3.5 h-3.5" />
+            <span>Inicio</span>
+          </Link>
+          <span>/</span>
+          <span className="text-[#0f0f0f] font-semibold">Casos Prácticos</span>
+        </nav>
+
         <div className="bg-[#ffffff] rounded-2xl border border-[#e5e5e5] p-5 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-lg font-bold text-[#0f0f0f]">

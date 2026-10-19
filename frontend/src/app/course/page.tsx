@@ -27,8 +27,8 @@ import {
   Shield,
   Video,
   FileText,
+  Home,
 } from 'lucide-react';
-import InstitutionalNavbar from '@/components/InstitutionalNavbar';
 import { useLms } from '@/context/LmsContext';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -338,6 +338,15 @@ function VideoStudioContent() {
   return (
     <div className="flex-1 bg-[#ffffff] text-[#0f0f0f]">
       <main id="main-content" className="max-w-[1400px] mx-auto py-5 px-4 lg:px-6 space-y-6">
+        <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-[#606060]">
+          <Link href="/" className="hover:text-[#0f0f0f] flex items-center gap-1 font-medium">
+            <Home className="w-3.5 h-3.5" />
+            <span>Inicio</span>
+          </Link>
+          <span>/</span>
+          <span className="text-[#0f0f0f] font-semibold truncate max-w-xs">{activeCourse.title}</span>
+        </nav>
+
         {/* Selector de curso y lección estilo YouTube */}
         <section className="bg-[#ffffff] rounded-2xl border border-[#e5e5e5] p-5 space-y-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -1099,7 +1108,11 @@ function VideoStudioContent() {
                           {effectiveIsAdmin && (
                             <button
                               type="button"
-                              onClick={() => deleteLiveSession(session.id)}
+                              onClick={() => {
+                                if (window.confirm(`¿Estás seguro de eliminar la sesión en vivo "${session.title}"?`)) {
+                                  deleteLiveSession(session.id);
+                                }
+                              }}
                               className="p-1.5 text-[#595c73] hover:text-[#c4710d] cursor-pointer"
                               title="Eliminar sesión en vivo"
                             >

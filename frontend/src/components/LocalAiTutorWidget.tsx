@@ -82,6 +82,57 @@ export default function LocalAiTutorWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const notifTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Detección reactiva de altura dinámica y teclado virtual móvil (interactive-widget / visualViewport)
+  const [visualViewportHeight, setVisualViewportHeight] = useState<number | null>(null);
+  const [keyboardOffset, setKeyboardOffset] = useState<number>(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const updateVisualViewport = () => {
+      const vv = window.visualViewport;
+      if (!vv) {
+        setVisualViewportHeight(window.innerHeight);
+        setKeyboardOffset(0);
+        return;
+      }
+      setVisualViewportHeight(vv.height);
+      const isMobile = window.innerWidth < 768;
+      // En móviles, si vv.height + vv.offsetTop < window.innerHeight, el teclado virtual está activo
+      const offset = Math.round(window.innerHeight - (vv.height + vv.offsetTop));
+      if (isMobile && offset > 60) {
+        setKeyboardOffset(offset);
+      } else {
+        setKeyboardOffset(0);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateVisualViewport);
+      window.visualViewport.addEventListener('scroll', updateVisualViewport);
+    }
+    window.addEventListener('resize', updateVisualViewport);
+    updateVisualViewport();
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateVisualViewport);
+        window.visualViewport.removeEventListener('scroll', updateVisualViewport);
+      }
+      window.removeEventListener('resize', updateVisualViewport);
+    };
+  }, []);
+
+  // Asegurar que al abrir el teclado el input y los últimos mensajes se mantengan visibles
+  useEffect(() => {
+    if (keyboardOffset > 0 && isChatOpen) {
+      const timer = setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [keyboardOffset, isChatOpen]);
+
   // Inicializar coordenada Y asegurando que en móviles flote arriba de la barra inferior
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -759,14 +810,28 @@ ${upcomingSessions}`
       {/* VENTANA DE CONVERSACIÓN DEL TUTOR IA (Solo accesible cuando loadProgress === 100) */}
       {isChatOpen && isReady && !isHidden && (
         <div
-          className={`fixed z-[96] w-[calc(100vw-2rem)] sm:w-96 bg-white rounded-2xl border border-[#d1d2e0] shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150 ${
+          className={`fixed z-[96] bg-white rounded-2xl border border-[#d1d2e0] shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150 transition-all ${
+            'left-3 right-3 sm:left-auto sm:right-auto sm:w-96'
+          } ${
+            keyboardOffset > 0
+              ? ''
+              : 'bottom-20 sm:bottom-28'
+          } ${
             currentZone === 'Abajo a la derecha'
-              ? 'right-4 sm:right-6 bottom-28'
+              ? 'sm:right-6'
               : currentZone === 'Al medio'
-              ? 'left-1/2 -translate-x-1/2 bottom-28'
-              : 'left-4 sm:left-6 bottom-28'
+              ? 'sm:left-1/2 sm:-translate-x-1/2'
+              : 'sm:left-6'
           }`}
-          style={{ maxHeight: 'min(520px, calc(100vh - 140px))' }}
+          style={{
+            bottom: keyboardOffset > 0 ? `${keyboardOffset + 10}px` : undefined,
+            maxHeight:
+              keyboardOffset > 0 && visualViewportHeight
+                ? `${Math.min(460, visualViewportHeight - 20)}px`
+                : visualViewportHeight
+                ? `${Math.min(520, visualViewportHeight - 110)}px`
+                : 'min(520px, calc(100dvh - 120px))'
+          }}
         >
           {/* Cabecera del TutorIA */}
           <div className="bg-[#0f172a] text-white px-4 py-3.5 flex items-center justify-between border-b border-slate-800">
@@ -905,13 +970,18 @@ ${upcomingSessions}`
               type="text"
               value={inputPrompt}
               onChange={(e) => setInputPrompt(e.target.value)}
+              onFocus={() => {
+                setTimeout(() => {
+                  messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                }, 150);
+              }}
               placeholder="Escribe tu duda sobre la clase o tus notas..."
               className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-[#cbd5e1] focus:outline-none focus:border-[#1d4ed8] text-[#0f172a]"
             />
             <button
               type="submit"
               disabled={!inputPrompt.trim() || isGenerating}
-              className="p-2.5 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 text-white transition-colors shrink-0 cursor-pointer"
+              className="p-2.5 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 text-white transition-colors shrink-0 cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
               aria-label="Enviar pregunta"
             >
               <Send className="w-4 h-4" />

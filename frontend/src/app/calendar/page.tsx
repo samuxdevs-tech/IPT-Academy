@@ -16,8 +16,10 @@ import {
   HelpCircle,
   RotateCcw,
   Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Home,
 } from 'lucide-react';
-import InstitutionalNavbar from '@/components/InstitutionalNavbar';
 import { useLms } from '@/context/LmsContext';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarEventCategory } from '@/types';
@@ -69,6 +71,77 @@ export default function InstitutionalCalendarPage() {
       })
       .sort((a, b) => new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime());
   }, [calendarEvents, selectedCategory, selectedCourse, onlyPendingDeliveries]);
+
+  const [selectedMonthDate, setSelectedMonthDate] = useState<Date>(() => new Date());
+
+  const monthData = useMemo(() => {
+    const year = selectedMonthDate.getFullYear();
+    const month = selectedMonthDate.getMonth();
+    const today = new Date();
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const totalDays = lastDay.getDate();
+
+    // Lunes = 0, Domingo = 6
+    const startDayIndex = (firstDay.getDay() + 6) % 7;
+
+    const monthLabel = selectedMonthDate.toLocaleDateString('es-ES', {
+      month: 'long',
+      year: 'numeric',
+    });
+
+    const days: Array<{
+      dayNum: number;
+      isCurrentMonth: boolean;
+      isToday: boolean;
+      dateKey: string;
+    }> = [];
+
+    // Días del mes anterior para rellenar la primera fila
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = startDayIndex - 1; i >= 0; i--) {
+      const d = prevMonthLastDay - i;
+      days.push({
+        dayNum: d,
+        isCurrentMonth: false,
+        isToday: false,
+        dateKey: `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      });
+    }
+
+    // Días del mes actual
+    for (let d = 1; d <= totalDays; d++) {
+      const isToday =
+        today.getFullYear() === year &&
+        today.getMonth() === month &&
+        today.getDate() === d;
+      days.push({
+        dayNum: d,
+        isCurrentMonth: true,
+        isToday,
+        dateKey: `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      });
+    }
+
+    // Días del mes siguiente para completar la cuadrícula (múltiplo de 7)
+    const remaining = (7 - (days.length % 7)) % 7;
+    for (let d = 1; d <= remaining; d++) {
+      days.push({
+        dayNum: d,
+        isCurrentMonth: false,
+        isToday: false,
+        dateKey: `${year}-${String(month + 2).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      });
+    }
+
+    return {
+      year,
+      month,
+      monthLabel: monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1),
+      days,
+    };
+  }, [selectedMonthDate]);
 
   const categoryLabel = (cat: CalendarEventCategory) => {
     switch (cat) {
@@ -228,6 +301,15 @@ export default function InstitutionalCalendarPage() {
   return (
     <div className="flex-1 bg-[#ffffff] text-[#0f0f0f]">
       <main id="main-content" className="max-w-[1300px] mx-auto py-5 px-4 lg:px-6 space-y-6">
+        <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-[#606060]">
+          <Link href="/" className="hover:text-[#0f0f0f] flex items-center gap-1 font-medium">
+            <Home className="w-3.5 h-3.5" />
+            <span>Inicio</span>
+          </Link>
+          <span>/</span>
+          <span className="text-[#0f0f0f] font-semibold">Calendario de Clases</span>
+        </nav>
+
         {/* Cabecera del Calendario */}
         <section className="bg-[#ffffff] rounded-2xl border border-[#e5e5e5] p-5 space-y-5">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#f0f0f0] pb-4">
@@ -254,7 +336,7 @@ export default function InstitutionalCalendarPage() {
               {effectiveIsAdmin && (
                 <label className="btn-ghost-neutral !py-2 !px-3.5 !text-[13px] inline-flex items-center gap-1.5 cursor-pointer">
                   <Upload className="w-4 h-4 text-[#6d28d2]" />
-                  <span>Cargar fechas (.ics)</span>
+                  <span>Cargar archivo de fechas</span>
                   <input
                     id="import-calendar-file"
                     name="import-calendar-file"
@@ -485,7 +567,11 @@ export default function InstitutionalCalendarPage() {
                         {effectiveIsAdmin && (
                           <button
                             type="button"
-                            onClick={() => deleteCalendarEvent(ev.id)}
+                            onClick={() => {
+                              if (window.confirm(`¿Estás seguro de eliminar esta fecha "${ev.title}" del calendario?`)) {
+                                deleteCalendarEvent(ev.id);
+                              }
+                            }}
                             className="p-1 text-[#595c73] hover:text-[#c4710d] cursor-pointer"
                             title="Eliminar esta fecha"
                           >
@@ -527,13 +613,47 @@ export default function InstitutionalCalendarPage() {
             ) : (
               /* Vista por días del mes */
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-[14px] font-medium text-[#2a2b3f]">
-                  <span>Vista mensual</span>
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[14px] font-medium text-[#2a2b3f]">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[#0f0f0f]">{monthData.monthLabel}</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedMonthDate(new Date(monthData.year, monthData.month - 1, 1))
+                        }
+                        className="p-1 rounded-md hover:bg-[#f0f0f0] text-[#595c73] hover:text-[#0f0f0f] transition-colors cursor-pointer"
+                        title="Mes anterior"
+                        aria-label="Mes anterior"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMonthDate(new Date())}
+                        className="px-2 py-0.5 text-[11px] font-semibold rounded-md border border-[#d1d2e0] hover:bg-[#f0f0f0] text-[#2a2b3f] transition-colors cursor-pointer"
+                        title="Ir al mes actual"
+                      >
+                        Hoy
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedMonthDate(new Date(monthData.year, monthData.month + 1, 1))
+                        }
+                        className="p-1 rounded-md hover:bg-[#f0f0f0] text-[#595c73] hover:text-[#0f0f0f] transition-colors cursor-pointer"
+                        title="Mes siguiente"
+                        aria-label="Mes siguiente"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                   <span className="text-[12px] text-[#595c73]">
                     {getTimeZoneOffsetLabel(timeZone)}
                   </span>
                 </div>
-                <div className="grid grid-cols-7 gap-1.5 text-center text-[12px] font-medium text-[#595c73]">
+                <div className="grid grid-cols-7 gap-1.5 text-center text-[12px] font-semibold text-[#595c73]">
                   {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((d) => (
                     <div key={d} className="py-1">
                       {d}
@@ -541,34 +661,64 @@ export default function InstitutionalCalendarPage() {
                   ))}
                 </div>
                 <div className="grid grid-cols-7 gap-1.5 tabular-nums">
-                  {Array.from({ length: 14 }, (_, idx) => {
-                    const dayNum = 18 + idx;
-                    const dayEvents = filteredEvents.filter((ev) => {
-                      const d = new Date(ev.startUtc).getUTCDate();
-                      return d === dayNum;
-                    });
+                  {monthData.days.map((item, idx) => {
+                    const dayEvents = item.isCurrentMonth
+                      ? filteredEvents.filter((ev) => {
+                          const evDate = new Date(ev.startUtc);
+                          return (
+                            evDate.getFullYear() === monthData.year &&
+                            evDate.getMonth() === monthData.month &&
+                            evDate.getDate() === item.dayNum
+                          );
+                        })
+                      : [];
+
                     return (
                       <div
-                        key={dayNum}
-                        className={`min-h-[84px] p-2 rounded-[8px] border text-left flex flex-col justify-between ${
-                          dayEvents.length > 0
-                            ? 'border-[#6d28d2] bg-[#f6f7f9]'
+                        key={`${item.dateKey}-${idx}`}
+                        className={`min-h-[88px] p-2 rounded-[8px] border text-left flex flex-col justify-between transition-colors ${
+                          !item.isCurrentMonth
+                            ? 'border-[#f0f0f0] bg-[#fafafa] opacity-40'
+                            : item.isToday
+                            ? 'border-[#6d28d2] bg-[#6d28d2]/[0.05] ring-1 ring-[#6d28d2]'
+                            : dayEvents.length > 0
+                            ? 'border-[#6d28d2]/60 bg-[#f6f7f9]'
                             : 'border-[#e9eaf2] bg-[#ffffff]'
                         }`}
                       >
-                        <span className="text-[12px] font-medium text-[#2a2b3f]">
-                          Día {dayNum}
-                        </span>
-                        <div className="space-y-1 mt-1">
-                          {dayEvents.map((ev) => (
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`text-[12px] font-semibold ${
+                              item.isToday
+                                ? 'text-[#6d28d2] font-bold'
+                                : item.isCurrentMonth
+                                ? 'text-[#2a2b3f]'
+                                : 'text-[#8e90a6]'
+                            }`}
+                          >
+                            {item.dayNum}
+                          </span>
+                          {item.isToday && (
+                            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 bg-[#6d28d2] text-white rounded">
+                              Hoy
+                            </span>
+                          )}
+                        </div>
+                        <div className="space-y-1 mt-1 flex-1 overflow-hidden">
+                          {dayEvents.slice(0, 3).map((ev) => (
                             <div
                               key={ev.id}
                               className="text-[11px] leading-tight text-[#6d28d2] font-medium truncate"
-                              title={ev.title}
+                              title={`${ev.title} (${categoryLabel(ev.category)})`}
                             >
                               • {ev.title}
                             </div>
                           ))}
+                          {dayEvents.length > 3 && (
+                            <span className="text-[10px] text-[#595c73] font-semibold block">
+                              +{dayEvents.length - 3} más
+                            </span>
+                          )}
                         </div>
                       </div>
                     );

@@ -3,7 +3,6 @@ import {
   Course,
   InstitutionalCalendarEvent,
   LiveVirtualSession,
-  PlagiarismAnalysisReport,
   RubricCriterion,
   StudentAnalyticsRecord,
   VideoCaptionCue,
@@ -135,60 +134,6 @@ export function calculateRubricScoreOnScale5(
   return Number(weightedSum.toFixed(2));
 }
 
-export function analyzeSubmissionOriginality(
-  fileName: string,
-  textExcerpt: string
-): PlagiarismAnalysisReport {
-  const cleanText = (textExcerpt || '').trim();
-  const words = cleanText ? cleanText.split(/\s+/).length : 0;
-
-  const lower = cleanText.toLowerCase();
-  const hasHighCopySignal =
-    lower.includes('copiado sin cita') ||
-    lower.includes('wikipedia') ||
-    fileName.toLowerCase().includes('copia');
-
-  const similarity = hasHighCopySignal
-    ? 34.0
-    : words > 0
-      ? Math.min(12.0, Math.max(2.0, Number(((fileName.length + (words % 7)) % 10).toFixed(1))))
-      : 0;
-
-  const status: PlagiarismAnalysisReport['status'] =
-    similarity >= 25 ? 'high_similarity' : similarity >= 15 ? 'moderate_review' : 'original';
-
-  return {
-    engine: 'Comparación con los materiales del curso',
-    overallSimilarityPercent: similarity,
-    status,
-    analyzedAtUtc: new Date().toISOString(),
-    wordCount: words,
-    matches: hasHighCopySignal
-      ? [
-          {
-            id: 'match-alert-1',
-            sourceName: 'Párrafo muy parecido a otro texto sin indicar el autor',
-            sourceType: 'web_index',
-            similarityPercent: 26.0,
-            matchedExcerpt:
-              cleanText.slice(0, 140) ||
-              'Recuerda poner entre comillas las frases tomadas de otros autores y escribir de dónde las sacaste.',
-          },
-        ]
-      : words > 0
-        ? [
-            {
-              id: 'match-ok-1',
-              sourceName: 'Frases de la guía de estudio citadas correctamente',
-              sourceType: 'academic_journal',
-              similarityPercent: similarity,
-              matchedExcerpt:
-                'El texto está escrito con tus propias palabras y las referencias al material de clase son adecuadas.',
-            },
-          ]
-        : [],
-  };
-}
 
 export function generateInstitutionalIcsFeed(events: InstitutionalCalendarEvent[]): string {
   const formatIcsDate = (iso: string) =>

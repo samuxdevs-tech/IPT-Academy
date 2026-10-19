@@ -12,8 +12,8 @@ import {
   Calendar,
   HelpCircle,
   RotateCcw,
+  Home,
 } from 'lucide-react';
-import InstitutionalNavbar from '@/components/InstitutionalNavbar';
 import { useLms, FontScaleMode } from '@/context/LmsContext';
 
 export default function LearningAnalyticsAndSupportPage() {
@@ -98,11 +98,16 @@ export default function LearningAnalyticsAndSupportPage() {
 
   return (
     <div className="min-h-screen bg-[#e9eaf2] text-[#2a2b3f]">
-      <InstitutionalNavbar
-        pageSummaryForScreenReader={`Avance del Grupo. Hay ${studentAnalytics.length} estudiantes registrados.`}
-      />
-
       <main id="main-content" className="max-w-[1200px] mx-auto py-8 px-4 lg:px-6 space-y-8">
+        <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-[#595c73] mb-4">
+          <Link href="/" className="hover:text-[#2a2b3f] flex items-center gap-1 font-medium">
+            <Home className="w-3.5 h-3.5" />
+            <span>Inicio</span>
+          </Link>
+          <span>/</span>
+          <span className="text-[#2a2b3f] font-semibold">Seguimiento y Analítica</span>
+        </nav>
+
         {/* Cabecera */}
         <section className="bg-[#ffffff] rounded-[16px] border border-[#d1d2e0] p-6 space-y-2">
           <h1 className="text-[24px] lg:text-[32px] font-bold text-[#2a2b3f] leading-[1.2]">

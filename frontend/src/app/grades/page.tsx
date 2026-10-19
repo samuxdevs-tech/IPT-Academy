@@ -13,8 +13,8 @@ import {
   Volume2,
   HelpCircle,
   RotateCcw,
+  Home,
 } from 'lucide-react';
-import InstitutionalNavbar from '@/components/InstitutionalNavbar';
 import { useLms } from '@/context/LmsContext';
 import { formatUtcInTimeZone } from '@/lib/lmsData';
 
@@ -108,6 +108,15 @@ function GradebookContent() {
   return (
     <div className="flex-1 bg-[#ffffff] text-[#0f0f0f]">
       <main id="main-content" className="max-w-[1300px] mx-auto py-5 px-4 lg:px-6 space-y-6">
+        <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-[#606060]">
+          <Link href="/" className="hover:text-[#0f0f0f] flex items-center gap-1 font-medium">
+            <Home className="w-3.5 h-3.5" />
+            <span>Inicio</span>
+          </Link>
+          <span>/</span>
+          <span className="text-[#0f0f0f] font-semibold">Calificaciones</span>
+        </nav>
+
         {/* Cabecera */}
         <section className="bg-[#ffffff] rounded-2xl border border-[#e5e5e5] p-5 space-y-5">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

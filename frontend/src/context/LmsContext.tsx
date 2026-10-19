@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import { ref, set, onValue } from 'firebase/database';
+import { ref, set, get, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { normalizeCourse, cleanForFirebase } from '@/lib/courseUtils';
@@ -15,7 +15,6 @@ import {
   TeacherMultimediaFeedback,
 } from '@/types';
 import {
-  analyzeSubmissionOriginality,
   calculateRubricScoreOnScale5,
   detectBrowserTimeZone,
 } from '@/lib/lmsData';
@@ -64,6 +63,8 @@ interface LmsContextValue {
   deleteCalendarEvent: (eventId: string) => void;
   createLiveSession: (session: Omit<LiveVirtualSession, 'id'>) => void;
   deleteLiveSession: (sessionId: string) => void;
+  refreshAnalytics?: () => Promise<void>;
+  isLoadingAnalytics?: boolean;
 }
 
 const LmsContext = createContext<LmsContextValue | undefined>(undefined);
@@ -83,13 +84,14 @@ function parseRtdbList<T>(val: unknown): T[] {
 }
 
 export function LmsProvider({ children }: { children: React.ReactNode }) {
-  const { effectiveIsAdmin } = useAuth();
+  const { user, effectiveIsAdmin } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [assignments, setAssignments] = useState<AssignmentItem[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<InstitutionalCalendarEvent[]>([]);
   const [liveSessions, setLiveSessions] = useState<LiveVirtualSession[]>([]);
   const [rawUsers, setRawUsers] = useState<Record<string, any>>({});
   const [rawProgress, setRawProgress] = useState<Record<string, any>>({});
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState<boolean>(false);
 
   const [activeRole, setActiveRoleState] = useState<ActiveAcademicRole>('student');
   const [detectedTimeZone, setDetectedTimeZone] = useState<string>('America/Bogota');
@@ -134,7 +136,7 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
       // Ignorar errores de localStorage
     }
 
-    // Suscripción 100% en tiempo real a Firebase Realtime Database
+    // Suscripción 100% en tiempo real para recursos académicos compartidos
     const unsubs: Array<() => void> = [];
     try {
       unsubs.push(
@@ -199,26 +201,6 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
           () => setLiveSessions([])
         )
       );
-
-      unsubs.push(
-        onValue(
-          ref(db, 'users'),
-          (snap) => {
-            setRawUsers(snap.exists() ? snap.val() : {});
-          },
-          () => setRawUsers({})
-        )
-      );
-
-      unsubs.push(
-        onValue(
-          ref(db, 'progress'),
-          (snap) => {
-            setRawProgress(snap.exists() ? snap.val() : {});
-          },
-          () => setRawProgress({})
-        )
-      );
     } catch {}
 
     return () => {
@@ -226,9 +208,86 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Construcción en tiempo real de analítica estudiantil desde usuarios reales registrados en Firebase
+  // 1. Para estudiantes: suscripción reactiva EXCLUSIVA a su propio nodo progress/${user.uid}
+  // Detiene completamente la escucha masiva de /users y /progress raíz en cuentas de estudiantes
+  useEffect(() => {
+    if (!user?.uid || effectiveIsAdmin) {
+      return;
+    }
+
+    const userProgressRef = ref(db, `progress/${user.uid}`);
+    const unsub = onValue(
+      userProgressRef,
+      (snap) => {
+        const val = snap.exists() ? snap.val() : {};
+        setRawProgress((prev) => {
+          if (JSON.stringify(prev[user.uid]) === JSON.stringify(val)) {
+            return prev;
+          }
+          return {
+            ...prev,
+            [user.uid]: val,
+          };
+        });
+      },
+      () => {
+        setRawProgress((prev) => {
+          const next = { ...prev };
+          delete next[user.uid];
+          return next;
+        });
+      }
+    );
+
+    return () => {
+      unsub();
+    };
+  }, [user?.uid, effectiveIsAdmin]);
+
+  // Carga bajo demanda de analítica para administradores/instructores (get() puntual sin listeners permanentes masivos)
+  const refreshAnalytics = useCallback(async () => {
+    if (!effectiveIsAdmin) return;
+    setIsLoadingAnalytics(true);
+    try {
+      const [usersSnap, progressSnap] = await Promise.all([
+        get(ref(db, 'users')).catch(() => null),
+        get(ref(db, 'progress')).catch(() => null),
+      ]);
+      if (usersSnap && usersSnap.exists()) {
+        setRawUsers(usersSnap.val());
+      }
+      if (progressSnap && progressSnap.exists()) {
+        setRawProgress(progressSnap.val());
+      }
+    } catch (err) {
+      console.error('Error cargando analítica bajo demanda:', err);
+    } finally {
+      setIsLoadingAnalytics(false);
+    }
+  }, [effectiveIsAdmin]);
+
+  useEffect(() => {
+    if (effectiveIsAdmin) {
+      refreshAnalytics();
+    } else {
+      setRawUsers({});
+    }
+  }, [effectiveIsAdmin, refreshAnalytics]);
+
+  // Construcción optimizada de analítica estudiantil
   const studentAnalytics = useMemo<StudentAnalyticsRecord[]>(() => {
-    const userEntries = Object.entries(rawUsers || {});
+    const targetUsers = effectiveIsAdmin
+      ? rawUsers
+      : user?.uid
+        ? {
+            [user.uid]: {
+              displayName: user.displayName || user.email?.split('@')[0] || 'Mi Perfil',
+              email: user.email || '',
+            },
+          }
+        : {};
+
+    const userEntries = Object.entries(targetUsers || {});
     if (userEntries.length === 0) return [];
 
     const totalLessonsAcrossCourses = courses.reduce(
@@ -254,8 +313,25 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
 
     return userEntries.map(([uid, uData], idx) => {
       const userProg = rawProgress?.[uid] || {};
-      const completedLessonsMap = userProg.completedLessons || {};
-      const completedLessonsCount = Object.values(completedLessonsMap).filter(Boolean).length;
+      let completedLessonsCount = 0;
+
+      if (userProg.completedLessons) {
+        if (Array.isArray(userProg.completedLessons)) {
+          completedLessonsCount = userProg.completedLessons.length;
+        } else if (typeof userProg.completedLessons === 'object') {
+          completedLessonsCount = Object.values(userProg.completedLessons).filter(Boolean).length;
+        }
+      } else {
+        Object.values(userProg).forEach((val: any) => {
+          if (val && typeof val === 'object') {
+            if (Array.isArray(val.completedLessons)) {
+              completedLessonsCount += val.completedLessons.length;
+            } else if (typeof val.completedLessons === 'object') {
+              completedLessonsCount += Object.values(val.completedLessons).filter(Boolean).length;
+            }
+          }
+        });
+      }
 
       const videoParticipationPercent =
         totalLessonsAcrossCourses > 0
@@ -292,7 +368,7 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
         riskFactors,
       };
     });
-  }, [rawUsers, rawProgress, courses, assignments]);
+  }, [effectiveIsAdmin, rawUsers, user, rawProgress, courses, assignments]);
 
   const setActiveRole = useCallback((role: ActiveAcademicRole) => {
     setActiveRoleState(role);
@@ -351,14 +427,11 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
       setAssignments((prev) => {
         const updated = prev.map((asg) => {
           if (asg.id !== assignmentId) return asg;
-          const primaryFileName = files[0]?.fileName || 'entrega_academica.pdf';
-          const plagiarismReport = analyzeSubmissionOriginality(primaryFileName, textExcerpt);
           return {
             ...asg,
             status: 'submitted' as const,
             submittedFiles: files,
             submissionTextContent: textExcerpt,
-            plagiarismReport,
           };
         });
         set(ref(db, 'lms_assignments'), cleanForFirebase(updated)).catch(() => {});
@@ -533,41 +606,78 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const contextValue = useMemo<LmsContextValue>(
+    () => ({
+      courses,
+      assignments,
+      calendarEvents,
+      liveSessions,
+      studentAnalytics,
+      activeRole,
+      setActiveRole,
+      timeZone,
+      detectedTimeZone,
+      setTimeZone,
+      highContrast,
+      setHighContrast,
+      fontScale,
+      setFontScale,
+      captionsEnabled,
+      setCaptionsEnabled,
+      isScreenReaderActive,
+      speakText,
+      stopSpeaking,
+      twoFactorEnabled,
+      setTwoFactorEnabled,
+      ssoInstitutionName: 'IPT (Ivan Perez Tech)',
+      submitStudentAssignment,
+      gradeAssignmentWithRubric,
+      createAssignmentAndSyncCalendar,
+      deleteAssignment,
+      createCalendarEvent,
+      deleteCalendarEvent,
+      createLiveSession,
+      deleteLiveSession,
+      refreshAnalytics,
+      isLoadingAnalytics,
+    }),
+    [
+      courses,
+      assignments,
+      calendarEvents,
+      liveSessions,
+      studentAnalytics,
+      activeRole,
+      setActiveRole,
+      timeZone,
+      detectedTimeZone,
+      setTimeZone,
+      highContrast,
+      setHighContrast,
+      fontScale,
+      setFontScale,
+      captionsEnabled,
+      setCaptionsEnabled,
+      isScreenReaderActive,
+      speakText,
+      stopSpeaking,
+      twoFactorEnabled,
+      setTwoFactorEnabled,
+      submitStudentAssignment,
+      gradeAssignmentWithRubric,
+      createAssignmentAndSyncCalendar,
+      deleteAssignment,
+      createCalendarEvent,
+      deleteCalendarEvent,
+      createLiveSession,
+      deleteLiveSession,
+      refreshAnalytics,
+      isLoadingAnalytics,
+    ]
+  );
+
   return (
-    <LmsContext.Provider
-      value={{
-        courses,
-        assignments,
-        calendarEvents,
-        liveSessions,
-        studentAnalytics,
-        activeRole,
-        setActiveRole,
-        timeZone,
-        detectedTimeZone,
-        setTimeZone,
-        highContrast,
-        setHighContrast,
-        fontScale,
-        setFontScale,
-        captionsEnabled,
-        setCaptionsEnabled,
-        isScreenReaderActive,
-        speakText,
-        stopSpeaking,
-        twoFactorEnabled,
-        setTwoFactorEnabled,
-        ssoInstitutionName: 'IPT (Ivan Perez Tech)',
-        submitStudentAssignment,
-        gradeAssignmentWithRubric,
-        createAssignmentAndSyncCalendar,
-        deleteAssignment,
-        createCalendarEvent,
-        deleteCalendarEvent,
-        createLiveSession,
-        deleteLiveSession,
-      }}
-    >
+    <LmsContext.Provider value={contextValue}>
       {children}
     </LmsContext.Provider>
   );

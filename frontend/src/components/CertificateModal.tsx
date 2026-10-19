@@ -94,8 +94,8 @@ export default function CertificateModal({
             studentEmail: user.email || '',
             courseSlug,
             courseTitle,
-            instructor: 'Equipo Directivo de TecnoGan',
-            instructorRole: 'Acreditado por el equipo directivo de TecnoGan',
+            instructor: 'Equipo Académico de IPT Course & TecnoGan',
+            instructorRole: 'Acreditado formalmente por Ivan Perez Tech (IPT)',
             issueDate: now.toISOString(),
             issueDateFormatted: formattedDate,
             completionHours: 34,
@@ -160,12 +160,12 @@ export default function CertificateModal({
             </div>
             <div>
               <h3 id="certificate-modal-title" className="text-sm font-bold text-white flex items-center gap-2">
-                <span>Certificado Oficial TecnoGan</span>
+                <span>Certificado Oficial IPT Course · TecnoGan</span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   {displayedProgress}% Completado
                 </span>
               </h3>
-              <p className="text-xs text-[#9194ac]">Acreditación Oficial en Gestión Ganadera Inteligente</p>
+              <p className="text-xs text-[#9194ac]">Acreditación Oficial de Formación Técnica · Ivan Perez Tech (IPT)</p>
             </div>
           </div>
 
@@ -173,7 +173,7 @@ export default function CertificateModal({
             <button
               type="button"
               onClick={handlePrint}
-              className="px-3.5 py-2 rounded-xl bg-[#6d28d2] hover:bg-[#591fb0] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-[#065fd4] hover:bg-[#054db2] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer"
               title="Imprimir o Guardar como PDF"
             >
               <Printer className="w-4 h-4" />
@@ -207,7 +207,7 @@ export default function CertificateModal({
           {loading ? (
             <div className="py-24 text-center space-y-4">
               <div className="w-10 h-10 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-sm text-[#9194ac]">Generando certificado oficial TecnoGan...</p>
+              <p className="text-sm text-[#9194ac]">Generando certificado oficial IPT Course...</p>
             </div>
           ) : (
             <div
@@ -226,7 +226,7 @@ export default function CertificateModal({
 
               {/* Marca de agua de fondo */}
               <div className="absolute inset-0 flex items-center justify-center opacity-[0.035] pointer-events-none">
-                <Image src="/logo.webp" alt="Marca de Agua" width={420} height={140} className="w-[280px] sm:w-[420px] h-auto object-contain" />
+                <Image src="/logo.png" alt="Marca de Agua" width={420} height={140} className="w-[280px] sm:w-[420px] h-auto object-contain" />
               </div>
 
               {/* Contenido del Diploma */}
@@ -235,28 +235,28 @@ export default function CertificateModal({
                 {/* Cabecera Institucional */}
                 <div className="flex flex-col sm:flex-row items-center justify-between w-full border-b border-[#e5dec9] pb-4 sm:pb-5 gap-3 sm:gap-0">
                   <div className="flex items-center gap-3 text-left">
-                    <Image src="/logo.webp" alt="TecnoGan" width={120} height={40} className="h-8 sm:h-10 w-auto object-contain" />
+                    <Image src="/logo.png" alt="IPT Course" width={120} height={40} className="h-8 sm:h-10 w-auto object-contain" />
                     <div>
-                      <p className="text-[11px] sm:text-[12px] font-black uppercase tracking-[0.2em] text-[#6d28d2]">
-                        TecnoGan
+                      <p className="text-[11px] sm:text-[12px] font-black uppercase tracking-[0.2em] text-[#065fd4]">
+                        IPT Course
                       </p>
                       <p className="text-[8px] sm:text-[9px] font-semibold text-[#66635a] tracking-wider uppercase">
-                        Academia Oficial de Gestión Ganadera
+                        Ivan Perez Tech · Formación Técnica
                       </p>
                     </div>
                   </div>
 
                   {/* Badge de Progreso Completado */}
                   <div className="text-center px-2 sm:px-4">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#6d28d2]/10 border border-[#6d28d2]/30 text-[#6d28d2] text-[10px] font-bold tracking-widest uppercase">
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#6d28d2]" />
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#065fd4]/10 border border-[#065fd4]/30 text-[#065fd4] text-[10px] font-bold tracking-widest uppercase">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#065fd4]" />
                       <span>{displayedProgress}% Completado</span>
                     </div>
                   </div>
 
                   <div className="text-center sm:text-right">
                     <p className="text-[11px] sm:text-[12px] font-black uppercase tracking-[0.2em] text-[#161c2d]">
-                      TecnoGan AgroTech
+                      TecnoGan & IPT
                     </p>
                     <p className="text-[8px] sm:text-[9px] font-semibold text-[#66635a] tracking-wider uppercase">
                       Acreditación Oficial
@@ -286,18 +286,18 @@ export default function CertificateModal({
                   <p className="text-xs md:text-sm text-[#44423b] leading-relaxed">
                     Por haber superado los módulos de capacitación y las evaluaciones prácticas correspondientes al programa de especialización:
                   </p>
-                  <p className="text-sm sm:text-base md:text-lg font-bold text-[#6d28d2] leading-snug">
+                  <p className="text-sm sm:text-base md:text-lg font-bold text-[#065fd4] leading-snug">
                     {cert?.courseTitle || courseTitle}
                   </p>
                   <p className="text-[10px] sm:text-[11px] text-[#66635a] leading-relaxed pt-1">
-                    Demostrando dominio de las herramientas tecnológicas de TecnoGan, modelación zootécnica de hatos ganaderos y toma de decisiones operativas en campo.
+                    Certificación técnica expedida conjuntamente por IPT Course y TecnoGan como parte del programa oficial de formación técnica de Ivan Perez Tech (IPT).
                   </p>
                 </div>
 
                 {/* Sellos, Firmas y Metadatos */}
                 <div className="w-full pt-6 sm:pt-8 grid grid-cols-1 sm:grid-cols-3 gap-6 items-end border-t border-[#e5dec9] mt-6">
                   
-                  {/* Firma Directiva de TecnoGan */}
+                  {/* Firma Directiva de IPT Course */}
                   <div className="flex flex-col items-center text-center space-y-1">
                     {/* Rúbrica Institucional SVG */}
                     <div className="h-10 flex items-center justify-center">
@@ -308,20 +308,20 @@ export default function CertificateModal({
                     </div>
                     <div className="w-44 h-[1.5px] bg-[#161c2d]" />
                     <p className="text-[11px] font-bold text-[#161c2d] leading-none">
-                      Equipo Directivo de TecnoGan
+                      Dirección Académica · IPT
                     </p>
                     <p className="text-[9px] text-[#66635a] font-medium leading-tight">
-                      Acreditado por el equipo directivo de TecnoGan
+                      IPT Course & TecnoGan
                     </p>
                   </div>
 
-                  {/* Sello de Oro TecnoGan */}
+                  {/* Sello de Oro IPT */}
                   <div className="flex flex-col items-center justify-center">
                     <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-[#997018] via-[#e5c468] to-[#b38728] p-1 shadow-lg flex items-center justify-center">
                       <div className="w-full h-full rounded-full border-2 border-dashed border-[#593f0b] flex flex-col items-center justify-center text-center bg-[#b88c2b]/20">
                         <Award className="w-6 h-6 text-[#593f0b] mb-0.5" />
                         <span className="text-[7px] font-black uppercase tracking-wider text-[#3d2a05] leading-none">
-                          TECNOGAN
+                          IPT COURSE
                         </span>
                         <span className="text-[6px] font-bold text-[#3d2a05] leading-none mt-0.5">
                           OFICIAL
@@ -338,7 +338,7 @@ export default function CertificateModal({
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Escanear o hacer clic para verificar validez pública"
-                        className="w-12 h-12 bg-white border border-[#d1c8b0] rounded p-1 flex items-center justify-center shadow-xs hover:border-[#6d28d2] transition-colors shrink-0"
+                        className="w-12 h-12 bg-white border border-[#d1c8b0] rounded p-1 flex items-center justify-center shadow-xs hover:border-[#065fd4] transition-colors shrink-0"
                       >
                         {cert?.id ? (
                           <Image
@@ -383,7 +383,7 @@ export default function CertificateModal({
         <div className="no-print px-6 py-3.5 bg-[#171824] border-t border-[#2e3144] flex flex-wrap items-center justify-between text-xs text-[#9194ac] gap-3">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Documento emitido oficialmente por TecnoGan AgroTech bajo acreditación institucional.</span>
+            <span>Documento emitido oficialmente por IPT Course y TecnoGan bajo acreditación institucional de Ivan Perez Tech (IPT).</span>
           </div>
           <button
             onClick={onClose}

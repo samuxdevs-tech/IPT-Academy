@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
+import { useLms } from '@/context/LmsContext';
 import {
   Award,
   LogOut,
@@ -28,14 +29,42 @@ interface UserProfileMenuProps {
   className?: string;
 }
 
-export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia-ipt', className = '' }: UserProfileMenuProps) {
-  const { user, isAdmin, logout } = useAuth();
+export default function UserProfileMenu({ courseSlug: propCourseSlug, className = '' }: UserProfileMenuProps) {
+  const { user, isAdmin, logout, userLicenses } = useAuth();
+  const { courses } = useLms();
   const [isOpen, setIsOpen] = useState(false);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Perfil del usuario
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  // Determinar curso activo real o primer curso matriculado
+  const enrolledSlugs = useMemo(() => Object.keys(userLicenses || {}), [userLicenses]);
+
+  const [activeCourseSlug, setActiveCourseSlug] = useState<string>(() => {
+    return propCourseSlug || enrolledSlugs[0] || courses[0]?.slug || '';
+  });
+
+  useEffect(() => {
+    if (propCourseSlug) {
+      setActiveCourseSlug(propCourseSlug);
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      const urlCourse = sp.get('course') || sp.get('slug');
+      if (urlCourse) {
+        setActiveCourseSlug(urlCourse);
+        return;
+      }
+    }
+    if (enrolledSlugs.length > 0) {
+      setActiveCourseSlug(enrolledSlugs[0]);
+    } else if (courses.length > 0) {
+      setActiveCourseSlug(courses[0].slug);
+    }
+  }, [propCourseSlug, enrolledSlugs, courses]);
 
   // Datos de certificación y progreso
   const [completedLessonsCount, setCompletedLessonsCount] = useState(0);
@@ -79,9 +108,14 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
 
   // Cargar progreso del usuario y estado de certificado
   useEffect(() => {
-    if (!user) return;
+    if (!user || !activeCourseSlug) {
+      setCompletedLessonsCount(0);
+      setHasCertificate(false);
+      setExistingCert(null);
+      return;
+    }
 
-    const certRef = ref(db, `users/${user.uid}/certificates/${courseSlug}`);
+    const certRef = ref(db, `users/${user.uid}/certificates/${activeCourseSlug}`);
     get(certRef).then(async (snap) => {
       if (snap.exists()) {
         setHasCertificate(true);
@@ -90,20 +124,29 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
         if (fullCertSnap.exists()) {
           setExistingCert(fullCertSnap.val());
         }
+      } else {
+        setHasCertificate(false);
+        setExistingCert(null);
       }
     }).catch(() => {});
 
-    const progressRef = ref(db, `progress/${user.uid}/${courseSlug}`);
+    const progressRef = ref(db, `progress/${user.uid}/${activeCourseSlug}`);
     get(progressRef).then((snap) => {
       if (snap.exists()) {
         const data = snap.val();
         if (data.completedLessons && Array.isArray(data.completedLessons)) {
           setCompletedLessonsCount(data.completedLessons.length);
+        } else if (data.completedLessons && typeof data.completedLessons === 'object') {
+          setCompletedLessonsCount(Object.values(data.completedLessons).filter(Boolean).length);
+        } else {
+          setCompletedLessonsCount(0);
         }
+      } else {
+        setCompletedLessonsCount(0);
       }
     }).catch(() => {});
 
-    get(ref(db, `courses/${courseSlug}`)).then((snap) => {
+    get(ref(db, `courses/${activeCourseSlug}`)).then((snap) => {
       if (snap.exists()) {
         const c = snap.val();
         if (c.modules) {
@@ -115,7 +158,7 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
         }
       }
     }).catch(() => {});
-  }, [user, courseSlug]);
+  }, [user, activeCourseSlug]);
 
   if (!user) return null;
 
@@ -160,7 +203,7 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
           <div className="absolute right-0 mt-2.5 w-[min(calc(100vw-32px),320px)] bg-white rounded-2xl shadow-2xl border border-[#d1d2e0] py-3 text-[#2a2b3f] z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
             
             <div className="px-4 py-3 bg-[#f6f7f9] border-b border-[#e9eaf2] flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full overflow-hidden bg-[#202230] text-white flex items-center justify-center font-extrabold text-base shrink-0 border-2 border-[#6d28d2]">
+              <div className="w-11 h-11 rounded-full overflow-hidden bg-[#202230] text-white flex items-center justify-center font-extrabold text-base shrink-0 border-2 border-[#065fd4]">
                 {avatarPhoto ? (
                   <Image src={avatarPhoto} alt={fullDisplayName} width={44} height={44} className="w-full h-full object-cover" unoptimized />
                 ) : (
@@ -184,28 +227,30 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
               </div>
             </div>
 
-            <div className="p-3 border-b border-[#e9eaf2] bg-gradient-to-b from-[#6d28d2]/[0.03] to-transparent">
-              <div className="p-3 rounded-xl border border-[#6d28d2]/20 bg-[#6d28d2]/[0.04] space-y-2.5">
+            <div className="p-3 border-b border-[#e9eaf2] bg-gradient-to-b from-[#065fd4]/[0.03] to-transparent">
+              <div className="p-3 rounded-xl border border-[#065fd4]/20 bg-[#065fd4]/[0.04] space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#6d28d2]">
-                    <Award className="w-4 h-4 text-[#6d28d2]" />
-                    <span>Diploma IPT Course</span>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#065fd4] truncate max-w-[200px]">
+                    <Award className="w-4 h-4 shrink-0 text-[#065fd4]" />
+                    <span className="truncate">
+                      {courses.find((c) => c.slug === activeCourseSlug)?.title || 'Diploma IPT Course'}
+                    </span>
                   </div>
-                  <span className="text-[10px] font-bold text-[#6d28d2] bg-[#6d28d2]/10 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] font-bold text-[#065fd4] bg-[#065fd4]/10 px-1.5 py-0.5 rounded">
                     {progressPercent}%
                   </span>
                 </div>
 
                 <div className="w-full bg-[#e9eaf2] h-2 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#6d28d2] transition-all duration-500 rounded-full"
+                    className="h-full bg-[#065fd4] transition-all duration-500 rounded-full"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] text-[#595c73]">
                   <span>Clases: {completedLessonsCount}/{totalLessonsCount}</span>
-                  <span className="font-semibold text-[#6d28d2]">
+                  <span className="font-semibold text-[#065fd4]">
                     {isEligible ? 'Meta completada' : 'Se requiere 80%'}
                   </span>
                 </div>
@@ -216,7 +261,7 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
                       setIsOpen(false);
                       setIsCertModalOpen(true);
                     }}
-                    className="w-full py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs active:scale-95 bg-[#6d28d2] hover:bg-[#591fb0] text-white"
+                    className="w-full py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs active:scale-95 bg-[#065fd4] hover:bg-[#054db2] text-white"
                   >
                     <Award className="w-4 h-4" />
                     <span>Ver Diploma ({progressPercent}%)</span>
@@ -229,9 +274,9 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
                 )}
 
                 <Link
-                  href={`/certificate?course=${courseSlug}`}
+                  href={activeCourseSlug ? `/certificate?course=${activeCourseSlug}` : '/certificate'}
                   onClick={() => setIsOpen(false)}
-                  className="w-full py-1.5 text-center text-[11px] font-bold text-[#6d28d2] hover:underline block"
+                  className="w-full py-1.5 text-center text-[11px] font-bold text-[#065fd4] hover:underline block"
                 >
                   Ir a mis diplomas →
                 </Link>
@@ -247,7 +292,7 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
                 className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-[#2a2b3f] hover:bg-[#f6f7f9] transition-colors text-left cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
-                  <Settings className="w-4 h-4 text-[#6d28d2]" />
+                  <Settings className="w-4 h-4 text-[#065fd4]" />
                   <span>Configuración del Perfil</span>
                 </div>
                 <ChevronRight className="w-3.5 h-3.5 text-[#9194ac]" />
@@ -301,7 +346,8 @@ export default function UserProfileMenu({ courseSlug = 'arquitectura-software-ia
         isOpen={isCertModalOpen}
         onClose={() => setIsCertModalOpen(false)}
         user={user}
-        courseSlug={courseSlug}
+        courseSlug={activeCourseSlug}
+        courseTitle={courses.find((c) => c.slug === activeCourseSlug)?.title}
         defaultStudentName={fullDisplayName}
         progressPercent={progressPercent}
         initialCertificate={existingCert}

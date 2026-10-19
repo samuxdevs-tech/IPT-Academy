@@ -16,7 +16,8 @@ import {
   FileCheck2,
   Sparkles,
   Volume2,
-  Paperclip
+  Paperclip,
+  Home,
 } from 'lucide-react';
 import { useLms } from '@/context/LmsContext';
 import { useAuth } from '@/context/AuthContext';
@@ -200,12 +201,21 @@ function StudentAssignmentsContent() {
   return (
     <div className="flex-1 bg-[#ffffff] text-[#0f0f0f] pb-20">
       <main className="max-w-[1300px] mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-8">
+        <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-[#606060]">
+          <Link href="/" className="hover:text-[#0f0f0f] flex items-center gap-1 font-medium">
+            <Home className="w-3.5 h-3.5" />
+            <span>Inicio</span>
+          </Link>
+          <span>/</span>
+          <span className="text-[#0f0f0f] font-semibold">Tareas y Entregas</span>
+        </nav>
+
         {/* Cabecera limpia y espaciosa estilo YouTube Studio */}
         <section className="bg-white rounded-3xl border border-[#e5e5e5] p-6 lg:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-2xs">
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#f2f2f2] text-xs font-semibold text-[#0f0f0f]">
               <FileCheck2 className="w-3.5 h-3.5 text-[#065fd4]" />
-              <span>Portal de Estudiantes · Nivel 1</span>
+              <span>Portal de Estudiantes</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0f0f0f] tracking-tight">
               Mis Tareas y Entregas

@@ -2,8 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { Award, Printer, ArrowLeft, CheckCircle2, HelpCircle, Shield } from 'lucide-react';
-import InstitutionalNavbar from '@/components/InstitutionalNavbar';
+import { Award, Printer, ArrowLeft, CheckCircle2, HelpCircle, Shield, Home } from 'lucide-react';
 import { useLms } from '@/context/LmsContext';
 import { useAuth } from '@/context/AuthContext';
 
@@ -53,6 +52,15 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
   return (
     <div className="flex-1 bg-[#ffffff] text-[#0f0f0f]">
       <main id="main-content" className="max-w-[1300px] mx-auto py-5 px-4 lg:px-6 space-y-6">
+        <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-[#606060]">
+          <Link href="/" className="hover:text-[#0f0f0f] flex items-center gap-1 font-medium">
+            <Home className="w-3.5 h-3.5" />
+            <span>Inicio</span>
+          </Link>
+          <span>/</span>
+          <span className="text-[#0f0f0f] font-semibold">Certificados</span>
+        </nav>
+
         <section className="bg-[#ffffff] rounded-2xl border border-[#e5e5e5] p-5 space-y-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="space-y-1">
@@ -126,7 +134,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
 
           <details className="text-[14px] text-[#2a2b3f] pt-1">
             <summary className="font-medium cursor-pointer flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-[#6d28d2] shrink-0" />
+              <HelpCircle className="w-4 h-4 text-[#065fd4] shrink-0" />
               <span>¿Cómo guardo este diploma en mi computador?</span>
             </summary>
             <p className="mt-2 text-[#595c73] leading-[1.6] pl-6">
@@ -137,7 +145,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
 
         {!activeCourse ? (
           <section className="bg-[#ffffff] rounded-[16px] border border-[#d1d2e0] p-10 text-center space-y-4">
-            <Award className="w-12 h-12 text-[#6d28d2] mx-auto" />
+            <Award className="w-12 h-12 text-[#065fd4] mx-auto" />
             <h2 className="text-[20px] font-bold text-[#2a2b3f]">
               Aún no hay cursos publicados para generar diplomas
             </h2>
@@ -147,10 +155,10 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
           </section>
         ) : (
           /* Vista previa del diploma lista para imprimir */
-          <section className="bg-[#ffffff] rounded-[24px] border-2 border-[#6d28d2] p-8 lg:p-14 text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[1000px] border border-[#6d28d2] text-[#6d28d2] text-[13px] font-medium">
+          <section className="bg-[#ffffff] rounded-[24px] border-2 border-[#065fd4] p-8 lg:p-14 text-center space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[1000px] border border-[#065fd4] text-[#065fd4] text-[13px] font-medium">
               <Award className="w-4 h-4" />
-              <span>Constancia de Estudio · IPT Course</span>
+              <span>Constancia de Estudio · IPT Course & TecnoGan</span>
             </div>
 
             <div className="space-y-2">
@@ -166,22 +174,25 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
               <p className="text-[15px] text-[#595c73]">
                 Por haber cursado las clases y actividades de:
               </p>
-              <h3 className="text-[22px] font-bold text-[#6d28d2] leading-[1.3]">
+              <h3 className="text-[22px] font-bold text-[#065fd4] leading-[1.3]">
                 {activeCourse.title}
               </h3>
               <p className="text-[14px] text-[#595c73] tabular-nums">
                 Duración: {activeCourse.approxHours || 'Programa completo'} · Nota promedio: {currentAverage}
               </p>
+              <p className="text-[12px] text-[#595c73] pt-1">
+                Expedido por IPT Course y TecnoGan como parte del programa oficial de formación técnica de Ivan Perez Tech (IPT).
+              </p>
             </div>
 
             <div className="pt-8 border-t border-[#e9eaf2] max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 text-[14px]">
               <div>
-                <div className="font-bold text-[#2a2b3f]">{activeCourse.instructor?.name || 'Profesor IPT'}</div>
+                <div className="font-bold text-[#2a2b3f]">{activeCourse.instructor?.name || 'Dirección Académica IPT'}</div>
                 <div className="text-[13px] text-[#595c73]">Profesor del curso</div>
               </div>
               <div>
                 <div className="font-bold text-[#2a2b3f] inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#6d28d2]" />
+                  <CheckCircle2 className="w-4 h-4 text-[#065fd4]" />
                   <span>{new Intl.DateTimeFormat('es-CO', { month: 'long', year: 'numeric' }).format(new Date())}</span>
                 </div>
                 <div className="text-[13px] text-[#595c73]">Fecha de emisión</div>

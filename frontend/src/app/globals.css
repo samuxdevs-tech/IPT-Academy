@@ -1,20 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
-  --color-ink: #2a2b3f;
-  --color-obsidian: #202230;
-  --color-graphite: #33364a;
+  /* Colors — IPT Course Brand Identity */
+  --color-ink: #0f0f0f;
+  --color-obsidian: #111320;
+  --color-graphite: #2a2b3f;
   --color-slate: #3d4055;
   --color-steel: #595c73;
-  --color-fog: #9194ac;
-  --color-mist: #b7b9cd;
-  --color-chalk: #d1d2e0;
-  --color-porcelain: #e9eaf2;
-  --color-paper: #f6f7f9;
+  --color-fog: #909090;
+  --color-mist: #cccccc;
+  --color-chalk: #e5e5e5;
+  --color-porcelain: #f2f2f2;
+  --color-paper: #f8f8f8;
   --color-canvas: #ffffff;
-  --color-aubergine: #6d28d2;
-  --color-lavender-haze: #c0c4fc;
+  --color-primary: #065fd4;
+  --color-primary-hover: #054db2;
+  --color-aubergine: #065fd4;
+  --color-lavender-haze: #e8f0fe;
   --color-ember: #c4710d;
 
   /* Typography */
@@ -52,19 +54,21 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   /* Colors */
-  --color-ink: #2a2b3f;
-  --color-obsidian: #202230;
-  --color-graphite: #33364a;
+  --color-ink: #0f0f0f;
+  --color-obsidian: #111320;
+  --color-graphite: #2a2b3f;
   --color-slate: #3d4055;
   --color-steel: #595c73;
-  --color-fog: #9194ac;
-  --color-mist: #b7b9cd;
-  --color-chalk: #d1d2e0;
-  --color-porcelain: #e9eaf2;
-  --color-paper: #f6f7f9;
+  --color-fog: #909090;
+  --color-mist: #cccccc;
+  --color-chalk: #e5e5e5;
+  --color-porcelain: #f2f2f2;
+  --color-paper: #f8f8f8;
   --color-canvas: #ffffff;
-  --color-aubergine: #6d28d2;
-  --color-lavender-haze: #c0c4fc;
+  --color-primary: #065fd4;
+  --color-primary-hover: #054db2;
+  --color-aubergine: #065fd4;
+  --color-lavender-haze: #e8f0fe;
   --color-ember: #c4710d;
 
   /* Typography — Font Families */
@@ -130,10 +134,10 @@
   --shadow-sm: oklch(0.6295 0.0204 306.5 / 0.08) 0px 2px 8px 0px, oklch(0.6295 0.0204 306.5 / 0.12) 0px 4px 16px 0px;
 
   /* Surfaces */
-  --surface-canvas: #e9eaf2;
-  --surface-paper: #f6f7f9;
+  --surface-canvas: #f2f2f2;
+  --surface-paper: #ffffff;
   --surface-card: #ffffff;
-  --surface-inverted-panel: #202230;
+  --surface-inverted-panel: #111320;
 
   /* Motion Tokens (Emil Kowalski / animate skill) */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -143,12 +147,13 @@
 
 /* WCAG 2.2 AA High-Contrast Accessible Override */
 html[data-contrast="high"] {
-  --color-ink: #141522;
+  --color-ink: #000000;
   --color-steel: #2a2b3f;
   --color-fog: #3d4055;
   --color-chalk: #595c73;
   --color-porcelain: #e1e3ee;
-  --color-aubergine: #5218a8;
+  --color-aubergine: #054db2;
+  --color-primary: #054db2;
   --color-ember: #945104;
 }
 
@@ -162,18 +167,18 @@ html[data-font-scale="xl"] {
 
 /* Browser Surfaces (Impeccable Craft Floor) */
 ::selection {
-  background-color: var(--color-lavender-haze);
-  color: var(--color-obsidian);
+  background-color: #d2e3fc;
+  color: #0f0f0f;
 }
 
 html {
-  caret-color: var(--color-aubergine);
+  caret-color: var(--color-primary, #065fd4);
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: var(--surface-canvas);
-  color: var(--color-ink);
+  background-color: var(--color-canvas, #ffffff);
+  color: var(--color-ink, #0f0f0f);
   font-family: var(--font-udemy-sans);
   font-size: var(--text-body);
   line-height: var(--leading-body);
@@ -207,15 +212,16 @@ time,
 
 /* Focus rings */
 :focus-visible {
-  outline: 1.5px solid var(--color-aubergine);
+  outline: 2px solid var(--color-primary, #065fd4);
   outline-offset: 2px;
 }
 
 /* Signature Components from DESIGN.md */
-.btn-outline-violet {
+.btn-outline-violet,
+.btn-outline-primary {
   background-color: transparent;
-  border: 1.5px solid var(--color-aubergine);
-  color: var(--color-aubergine);
+  border: 1.5px solid var(--color-primary, #065fd4);
+  color: var(--color-primary, #065fd4);
   border-radius: var(--radius-buttons);
   padding: 10px 20px;
   font-weight: 500;
@@ -228,13 +234,15 @@ time,
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .btn-outline-violet:hover {
-    background-color: rgba(192, 196, 252, 0.16);
+  .btn-outline-violet:hover,
+  .btn-outline-primary:hover {
+    background-color: rgba(6, 95, 212, 0.08);
     box-shadow: var(--shadow-sm);
   }
 }
 
-.btn-outline-violet:active {
+.btn-outline-violet:active,
+.btn-outline-primary:active {
   transform: scale(0.98);
 }
 
@@ -313,15 +321,16 @@ time,
   border-radius: var(--radius-largecards);
 }
 
-.ipt-badge-violet {
+.ipt-badge-violet,
+.ipt-badge-primary {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
   border-radius: var(--radius-pills);
-  border: 1px solid var(--color-aubergine);
-  color: var(--color-aubergine);
-  background-color: rgba(192, 196, 252, 0.14);
+  border: 1px solid rgba(6, 95, 212, 0.25);
+  color: var(--color-primary, #065fd4);
+  background-color: rgba(6, 95, 212, 0.08);
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
@@ -359,8 +368,8 @@ time,
 
 .ipt-input:focus {
   outline: none;
-  border-color: var(--color-aubergine);
-  box-shadow: 0 0 0 1.5px var(--color-aubergine);
+  border-color: var(--color-primary, #065fd4);
+  box-shadow: 0 0 0 1.5px var(--color-primary, #065fd4);
 }
 
 /* Reduced Motion Gate (animate skill) */

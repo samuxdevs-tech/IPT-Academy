@@ -345,7 +345,7 @@ export default function StudentPortalShell({
       {/* Barra inferior móvil estilo YouTube/Canvas con 5 pestañas amplias, targets táctiles confortables y z-[100] */}
       <nav
         aria-label="Navegación móvil"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#ffffff] border-t border-[#e5e5e5] px-1.5 py-1 grid grid-cols-5 gap-1 print:hidden shadow-lg select-none"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#ffffff] border-t border-[#e5e5e5] px-1.5 py-1 grid grid-cols-5 gap-1 print:hidden shadow-lg select-none pb-[env(safe-area-inset-bottom,0px)]"
       >
         {navItems.slice(0, 4).map((item) => {
           const Icon = item.icon;

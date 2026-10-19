@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -11,12 +11,33 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { useLms } from '@/context/LmsContext';
+import { useAuth } from '@/context/AuthContext';
+import { ref, onValue } from 'firebase/database';
+import { db } from '@/lib/firebase';
 
 function YouTubeCatalogContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams?.get('q') || '';
 
   const { courses, assignments, liveSessions } = useLms();
+  const { user } = useAuth();
+  const [userProgress, setUserProgress] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    if (!user) {
+      setUserProgress({});
+      return;
+    }
+    const progressRef = ref(db, `progress/${user.uid}`);
+    const unsub = onValue(
+      progressRef,
+      (snap) => {
+        setUserProgress(snap.exists() ? snap.val() : {});
+      },
+      () => setUserProgress({})
+    );
+    return () => unsub();
+  }, [user]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
 
@@ -117,16 +138,22 @@ function YouTubeCatalogContent() {
                 (acc, m) => acc + (m.lessons ? m.lessons.length : 0),
                 0
               ) || 0;
-            const completedLessons =
-              course.modules?.reduce(
-                (acc, m) =>
-                  acc +
-                  (m.lessons ? m.lessons.filter((l: any) => l.completed).length : 0),
-                0
-              ) || 0;
+            const courseProg =
+              userProgress[course.slug] ||
+              ((course as any).id ? userProgress[(course as any).id] : null) ||
+              {};
+            const completedLessonsList = Array.isArray(courseProg.completedLessons)
+              ? courseProg.completedLessons
+              : courseProg.completedLessons &&
+                typeof courseProg.completedLessons === 'object'
+              ? Object.keys(courseProg.completedLessons).filter(
+                  (k) => courseProg.completedLessons[k]
+                )
+              : [];
+            const completedLessons = completedLessonsList.length;
             const progressPct =
               totalLessons > 0
-                ? Math.round((completedLessons / totalLessons) * 100)
+                ? Math.min(100, Math.round((completedLessons / totalLessons) * 100))
                 : 0;
 
             return (

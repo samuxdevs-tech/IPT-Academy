@@ -57,22 +57,59 @@ export default function ProfileSettingsModal({
 
   if (!isOpen || !user) return null;
 
-  // Manejar subida de archivo de imagen local (convertir a Base64 para inmediatez)
+  // Manejar subida de archivo de imagen local y comprimir a micro-avatar < 2048 caracteres
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setErrorMsg('La imagen no debe superar los 2 MB');
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg('La imagen no debe superar los 5 MB');
       return;
     }
 
     const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setPhotoURL(reader.result);
-        setErrorMsg('');
-      }
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const size = 64;
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            setErrorMsg('No se pudo procesar la imagen');
+            return;
+          }
+
+          // Recorte cuadrado centrado
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+
+          // Comprimir a JPEG con calidad controlada para cumplir límite estricto de 2048 caracteres
+          let compressed = canvas.toDataURL('image/jpeg', 0.6);
+          if (compressed.length > 2000) {
+            compressed = canvas.toDataURL('image/jpeg', 0.45);
+          }
+          if (compressed.length > 2048) {
+            canvas.width = 48;
+            canvas.height = 48;
+            ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, 48, 48);
+            compressed = canvas.toDataURL('image/jpeg', 0.4);
+          }
+
+          setPhotoURL(compressed);
+          setErrorMsg('');
+        } catch {
+          setErrorMsg('Error al optimizar la imagen');
+        }
+      };
+      img.onerror = () => {
+        setErrorMsg('El archivo seleccionado no es una imagen válida');
+      };
+      img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -89,19 +126,35 @@ export default function ProfileSettingsModal({
 
     try {
       const fullDisplayName = `${firstName.trim()} ${lastName.trim()}`.trim();
+      const trimmedPhoto = photoURL.trim();
 
-      // 1. Guardar en Firebase Auth
-      await updateProfile(user, {
-        displayName: fullDisplayName,
-        photoURL: photoURL.trim() || null
-      });
+      // Firebase Auth limita photoURL a URLs válidas y max 2048 caracteres
+      const isHttp = /^https?:\/\//i.test(trimmedPhoto);
+      const isShortData = trimmedPhoto.startsWith('data:image/') && trimmedPhoto.length <= 2048;
+      const safeAuthPhoto = (isHttp && trimmedPhoto.length <= 2048) || isShortData
+        ? trimmedPhoto
+        : null;
+
+      // 1. Guardar en Firebase Auth con tolerancia a restricciones de URL
+      try {
+        await updateProfile(user, {
+          displayName: fullDisplayName,
+          photoURL: safeAuthPhoto
+        });
+      } catch (authErr) {
+        console.warn('updateProfile con photoURL advertencia en Firebase Auth:', authErr);
+        await updateProfile(user, {
+          displayName: fullDisplayName,
+          photoURL: isHttp && trimmedPhoto.length <= 2048 ? trimmedPhoto : null
+        });
+      }
 
       // 2. Guardar en Firebase RTDB
       const profileData: UserProfile = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         displayName: fullDisplayName,
-        photoURL: photoURL.trim(),
+        photoURL: trimmedPhoto,
         email: user.email || '',
         updatedAt: new Date().toISOString()
       };
@@ -150,7 +203,7 @@ export default function ProfileSettingsModal({
         {/* Cabecera del modal */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e9eaf2] bg-[#f6f7f9]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#6d28d2]/10 text-[#6d28d2] flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-xl bg-[#065fd4]/10 text-[#065fd4] flex items-center justify-center font-bold">
               <UserIcon className="w-4 h-4" />
             </div>
             <div>
@@ -173,7 +226,7 @@ export default function ProfileSettingsModal({
           {/* Zona de Foto de Perfil */}
           <div className="flex flex-col items-center gap-3">
             <div className="relative group">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-3 border-[#6d28d2] shadow-md bg-[#202230] flex items-center justify-center">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-3 border-[#065fd4] shadow-md bg-[#202230] flex items-center justify-center">
                 {photoURL ? (
                   <Image
                     src={photoURL}
@@ -193,7 +246,7 @@ export default function ProfileSettingsModal({
 
               <label
                 htmlFor="avatar-file-input"
-                className="absolute bottom-0 right-0 p-2 rounded-full bg-[#6d28d2] text-white shadow-lg cursor-pointer hover:bg-[#5b21b6] transition-transform active:scale-90"
+                className="absolute bottom-0 right-0 p-2 rounded-full bg-[#065fd4] text-white shadow-lg cursor-pointer hover:bg-[#054db2] transition-transform active:scale-90"
                 title="Cambiar foto de perfil"
               >
                 <Camera className="w-4 h-4" />
@@ -219,7 +272,7 @@ export default function ProfileSettingsModal({
                   type="button"
                   onClick={() => setPhotoURL(url)}
                   className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-transform active:scale-95 ${
-                    photoURL === url ? 'border-[#6d28d2] scale-110' : 'border-transparent opacity-70 hover:opacity-100'
+                    photoURL === url ? 'border-[#065fd4] scale-110' : 'border-transparent opacity-70 hover:opacity-100'
                   }`}
                 >
                   <Image src={url} alt={`Avatar ${i}`} width={32} height={32} className="w-full h-full object-cover" unoptimized />
@@ -247,7 +300,7 @@ export default function ProfileSettingsModal({
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Ej: Andrés Felipe"
                 required
-                className="w-full px-3.5 py-2 text-sm border border-[#d1d2e0] rounded-xl focus:outline-none focus:border-[#6d28d2] focus:ring-1 focus:ring-[#6d28d2]"
+                className="w-full px-3.5 py-2 text-sm border border-[#d1d2e0] rounded-xl focus:outline-none focus:border-[#065fd4] focus:ring-1 focus:ring-[#065fd4]"
               />
             </div>
 
@@ -258,7 +311,7 @@ export default function ProfileSettingsModal({
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Ej: García Pérez"
-                className="w-full px-3.5 py-2 text-sm border border-[#d1d2e0] rounded-xl focus:outline-none focus:border-[#6d28d2] focus:ring-1 focus:ring-[#6d28d2]"
+                className="w-full px-3.5 py-2 text-sm border border-[#d1d2e0] rounded-xl focus:outline-none focus:border-[#065fd4] focus:ring-1 focus:ring-[#065fd4]"
               />
             </div>
 
@@ -301,7 +354,7 @@ export default function ProfileSettingsModal({
             <button
               type="submit"
               disabled={isSaving}
-              className="px-5 py-2 rounded-xl bg-[#6d28d2] hover:bg-[#5b21b6] text-white text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 disabled:opacity-50"
+              className="px-5 py-2 rounded-xl bg-[#065fd4] hover:bg-[#054db2] text-white text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 disabled:opacity-50"
             >
               {isSaving ? (
                 <>

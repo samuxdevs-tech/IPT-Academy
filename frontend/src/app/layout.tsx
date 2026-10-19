@@ -17,6 +17,7 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
+  interactiveWidget: "resizes-content",
 };
 
 const siteUrl =
@@ -65,7 +66,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className={`${interSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col pb-16 md:pb-0 bg-[#ffffff] text-[#0f0f0f]">
+      <body className="min-h-full flex flex-col bg-[#ffffff] text-[#0f0f0f]">
         <AuthProvider>
           <LmsProvider>
             <StudentPortalShell>{children}</StudentPortalShell>
