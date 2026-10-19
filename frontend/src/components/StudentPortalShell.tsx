@@ -13,6 +13,7 @@ import {
   Award,
   BarChart2,
   Layers,
+  MoreHorizontal,
 } from 'lucide-react';
 import { useLms } from '@/context/LmsContext';
 import { useAuth } from '@/context/AuthContext';
@@ -54,7 +55,19 @@ export default function StudentPortalShell({
   const primaryCourse = visibleCourses[0] || courses[0];
   const classesHref = primaryCourse?.slug
     ? `/course?course=${encodeURIComponent(primaryCourse.slug)}`
-    : '/course';
+    : '/course?course=datagan-master-pro';
+
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    if (pathname === href || (href.startsWith('/course') && pathname.startsWith('/course'))) {
+      setMobileDrawerOpen(false);
+      return;
+    }
+    router.push(href);
+    setTimeout(() => {
+      setMobileDrawerOpen(false);
+    }, 120);
+  };
 
   const navItems = [
     {
@@ -131,14 +144,14 @@ export default function StudentPortalShell({
       {/* Drawer lateral para móviles con backdrop táctil */}
       {mobileDrawerOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs md:hidden"
+          className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-xs md:hidden"
           onClick={() => setMobileDrawerOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white text-[#0f0f0f] border-r border-[#e5e5e5] flex flex-col transition-transform duration-250 ease-out md:hidden shadow-2xl ${
+        className={`fixed inset-y-0 left-0 z-[120] w-72 bg-white text-[#0f0f0f] border-r border-[#e5e5e5] flex flex-col transition-transform duration-250 ease-out md:hidden shadow-2xl ${
           mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full pointer-events-none'
         }`}
         aria-label="Menú principal móvil"
@@ -147,15 +160,15 @@ export default function StudentPortalShell({
           <Link
             href="/"
             prefetch={true}
-            onClick={() => setMobileDrawerOpen(false)}
-            className="flex items-center gap-2.5 min-w-0"
+            onClick={(e) => handleNavClick(e, '/')}
+            className="flex items-center gap-2.5 min-w-0 cursor-pointer"
           >
             <img
               src="/logo.png"
               alt="IPT Course"
-              className="h-8 w-auto object-contain"
+              className="h-8 w-auto object-contain pointer-events-none"
             />
-            <span className="font-extrabold text-sm text-[#0f0f0f] truncate">
+            <span className="font-extrabold text-sm text-[#0f0f0f] truncate pointer-events-none">
               IPT Course
             </span>
           </Link>
@@ -170,7 +183,7 @@ export default function StudentPortalShell({
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-[#909090] mb-2">
+          <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-[#909090] mb-2 select-none">
             Navegación del Estudiante
           </p>
           {navItems.map((item) => {
@@ -181,17 +194,17 @@ export default function StudentPortalShell({
                 key={item.match}
                 href={item.href}
                 prefetch={true}
-                onClick={() => setMobileDrawerOpen(false)}
-                className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] ${
+                onClick={(e) => handleNavClick(e, item.href)}
+                className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] cursor-pointer select-none ${
                   active
                     ? 'bg-[#f2f2f2] text-[#0f0f0f] font-bold shadow-2xs'
                     : 'text-[#0f0f0f] hover:bg-[#f8f8f8] active:bg-[#f0f0f0]'
                 }`}
               >
-                <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-[#065fd4]' : 'text-[#606060]'}`} />
-                <span className="flex-1 truncate">{item.label}</span>
+                <Icon className={`w-5 h-5 shrink-0 pointer-events-none ${active ? 'text-[#065fd4]' : 'text-[#606060]'}`} />
+                <span className="flex-1 truncate pointer-events-none">{item.label}</span>
                 {item.badge && (
-                  <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-[#cc0000] text-white">
+                  <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-[#cc0000] text-white pointer-events-none">
                     {item.badge}
                   </span>
                 )}
@@ -329,12 +342,12 @@ export default function StudentPortalShell({
         </div>
       </div>
 
-      {/* Barra inferior móvil estilo YouTube con targets táctiles confortables */}
+      {/* Barra inferior móvil estilo YouTube/Canvas con 5 pestañas amplias, targets táctiles confortables y z-[100] */}
       <nav
         aria-label="Navegación móvil"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#ffffff] border-t border-[#e5e5e5] px-1 py-1 grid grid-cols-6 gap-0.5 print:hidden shadow-lg"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#ffffff] border-t border-[#e5e5e5] px-1.5 py-1 grid grid-cols-5 gap-1 print:hidden shadow-lg select-none"
       >
-        {navItems.slice(0, 6).map((item) => {
+        {navItems.slice(0, 4).map((item) => {
           const Icon = item.icon;
           const active = isRouteActive(item.match);
           return (
@@ -342,15 +355,54 @@ export default function StudentPortalShell({
               key={item.match}
               href={item.href}
               prefetch={true}
-              className={`min-h-[50px] flex flex-col items-center justify-center rounded-xl px-1 py-1 text-[10px] active:bg-[#f2f2f2] transition-colors ${
+              onClick={(e) => handleNavClick(e, item.href)}
+              className={`min-h-[52px] flex flex-col items-center justify-center rounded-xl px-1 py-1 text-[11px] active:bg-[#f2f2f2] transition-colors cursor-pointer relative ${
                 active ? 'font-bold text-[#0f0f0f]' : 'font-normal text-[#606060]'
               }`}
             >
-              <Icon className={`w-4 h-4 mb-0.5 shrink-0 ${active ? 'text-[#065fd4]' : 'text-[#606060]'}`} />
-              <span className="truncate max-w-full text-center leading-tight">{item.label}</span>
+              <div className="relative pointer-events-none">
+                <Icon className={`w-5 h-5 mb-0.5 shrink-0 ${active ? 'text-[#065fd4]' : 'text-[#606060]'}`} />
+                {item.badge && (
+                  <span className="absolute -top-1 -right-2 px-1.5 py-0.2 text-[9px] font-black rounded-full bg-[#cc0000] text-white">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
+              <span className="truncate max-w-full text-center leading-tight pointer-events-none">
+                {item.label}
+              </span>
             </Link>
           );
         })}
+
+        {/* Pestaña "Más" que abre el menú con Calendario, Casos Prácticos, Certificados y Perfil */}
+        {(() => {
+          const isMoreActive =
+            pathname.startsWith('/calendar') ||
+            pathname.startsWith('/scenarios') ||
+            pathname.startsWith('/certificate');
+          return (
+            <button
+              type="button"
+              onClick={() => setMobileDrawerOpen(true)}
+              className={`min-h-[52px] flex flex-col items-center justify-center rounded-xl px-1 py-1 text-[11px] active:bg-[#f2f2f2] transition-colors cursor-pointer ${
+                isMoreActive || mobileDrawerOpen
+                  ? 'font-bold text-[#065fd4]'
+                  : 'font-normal text-[#606060]'
+              }`}
+              aria-label="Abrir más secciones"
+            >
+              <MoreHorizontal
+                className={`w-5 h-5 mb-0.5 shrink-0 pointer-events-none ${
+                  isMoreActive || mobileDrawerOpen ? 'text-[#065fd4]' : 'text-[#606060]'
+                }`}
+              />
+              <span className="truncate max-w-full text-center leading-tight pointer-events-none">
+                Más
+              </span>
+            </button>
+          );
+        })()}
       </nav>
     </div>
   );

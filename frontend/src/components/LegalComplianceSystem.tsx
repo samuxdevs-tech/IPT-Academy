@@ -253,7 +253,7 @@ export default function LegalComplianceSystem() {
 
       {/* BANNER Y CONFIGURADOR DE COOKIES (Punto 5 Legal) */}
       {showCookieBanner && (
-        <div className="fixed bottom-4 right-4 left-4 md:left-auto md:max-w-lg z-[110] bg-[#0f172a] text-white rounded-2xl border border-slate-700 shadow-2xl p-5 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="fixed bottom-20 md:bottom-4 right-4 left-4 md:left-auto md:max-w-lg z-[85] bg-[#0f172a] text-white rounded-2xl border border-slate-700 shadow-2xl p-5 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/30 text-amber-300 flex items-center justify-center shrink-0">

@@ -94,7 +94,7 @@ export default function LockToast({
   return (
     <aside
       aria-label="Notificación de lección"
-      className="fixed bottom-6 right-6 z-50 max-w-md w-[calc(100vw-2.5rem)] sm:w-auto"
+      className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[80] max-w-md w-[calc(100vw-2rem)] sm:w-auto"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >

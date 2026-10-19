@@ -82,16 +82,22 @@ export default function LocalAiTutorWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const notifTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Inicializar coordenada Y abajo a la izquierda al montar en cliente
+  // Inicializar coordenada Y asegurando que en móviles flote arriba de la barra inferior
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const initialY = Math.max(80, window.innerHeight - 116);
-      setPosition({ x: 24, y: initialY });
+      const isMobile = window.innerWidth < 768;
+      const initialX = isMobile ? Math.max(12, window.innerWidth - 76) : 24;
+      const initialY = isMobile
+        ? Math.max(80, window.innerHeight - 150)
+        : Math.max(80, window.innerHeight - 116);
+      setPosition({ x: initialX, y: initialY });
 
       const handleResize = () => {
+        const mob = window.innerWidth < 768;
+        const bottomMargin = mob ? 140 : 96;
         setPosition((prev) => ({
           x: Math.min(Math.max(12, prev.x), window.innerWidth - 84),
-          y: Math.min(Math.max(64, prev.y), window.innerHeight - 96)
+          y: Math.min(Math.max(64, prev.y), window.innerHeight - bottomMargin)
         }));
       };
       window.addEventListener('resize', handleResize);
@@ -543,8 +549,10 @@ ${upcomingSessions}`
     }
 
     if (typeof window !== 'undefined') {
+      const mob = window.innerWidth < 768;
+      const bottomMargin = mob ? 140 : 96;
       const nextX = Math.min(Math.max(12, dragStartRef.current.startX + dx), window.innerWidth - 84);
-      const nextY = Math.min(Math.max(64, dragStartRef.current.startY + dy), window.innerHeight - 96);
+      const nextY = Math.min(Math.max(64, dragStartRef.current.startY + dy), window.innerHeight - bottomMargin);
       setPosition({ x: nextX, y: nextY });
     }
   };
@@ -626,7 +634,7 @@ ${upcomingSessions}`
         <button
           type="button"
           onClick={() => setIsHidden(false)}
-          className="fixed bottom-5 left-3 z-[90] px-3 py-1.5 rounded-full bg-[#151726]/90 hover:bg-[#151726] text-white border border-cyan-500/30 shadow-lg flex items-center gap-1.5 text-[11px] font-bold transition-all cursor-pointer"
+          className="fixed bottom-20 right-4 z-[90] px-3 py-1.5 rounded-full bg-[#151726]/90 hover:bg-[#151726] text-white border border-cyan-500/30 shadow-lg flex items-center gap-1.5 text-[11px] font-bold transition-all cursor-pointer"
           title="Mostrar icono de TutorIA"
         >
           <Eye className="w-3.5 h-3.5 text-cyan-400" />
