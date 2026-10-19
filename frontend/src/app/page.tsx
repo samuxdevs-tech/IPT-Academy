@@ -202,6 +202,16 @@ function YouTubeCatalogContent() {
                         </span>
                       )}
                     </div>
+
+                    <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-[#f0f0f0]">
+                      <span className="px-3 py-1 rounded-full bg-[#f2f2f2] group-hover:bg-[#065fd4] group-hover:text-white text-[11px] font-bold text-[#0f0f0f] transition-colors inline-flex items-center gap-1">
+                        <span>Entrar a clases</span>
+                        <span>→</span>
+                      </span>
+                      <span className="text-[10px] text-[#808080] font-medium">
+                        {totalLessons} {totalLessons === 1 ? 'lección' : 'lecciones'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </Link>

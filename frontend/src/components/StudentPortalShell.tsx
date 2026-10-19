@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -30,6 +30,11 @@ export default function StudentPortalShell({
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [headerSearch, setHeaderSearch] = useState('');
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileDrawerOpen(false);
+  }, [pathname]);
 
   const isAuthOrStandalone =
     pathname.startsWith('/login') ||
@@ -46,6 +51,11 @@ export default function StudentPortalShell({
     (a) => a.status === 'pending'
   ).length;
 
+  const primaryCourse = visibleCourses[0] || courses[0];
+  const classesHref = primaryCourse?.slug
+    ? `/course?course=${encodeURIComponent(primaryCourse.slug)}`
+    : '/course';
+
   const navItems = [
     {
       href: '/',
@@ -54,9 +64,7 @@ export default function StudentPortalShell({
       icon: Home,
     },
     {
-      href: visibleCourses[0]
-        ? `/course?course=${visibleCourses[0].slug}`
-        : '/course',
+      href: classesHref,
       match: '/course',
       label: 'Clases',
       icon: PlaySquare,
@@ -109,8 +117,6 @@ export default function StudentPortalShell({
     }
     router.push(`/?q=${encodeURIComponent(q)}`);
   };
-
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const toggleSidebarOrDrawer = () => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {

@@ -80,12 +80,17 @@ function VideoStudioContent() {
   const [selectedLesIdx, setSelectedLesIdx] = useState<number>(0);
 
   useEffect(() => {
-    if (requestedSlug && courses.some((c) => c.slug === requestedSlug)) {
-      setSelectedCourseSlug(requestedSlug);
-      setSelectedModIdx(0);
-      setSelectedLesIdx(0);
-    } else if (!selectedCourseSlug && courses[0]) {
-      setSelectedCourseSlug(courses[0].slug);
+    if (requestedSlug) {
+      const match = courses.find((c) => c.slug === requestedSlug);
+      if (match) {
+        setSelectedCourseSlug(match.slug);
+      } else if (courses[0]) {
+        setSelectedCourseSlug(courses[0].slug);
+      }
+    } else if (courses[0]) {
+      if (!selectedCourseSlug || !courses.some((c) => c.slug === selectedCourseSlug)) {
+        setSelectedCourseSlug(courses[0].slug);
+      }
     }
   }, [requestedSlug, courses, selectedCourseSlug]);
 
@@ -321,18 +326,11 @@ function VideoStudioContent() {
 
   if (!activeCourse) {
     return (
-      <div className="flex-1 bg-[#ffffff] text-[#0f0f0f]">
-        <main id="main-content" className="max-w-[800px] mx-auto py-16 px-4 text-center">
-          <div className="bg-[#fafafa] rounded-2xl border border-[#e5e5e5] p-10 space-y-4">
-            <Video className="w-12 h-12 text-[#606060] mx-auto" />
-            <h1 className="text-xl font-bold text-[#0f0f0f]">
-              Aún no hay cursos ni videos publicados
-            </h1>
-            <p className="text-sm text-[#606060] max-w-[50ch] mx-auto">
-              Cuando se publique el primer curso en el catálogo podrás ver todas sus clases en video aquí.
-            </p>
-          </div>
-        </main>
+      <div className="flex-1 bg-[#ffffff] text-[#0f0f0f] flex items-center justify-center min-h-[50vh]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-[#065fd4] border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-semibold text-[#606060]">Cargando aula virtual...</p>
+        </div>
       </div>
     );
   }
