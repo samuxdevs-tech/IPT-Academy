@@ -6,6 +6,7 @@ import { LmsProvider } from "@/context/LmsContext";
 import LocalAiTutorWidget from "@/components/LocalAiTutorWidget";
 import LegalComplianceSystem from "@/components/LegalComplianceSystem";
 import StudentPortalShell from "@/components/StudentPortalShell";
+import IdentityVerificationPrompt from "@/components/IdentityVerificationPrompt";
 
 const interSans = Inter({
   variable: "--font-udemy-sans",
@@ -70,6 +71,7 @@ export default function RootLayout({
         <AuthProvider>
           <LmsProvider>
             <StudentPortalShell>{children}</StudentPortalShell>
+            <IdentityVerificationPrompt />
             <LegalComplianceSystem />
             <LocalAiTutorWidget />
           </LmsProvider>

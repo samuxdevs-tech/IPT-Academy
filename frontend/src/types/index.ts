@@ -205,6 +205,7 @@ export interface Course {
   accessType?: 'free' | 'paid';
   price?: number;
   licenseToken?: string;
+  minPassingGrade?: number; // Escala 0.0 a 5.0 (por defecto 3.0)
   faculty?: string;
   academicCredits?: number;
   academicTerm?: string;
