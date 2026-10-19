@@ -1,0 +1,17 @@
+{
+  "name": "datagan-course-suite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TecnoGan Academy / DataGan 360 — Plataforma de Formación y Simulación en Ganadería de Precisión",
+  "scripts": {
+    "setup": "node setup-transfer.js",
+    "transfer": "node setup-transfer.js",
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "deploy": "npm --prefix frontend run build && npx firebase-tools deploy"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.7",
+    "mongodb": "^7.7.0"
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "rules": {
+    "courses": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('roles').child(auth.uid).val() === 'instructor' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')"
+    },
+    "metrics": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('roles').child(auth.uid).val() === 'instructor' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')"
+    },
+    "scenarios": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('roles').child(auth.uid).val() === 'instructor' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')"
+    },
+    "missions": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('roles').child(auth.uid).val() === 'instructor' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')"
+    },
+    "certificates": {
+      ".read": true,
+      "$certId": {
+        ".write": "auth != null && (!data.exists() || data.child('userId').val() === auth.uid || auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('admins').child(auth.uid).val() === true)"
+      }
+    },
+    "users": {
+      ".read": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('roles').child(auth.uid).val() === 'instructor' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')",
+        ".write": "auth != null && (auth.uid === $uid || auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('admins').child(auth.uid).val() === true)"
+      }
+    },
+    "roles": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true)",
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true || (auth.uid === $uid && !data.exists()))"
+      }
+    },
+    "preassigned_roles": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true)"
+    },
+    "legal_consents": {
+      ".read": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('admins').child(auth.uid).val() === true)",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true)",
+        ".write": "auth != null && (auth.uid === $uid || auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true)"
+      }
+    },
+    "progress": {
+      ".read": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('roles').child(auth.uid).val() === 'instructor' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('roles').child(auth.uid).val() === 'operator' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')",
+        ".write": "auth != null && (auth.uid === $uid || auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true)"
+      }
+    },
+    "telemetry": {
+      ".read": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "attempts": {
+      ".read": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "notes": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "questions": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "admins": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true)",
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true)"
+      }
+    },
+    "last_access": {
+      ".read": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true || root.child('users').child(auth.uid).child('profile/role').val() === 'admin')",
+        ".write": "auth != null && auth.uid === $uid && newData.isNumber()"
+      }
+    },
+    "operator": {
+      ".read": "auth != null",
+      ".write": "auth != null && (!data.exists() || auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('operator').child(auth.uid).val() === true || root.child('admins').child(auth.uid).val() === true)",
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('admins').child(auth.uid).val() === true)"
+      }
+    },
+    "operator_settings": {
+      ".read": "auth != null",
+      ".write": "auth != null && (auth.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' || root.child('roles').child(auth.uid).val() === 'owner' || root.child('operator').child(auth.uid).val() === true || root.child('admins').child(auth.uid).val() === true)"
+    },
+    "lms_assignments": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "lms_calendar": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "lms_live_sessions": {
+      ".read": true,
+      ".write": "auth != null"
+    }
+  }
+}
