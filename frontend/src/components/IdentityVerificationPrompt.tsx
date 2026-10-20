@@ -1,19 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, updateProfile } from 'firebase/auth';
-import { ref, get, update, set } from 'firebase/database';
+import { updateProfile } from 'firebase/auth';
+import { ref, get, update } from 'firebase/database';
 import { auth, db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { setLocalStudentName, getLocalDatabase } from '@/services/localDatabaseService';
 import {
   ShieldAlert,
   User as UserIcon,
-  CheckCircle2,
   Lock,
   ArrowRight,
-  Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from 'lucide-react';
 
 export default function IdentityVerificationPrompt() {
@@ -26,23 +25,20 @@ export default function IdentityVerificationPrompt() {
   useEffect(() => {
     if (!user) return;
 
-    // Verificar si ya se ha completado el registro de identidad formal
+    // Verificar si ya se ha completado el registro de identidad formal o se postergó en la sesión
     const checkIdentity = async () => {
-      // 1. En almacenamiento local para sesiones offline/mock
+      // 1. Si el usuario ya lo cerró en esta sesión de navegación, no volver a molestarlo
+      if (sessionStorage.getItem(`ipt_identity_dismissed_${user.uid}`) === 'true') {
+        return;
+      }
+
+      // 2. En almacenamiento local para confirmación permanente
       const localStatus = localStorage.getItem(`ipt_identity_confirmed_${user.uid}`);
       if (localStatus === 'true') {
         return;
       }
 
-      // Si es el usuario mock local y tiene nombre por defecto, verificar si ya fue confirmado
-      if (user.uid.startsWith('local-student')) {
-        const localDb = getLocalDatabase();
-        if ((localDb.student as any).identityConfirmed) {
-          return;
-        }
-      }
-
-      // 2. Verificar en Firebase si tiene el flag identityConfirmed
+      // 3. Verificar en Firebase si tiene el flag identityConfirmed
       try {
         const snap = await get(ref(db, `users/${user.uid}/profile`));
         if (snap.exists()) {
@@ -56,7 +52,7 @@ export default function IdentityVerificationPrompt() {
         console.warn('Verificando identidad de forma local:', err);
       }
 
-      // Si no ha sido confirmado formalmente, abrir el prompt modal/toast
+      // Si no ha sido confirmado formalmente, mostrar el prompt
       setIsOpen(true);
       if (user.displayName && !user.displayName.includes('@')) {
         setFullName(user.displayName);
@@ -67,6 +63,11 @@ export default function IdentityVerificationPrompt() {
   }, [user]);
 
   if (!isOpen || !user) return null;
+
+  const handleDismiss = () => {
+    sessionStorage.setItem(`ipt_identity_dismissed_${user.uid}`, 'true');
+    setIsOpen(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,8 +107,6 @@ export default function IdentityVerificationPrompt() {
 
       // 3. Guardar en Base de Datos Local / localStorage
       setLocalStudentName(cleanName);
-      const currentLocal = getLocalDatabase();
-      (currentLocal.student as any).identityConfirmed = true;
       localStorage.setItem(`ipt_identity_confirmed_${user.uid}`, 'true');
 
       // Cerrar prompt
@@ -122,77 +121,85 @@ export default function IdentityVerificationPrompt() {
 
   return (
     <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="identity-prompt-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+      role="region"
+      aria-label="Aviso de confirmación de identidad"
+      className="fixed bottom-5 right-5 z-[90] max-w-md w-[calc(100vw-2.5rem)] animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto"
     >
-      <div className="w-full max-w-lg bg-white rounded-3xl border-2 border-[#065fd4]/30 shadow-2xl p-6 sm:p-8 space-y-6">
+      <div className="bg-white rounded-3xl border-2 border-[#065fd4]/40 shadow-2xl p-5 sm:p-6 space-y-4">
         
-        {/* Encabezado con Icono Institucional */}
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#065fd4]/10 border border-[#065fd4]/25 flex items-center justify-center text-[#065fd4] shrink-0">
-            <UserIcon className="w-6 h-6" />
+        {/* Encabezado con Botón de Cerrar/Posponer para no bloquear navegación */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#065fd4]/10 border border-[#065fd4]/25 flex items-center justify-center text-[#065fd4] shrink-0">
+              <UserIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#065fd4] flex items-center gap-1">
+                <ShieldAlert className="w-3.5 h-3.5" />
+                Identidad Académica
+              </span>
+              <h2 className="text-sm font-black text-[#0f0f0f] leading-tight">
+                Confirma tu nombre oficial
+              </h2>
+            </div>
           </div>
-          <div className="space-y-1">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#065fd4] flex items-center gap-1.5">
-              <ShieldAlert className="w-3.5 h-3.5" />
-              Confirmación de Identidad Académica
-            </span>
-            <h2 id="identity-prompt-title" className="text-lg sm:text-xl font-black text-[#0f0f0f] leading-snug">
-              Escribe tu nombre y apellidos reales
-            </h2>
-          </div>
+
+          <button
+            type="button"
+            onClick={handleDismiss}
+            title="Posponer para más tarde"
+            className="p-1.5 rounded-full text-[#909090] hover:text-[#0f0f0f] hover:bg-[#f0f0f0] transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Explicación de por qué se solicita */}
-        <p className="text-xs sm:text-sm text-[#404040] leading-relaxed">
-          Al ingresar con tu cuenta de correo o Google, muchas veces el nombre de usuario de la cuenta no coincide con tu nombre oficial para documentos.
+        <p className="text-[11.5px] text-[#505050] leading-relaxed">
+          Verifica que este sea tu nombre y apellido reales para tus futuros certificados.
         </p>
 
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label htmlFor="official-student-name" className="block text-xs font-bold text-[#0f0f0f]">
-              Nombre completo para diplomas y certificaciones:
-            </label>
-            <input
-              id="official-student-name"
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Ej: Iván Samuel Pérez Torrenegra"
-              required
-              className="w-full px-4 py-3 rounded-xl border border-[#d0d0d0] text-sm font-semibold text-[#0f0f0f] placeholder-[#909090] focus:outline-none focus:border-[#065fd4] focus:ring-2 focus:ring-[#065fd4]/20 transition-all"
-            />
-          </div>
+        {/* Formulario Compacto no invasivo */}
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Nombre y apellido completo..."
+            required
+            className="w-full px-3.5 py-2.5 rounded-xl border border-[#d0d0d0] text-xs font-semibold text-[#0f0f0f] placeholder-[#909090] focus:outline-none focus:border-[#065fd4] focus:ring-1 focus:ring-[#065fd4]"
+          />
 
           {errorMsg && (
-            <p className="text-xs text-rose-600 font-semibold flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+            <p className="text-[11px] text-rose-600 font-semibold flex items-center gap-1">
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
               <span>{errorMsg}</span>
             </p>
           )}
 
-          {/* AVISO REGLAMENTARIO OBLIGATORIO */}
-          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-[#7a5200] text-xs space-y-1 leading-relaxed">
-            <div className="flex items-center gap-1.5 font-bold text-amber-900">
-              <Lock className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-              <span>Aviso de Validez Académica (IPT Course)</span>
-            </div>
-            <p className="text-[11.5px]">
-              Este nombre será el que se imprima oficialmente en todos tus diplomas, constancias y formatos de grado. <strong>Cualquier modificación futura requerirá validación manual por parte de un administrador de IPT.</strong>
-            </p>
+          {/* Micro-aviso reglamentario */}
+          <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/80 text-[#7a5200] text-[10.5px] leading-tight flex items-start gap-2">
+            <Lock className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
+            <span>
+              Este nombre se imprimirá en tus diplomas. Modificaciones posteriores requerirán aprobación de administración.
+            </span>
           </div>
 
-          <div className="pt-2 flex justify-end">
+          <div className="flex items-center justify-between gap-2 pt-1">
+            <button
+              type="button"
+              onClick={handleDismiss}
+              className="text-[11px] font-bold text-[#707070] hover:text-[#0f0f0f] px-2 py-1 cursor-pointer"
+            >
+              Más tarde
+            </button>
+
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#065fd4] hover:bg-[#054db2] text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-[#065fd4] hover:bg-[#054db2] text-white text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95 disabled:opacity-50"
             >
-              <span>{isSubmitting ? 'Guardando...' : 'Confirmar Identidad y Continuar'}</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>{isSubmitting ? 'Guardando...' : 'Confirmar'}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </form>
