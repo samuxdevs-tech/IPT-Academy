@@ -72,13 +72,13 @@ export default function StudentPortalShell({
           >
             <Menu className="w-5 h-5" />
           </button>
-          <Link href="/" prefetch={true} className="flex items-center gap-2 shrink-0">
+          <a href="/" className="flex items-center gap-2 shrink-0">
             <img
               src="/logo.png"
               alt="IPT Course"
               className="h-8 w-auto object-contain"
             />
-          </Link>
+          </a>
         </div>
 
         {/* Buscador central */}
@@ -109,13 +109,12 @@ export default function StudentPortalShell({
           {user ? (
             <UserProfileMenu />
           ) : (
-            <Link
+            <a
               href="/login"
-              prefetch={true}
               className="px-4 py-2 rounded-full border border-[#d9d9d9] hover:bg-[#def1ff] hover:border-transparent text-xs font-semibold text-[#065fd4] transition-colors min-h-[44px] inline-flex items-center justify-center"
             >
               Iniciar sesión
-            </Link>
+            </a>
           )}
         </div>
       </header>

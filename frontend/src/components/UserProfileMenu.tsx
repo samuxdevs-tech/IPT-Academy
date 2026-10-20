@@ -273,13 +273,13 @@ export default function UserProfileMenu({ courseSlug: propCourseSlug, className 
                   </div>
                 )}
 
-                <Link
+                <a
                   href={activeCourseSlug ? `/certificate?course=${activeCourseSlug}` : '/certificate'}
                   onClick={() => setIsOpen(false)}
                   className="w-full py-1.5 text-center text-[11px] font-bold text-[#065fd4] hover:underline block"
                 >
                   Ir a mis diplomas →
-                </Link>
+                </a>
               </div>
             </div>
 
@@ -298,7 +298,7 @@ export default function UserProfileMenu({ courseSlug: propCourseSlug, className 
                 <ChevronRight className="w-3.5 h-3.5 text-[#9194ac]" />
               </button>
 
-              <Link
+              <a
                 href="/course"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-[#595c73] hover:text-[#2a2b3f] hover:bg-[#f6f7f9] transition-colors"
@@ -308,9 +308,9 @@ export default function UserProfileMenu({ courseSlug: propCourseSlug, className 
                   <span>Clases en Video</span>
                 </div>
                 <ChevronRight className="w-3.5 h-3.5 text-[#9194ac]" />
-              </Link>
+              </a>
 
-              <Link
+              <a
                 href="/scenarios"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-[#595c73] hover:text-[#2a2b3f] hover:bg-[#f6f7f9] transition-colors"
@@ -320,7 +320,7 @@ export default function UserProfileMenu({ courseSlug: propCourseSlug, className 
                   <span>Casos Prácticos</span>
                 </div>
                 <ChevronRight className="w-3.5 h-3.5 text-[#9194ac]" />
-              </Link>
+              </a>
             </div>
 
             {/* SECCIÓN 3: CERRAR SESIÓN */}
