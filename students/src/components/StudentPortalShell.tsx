@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import SafeNavLink from '@/components/navigation/SafeNavLink';
 import { usePathname, useRouter } from 'next/navigation';
 import { Search, Menu } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -72,13 +73,13 @@ export default function StudentPortalShell({
           >
             <Menu className="w-5 h-5" />
           </button>
-          <Link href="/" prefetch={true} className="flex items-center gap-2 shrink-0">
+          <SafeNavLink href="/" prefetch={true} className="flex items-center gap-2 shrink-0">
             <img
               src="/logo.png"
               alt="IPT Course"
               className="h-8 w-auto object-contain"
             />
-          </Link>
+          </SafeNavLink>
         </div>
 
         {/* Buscador central */}

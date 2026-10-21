@@ -2,6 +2,7 @@
 
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
+import SafeNavLink from '@/components/SafeNavLink';
 import Image from 'next/image';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -304,7 +305,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
         const Icon = item.icon;
         const active = isItemActive(item);
         return (
-          <Link
+          <SafeNavLink
             key={item.id}
             href={item.href}
             prefetch={true}
@@ -351,7 +352,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
                 </p>
               </div>
             )}
-          </Link>
+          </SafeNavLink>
         );
       })}
     </div>
@@ -378,7 +379,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
         }`}
       >
         <div className="h-16 px-4 border-b border-[#25283e] flex items-center justify-between shrink-0">
-          <Link href="/?step=catalog" prefetch={true} className="flex items-center gap-3 min-w-0">
+          <SafeNavLink href="/?step=catalog" prefetch={true} className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-xs">
               <Image src="/favicon.png" alt="IPT Course" width={32} height={32} className="w-full h-full object-contain" />
             </div>
@@ -395,7 +396,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
                 <p className="text-[10px] text-[#8589a6] truncate">Panel de Control Académico</p>
               </div>
             )}
-          </Link>
+          </SafeNavLink>
 
           <button
             type="button"
@@ -524,37 +525,40 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
           aria-label="Navegación Móvil"
           className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#151726]/95 backdrop-blur-md border-t border-[#262940] px-2 py-1.5 flex items-center justify-around shadow-lg"
         >
-          <a
+          <SafeNavLink
             href="/?step=catalog"
+            prefetch={true}
             className={`flex flex-col items-center justify-center p-1.5 rounded-xl min-w-[56px] min-h-[44px] transition-colors ${
               pathname === '/' ? 'text-blue-400 font-bold' : 'text-[#8f94b2] hover:text-white'
             }`}
           >
             <BookOpen className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] leading-tight">Cursos</span>
-          </a>
+          </SafeNavLink>
 
-          <a
+          <SafeNavLink
             href="/assignments"
+            prefetch={true}
             className={`flex flex-col items-center justify-center p-1.5 rounded-xl min-w-[56px] min-h-[44px] transition-colors ${
               pathname.startsWith('/assignments') ? 'text-blue-400 font-bold' : 'text-[#8f94b2] hover:text-white'
             }`}
           >
             <FileCheck2 className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] leading-tight">Tareas</span>
-          </a>
+          </SafeNavLink>
 
-          <a
+          <SafeNavLink
             href="/calendar"
+            prefetch={true}
             className={`flex flex-col items-center justify-center p-1.5 rounded-xl min-w-[56px] min-h-[44px] transition-colors ${
               pathname.startsWith('/calendar') ? 'text-blue-400 font-bold' : 'text-[#8f94b2] hover:text-white'
             }`}
           >
             <Calendar className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] leading-tight">Horario</span>
-          </a>
+          </SafeNavLink>
 
-          <a
+          <SafeNavLink
             href={
               ROLE_DEFINITIONS[effectiveRole]?.level >= 4
                 ? '/nivel-4'
@@ -562,13 +566,14 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
                 ? '/nivel-3'
                 : '/nivel-2'
             }
+            prefetch={true}
             className={`flex flex-col items-center justify-center p-1.5 rounded-xl min-w-[56px] min-h-[44px] transition-colors ${
               pathname.startsWith('/nivel-') ? 'text-purple-400 font-bold' : 'text-[#8f94b2] hover:text-white'
             }`}
           >
             <ShieldCheck className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] leading-tight">Nivel</span>
-          </a>
+          </SafeNavLink>
 
           <button
             type="button"

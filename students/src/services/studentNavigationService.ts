@@ -81,7 +81,7 @@ export const STUDENT_NAV_DEFINITIONS: StudentNavItemDefinition[] = [
       const primary = visible[0] || (ctx.courses && ctx.courses[0]);
       return primary?.slug
         ? `/course?course=${encodeURIComponent(primary.slug)}`
-        : '/course?course=datagan-master-pro';
+        : '/course';
     },
   },
   {

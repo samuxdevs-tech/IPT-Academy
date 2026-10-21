@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import SafeNavLink from '@/components/navigation/SafeNavLink';
 import { StudentResolvedNavItem } from '@/services/studentNavigationService';
 
 export type StudentNavButtonVariant =
@@ -29,7 +29,7 @@ export default function StudentNavButton({
   // 1. Variante: Barra Lateral Escritorio Expandida (w-56)
   if (variant === 'desktop-expanded') {
     return (
-      <Link
+      <SafeNavLink
         href={href}
         prefetch={true}
         onClick={onNavigate}
@@ -52,14 +52,14 @@ export default function StudentNavButton({
             {badge}
           </span>
         )}
-      </Link>
+      </SafeNavLink>
     );
   }
 
   // 2. Variante: Barra Lateral Escritorio Colapsada (w-[72px])
   if (variant === 'desktop-collapsed') {
     return (
-      <Link
+      <SafeNavLink
         href={href}
         prefetch={true}
         onClick={onNavigate}
@@ -86,14 +86,14 @@ export default function StudentNavButton({
         <span className="text-[10px] truncate max-w-full text-center mt-1 leading-tight font-medium">
           {shortLabel}
         </span>
-      </Link>
+      </SafeNavLink>
     );
   }
 
   // 3. Variante: Menú Lateral Desplegable Móvil (Drawer)
   if (variant === 'mobile-drawer') {
     return (
-      <Link
+      <SafeNavLink
         href={href}
         prefetch={true}
         onClick={onNavigate}
@@ -115,13 +115,13 @@ export default function StudentNavButton({
             {badge}
           </span>
         )}
-      </Link>
+      </SafeNavLink>
     );
   }
 
   // 4. Variante: Barra Inferior Fija para Móviles
   return (
-    <Link
+    <SafeNavLink
       href={href}
       prefetch={true}
       onClick={onNavigate}
@@ -145,6 +145,6 @@ export default function StudentNavButton({
       <span className="truncate max-w-full text-center leading-tight pointer-events-none text-[11px]">
         {shortLabel}
       </span>
-    </Link>
+    </SafeNavLink>
   );
 }
