@@ -99,8 +99,8 @@ app.post('/api/assignments', async (c) => {
         updated_at=excluded.updated_at
     `).bind(
       id,
-      body.courseSlug || 'datagan-360-pro',
-      body.courseTitle || 'DataGan 360 Pro',
+      body.courseSlug || 'ipt-software-ia',
+      body.courseTitle || 'Ingeniería de Software e IA - IPT',
       body.moduleTitle || 'Módulo 1',
       body.cutId || 'corte-1',
       body.weightPercent ?? 20,

@@ -32,6 +32,7 @@ import {
   fetchSubmissions,
   gradeSubmissionByTeacher,
   requestAiReviewFromWorker,
+  syncAssignmentToCloudflare,
   FullSubmissionItem,
   AiReviewResult,
   RubricEvalItem,
@@ -204,7 +205,15 @@ function AdminAssignmentsWorkspace() {
     setSelectedAssignmentId(created.id);
     setNewAsgTitle('');
     setNewAsgInstructions('');
-    setCreateNotice(`Tarea "${created.title}" creada con éxito.`);
+    setCreateNotice(`Tarea "${created.title}" creada y sincronizada.`);
+
+    // Sincronizar en la nube con Cloudflare Worker (D1 SQL)
+    syncAssignmentToCloudflare(created).then((synced) => {
+      if (synced) {
+        setCreateNotice(`Tarea "${created.title}" guardada en Cloudflare D1.`);
+      }
+    });
+
     setTimeout(() => setCreateNotice(null), 4000);
   };
 

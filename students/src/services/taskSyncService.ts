@@ -279,3 +279,38 @@ export async function requestAiReviewFromWorker(submissionId: string): Promise<A
 
   return json.data as AiReviewResult;
 }
+
+/**
+ * Sincroniza una tarea con Cloudflare D1
+ */
+export async function syncAssignmentToCloudflare(assignment: any): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/api/assignments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(assignment),
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn('Error al sincronizar tarea con Cloudflare Worker:', err);
+    return false;
+  }
+}
+
+/**
+ * Obtiene las tareas registradas en Cloudflare D1
+ */
+export async function fetchAssignmentsFromCloudflare(courseSlug?: string): Promise<any[]> {
+  try {
+    const url = courseSlug 
+      ? `${API_BASE}/api/assignments?courseSlug=${encodeURIComponent(courseSlug)}`
+      : `${API_BASE}/api/assignments`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.success && Array.isArray(json.data) ? json.data : [];
+  } catch (err) {
+    console.warn('Error al obtener tareas de Cloudflare Worker:', err);
+    return [];
+  }
+}

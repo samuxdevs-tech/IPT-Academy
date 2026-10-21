@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "datagan-course"
+  },
+  "targets": {
+    "datagan-course": {
+      "hosting": {
+        "ipt-course-admin": [
+          "ipt-course-admin"
+        ]
+      }
+    }
+  }
+}
