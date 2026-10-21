@@ -33,6 +33,7 @@ import {
   gradeSubmissionByTeacher,
   requestAiReviewFromWorker,
   syncAssignmentToCloudflare,
+  fetchAssignmentsFromCloudflare,
   FullSubmissionItem,
   AiReviewResult,
   RubricEvalItem,
@@ -52,22 +53,46 @@ function AdminAssignmentsWorkspace() {
   } = useLms();
   const { user } = useAuth();
 
+  const [cloudAssignments, setCloudAssignments] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchAssignmentsFromCloudflare().then((data) => {
+      if (Array.isArray(data) && data.length > 0) {
+        setCloudAssignments(data);
+      }
+    });
+  }, []);
+
+  const allAssignments = useMemo(() => {
+    const map = new Map<string, any>();
+    assignments.forEach((a) => map.set(a.id, a));
+    cloudAssignments.forEach((a) => map.set(a.id, a));
+    return Array.from(map.values());
+  }, [assignments, cloudAssignments]);
+
   const filteredList = useMemo(() => {
-    if (!requestedCourse) return assignments;
-    const byCourse = assignments.filter((a) => a.courseSlug === requestedCourse);
-    return byCourse.length > 0 ? byCourse : assignments;
-  }, [assignments, requestedCourse]);
+    if (!requestedCourse) return allAssignments;
+    const byCourse = allAssignments.filter((a) => a.courseSlug === requestedCourse);
+    return byCourse.length > 0 ? byCourse : allAssignments;
+  }, [allAssignments, requestedCourse]);
 
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>(
     requestedId || filteredList[0]?.id || ''
   );
 
+  useEffect(() => {
+    if (!selectedAssignmentId && filteredList.length > 0) {
+      setSelectedAssignmentId(filteredList[0].id);
+    }
+  }, [filteredList, selectedAssignmentId]);
+
   const activeAssignment = useMemo(
     () =>
-      assignments.find((a) => a.id === selectedAssignmentId) ||
+      allAssignments.find((a) => a.id === selectedAssignmentId) ||
       filteredList[0] ||
-      assignments[0],
-    [assignments, filteredList, selectedAssignmentId]
+      allAssignments[0] ||
+      null,
+    [allAssignments, filteredList, selectedAssignmentId]
   );
 
   // Lista de entregas reales de estudiantes para esta tarea
@@ -286,7 +311,7 @@ function AdminAssignmentsWorkspace() {
     setGradingNotice(null);
     setGradingError(null);
 
-    const rubricList: RubricEvalItem[] = (activeAssignment.rubric || []).map((crit) => ({
+    const rubricList: RubricEvalItem[] = (activeAssignment.rubric || []).map((crit: any) => ({
       criterionId: crit.id,
       criterionTitle: crit.title,
       points: rubricEvals[crit.id] ?? freeGrade,
@@ -734,7 +759,7 @@ function AdminAssignmentsWorkspace() {
                         3. Desglose opcional por criterio de rúbrica
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {activeAssignment.rubric.map((crit) => {
+                        {activeAssignment.rubric.map((crit: any) => {
                           const currentScore = rubricEvals[crit.id] ?? freeGrade;
                           return (
                             <div key={crit.id} className="p-3.5 rounded-xl bg-white border border-neutral-200 space-y-2">

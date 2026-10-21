@@ -30,6 +30,7 @@ import {
   fetchSubmissions,
   uploadFileToR2,
   sendStudentSubmission,
+  fetchAssignmentsFromCloudflare,
   FullSubmissionItem,
   SubmissionFileItem,
 } from '@/services/taskSyncService';
@@ -49,22 +50,48 @@ function StudentAssignmentsContent() {
   const { assignments, timeZone } = useLms();
   const { user } = useAuth();
 
+  const [cloudAssignments, setCloudAssignments] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchAssignmentsFromCloudflare().then((data) => {
+      if (Array.isArray(data) && data.length > 0) {
+        setCloudAssignments(data);
+      }
+    });
+  }, []);
+
+  const allAssignments = useMemo(() => {
+    const map = new Map<string, any>();
+    // Cargar tareas locales
+    assignments.forEach((a) => map.set(a.id, a));
+    // Complementar con tareas en Cloudflare D1
+    cloudAssignments.forEach((a) => map.set(a.id, a));
+    return Array.from(map.values());
+  }, [assignments, cloudAssignments]);
+
   const filteredList = useMemo(() => {
-    if (!requestedCourse) return assignments;
-    const byCourse = assignments.filter((a) => a.courseSlug === requestedCourse);
-    return byCourse.length > 0 ? byCourse : assignments;
-  }, [assignments, requestedCourse]);
+    if (!requestedCourse) return allAssignments;
+    const byCourse = allAssignments.filter((a) => a.courseSlug === requestedCourse);
+    return byCourse.length > 0 ? byCourse : allAssignments;
+  }, [allAssignments, requestedCourse]);
 
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>(
     requestedId || filteredList[0]?.id || ''
   );
 
+  useEffect(() => {
+    if (!selectedAssignmentId && filteredList.length > 0) {
+      setSelectedAssignmentId(filteredList[0].id);
+    }
+  }, [filteredList, selectedAssignmentId]);
+
   const activeAssignment = useMemo(
     () =>
-      assignments.find((a) => a.id === selectedAssignmentId) ||
+      allAssignments.find((a) => a.id === selectedAssignmentId) ||
       filteredList[0] ||
-      assignments[0],
-    [assignments, filteredList, selectedAssignmentId]
+      allAssignments[0] ||
+      null,
+    [allAssignments, filteredList, selectedAssignmentId]
   );
 
   // Estado de sincronización en tiempo real con Cloudflare Worker / Local
@@ -401,7 +428,7 @@ function StudentAssignmentsContent() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {activeAssignment.rubric.map((crit) => (
+                        {activeAssignment.rubric.map((crit: any) => (
                           <div
                             key={crit.id}
                             className="p-3.5 rounded-2xl bg-neutral-50/70 border border-neutral-200 space-y-1.5"

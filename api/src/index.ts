@@ -37,9 +37,16 @@ app.get('/api/assignments', async (c) => {
     }
     const result = await c.env.DB.prepare(query).bind(...params).all();
     
-    // Parsear rubric_json y allowed_extensions
+    // Parsear rubric_json y allowed_extensions con mapeo camelCase
     const parsed = (result.results || []).map((row: any) => ({
       ...row,
+      courseSlug: row.course_slug,
+      courseTitle: row.course_title,
+      moduleTitle: row.module_title,
+      cutId: row.cut_id,
+      weightInCutPercent: row.weight_percent,
+      dueDateUtc: row.due_date_utc,
+      maxFileSizeMb: row.max_file_size_mb,
       allowedExtensions: JSON.parse(row.allowed_extensions || '["*"]'),
       rubric: JSON.parse(row.rubric_json || '[]'),
     }));
@@ -61,6 +68,13 @@ app.get('/api/assignments/:id', async (c) => {
       success: true,
       data: {
         ...row,
+        courseSlug: row.course_slug,
+        courseTitle: row.course_title,
+        moduleTitle: row.module_title,
+        cutId: row.cut_id,
+        weightInCutPercent: row.weight_percent,
+        dueDateUtc: row.due_date_utc,
+        maxFileSizeMb: row.max_file_size_mb,
         allowedExtensions: JSON.parse(row.allowed_extensions || '["*"]'),
         rubric: JSON.parse(row.rubric_json || '[]'),
       }
