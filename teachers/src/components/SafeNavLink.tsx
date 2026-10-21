@@ -1,8 +1,6 @@
 'use client';
 
-import React, { useCallback } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import React from 'react';
 
 export interface SafeNavLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   href: string;
@@ -16,12 +14,12 @@ export interface SafeNavLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorE
 }
 
 /**
- * SafeNavLink - Componente de navegación blindado contra fallos de Turbopack/Next.js export.
- * 1. Intenta navegación SPA instantánea con router.push().
- * 2. Si detecta un enlace externo o target="_blank", respeta comportamiento nativo.
- * 3. Si por cualquier motivo el router de Next.js se congela o tarda más de 200ms en cambiar la ruta,
- *    ejecuta automáticamente un fallback con window.location.assign(href).
- * Resultado: Cero botones muertos, cero pantallas congeladas, navegación 100% garantizada.
+ * SafeNavLink - Arquitectura MPA Nativa Ultra-Rápida a prueba de fallos.
+ * Utiliza enlaces nativos del navegador (<a>).
+ * - Cero dependencia del router interno de Next.js/Turbopack.
+ * - Cero bloqueos de streaming RSC o chunks de hidratación.
+ * - Soporta prefetch silencioso en background mediante <link rel="prefetch"> al hacer hover.
+ * - Funciona el 100% de las veces en cualquier dispositivo, móvil o navegador.
  */
 export default function SafeNavLink({
   href,
@@ -33,81 +31,38 @@ export default function SafeNavLink({
   rel,
   ...rest
 }: SafeNavLinkProps) {
-  const router = useRouter();
-
   const isExternal =
     href.startsWith('http://') ||
     href.startsWith('https://') ||
     href.startsWith('//') ||
     target === '_blank';
 
-  const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (onClick) {
-        onClick(e);
-      }
-
-      if (e.defaultPrevented || isExternal) {
-        return;
-      }
-
-      // Si es un query param o hash en la misma página, dejamos que el router o navegador actúen
-      const isInternalPath = href.startsWith('/') || href.startsWith('?');
-      if (!isInternalPath) {
-        return;
-      }
-
-      e.preventDefault();
-
-      const currentPath =
-        typeof window !== 'undefined'
-          ? window.location.pathname + window.location.search
-          : '';
-
-      if (currentPath === href) {
-        return;
-      }
-
-      let navigated = false;
-
-      // Timer de seguridad: si tras 180ms la URL no ha cambiado, saltar de inmediato por navegador nativo
-      const fallbackTimer = window.setTimeout(() => {
-        if (!navigated && typeof window !== 'undefined') {
-          const nowPath = window.location.pathname + window.location.search;
-          if (nowPath !== href) {
-            window.location.assign(href);
-          }
-        }
-      }, 180);
-
-      try {
-        router.push(href);
-        navigated = true;
-      } catch (err) {
-        clearTimeout(fallbackTimer);
-        window.location.assign(href);
-      }
-    },
-    [href, isExternal, onClick, router]
-  );
-
-  if (isExternal) {
-    return (
-      <a href={href} target={target} rel={rel} className={className} {...rest}>
-        {children}
-      </a>
-    );
-  }
+  const handleMouseEnter = () => {
+    if (!prefetch || isExternal || typeof document === 'undefined') return;
+    // Prefetch nativo del HTML en background al pasar el cursor o tocar
+    const cleanHref = href.split('?')[0];
+    const existing = document.querySelector(`link[rel="prefetch"][href="${cleanHref}"]`);
+    if (!existing && cleanHref.startsWith('/')) {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = cleanHref;
+      link.as = 'document';
+      document.head.appendChild(link);
+    }
+  };
 
   return (
-    <Link
+    <a
       href={href}
-      prefetch={prefetch}
-      onClick={handleClick}
+      target={target}
+      rel={rel}
       className={className}
+      onClick={onClick}
+      onMouseEnter={handleMouseEnter}
+      onTouchStart={handleMouseEnter}
       {...rest}
     >
       {children}
-    </Link>
+    </a>
   );
 }
