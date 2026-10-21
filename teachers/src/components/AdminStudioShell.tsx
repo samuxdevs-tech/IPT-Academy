@@ -304,9 +304,10 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
         const Icon = item.icon;
         const active = isItemActive(item);
         return (
-          <a
+          <Link
             key={item.id}
             href={item.href}
+            prefetch={true}
             onClick={() => setMobileMenuOpen(false)}
             title={sidebarCollapsed ? `${item.label} — ${item.sublabel}` : undefined}
             className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
@@ -350,7 +351,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
                 </p>
               </div>
             )}
-          </a>
+          </Link>
         );
       })}
     </div>
@@ -377,7 +378,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
         }`}
       >
         <div className="h-16 px-4 border-b border-[#25283e] flex items-center justify-between shrink-0">
-          <a href="/?step=catalog" className="flex items-center gap-3 min-w-0">
+          <Link href="/?step=catalog" prefetch={true} className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-xs">
               <Image src="/favicon.png" alt="IPT Course" width={32} height={32} className="w-full h-full object-contain" />
             </div>
@@ -394,7 +395,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
                 <p className="text-[10px] text-[#8589a6] truncate">Panel de Control Académico</p>
               </div>
             )}
-          </a>
+          </Link>
 
           <button
             type="button"
