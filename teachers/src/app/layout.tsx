@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { LmsProvider } from "@/context/LmsContext";
 import LegalComplianceSystem from "@/components/LegalComplianceSystem";
 import AdminStudioShell from "@/components/AdminStudioShell";
+import MinimalistPreloader from "@/components/MinimalistPreloader";
 
 const interSans = Inter({
   variable: "--font-udemy-sans",
@@ -62,6 +63,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${interSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <MinimalistPreloader />
         <script
           dangerouslySetInnerHTML={{
             __html: `

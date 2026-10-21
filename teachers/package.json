@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/fix-turbopack-rsc.js",
     "start": "next start",
     "lint": "eslint"
   },
