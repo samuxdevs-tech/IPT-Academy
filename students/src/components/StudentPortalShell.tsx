@@ -72,13 +72,13 @@ export default function StudentPortalShell({
           >
             <Menu className="w-5 h-5" />
           </button>
-          <Link href="/" prefetch={true} className="flex items-center gap-2 shrink-0">
+          <a href="/" className="flex items-center gap-2 shrink-0">
             <img
               src="/logo.png"
               alt="IPT Course"
               className="h-8 w-auto object-contain"
             />
-          </Link>
+          </a>
         </div>
 
         {/* Buscador central */}

@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { StudentResolvedNavItem } from '@/services/studentNavigationService';
 
 export type StudentNavButtonVariant =
@@ -29,9 +28,8 @@ export default function StudentNavButton({
   // 1. Variante: Barra Lateral Escritorio Expandida (w-56)
   if (variant === 'desktop-expanded') {
     return (
-      <Link
+      <a
         href={href}
-        prefetch={true}
         onClick={onNavigate}
         title={description}
         aria-current={isActive ? 'page' : undefined}
@@ -52,16 +50,15 @@ export default function StudentNavButton({
             {badge}
           </span>
         )}
-      </Link>
+      </a>
     );
   }
 
   // 2. Variante: Barra Lateral Escritorio Colapsada (w-[72px])
   if (variant === 'desktop-collapsed') {
     return (
-      <Link
+      <a
         href={href}
-        prefetch={true}
         onClick={onNavigate}
         title={`${label}: ${description}`}
         aria-current={isActive ? 'page' : undefined}
@@ -86,16 +83,15 @@ export default function StudentNavButton({
         <span className="text-[10px] truncate max-w-full text-center mt-1 leading-tight font-medium">
           {shortLabel}
         </span>
-      </Link>
+      </a>
     );
   }
 
   // 3. Variante: Menú Lateral Desplegable Móvil (Drawer)
   if (variant === 'mobile-drawer') {
     return (
-      <Link
+      <a
         href={href}
-        prefetch={true}
         onClick={onNavigate}
         aria-current={isActive ? 'page' : undefined}
         className={`flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] cursor-pointer select-none ${
@@ -115,15 +111,14 @@ export default function StudentNavButton({
             {badge}
           </span>
         )}
-      </Link>
+      </a>
     );
   }
 
   // 4. Variante: Barra Inferior Fija para Móviles
   return (
-    <Link
+    <a
       href={href}
-      prefetch={true}
       onClick={onNavigate}
       aria-current={isActive ? 'page' : undefined}
       className={`min-h-[52px] flex flex-col items-center justify-center rounded-xl px-1 py-1 text-[11px] active:bg-[#f2f2f2] transition-colors cursor-pointer relative ${
@@ -145,6 +140,6 @@ export default function StudentNavButton({
       <span className="truncate max-w-full text-center leading-tight pointer-events-none text-[11px]">
         {shortLabel}
       </span>
-    </Link>
+    </a>
   );
 }

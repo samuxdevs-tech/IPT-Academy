@@ -7,7 +7,6 @@ import LocalAiTutorWidget from "@/components/LocalAiTutorWidget";
 import LegalComplianceSystem from "@/components/LegalComplianceSystem";
 import StudentPortalShell from "@/components/StudentPortalShell";
 import IdentityVerificationPrompt from "@/components/IdentityVerificationPrompt";
-import MinimalistPagePreloader from "@/components/MinimalistPagePreloader";
 
 const interSans = Inter({
   variable: "--font-udemy-sans",
@@ -69,7 +68,6 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${interSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[#ffffff] text-[#0f0f0f]">
-        <MinimalistPagePreloader />
         <AuthProvider>
           <LmsProvider>
             <StudentPortalShell>{children}</StudentPortalShell>
