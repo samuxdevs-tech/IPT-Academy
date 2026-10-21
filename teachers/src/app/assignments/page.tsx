@@ -188,7 +188,7 @@ function AdminAssignmentsWorkspace() {
         {
           id: 'crit-2',
           title: 'Evidencia técnica y análisis crítico',
-          description: 'Aplica conceptos zootécnicos y analíticos con justificación propia.',
+          description: 'Aplica conceptos técnicos y de ingeniería con justificación fundamentada.',
           weightPercent: 50,
           maxPoints: 5.0,
           levels: [
@@ -230,8 +230,8 @@ function AdminAssignmentsWorkspace() {
     try {
       const result = await requestAiReviewFromWorker(currentSubmission.id);
       setAiReviewData(result);
-    } catch {
-      setGradingError('No fue posible conectar con el Worker de IA. Se activó el evaluador analítico local.');
+    } catch (err: any) {
+      setGradingError(err?.message || 'No fue posible conectar con el servicio de Cloudflare Workers AI.');
     } finally {
       setIsRequestingAi(false);
     }

@@ -3,9 +3,9 @@
     "rules": "database.rules.json"
   },
   "hosting": {
-    "public": "frontend/out",
+    "public": "students/out",
     "predeploy": [
-      "npm --prefix frontend run build"
+      "npm --prefix students run build"
     ],
     "cleanUrls": true,
     "trailingSlash": false,

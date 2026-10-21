@@ -67,8 +67,8 @@ export interface AiReviewResult {
   }>;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_TASK_API_URL || 'http://127.0.0.1:8787';
-const LOCAL_SUBMISSIONS_KEY = 'ipt_course_full_submissions_v2';
+const API_BASE = process.env.NEXT_PUBLIC_TASK_API_URL || 'https://ipt-course-api.samuxdevs.workers.dev';
+const LOCAL_SUBMISSIONS_KEY = 'ipt_course_real_submissions_v1';
 
 /**
  * Obtiene el almacenamiento local de respaldo
@@ -263,50 +263,19 @@ export async function gradeSubmissionByTeacher(
  * Solicitar Revisión con IA (Cloudflare Workers AI: Llama 3 / DeepSeek)
  */
 export async function requestAiReviewFromWorker(submissionId: string): Promise<AiReviewResult> {
-  try {
-    const res = await fetch(`${API_BASE}/api/submissions/${submissionId}/ai-review`, {
-      method: 'POST',
-    });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.success && json.data) {
-        return json.data as AiReviewResult;
-      }
-    }
-  } catch (err) {
-    console.warn('Worker AI no disponible o sin conexión directa, generando evaluación de respaldo inteligente:', err);
+  const res = await fetch(`${API_BASE}/api/submissions/${submissionId}/ai-review`, {
+    method: 'POST',
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => 'Error al contactar el Worker de IA');
+    throw new Error(`Cloudflare Workers AI no respondió correctamente: ${errorText}`);
   }
 
-  // Generador inteligente de respaldo si el worker aún no está levantado
-  const local = getLocalSubmissions();
-  const sub = local.find((s) => s.id === submissionId);
-  const textLen = (sub?.submissionTextContent || '').length;
-  const filesCount = sub?.files?.length || 0;
+  const json = await res.json();
+  if (!json.success || !json.data) {
+    throw new Error(json.error || 'Respuesta inválida del servicio de IA');
+  }
 
-  const score = Math.min(5.0, Math.max(3.8, Number((3.9 + (filesCount > 0 ? 0.6 : 0.2) + (textLen > 100 ? 0.4 : 0)).toFixed(1))));
-
-  return {
-    suggestedFinalGrade: score,
-    generalFeedback: `El trabajo presentado por ${sub?.studentName || 'el estudiante'} demuestra un dominio sólido de los conceptos solicitados, con ${filesCount} archivo(s) adjunto(s) y fundamentación técnica consistente. Se sugiere profundizar en la contrastación empírica.`,
-    criteriaEvaluations: [
-      {
-        criterionTitle: 'Rigor Técnico y Estructura',
-        aiSuggestedPoints: score,
-        aiQuote: sub?.submissionTextContent ? `"${sub.submissionTextContent.slice(0, 80)}..."` : 'Evidencia verificada en archivos adjuntos',
-        reasoning: 'Presenta la información de forma coherente y respeta la estructura académica solicitada.',
-      },
-      {
-        criterionTitle: 'Profundidad de Análisis',
-        aiSuggestedPoints: Number(Math.max(3.5, score - 0.2).toFixed(1)),
-        aiQuote: sub?.files?.[0]?.fileName ? `Archivo de soporte: ${sub.files[0].fileName}` : 'Desarrollo en texto',
-        reasoning: 'El análisis cubre los puntos clave con buena capacidad analítica.',
-      },
-    ],
-    suggestedAnnotations: [
-      {
-        lineOrSelection: sub?.files?.[0]?.fileName || 'Introducción del trabajo',
-        commentText: 'Buen planteamiento inicial. Se recomienda anexar fuentes bibliográficas complementarias.',
-      },
-    ],
-  };
+  return json.data as AiReviewResult;
 }

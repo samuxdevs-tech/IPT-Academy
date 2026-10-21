@@ -24,7 +24,7 @@ export interface LocalDatabaseState {
   progress: Record<string, { completedLessons: string[]; progressPercent: number }>;
 }
 
-const STORAGE_KEY = 'ipt_local_database_state_v1';
+const STORAGE_KEY = 'ipt_real_database_state_v1';
 
 /**
  * Obtiene el estado actual de la base de datos local JSON.
