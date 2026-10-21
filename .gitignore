@@ -1,18 +1,30 @@
 # Dependencies
 node_modules/
+*/node_modules/
 frontend/node_modules/
+students/node_modules/
+teachers/node_modules/
+api/node_modules/
 .pnp
 .pnp.js
 .firebase/
+.wrangler/
+*/.wrangler/
 
 # Testing
 coverage/
 
 # Next.js Build Outputs
 .next/
+*/.next/
 frontend/.next/
+students/.next/
+teachers/.next/
 out/
+*/out/
 frontend/out/
+students/out/
+teachers/out/
 build/
 dist/
 
