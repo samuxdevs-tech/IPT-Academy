@@ -95,7 +95,7 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
 });
 
-const PUBLIC_PATHS = ['/login', '/register', '/verify', '/legal'];
+const PUBLIC_PATHS = ['/login', '/register', '/verify', '/legal', '/live'];
 const ACCESS_THROTTLE_MS = 30 * 60 * 1000;
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {

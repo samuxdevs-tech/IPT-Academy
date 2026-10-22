@@ -77,9 +77,12 @@ function StudentLiveRoomContent() {
     // Cargar detalles de la clase
     const API_BASE = process.env.NEXT_PUBLIC_TASK_API_URL || 'https://ipt-course-api.samuxdevs.workers.dev';
     fetch(`${API_BASE}/api/live/classes/${classId}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
       .then((json) => {
-        if (json.success && json.data) {
+        if (json?.success && json.data) {
           setLiveClass(json.data);
           if (json.data.status) {
             setClassStatus(json.data.status);
