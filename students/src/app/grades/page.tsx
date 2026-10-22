@@ -50,6 +50,14 @@ function GradebookContent() {
   const cut2Avg = getCutAverage('cut_2');
   const cut3Avg = getCutAverage('cut_3');
 
+  const currentCourse = courses.find((c) => c.slug === selectedCourse);
+  const isAcademicCuts =
+    currentCourse?.evaluationModel === 'academic_cuts' ||
+    (selectedCourse === 'all' &&
+      visibleAssignments.some(
+        (a) => a.cutId === 'cut_1' || a.cutId === 'cut_2' || a.cutId === 'cut_3'
+      ));
+
   const [targetFinalGrade, setTargetFinalGrade] = useState<number>(3.0);
   const [cut1Simulated, setCut1Simulated] = useState<number>(cut1Avg ?? 0);
   const [cut2Simulated, setCut2Simulated] = useState<number>(cut2Avg ?? 0);
@@ -63,7 +71,14 @@ function GradebookContent() {
   const cutLabel = (cutId: string) => {
     if (cutId === 'cut_1') return 'Primera parte';
     if (cutId === 'cut_2') return 'Segunda parte';
-    return 'Parte final';
+    if (cutId === 'cut_3') return 'Parte final';
+    if (cutId === 'free') return 'Evaluación continua';
+    if (cutId?.startsWith('period_')) {
+      const num = cutId.replace('period_', '');
+      return num === 'final' ? 'Evaluación final' : `Periodo ${num}`;
+    }
+    if (cutId?.startsWith('mod-')) return 'Por módulo';
+    return 'General';
   };
 
   const handleExportTranscriptCsv = () => {
@@ -167,61 +182,111 @@ function GradebookContent() {
               <span>¿Cómo se calcula mi nota final del curso?</span>
             </summary>
             <p className="mt-2 text-[#595c73] leading-[1.6] pl-6">
-              El curso se divide en tres partes: la <strong>Primera parte</strong> vale el 30% de la nota, la <strong>Segunda parte</strong> vale otro 30%, y la <strong>Parte final</strong> vale el 40% restante. Al sumar las tres partes obtienes tu promedio final de 0.0 a 5.0.
+              {isAcademicCuts ? (
+                <>
+                  El curso se divide en tres partes: la <strong>Primera parte</strong> vale el 30% de la nota, la <strong>Segunda parte</strong> vale otro 30%, y la <strong>Parte final</strong> vale el 40% restante. Al sumar las tres partes obtienes tu promedio final de 0.0 a 5.0.
+                </>
+              ) : (
+                <>
+                  La evaluación en este curso es <strong>continua y directa</strong>: cada tarea o taller calificado suma proporcionalmente a tu promedio final de 0.0 a 5.0 sin divisiones semestrales rígidas.
+                </>
+              )}
             </p>
           </details>
         </section>
 
-        {/* Resumen de las 3 partes del curso (100% real desde Firebase) */}
-        <section className="bg-[#202230] text-[#ffffff] rounded-[16px] border border-[#3d4055] p-6 grid grid-cols-1 md:grid-cols-4 gap-6 tabular-nums">
-          <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
-            <span className="text-[13px] text-[#b7b9cd] block">
-              Tu nota promedio hasta hoy
-            </span>
-            <span className="text-[28px] font-bold text-[#c0c4fc]">
-              {overallAverage !== null ? `${overallAverage.toFixed(2)} / 5.00` : 'Sin notas aún'}
-            </span>
-            <span className="text-[13px] text-[#b7b9cd] block">
-              {overallAverage === null
-                ? 'Aún no hay tareas calificadas'
-                : overallAverage >= 3.0
-                  ? 'Vas aprobando el curso'
-                  : 'Necesitas subir el promedio a 3.0'}
-            </span>
-          </div>
+        {/* Resumen de Calificaciones */}
+        {isAcademicCuts ? (
+          <section className="bg-[#202230] text-[#ffffff] rounded-[16px] border border-[#3d4055] p-6 grid grid-cols-1 md:grid-cols-4 gap-6 tabular-nums">
+            <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
+              <span className="text-[13px] text-[#b7b9cd] block">
+                Tu nota promedio hasta hoy
+              </span>
+              <span className="text-[28px] font-bold text-[#c0c4fc]">
+                {overallAverage !== null ? `${overallAverage.toFixed(2)} / 5.00` : 'Sin notas aún'}
+              </span>
+              <span className="text-[13px] text-[#b7b9cd] block">
+                {overallAverage === null
+                  ? 'Aún no hay tareas calificadas'
+                  : overallAverage >= 3.0
+                    ? 'Vas aprobando el curso'
+                    : 'Necesitas subir el promedio a 3.0'}
+              </span>
+            </div>
 
-          <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
-            <span className="text-[13px] text-[#b7b9cd] block">Primera parte (vale 30%)</span>
-            <span className="text-[22px] font-bold text-[#ffffff]">
-              {cut1Avg !== null ? `${cut1Avg.toFixed(2)} / 5.00` : 'Sin calificar'}
-            </span>
-            <span className="text-[13px] text-[#b7b9cd] block">
-              {cut1Avg !== null ? 'Calificada' : 'Sin entregas calificadas'}
-            </span>
-          </div>
+            <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
+              <span className="text-[13px] text-[#b7b9cd] block">Primera parte (vale 30%)</span>
+              <span className="text-[22px] font-bold text-[#ffffff]">
+                {cut1Avg !== null ? `${cut1Avg.toFixed(2)} / 5.00` : 'Sin calificar'}
+              </span>
+              <span className="text-[13px] text-[#b7b9cd] block">
+                {cut1Avg !== null ? 'Calificada' : 'Sin entregas calificadas'}
+              </span>
+            </div>
 
-          <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
-            <span className="text-[13px] text-[#b7b9cd] block">Segunda parte (vale 30%)</span>
-            <span className="text-[22px] font-bold text-[#ffffff]">
-              {cut2Avg !== null ? `${cut2Avg.toFixed(2)} / 5.00` : 'Sin calificar'}
-            </span>
-            <span className="text-[13px] text-[#b7b9cd] block">
-              {cut2Avg !== null ? 'Calificada' : 'Sin entregas calificadas'}
-            </span>
-          </div>
+            <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
+              <span className="text-[13px] text-[#b7b9cd] block">Segunda parte (vale 30%)</span>
+              <span className="text-[22px] font-bold text-[#ffffff]">
+                {cut2Avg !== null ? `${cut2Avg.toFixed(2)} / 5.00` : 'Sin calificar'}
+              </span>
+              <span className="text-[13px] text-[#b7b9cd] block">
+                {cut2Avg !== null ? 'Calificada' : 'Sin entregas calificadas'}
+              </span>
+            </div>
 
-          <div className="space-y-1">
-            <span className="text-[13px] text-[#b7b9cd] block">
-              Parte final (vale 40%)
-            </span>
-            <span className="text-[22px] font-bold text-[#ffffff]">
-              {cut3Avg !== null ? `${cut3Avg.toFixed(2)} / 5.00` : 'Sin calificar'}
-            </span>
-            <span className="text-[13px] text-[#b7b9cd] block">
-              {cut3Avg !== null ? 'Calificada' : 'Sin entregas calificadas'}
-            </span>
-          </div>
-        </section>
+            <div className="space-y-1">
+              <span className="text-[13px] text-[#b7b9cd] block">
+                Parte final (vale 40%)
+              </span>
+              <span className="text-[22px] font-bold text-[#ffffff]">
+                {cut3Avg !== null ? `${cut3Avg.toFixed(2)} / 5.00` : 'Sin calificar'}
+              </span>
+              <span className="text-[13px] text-[#b7b9cd] block">
+                {cut3Avg !== null ? 'Calificada' : 'Sin entregas calificadas'}
+              </span>
+            </div>
+          </section>
+        ) : (
+          <section className="bg-[#202230] text-[#ffffff] rounded-[16px] border border-[#3d4055] p-6 grid grid-cols-1 md:grid-cols-3 gap-6 tabular-nums">
+            <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
+              <span className="text-[13px] text-[#b7b9cd] block">
+                Promedio Acumulado
+              </span>
+              <span className="text-[28px] font-bold text-[#c0c4fc]">
+                {overallAverage !== null ? `${overallAverage.toFixed(2)} / 5.00` : 'Sin notas aún'}
+              </span>
+              <span className="text-[13px] text-[#b7b9cd] block">
+                {overallAverage === null
+                  ? 'Aún no hay actividades calificadas'
+                  : overallAverage >= 3.0
+                    ? 'Aprobando satisfactoriamente'
+                    : 'Necesitas subir el promedio a 3.0'}
+              </span>
+            </div>
+
+            <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
+              <span className="text-[13px] text-[#b7b9cd] block">Progreso de Evaluación</span>
+              <span className="text-[22px] font-bold text-[#ffffff]">
+                {gradedList.length} de {visibleAssignments.length}
+              </span>
+              <span className="text-[13px] text-[#b7b9cd] block">
+                Actividades calificadas en total
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-[13px] text-[#b7b9cd] block">
+                Esquema de Evaluación
+              </span>
+              <span className="text-[22px] font-bold text-[#38d494]">
+                Evaluación Continua
+              </span>
+              <span className="text-[13px] text-[#b7b9cd] block">
+                Sin cortes ni periodos rígidos
+              </span>
+            </div>
+          </section>
+        )}
 
         {/* Tabla de tareas y notas */}
         <section className="bg-[#ffffff] rounded-[16px] border border-[#d1d2e0] overflow-hidden">
@@ -324,6 +389,7 @@ function GradebookContent() {
         </section>
 
         {/* Calculadora sencilla de nota */}
+        {isAcademicCuts && (
         <section className="bg-[#ffffff] rounded-[16px] border border-[#d1d2e0] p-6 space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e9eaf2] pb-4">
             <div>
@@ -408,6 +474,7 @@ function GradebookContent() {
             </div>
           </div>
         </section>
+        )}
       </main>
     </div>
   );

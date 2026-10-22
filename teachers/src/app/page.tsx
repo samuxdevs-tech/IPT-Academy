@@ -121,7 +121,8 @@ function AdminStudioWorkspace() {
     phase3Mode: 'global' as 'global' | 'in_course',
     visibility: 'public' as 'public' | 'draft',
     accessType: 'free' as 'free' | 'paid',
-    price: 0
+    price: 0,
+    evaluationModel: 'free' as 'free' | 'modular' | 'periodic' | 'academic_cuts'
   });
 
   // Índices de Módulo y Lección Seleccionados
@@ -289,6 +290,7 @@ function AdminStudioWorkspace() {
       approxHours: newCourseForm.approxHours,
       whatYouWillLearn: [],
       progressionMode: newCourseForm.progressionMode,
+      evaluationModel: newCourseForm.evaluationModel || 'free',
       phase2Visible: newCourseForm.phase2Visible,
       phase3Visible: newCourseForm.phase3Visible,
       phase3Mode: newCourseForm.phase3Mode,
@@ -2006,6 +2008,75 @@ function AdminStudioWorkspace() {
                     </div>
                   </div>
 
+                  {/* Estructura de Evaluación del Curso */}
+                  <div className="p-5 rounded-2xl bg-[#f8f9fc] border border-[#e2e4f0] space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Award className="w-4 h-4 text-[#6d28d2]" />
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-[#2a2b3f]">
+                        Estructura de Evaluación y Calificación
+                      </h4>
+                    </div>
+                    <p className="text-xs text-[#595c73]">
+                      Define cómo se organizan y calculan las notas de las tareas en este curso.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                      {[
+                        {
+                          id: 'free',
+                          title: 'Libre / Continua',
+                          desc: 'Sin cortes ni semestres. Promedio ponderado directo de todas las tareas (ideal para cursos online).'
+                        },
+                        {
+                          id: 'modular',
+                          title: 'Por Módulos del Curso',
+                          desc: 'Las actividades se asocian a cada módulo temático individual.'
+                        },
+                        {
+                          id: 'periodic',
+                          title: 'Por Periodos / Meses',
+                          desc: 'Evaluación organizada por entregas mensuales o bimestrales.'
+                        },
+                        {
+                          id: 'academic_cuts',
+                          title: 'Cortes Universitarios',
+                          desc: 'Cortes tradicionales con pesos ponderados (35%, 35%, 30%).'
+                        }
+                      ].map((em) => {
+                        const isSelected =
+                          (selectedCourse.evaluationModel || 'free') === em.id;
+                        return (
+                          <div
+                            key={em.id}
+                            onClick={() => updateCourseField('evaluationModel', em.id)}
+                            className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                              isSelected
+                                ? 'border-[#6d28d2] bg-purple-50/70'
+                                : 'border-[#d1d2e0] bg-white hover:border-[#6d28d2]/50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span
+                                className={`text-xs font-bold ${
+                                  isSelected ? 'text-[#6d28d2]' : 'text-[#2a2b3f]'
+                                }`}
+                              >
+                                {em.title}
+                              </span>
+                              <input
+                                type="radio"
+                                name="evaluationModel"
+                                checked={isSelected}
+                                onChange={() => updateCourseField('evaluationModel', em.id)}
+                                className="accent-[#6d28d2]"
+                              />
+                            </div>
+                            <p className="text-[11px] text-[#595c73] mt-0.5">{em.desc}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {/* Control de Fase 2 y Fase 3 */}
                   <div className="p-5 rounded-2xl bg-[#f8f9fc] border border-[#e2e4f0] space-y-3">
                     <div className="flex items-center gap-2">
@@ -3681,6 +3752,27 @@ function AdminStudioWorkspace() {
                     Estricto por Sección (Completar módulo previo)
                   </option>
                   <option value="free">Libre (Sin bloqueos)</option>
+                </select>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-[#f6f7f9] border border-[#d1d2e0] space-y-2">
+                <span className="text-xs font-bold text-[#2a2b3f] block">
+                  Estructura de Evaluación
+                </span>
+                <select
+                  value={newCourseForm.evaluationModel}
+                  onChange={(e) =>
+                    setNewCourseForm({
+                      ...newCourseForm,
+                      evaluationModel: e.target.value as any
+                    })
+                  }
+                  className="w-full text-xs px-3 py-2 border border-[#d1d2e0] rounded-lg bg-white"
+                >
+                  <option value="free">Libre / Continua (Sin cortes ni periodos - Cursos online)</option>
+                  <option value="modular">Por Módulos del Curso</option>
+                  <option value="periodic">Por Periodos / Meses</option>
+                  <option value="academic_cuts">Cortes Universitarios (Corte 1, 2, 3)</option>
                 </select>
               </div>
 

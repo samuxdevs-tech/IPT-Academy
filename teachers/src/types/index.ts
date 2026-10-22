@@ -209,6 +209,7 @@ export interface Course {
   academicCredits?: number;
   academicTerm?: string;
   cohortCode?: string;
+  evaluationModel?: EvaluationModel;
 }
 
 export interface NoteItem {
@@ -364,7 +365,8 @@ export interface InstitutionalCalendarEvent {
 // TAREAS, TRABAJOS Y CALIFICACIONES
 // ============================================================================
 
-export type AcademicCutId = 'cut_1' | 'cut_2' | 'cut_3';
+export type EvaluationModel = 'free' | 'modular' | 'periodic' | 'academic_cuts';
+export type AcademicCutId = 'cut_1' | 'cut_2' | 'cut_3' | 'free' | 'modular' | 'periodic' | string;
 
 export interface RubricLevel {
   id: string;

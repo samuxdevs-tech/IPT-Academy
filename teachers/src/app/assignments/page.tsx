@@ -119,6 +119,9 @@ function AdminAssignmentsWorkspace() {
   const [newAsgTitle, setNewAsgTitle] = useState('');
   const [newAsgInstructions, setNewAsgInstructions] = useState('');
   const [newAsgCourseSlug, setNewAsgCourseSlug] = useState(courses[0]?.slug || 'datagan-master-pro');
+  const [newAsgEvalModel, setNewAsgEvalModel] = useState<'free' | 'modular' | 'periodic' | 'academic_cuts'>('free');
+  const [newAsgModuleId, setNewAsgModuleId] = useState<string>('');
+  const [newAsgPeriod, setNewAsgPeriod] = useState<string>('period_1');
   const [newAsgCutId, setNewAsgCutId] = useState<'cut_1' | 'cut_2' | 'cut_3'>('cut_1');
   const [newAsgWeight, setNewAsgWeight] = useState<number>(100);
   const [newAsgDueDate, setNewAsgDueDate] = useState(
