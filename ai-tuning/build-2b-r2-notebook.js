@@ -48,9 +48,9 @@ const notebook = {
       outputs: [],
       source: [
         "%%capture\n",
-        "!pip install --no-deps unsloth\n",
-        "!pip install --no-deps trl peft accelerate bitsandbytes\n",
-        "!pip install datasets huggingface_hub boto3 tqdm\n",
+        "# Instalación oficial de Unsloth con unsloth_zoo y dependencias completas para Google Colab\n",
+        "!pip install -U unsloth unsloth_zoo\n",
+        "!pip install -U trl peft accelerate bitsandbytes datasets huggingface_hub boto3 tqdm\n",
         "# Instalar herramientas de compilación para MLC / WebLLM\n",
         "!pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121\n",
         "print('✅ Todas las librerías de entrenamiento y WebLLM han sido instaladas.')"
