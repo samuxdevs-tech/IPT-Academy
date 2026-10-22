@@ -353,29 +353,29 @@ function AdminAssignmentsWorkspace() {
   };
 
   return (
-    <div className="flex-1 bg-neutral-100 text-neutral-900 font-sans pb-20">
+    <div className="flex-1 bg-[#f5f5f7] text-[#1d1d1f] font-sans pb-20">
       {/* Cabecera del Panel Docente */}
-      <div className="bg-white border-b border-neutral-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white border-b border-[#e5e5ea] px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-neutral-500 mb-1">
-            <Link href="/" className="hover:text-neutral-900 flex items-center gap-1 font-medium">
+          <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-[#8e8e93] mb-1">
+            <Link href="/" className="hover:text-[#1d1d1f] flex items-center gap-1 font-medium">
               <Home className="w-3.5 h-3.5" />
               <span>Panel Principal</span>
             </Link>
             <span>/</span>
-            <span className="text-neutral-900 font-semibold">Calificación y Tareas</span>
+            <span className="text-[#1d1d1f] font-semibold">Calificación y Tareas</span>
           </nav>
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 block">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#0071e3] block">
             Centro de Evaluación y Calificación Docente
           </span>
-          <h1 className="text-base font-extrabold text-neutral-900">
+          <h1 className="text-base font-extrabold text-[#1d1d1f]">
             Gestor de Tareas, Entregas Multiarchivo y Revisión con IA
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 text-xs text-neutral-600 bg-neutral-100 px-3 py-1.5 rounded-xl">
-            <FileCheck2 className="w-4 h-4 text-blue-600" />
-            <span className="font-bold text-neutral-900">{assignments.length}</span>
+          <div className="hidden sm:flex items-center gap-2 text-xs text-[#515154] bg-[#f5f5f7] px-3 py-1.5 rounded-xl">
+            <FileCheck2 className="w-4 h-4 text-[#0071e3]" />
+            <span className="font-bold text-[#1d1d1f]">{assignments.length}</span>
             <span>actividades</span>
           </div>
           <button
@@ -384,7 +384,7 @@ function AdminAssignmentsWorkspace() {
               setShowCreateForm(true);
               setMobileTab('create');
             }}
-            className="py-2 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-xs transition-all active:scale-[0.98] cursor-pointer min-h-[38px]"
+            className="py-2 px-3.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-xs transition-all active:scale-[0.98] cursor-pointer min-h-[38px]"
           >
             <Plus className="w-4 h-4" />
             <span>Nueva Tarea</span>
@@ -401,7 +401,7 @@ function AdminAssignmentsWorkspace() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-4 sm:mt-8 space-y-6 sm:space-y-8">
         {/* SELECTOR RESPONSIVO MÓVIL */}
-        <div className="lg:hidden flex items-center p-1 bg-white border border-neutral-300 rounded-2xl shadow-2xs gap-1">
+        <div className="lg:hidden flex items-center p-1 bg-white border border-[#e5e5ea] rounded-2xl shadow-2xs gap-1">
           <button
             type="button"
             onClick={() => {
@@ -411,7 +411,7 @@ function AdminAssignmentsWorkspace() {
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-h-[44px] ${
               mobileTab === 'list' && !showCreateForm
                 ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-neutral-600 hover:text-neutral-900'
+                : 'text-[#515154] hover:text-[#1d1d1f]'
             }`}
           >
             <FileText className="w-4 h-4 shrink-0" />
@@ -427,7 +427,7 @@ function AdminAssignmentsWorkspace() {
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-h-[44px] ${
               mobileTab === 'grade' && !showCreateForm
                 ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-neutral-600 hover:text-neutral-900'
+                : 'text-[#515154] hover:text-[#1d1d1f]'
             }`}
           >
             <Award className="w-4 h-4 shrink-0" />
@@ -443,7 +443,7 @@ function AdminAssignmentsWorkspace() {
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-h-[44px] ${
               mobileTab === 'create' || showCreateForm
                 ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-neutral-600 hover:text-neutral-900'
+                : 'text-[#515154] hover:text-[#1d1d1f]'
             }`}
           >
             <Plus className="w-4 h-4" />
@@ -453,16 +453,16 @@ function AdminAssignmentsWorkspace() {
 
         {/* VISTA MÓVIL Y ESCRITORIO DEL FORMULARIO DE CREACIÓN */}
         {mobileTab === 'create' || showCreateForm ? (
-          <div className="bg-white rounded-3xl border border-neutral-200 p-6 sm:p-8 space-y-6 shadow-2xs">
+          <div className="bg-white rounded-3xl border border-[#e5e5ea] p-6 sm:p-8 space-y-6 shadow-2xs">
             <div className="border-b border-neutral-100 pb-4 flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider block">
+                <span className="text-[11px] font-bold text-[#0071e3] uppercase tracking-wider block">
                   Nueva Actividad Académica
                 </span>
-                <h2 className="text-lg font-extrabold text-neutral-900">
+                <h2 className="text-lg font-extrabold text-[#1d1d1f]">
                   Crear y Publicar Tarea
                 </h2>
-                <p className="text-xs text-neutral-500 mt-0.5">
+                <p className="text-xs text-[#8e8e93] mt-0.5">
                   Los estudiantes podrán ver esta actividad en su calendario y enviar sus entregas en los formatos configurados.
                 </p>
               </div>
@@ -472,7 +472,7 @@ function AdminAssignmentsWorkspace() {
                   setShowCreateForm(false);
                   setMobileTab('list');
                 }}
-                className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors cursor-pointer"
+                className="p-2 rounded-xl text-[#8e8e93] hover:text-neutral-700 hover:bg-[#f5f5f7] transition-colors cursor-pointer"
                 title="Cerrar formulario"
               >
                 <X className="w-5 h-5" />
@@ -482,7 +482,7 @@ function AdminAssignmentsWorkspace() {
             <form onSubmit={handleCreateAdminAssignment} className="space-y-5">
               {/* Título de la Tarea */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-neutral-800">
+                <label className="block text-xs font-bold text-[#1d1d1f]">
                   Título de la Tarea <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -491,20 +491,20 @@ function AdminAssignmentsWorkspace() {
                   value={newAsgTitle}
                   onChange={(e) => setNewAsgTitle(e.target.value)}
                   placeholder="Ej: Taller 1: Análisis y Modelación de Datos"
-                  className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl border border-[#e5e5ea] text-xs text-[#1d1d1f] focus:outline-none focus:border-[#0071e3] transition-colors"
                 />
               </div>
 
               {/* Curso y Corte */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-neutral-800">
+                  <label className="block text-xs font-bold text-[#1d1d1f]">
                     Curso Asociado
                   </label>
                   <select
                     value={newAsgCourseSlug}
                     onChange={(e) => setNewAsgCourseSlug(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors bg-white cursor-pointer"
+                    className="w-full px-4 py-3 rounded-2xl border border-[#e5e5ea] text-xs text-[#1d1d1f] focus:outline-none focus:border-[#0071e3] transition-colors bg-white cursor-pointer"
                   >
                     {courses.length > 0 ? (
                       courses.map((c) => (
@@ -519,13 +519,13 @@ function AdminAssignmentsWorkspace() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-neutral-800">
+                  <label className="block text-xs font-bold text-[#1d1d1f]">
                     Periodo / Corte Académico
                   </label>
                   <select
                     value={newAsgCutId}
                     onChange={(e) => setNewAsgCutId(e.target.value as any)}
-                    className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors bg-white cursor-pointer"
+                    className="w-full px-4 py-3 rounded-2xl border border-[#e5e5ea] text-xs text-[#1d1d1f] focus:outline-none focus:border-[#0071e3] transition-colors bg-white cursor-pointer"
                   >
                     <option value="cut_1">Primer Corte (35%)</option>
                     <option value="cut_2">Segundo Corte (35%)</option>
@@ -537,7 +537,7 @@ function AdminAssignmentsWorkspace() {
               {/* Ponderación y Fecha Límite */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-neutral-800">
+                  <label className="block text-xs font-bold text-[#1d1d1f]">
                     Ponderación en el Corte (%)
                   </label>
                   <input
@@ -546,12 +546,12 @@ function AdminAssignmentsWorkspace() {
                     max="100"
                     value={newAsgWeight}
                     onChange={(e) => setNewAsgWeight(Number(e.target.value))}
-                    className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl border border-[#e5e5ea] text-xs text-[#1d1d1f] focus:outline-none focus:border-[#0071e3] transition-colors"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-neutral-800">
+                  <label className="block text-xs font-bold text-[#1d1d1f]">
                     Fecha y Hora Límite de Entrega
                   </label>
                   <input
@@ -559,14 +559,14 @@ function AdminAssignmentsWorkspace() {
                     required
                     value={newAsgDueDate}
                     onChange={(e) => setNewAsgDueDate(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors bg-white"
+                    className="w-full px-4 py-3 rounded-2xl border border-[#e5e5ea] text-xs text-[#1d1d1f] focus:outline-none focus:border-[#0071e3] transition-colors bg-white"
                   />
                 </div>
               </div>
 
               {/* Instrucciones */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-neutral-800">
+                <label className="block text-xs font-bold text-[#1d1d1f]">
                   Instrucciones para el Estudiante
                 </label>
                 <textarea
@@ -574,7 +574,7 @@ function AdminAssignmentsWorkspace() {
                   value={newAsgInstructions}
                   onChange={(e) => setNewAsgInstructions(e.target.value)}
                   placeholder="Describe con claridad los objetivos de la actividad, los archivos requeridos y las pautas para su entrega..."
-                  className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl border border-[#e5e5ea] text-xs text-[#1d1d1f] focus:outline-none focus:border-[#0071e3] transition-colors"
                 />
               </div>
 
@@ -582,7 +582,7 @@ function AdminAssignmentsWorkspace() {
               <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
                 <button
                   type="submit"
-                  className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl text-xs font-bold inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all active:scale-[0.98] cursor-pointer min-h-[44px]"
+                  className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl text-xs font-bold inline-flex items-center justify-center gap-2 bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-sm transition-all active:scale-[0.98] cursor-pointer min-h-[44px]"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Publicar Tarea en el Aula</span>
@@ -594,7 +594,7 @@ function AdminAssignmentsWorkspace() {
                     setShowCreateForm(false);
                     setMobileTab('list');
                   }}
-                  className="w-full sm:w-auto py-3.5 px-6 rounded-2xl text-xs font-bold text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 border border-neutral-200 transition-colors cursor-pointer min-h-[44px]"
+                  className="w-full sm:w-auto py-3.5 px-6 rounded-2xl text-xs font-bold text-[#515154] hover:text-[#1d1d1f] hover:bg-[#f5f5f7] border border-[#e5e5ea] transition-colors cursor-pointer min-h-[44px]"
                 >
                   Cancelar
                 </button>
@@ -612,7 +612,7 @@ function AdminAssignmentsWorkspace() {
             {/* 1. Lista de Tareas */}
             <div className="space-y-3">
               <div className="flex items-center justify-between px-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#8e8e93]">
                   Actividades del Curso ({assignments.length})
                 </h3>
                 <button
@@ -621,7 +621,7 @@ function AdminAssignmentsWorkspace() {
                     setShowCreateForm(true);
                     setMobileTab('create');
                   }}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold text-[#0071e3] hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Crear</span>
@@ -630,13 +630,13 @@ function AdminAssignmentsWorkspace() {
 
               <div className="space-y-2.5">
                 {assignments.length === 0 ? (
-                  <div className="p-6 rounded-2xl bg-white border border-neutral-200 text-center space-y-3 shadow-2xs">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                  <div className="p-6 rounded-2xl bg-white border border-[#e5e5ea] text-center space-y-3 shadow-2xs">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0071e3] flex items-center justify-center mx-auto">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-neutral-900">No hay tareas creadas</h4>
-                      <p className="text-[11px] text-neutral-500">Publica la primera actividad académica para los estudiantes.</p>
+                      <h4 className="text-xs font-bold text-[#1d1d1f]">No hay tareas creadas</h4>
+                      <p className="text-[11px] text-[#8e8e93]">Publica la primera actividad académica para los estudiantes.</p>
                     </div>
                     <button
                       type="button"
@@ -644,7 +644,7 @@ function AdminAssignmentsWorkspace() {
                         setShowCreateForm(true);
                         setMobileTab('create');
                       }}
-                      className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[40px]"
+                      className="w-full py-2.5 px-4 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[40px]"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Crear Primera Tarea</span>
@@ -661,19 +661,19 @@ function AdminAssignmentsWorkspace() {
                       onClick={() => handleSelectAssignment(asg.id)}
                       className={`p-3.5 rounded-2xl border transition-all cursor-pointer select-none ${
                         isSelected
-                          ? 'bg-white border-2 border-blue-600 shadow-sm ring-4 ring-blue-600/5'
-                          : 'bg-white border-neutral-200 hover:border-neutral-300'
+                          ? 'bg-white border-2 border-[#0071e3] shadow-sm ring-4 ring-[#0071e3]/5'
+                          : 'bg-white border-[#e5e5ea] hover:border-[#e5e5ea]'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-neutral-100 text-neutral-800">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f5f5f7] text-[#1d1d1f]">
                           {asg.courseTitle}
                         </span>
-                        <span className="text-[11px] font-bold text-neutral-400">
+                        <span className="text-[11px] font-bold text-[#8e8e93]">
                           {asg.weightInCutPercent || 20}%
                         </span>
                       </div>
-                      <h4 className="text-xs font-bold text-neutral-900 line-clamp-2">
+                      <h4 className="text-xs font-bold text-[#1d1d1f] line-clamp-2">
                         {asg.title}
                       </h4>
                     </div>
@@ -684,16 +684,16 @@ function AdminAssignmentsWorkspace() {
             </div>
 
             {/* 2. Lista de Entregas de Estudiantes para la tarea activa */}
-            <div className="bg-white rounded-3xl border border-neutral-200 p-5 space-y-3 shadow-2xs">
+            <div className="bg-white rounded-3xl border border-[#e5e5ea] p-5 space-y-3 shadow-2xs">
               <div className="flex items-center justify-between border-b border-neutral-100 pb-2.5">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-blue-600" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#8e8e93] flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-[#0071e3]" />
                   <span>Entregas de Estudiantes ({submissions.length})</span>
                 </h4>
               </div>
 
               {submissions.length === 0 ? (
-                <div className="p-6 text-center text-xs text-neutral-400">
+                <div className="p-6 text-center text-xs text-[#8e8e93]">
                   No hay entregas registradas para esta tarea aún.
                 </div>
               ) : (
@@ -710,11 +710,11 @@ function AdminAssignmentsWorkspace() {
                         className={`p-3 rounded-xl border text-xs cursor-pointer transition-all ${
                           isSubSelected
                             ? 'bg-blue-50/50 border-blue-500 shadow-2xs'
-                            : 'bg-neutral-50/60 border-neutral-200 hover:bg-white'
+                            : 'bg-neutral-50/60 border-[#e5e5ea] hover:bg-white'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-1 mb-1">
-                          <span className="font-bold text-neutral-900 truncate">
+                          <span className="font-bold text-[#1d1d1f] truncate">
                             {sub.studentName}
                           </span>
                           {isSubGraded ? (
@@ -727,7 +727,7 @@ function AdminAssignmentsWorkspace() {
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center justify-between text-[11px] text-neutral-500">
+                        <div className="flex items-center justify-between text-[11px] text-[#8e8e93]">
                           <span>{sub.files?.length || 0} archivo(s)</span>
                           <span>{sub.inlineAnnotations?.length || 0} notas</span>
                         </div>
@@ -761,15 +761,15 @@ function AdminAssignmentsWorkspace() {
             )}
 
             {!activeAssignment ? (
-              <div className="bg-white rounded-3xl border border-neutral-200 p-8 sm:p-12 text-center space-y-4 shadow-2xs">
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-inner">
+              <div className="bg-white rounded-3xl border border-[#e5e5ea] p-8 sm:p-12 text-center space-y-4 shadow-2xs">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 text-[#0071e3] flex items-center justify-center mx-auto shadow-inner">
                   <FileText className="w-7 h-7" />
                 </div>
                 <div className="max-w-md mx-auto space-y-1.5">
-                  <h3 className="text-base font-extrabold text-neutral-900">
+                  <h3 className="text-base font-extrabold text-[#1d1d1f]">
                     Panel de Calificaciones y Entregas
                   </h3>
-                  <p className="text-xs text-neutral-500 leading-relaxed">
+                  <p className="text-xs text-[#8e8e93] leading-relaxed">
                     Crea una nueva tarea o selecciona una existente de la lista para revisar los trabajos de los estudiantes y realizar anotaciones pedagógicas.
                   </p>
                 </div>
@@ -779,7 +779,7 @@ function AdminAssignmentsWorkspace() {
                     setShowCreateForm(true);
                     setMobileTab('create');
                   }}
-                  className="py-3 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs inline-flex items-center gap-2 transition-all shadow-sm active:scale-[0.98] cursor-pointer"
+                  className="py-3 px-6 rounded-2xl bg-[#0071e3] hover:bg-[#0077ed] text-white font-bold text-xs inline-flex items-center gap-2 transition-all shadow-sm active:scale-[0.98] cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Crear Nueva Tarea</span>
@@ -788,16 +788,16 @@ function AdminAssignmentsWorkspace() {
             ) : (
               <>
                 {/* SECCIÓN 1: TRABAJO ENTREGADO Y VISOR CON ANOTACIONES IN-SITU */}
-                <section className="bg-white rounded-3xl border border-neutral-200 p-6 lg:p-8 space-y-5 shadow-2xs">
+                <section className="bg-white rounded-3xl border border-[#e5e5ea] p-6 lg:p-8 space-y-5 shadow-2xs">
               <div className="border-b border-neutral-100 pb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-[#0071e3] uppercase tracking-wider block">
                     Entrega del Alumno
                   </span>
-                  <h3 className="text-lg font-extrabold text-neutral-900">
+                  <h3 className="text-lg font-extrabold text-[#1d1d1f]">
                     {currentSubmission?.studentName || 'Sin selección'}
                   </h3>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-[#8e8e93]">
                     {currentSubmission?.studentEmail} • Enviada: {currentSubmission ? formatUtcInTimeZone(currentSubmission.submittedAt, timeZone) : 'N/A'}
                   </p>
                 </div>
@@ -822,9 +822,9 @@ function AdminAssignmentsWorkspace() {
 
               {/* Texto explicativo adjunto por el estudiante */}
               {currentSubmission?.submissionTextContent && (
-                <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200 space-y-1">
-                  <span className="text-[11px] font-bold text-neutral-600">Comentario del alumno:</span>
-                  <p className="text-xs text-neutral-800 whitespace-pre-wrap leading-relaxed">
+                <div className="p-4 rounded-2xl bg-neutral-50 border border-[#e5e5ea] space-y-1">
+                  <span className="text-[11px] font-bold text-[#515154]">Comentario del alumno:</span>
+                  <p className="text-xs text-[#1d1d1f] whitespace-pre-wrap leading-relaxed">
                     {currentSubmission.submissionTextContent}
                   </p>
                 </div>
@@ -837,7 +837,7 @@ function AdminAssignmentsWorkspace() {
                     <span className="text-xs font-bold text-neutral-700">
                       Archivos entregados ({currentSubmission.files.length}):
                     </span>
-                    <span className="text-[11px] text-neutral-500">
+                    <span className="text-[11px] text-[#8e8e93]">
                       Puedes añadir anotaciones contextuales con el botón "Anotar in-situ"
                     </span>
                   </div>
@@ -864,7 +864,7 @@ function AdminAssignmentsWorkspace() {
                   })}
                 </div>
               ) : (
-                <div className="p-8 text-center text-xs text-neutral-400 bg-neutral-50 rounded-2xl">
+                <div className="p-8 text-center text-xs text-[#8e8e93] bg-neutral-50 rounded-2xl">
                   {currentSubmission ? 'Esta entrega no incluye archivos adjuntos.' : 'Selecciona una entrega para revisar.'}
                 </div>
               )}
@@ -909,7 +909,7 @@ function AdminAssignmentsWorkspace() {
                 </div>
 
                 {/* Devolución global sugerida */}
-                <div className="p-4 rounded-2xl bg-white border border-purple-100 text-xs text-neutral-800 leading-relaxed shadow-2xs">
+                <div className="p-4 rounded-2xl bg-white border border-purple-100 text-xs text-[#1d1d1f] leading-relaxed shadow-2xs">
                   <span className="font-bold text-purple-900 block mb-1">Devolución sugerida:</span>
                   {aiReviewData.generalFeedback}
                 </div>
@@ -923,13 +923,13 @@ function AdminAssignmentsWorkspace() {
                     {aiReviewData.criteriaEvaluations.map((item, idx) => (
                       <div key={idx} className="p-3.5 rounded-xl bg-white border border-purple-100 space-y-1.5 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-neutral-900">{item.criterionTitle}</span>
+                          <span className="font-bold text-[#1d1d1f]">{item.criterionTitle}</span>
                           <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-100 text-purple-800">
                             {item.aiSuggestedPoints.toFixed(1)} / 5.0
                           </span>
                         </div>
                         {item.aiQuote && (
-                          <p className="text-[11px] text-neutral-600 italic bg-purple-50/50 p-2 rounded border border-purple-100 font-mono">
+                          <p className="text-[11px] text-[#515154] italic bg-purple-50/50 p-2 rounded border border-purple-100 font-mono">
                             Cita del trabajo: "{item.aiQuote}"
                           </p>
                         )}
@@ -945,22 +945,22 @@ function AdminAssignmentsWorkspace() {
 
             {/* SECCIÓN 3: FORMULARIO OFICIAL DE CALIFICACIÓN DOCENTE */}
             {currentSubmission && (
-              <section className="bg-white rounded-3xl border border-neutral-200 p-6 lg:p-8 space-y-6 shadow-2xs">
+              <section className="bg-white rounded-3xl border border-[#e5e5ea] p-6 lg:p-8 space-y-6 shadow-2xs">
                 <div className="border-b border-neutral-100 pb-4">
-                  <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-blue-600" />
+                  <h3 className="text-base font-bold text-[#1d1d1f] flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-[#0071e3]" />
                     <span>Calificación Manual y Justificación Oficial</span>
                   </h3>
-                  <p className="text-xs text-neutral-500 mt-0.5">
+                  <p className="text-xs text-[#8e8e93] mt-0.5">
                     Asigna una nota libre de 0.0 a 5.0, redacta la justificación y ajusta los puntajes de rúbrica si lo deseas.
                   </p>
                 </div>
 
                 <form onSubmit={handleSaveGrading} className="space-y-6">
                   {/* Selector de Nota Libre (Input + Slider) */}
-                  <div className="p-4 rounded-2xl bg-neutral-50/80 border border-neutral-200 space-y-3">
+                  <div className="p-4 rounded-2xl bg-neutral-50/80 border border-[#e5e5ea] space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-neutral-900">
+                      <label className="text-xs font-bold text-[#1d1d1f]">
                         1. Nota libre asignada (0.0 a 5.0)
                       </label>
                       <div className="flex items-center gap-2">
@@ -971,9 +971,9 @@ function AdminAssignmentsWorkspace() {
                           max="5.0"
                           value={freeGrade}
                           onChange={(e) => setFreeGrade(Math.min(5.0, Math.max(0.0, parseFloat(e.target.value) || 0)))}
-                          className="w-20 px-3 py-1.5 rounded-xl border border-neutral-300 text-center font-extrabold text-base text-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                          className="w-20 px-3 py-1.5 rounded-xl border border-[#e5e5ea] text-center font-extrabold text-base text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]"
                         />
-                        <span className="text-xs font-bold text-neutral-400">/ 5.0</span>
+                        <span className="text-xs font-bold text-[#8e8e93]">/ 5.0</span>
                       </div>
                     </div>
 
@@ -984,13 +984,13 @@ function AdminAssignmentsWorkspace() {
                       step="0.1"
                       value={freeGrade}
                       onChange={(e) => setFreeGrade(parseFloat(e.target.value))}
-                      className="w-full accent-blue-600 cursor-pointer"
+                      className="w-full accent-[#0071e3] cursor-pointer"
                     />
                   </div>
 
                   {/* Campo de Justificación Libre */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-neutral-900">
+                    <label className="block text-xs font-bold text-[#1d1d1f]">
                       2. Justificación docente de la nota
                     </label>
                     <textarea
@@ -999,24 +999,24 @@ function AdminAssignmentsWorkspace() {
                       placeholder="Explica detalladamente al estudiante los aciertos, fundamentación y áreas de mejora..."
                       value={teacherJustification}
                       onChange={(e) => setTeacherJustification(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors"
+                      className="w-full px-4 py-3 rounded-2xl border border-[#e5e5ea] text-xs text-[#1d1d1f] focus:outline-none focus:border-[#0071e3] transition-colors"
                     />
                   </div>
 
                   {/* Criterios de Rúbrica Ponderados */}
                   {activeAssignment?.rubric && activeAssignment.rubric.length > 0 && (
                     <div className="space-y-3 pt-2">
-                      <label className="block text-xs font-bold text-neutral-900">
+                      <label className="block text-xs font-bold text-[#1d1d1f]">
                         3. Desglose opcional por criterio de rúbrica
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {activeAssignment.rubric.map((crit: any) => {
                           const currentScore = rubricEvals[crit.id] ?? freeGrade;
                           return (
-                            <div key={crit.id} className="p-3.5 rounded-xl bg-white border border-neutral-200 space-y-2">
+                            <div key={crit.id} className="p-3.5 rounded-xl bg-white border border-[#e5e5ea] space-y-2">
                               <div className="flex items-center justify-between text-xs">
-                                <span className="font-bold text-neutral-800 truncate">{crit.title}</span>
-                                <span className="text-[11px] font-mono font-bold text-blue-600">
+                                <span className="font-bold text-[#1d1d1f] truncate">{crit.title}</span>
+                                <span className="text-[11px] font-mono font-bold text-[#0071e3]">
                                   {currentScore.toFixed(1)} / 5.0
                                 </span>
                               </div>
@@ -1030,7 +1030,7 @@ function AdminAssignmentsWorkspace() {
                                   const val = parseFloat(e.target.value);
                                   setRubricEvals((prev) => ({ ...prev, [crit.id]: val }));
                                 }}
-                                className="w-full accent-blue-600 cursor-pointer"
+                                className="w-full accent-[#0071e3] cursor-pointer"
                               />
                             </div>
                           );
@@ -1042,7 +1042,7 @@ function AdminAssignmentsWorkspace() {
                   <button
                     type="submit"
                     disabled={isSavingGrade}
-                    className="w-full py-3.5 px-6 rounded-2xl text-xs font-bold inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                    className="w-full py-3.5 px-6 rounded-2xl text-xs font-bold inline-flex items-center justify-center gap-2 bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                     <span>
@@ -1068,7 +1068,7 @@ export default function AdminAssignmentsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-neutral-100 flex items-center justify-center text-xs text-neutral-500">
+        <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center text-xs text-[#8e8e93]">
           Cargando Panel de Calificaciones...
         </div>
       }
