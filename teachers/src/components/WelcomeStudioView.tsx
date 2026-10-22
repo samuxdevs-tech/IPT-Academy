@@ -14,6 +14,7 @@ import {
   Sparkles,
   ShieldCheck,
   CheckCircle2,
+  Video,
 } from 'lucide-react';
 import { useLms } from '@/context/LmsContext';
 import { useAuth } from '@/context/AuthContext';
@@ -21,9 +22,11 @@ import { useAuth } from '@/context/AuthContext';
 export default function WelcomeStudioView({
   onOpenCreateCourse,
   onOpenAdminTools,
+  onOpenLiveStudio,
 }: {
   onOpenCreateCourse: () => void;
   onOpenAdminTools?: () => void;
+  onOpenLiveStudio?: () => void;
 }) {
   const { courses, assignments } = useLms();
   const { user } = useAuth();
@@ -131,6 +134,30 @@ export default function WelcomeStudioView({
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </Link>
+
+          {onOpenLiveStudio && (
+            <button
+              type="button"
+              onClick={onOpenLiveStudio}
+              className="group bg-white rounded-2xl border border-[#e5e5ea] p-5 shadow-2xs hover:border-emerald-500/40 hover:shadow-xs transition-all flex flex-col justify-between cursor-pointer text-left"
+            >
+              <div className="space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Video className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-[#1d1d1f] group-hover:text-emerald-700 transition-colors">
+                  Estudio de Clases en Vivo
+                </h3>
+                <p className="text-xs text-[#8e8e93] leading-relaxed">
+                  Programa clases magistrales con aforo, aprueba cupos de estudiantes con TTL de 4h e inicia la sala /live.
+                </p>
+              </div>
+              <div className="pt-4 flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                <span>Abrir Estudio Live</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </button>
+          )}
 
           <Link
             href="/assignments"

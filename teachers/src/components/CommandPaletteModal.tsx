@@ -13,6 +13,7 @@ import {
   ArrowRight,
   X,
   ExternalLink,
+  Video,
 } from 'lucide-react';
 import { useLms } from '@/context/LmsContext';
 
@@ -54,6 +55,16 @@ export default function CommandPaletteModal({ isOpen, onClose }: CommandPaletteP
       icon: any;
       action: () => void;
     }> = [
+      {
+        id: 'action-live-classes',
+        title: 'Estudio de Clases en Vivo & Aprobación de Cupos',
+        category: 'Operaciones',
+        icon: Video,
+        action: () => {
+          router.push('/calendar');
+          onClose();
+        },
+      },
       {
         id: 'action-courses',
         title: 'Ver Catálogo y Editor de Cursos',

@@ -8,6 +8,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import UserProfileMenu from '@/components/UserProfileMenu';
 import CommandPaletteModal from '@/components/CommandPaletteModal';
+import LiveClassesStudioModal from '@/components/LiveClassesStudioModal';
 import {
   BookOpen,
   FileCheck2,
@@ -25,6 +26,7 @@ import {
   X,
   Layers,
   ChevronRight,
+  Video,
 } from 'lucide-react';
 import { ROLE_DEFINITIONS } from '@/lib/rbac';
 
@@ -103,6 +105,7 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isLiveStudioOpen, setIsLiveStudioOpen] = useState(false);
 
   // Escuchar atajo global Ctrl+K / Cmd+K
   useEffect(() => {
@@ -156,6 +159,12 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
       <CommandPaletteModal
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
+      />
+
+      {/* Modal de Clases en Vivo & Live Studio (Fase 2) */}
+      <LiveClassesStudioModal
+        isOpen={isLiveStudioOpen}
+        onClose={() => setIsLiveStudioOpen(false)}
       />
 
       {/* Backdrop para menú móvil */}
@@ -237,6 +246,16 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
               <kbd className="px-1.5 py-0.5 rounded bg-[#f5f5f7] border border-[#d1d1d6] text-[9px] font-mono font-semibold">
                 Ctrl+K
               </kbd>
+            </button>
+
+            {/* Acceso a Clases en Vivo & Live Studio */}
+            <button
+              type="button"
+              onClick={() => setIsLiveStudioOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            >
+              <Video className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Clases en Vivo</span>
             </button>
           </div>
         )}
@@ -361,6 +380,16 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
               <kbd className="px-1 py-0.2 rounded bg-white text-[10px] font-mono border border-[#d1d1d6]">
                 Ctrl+K
               </kbd>
+            </button>
+
+            {/* Acceso a Clases en Vivo & Live Studio */}
+            <button
+              type="button"
+              onClick={() => setIsLiveStudioOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            >
+              <Video className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Clases en Vivo</span>
             </button>
 
             {/* Menú de Perfil Docente */}

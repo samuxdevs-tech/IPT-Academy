@@ -13,7 +13,9 @@ import {
   AlertCircle,
   Trash2,
   Home,
+  Video,
 } from 'lucide-react';
+import LiveClassesStudioModal from '@/components/LiveClassesStudioModal';
 import { useLms } from '@/context/LmsContext';
 import { CalendarEventCategory } from '@/types';
 import {
@@ -37,6 +39,7 @@ export default function AdminCalendarWorkspacePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const [calendarNotice, setCalendarNotice] = useState<string | null>(null);
+  const [isLiveStudioOpen, setIsLiveStudioOpen] = useState(false);
 
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
@@ -241,6 +244,15 @@ export default function AdminCalendarWorkspacePage() {
               ))}
             </select>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setIsLiveStudioOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
+          >
+            <Video className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Estudio de Clases & Cupos</span>
+          </button>
 
           <button
             type="button"
@@ -518,6 +530,12 @@ export default function AdminCalendarWorkspacePage() {
           )}
         </section>
       </main>
+
+      {/* Modal Estudio de Clases en Vivo & Cupos */}
+      <LiveClassesStudioModal
+        isOpen={isLiveStudioOpen}
+        onClose={() => setIsLiveStudioOpen(false)}
+      />
     </div>
   );
 }

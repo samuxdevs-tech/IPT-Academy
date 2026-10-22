@@ -10,6 +10,7 @@ import WelcomeStudioView from '@/components/WelcomeStudioView';
 import CourseSpreadsheetManager from '@/components/CourseSpreadsheetManager';
 import CreateCourseModal from '@/components/CreateCourseModal';
 import AdvancedAdminToolsModal from '@/components/AdvancedAdminToolsModal';
+import LiveClassesStudioModal from '@/components/LiveClassesStudioModal';
 
 function AdminStudioContent() {
   const searchParams = useSearchParams();
@@ -23,6 +24,7 @@ function AdminStudioContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateCourseModalOpen, setIsCreateCourseModalOpen] = useState(false);
   const [isAdminToolsModalOpen, setIsAdminToolsModalOpen] = useState(false);
+  const [isLiveStudioModalOpen, setIsLiveStudioModalOpen] = useState(false);
 
   // Cargar cursos desde Firebase Realtime Database
   const loadCourses = async () => {
@@ -97,6 +99,11 @@ function AdminStudioContent() {
         assignments={[]}
       />
 
+      <LiveClassesStudioModal
+        isOpen={isLiveStudioModalOpen}
+        onClose={() => setIsLiveStudioModalOpen(false)}
+      />
+
       {isSpreadsheetView ? (
         <CourseSpreadsheetManager
           courses={courses}
@@ -108,6 +115,7 @@ function AdminStudioContent() {
         <WelcomeStudioView
           onOpenCreateCourse={() => setIsCreateCourseModalOpen(true)}
           onOpenAdminTools={() => setIsAdminToolsModalOpen(true)}
+          onOpenLiveStudio={() => setIsLiveStudioModalOpen(true)}
         />
       )}
     </>
