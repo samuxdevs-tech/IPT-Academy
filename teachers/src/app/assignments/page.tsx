@@ -23,6 +23,7 @@ import {
   Send,
   User,
   Music,
+  X,
 } from 'lucide-react';
 import { useLms } from '@/context/LmsContext';
 import { useAuth } from '@/context/AuthContext';
@@ -117,13 +118,21 @@ function AdminAssignmentsWorkspace() {
   // Crear tarea administrativa
   const [newAsgTitle, setNewAsgTitle] = useState('');
   const [newAsgInstructions, setNewAsgInstructions] = useState('');
-  const [newAsgCourseSlug, setNewAsgCourseSlug] = useState(courses[0]?.slug || '');
+  const [newAsgCourseSlug, setNewAsgCourseSlug] = useState(courses[0]?.slug || 'datagan-master-pro');
   const [newAsgCutId, setNewAsgCutId] = useState<'cut_1' | 'cut_2' | 'cut_3'>('cut_1');
   const [newAsgWeight, setNewAsgWeight] = useState<number>(100);
   const [newAsgDueDate, setNewAsgDueDate] = useState(
     new Date(Date.now() + 7 * 86400 * 1000).toISOString().slice(0, 16)
   );
   const [createNotice, setCreateNotice] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
+
+  // Sincronizar slug del curso por defecto si se cargan cursos después
+  useEffect(() => {
+    if (courses.length > 0 && (!newAsgCourseSlug || newAsgCourseSlug === 'datagan-master-pro')) {
+      setNewAsgCourseSlug(courses[0].slug);
+    }
+  }, [courses, newAsgCourseSlug]);
 
   // Selector responsivo móvil
   const [mobileTab, setMobileTab] = useState<'list' | 'grade' | 'create'>('list');
@@ -185,11 +194,14 @@ function AdminAssignmentsWorkspace() {
     e.preventDefault();
     if (!newAsgTitle.trim()) return;
     const targetCourse = courses.find((c) => c.slug === newAsgCourseSlug) || courses[0];
+    const courseTitle = targetCourse?.title || 'DataGAN Master Pro';
+    const courseSlug = targetCourse?.slug || newAsgCourseSlug || 'datagan-master-pro';
+    const moduleTitle = targetCourse?.modules?.[0]?.title || 'Módulo 1: Fundamentos';
 
     const created = createAssignmentAndSyncCalendar({
-      courseSlug: targetCourse?.slug || 'general',
-      courseTitle: targetCourse?.title || 'Curso General',
-      moduleTitle: targetCourse?.modules?.[0]?.title || 'Módulo 1',
+      courseSlug,
+      courseTitle,
+      moduleTitle,
       cutId: newAsgCutId,
       weightInCutPercent: Number(newAsgWeight) || 100,
       title: newAsgTitle.trim(),
@@ -230,12 +242,14 @@ function AdminAssignmentsWorkspace() {
     setSelectedAssignmentId(created.id);
     setNewAsgTitle('');
     setNewAsgInstructions('');
-    setCreateNotice(`Tarea "${created.title}" creada y sincronizada.`);
+    setShowCreateForm(false);
+    setMobileTab('list');
+    setCreateNotice(`Tarea "${created.title}" creada y publicada.`);
 
     // Sincronizar en la nube con Cloudflare Worker (D1 SQL)
     syncAssignmentToCloudflare(created).then((synced) => {
       if (synced) {
-        setCreateNotice(`Tarea "${created.title}" guardada en Cloudflare D1.`);
+        setCreateNotice(`Tarea "${created.title}" sincronizada.`);
       }
     });
 
@@ -349,16 +363,29 @@ function AdminAssignmentsWorkspace() {
             <span className="text-neutral-900 font-semibold">Calificación y Tareas</span>
           </nav>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 block">
-            Centro de Evaluación Docente · Cloudflare Worker (D1 + R2 + Workers AI)
+            Centro de Evaluación y Calificación Docente
           </span>
           <h1 className="text-base font-extrabold text-neutral-900">
             Gestor de Tareas, Entregas Multiarchivo y Revisión con IA
           </h1>
         </div>
-        <div className="flex items-center gap-2 text-xs text-neutral-600">
-          <FileCheck2 className="w-4 h-4 text-blue-600" />
-          <span className="font-bold text-neutral-900">{assignments.length}</span>
-          <span>actividades en el curso</span>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-xs text-neutral-600 bg-neutral-100 px-3 py-1.5 rounded-xl">
+            <FileCheck2 className="w-4 h-4 text-blue-600" />
+            <span className="font-bold text-neutral-900">{assignments.length}</span>
+            <span>actividades</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setShowCreateForm(true);
+              setMobileTab('create');
+            }}
+            className="py-2 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-xs transition-all active:scale-[0.98] cursor-pointer min-h-[38px]"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Nueva Tarea</span>
+          </button>
         </div>
       </div>
 
@@ -374,9 +401,12 @@ function AdminAssignmentsWorkspace() {
         <div className="lg:hidden flex items-center p-1 bg-white border border-neutral-300 rounded-2xl shadow-2xs gap-1">
           <button
             type="button"
-            onClick={() => setMobileTab('list')}
+            onClick={() => {
+              setShowCreateForm(false);
+              setMobileTab('list');
+            }}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-h-[44px] ${
-              mobileTab === 'list'
+              mobileTab === 'list' && !showCreateForm
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-neutral-600 hover:text-neutral-900'
             }`}
@@ -387,9 +417,12 @@ function AdminAssignmentsWorkspace() {
 
           <button
             type="button"
-            onClick={() => setMobileTab('grade')}
+            onClick={() => {
+              setShowCreateForm(false);
+              setMobileTab('grade');
+            }}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-h-[44px] ${
-              mobileTab === 'grade'
+              mobileTab === 'grade' && !showCreateForm
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-neutral-600 hover:text-neutral-900'
             }`}
@@ -400,19 +433,173 @@ function AdminAssignmentsWorkspace() {
 
           <button
             type="button"
-            onClick={() => setMobileTab('create')}
+            onClick={() => {
+              setShowCreateForm(true);
+              setMobileTab('create');
+            }}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all min-h-[44px] ${
-              mobileTab === 'create'
+              mobileTab === 'create' || showCreateForm
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-neutral-600 hover:text-neutral-900'
             }`}
           >
-            <Plus className="w-4 h-4 shrink-0" />
+            <Plus className="w-4 h-4" />
             <span>Crear</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* VISTA MÓVIL Y ESCRITORIO DEL FORMULARIO DE CREACIÓN */}
+        {mobileTab === 'create' || showCreateForm ? (
+          <div className="bg-white rounded-3xl border border-neutral-200 p-6 sm:p-8 space-y-6 shadow-2xs">
+            <div className="border-b border-neutral-100 pb-4 flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider block">
+                  Nueva Actividad Académica
+                </span>
+                <h2 className="text-lg font-extrabold text-neutral-900">
+                  Crear y Publicar Tarea
+                </h2>
+                <p className="text-xs text-neutral-500 mt-0.5">
+                  Los estudiantes podrán ver esta actividad en su calendario y enviar sus entregas en los formatos configurados.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCreateForm(false);
+                  setMobileTab('list');
+                }}
+                className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors cursor-pointer"
+                title="Cerrar formulario"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateAdminAssignment} className="space-y-5">
+              {/* Título de la Tarea */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-neutral-800">
+                  Título de la Tarea <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newAsgTitle}
+                  onChange={(e) => setNewAsgTitle(e.target.value)}
+                  placeholder="Ej: Taller 1: Análisis y Modelación de Datos"
+                  className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors"
+                />
+              </div>
+
+              {/* Curso y Corte */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-neutral-800">
+                    Curso Asociado
+                  </label>
+                  <select
+                    value={newAsgCourseSlug}
+                    onChange={(e) => setNewAsgCourseSlug(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors bg-white cursor-pointer"
+                  >
+                    {courses.length > 0 ? (
+                      courses.map((c) => (
+                        <option key={c.slug} value={c.slug}>
+                          {c.title}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="datagan-master-pro">DataGAN Master Pro</option>
+                    )}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-neutral-800">
+                    Periodo / Corte Académico
+                  </label>
+                  <select
+                    value={newAsgCutId}
+                    onChange={(e) => setNewAsgCutId(e.target.value as any)}
+                    className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors bg-white cursor-pointer"
+                  >
+                    <option value="cut_1">Primer Corte (35%)</option>
+                    <option value="cut_2">Segundo Corte (35%)</option>
+                    <option value="cut_3">Tercer Corte (30%)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Ponderación y Fecha Límite */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-neutral-800">
+                    Ponderación en el Corte (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="5"
+                    max="100"
+                    value={newAsgWeight}
+                    onChange={(e) => setNewAsgWeight(Number(e.target.value))}
+                    className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-neutral-800">
+                    Fecha y Hora Límite de Entrega
+                  </label>
+                  <input
+                    type="datetime-local"
+                    required
+                    value={newAsgDueDate}
+                    onChange={(e) => setNewAsgDueDate(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Instrucciones */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-neutral-800">
+                  Instrucciones para el Estudiante
+                </label>
+                <textarea
+                  rows={4}
+                  value={newAsgInstructions}
+                  onChange={(e) => setNewAsgInstructions(e.target.value)}
+                  placeholder="Describe con claridad los objetivos de la actividad, los archivos requeridos y las pautas para su entrega..."
+                  className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors"
+                />
+              </div>
+
+              {/* Botones de acción */}
+              <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
+                <button
+                  type="submit"
+                  className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl text-xs font-bold inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all active:scale-[0.98] cursor-pointer min-h-[44px]"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Publicar Tarea en el Aula</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setMobileTab('list');
+                  }}
+                  className="w-full sm:w-auto py-3.5 px-6 rounded-2xl text-xs font-bold text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 border border-neutral-200 transition-colors cursor-pointer min-h-[44px]"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+<div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* COLUMNA IZQUIERDA: LISTA DE TAREAS Y ENTREGAS */}
           <div
             className={`lg:col-span-4 space-y-6 ${
@@ -425,11 +612,44 @@ function AdminAssignmentsWorkspace() {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
                   Actividades del Curso ({assignments.length})
                 </h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateForm(true);
+                    setMobileTab('create');
+                  }}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Crear</span>
+                </button>
               </div>
 
               <div className="space-y-2.5">
-                {assignments.map((asg) => {
-                  const isSelected = asg.id === activeAssignment.id;
+                {assignments.length === 0 ? (
+                  <div className="p-6 rounded-2xl bg-white border border-neutral-200 text-center space-y-3 shadow-2xs">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-neutral-900">No hay tareas creadas</h4>
+                      <p className="text-[11px] text-neutral-500">Publica la primera actividad académica para los estudiantes.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCreateForm(true);
+                        setMobileTab('create');
+                      }}
+                      className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[40px]"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Crear Primera Tarea</span>
+                    </button>
+                  </div>
+                ) : (
+                assignments.map((asg) => {
+                  const isSelected = asg.id === activeAssignment?.id;
                   return (
                     <div
                       key={asg.id}
@@ -455,7 +675,8 @@ function AdminAssignmentsWorkspace() {
                       </h4>
                     </div>
                   );
-                })}
+                })
+              )}
               </div>
             </div>
 
@@ -536,8 +757,35 @@ function AdminAssignmentsWorkspace() {
               </div>
             )}
 
-            {/* SECCIÓN 1: TRABAJO ENTREGADO Y VISOR CON ANOTACIONES IN-SITU */}
-            <section className="bg-white rounded-3xl border border-neutral-200 p-6 lg:p-8 space-y-5 shadow-2xs">
+            {!activeAssignment ? (
+              <div className="bg-white rounded-3xl border border-neutral-200 p-8 sm:p-12 text-center space-y-4 shadow-2xs">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-inner">
+                  <FileText className="w-7 h-7" />
+                </div>
+                <div className="max-w-md mx-auto space-y-1.5">
+                  <h3 className="text-base font-extrabold text-neutral-900">
+                    Panel de Calificaciones y Entregas
+                  </h3>
+                  <p className="text-xs text-neutral-500 leading-relaxed">
+                    Crea una nueva tarea o selecciona una existente de la lista para revisar los trabajos de los estudiantes y realizar anotaciones pedagógicas.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateForm(true);
+                    setMobileTab('create');
+                  }}
+                  className="py-3 px-6 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs inline-flex items-center gap-2 transition-all shadow-sm active:scale-[0.98] cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Crear Nueva Tarea</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* SECCIÓN 1: TRABAJO ENTREGADO Y VISOR CON ANOTACIONES IN-SITU */}
+                <section className="bg-white rounded-3xl border border-neutral-200 p-6 lg:p-8 space-y-5 shadow-2xs">
               <div className="border-b border-neutral-100 pb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider block">
@@ -803,8 +1051,11 @@ function AdminAssignmentsWorkspace() {
                 </form>
               </section>
             )}
+              </>
+            )}
           </div>
         </div>
+        )}
       </main>
     </div>
   );
