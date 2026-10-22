@@ -19,7 +19,16 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  Video,
+  Radio,
+  Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
+import {
+  LiveStudentService,
+  StudentLiveClassItem,
+  StudentBookingInfo,
+} from '@/services/liveStudentService';
 import { useLms } from '@/context/LmsContext';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarEventCategory } from '@/types';
@@ -41,7 +50,44 @@ export default function InstitutionalCalendarPage() {
     timeZone,
     setTimeZone,
   } = useLms();
-  const { effectiveIsAdmin } = useAuth();
+  const { user, effectiveIsAdmin } = useAuth();
+
+  const [liveClasses, setLiveClasses] = useState<StudentLiveClassItem[]>([]);
+  const [availableQuota, setAvailableQuota] = useState<number>(4);
+  const [myBookings, setMyBookings] = useState<StudentBookingInfo[]>([]);
+  const [bookingLoading, setBookingLoading] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    LiveStudentService.fetchAvailableClasses().then(setLiveClasses);
+    if (user?.uid) {
+      LiveStudentService.getStudentQuota(user.uid).then((q) => setAvailableQuota(q.availableQuota));
+      setMyBookings(LiveStudentService.getLocalStudentBookings());
+    }
+  }, [user]);
+
+  const handleBookLiveClass = async (classId: string) => {
+    if (!user?.uid) {
+      alert('Inicia sesión para apartar tu clase.');
+      return;
+    }
+    setBookingLoading(classId);
+    try {
+      const booking = await LiveStudentService.requestBooking({
+        classId,
+        studentUid: user.uid,
+        studentName: user.displayName || user.email?.split('@')[0] || 'Estudiante',
+        studentEmail: user.email || 'estudiante@ipt.com',
+      });
+      setMyBookings((prev) => [booking, ...prev]);
+      setAvailableQuota((prev) => Math.max(0, prev - 1));
+      setCalendarNotice('¡Cupo reservado con éxito! Se ha retenido temporalmente de tu saldo mensual.');
+      setTimeout(() => setCalendarNotice(null), 4500);
+    } catch (err: any) {
+      alert(err.message || 'No se pudo reservar.');
+    } finally {
+      setBookingLoading(null);
+    }
+  };
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
@@ -368,6 +414,98 @@ export default function InstitutionalCalendarPage() {
               </button>
             </div>
           )}
+
+          {/* Módulo de Clases Magistrales en Vivo & Cupos del Estudiante (Fase 4) */}
+          <section className="bg-white rounded-[16px] border border-[#d1d2e0] p-5 shadow-2xs space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0f1f7] pb-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-neutral-900 text-white flex items-center justify-center shadow-xs">
+                  <Video className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div>
+                  <h2 className="text-[15px] font-bold text-[#1d1d1f]">Clases Magistrales en Vivo</h2>
+                  <p className="text-[12px] text-[#595c73]">
+                    Sesiones en tiempo real con tu docente titular.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 bg-[#f6f7f9] border border-[#e5e5ea] px-3 py-1.5 rounded-xl text-xs">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span className="text-[#595c73]">Cupos mensuales disponibles:</span>
+                <strong className="text-[#1d1d1f] font-bold">{availableQuota}</strong>
+              </div>
+            </div>
+
+            {liveClasses.length === 0 ? (
+              <div className="p-6 text-center text-xs text-[#8e8e93] bg-[#fbfbfd] rounded-xl border border-[#e5e5ea]">
+                No hay clases en vivo programadas para esta semana. Tu docente publicará las próximas fechas aquí.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {liveClasses.map((cls) => {
+                  const isBooked = myBookings.some((b) => b.classId === cls.id);
+                  const scheduledDate = new Date(cls.scheduled_at_utc);
+                  const formatted = scheduledDate.toLocaleDateString('es-CO', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
+
+                  return (
+                    <div
+                      key={cls.id}
+                      className="p-4 rounded-xl border border-[#e5e5ea] bg-[#fbfbfd] hover:bg-white transition-all flex flex-col justify-between space-y-3"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] mb-1">
+                          <span className="font-semibold px-2 py-0.5 bg-neutral-100 rounded text-neutral-700">
+                            {cls.course_title}
+                          </span>
+                          <span className="text-neutral-500 font-medium flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-neutral-400" />
+                            {formatted}
+                          </span>
+                        </div>
+                        <h3 className="text-xs font-bold text-[#1d1d1f]">{cls.title}</h3>
+                        {cls.description && (
+                          <p className="text-[11px] text-[#595c73] line-clamp-2 mt-0.5">{cls.description}</p>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-[#f0f1f7] flex items-center justify-between">
+                        <span className="text-[11px] text-neutral-500">
+                          Docente: <strong className="text-neutral-800">{cls.teacher_name}</strong>
+                        </span>
+
+                        {isBooked ? (
+                          <Link
+                            href={`/live?id=${cls.id}`}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-semibold hover:bg-black transition-all"
+                          >
+                            <Radio className="w-3 h-3 text-emerald-400 animate-pulse" />
+                            <span>Entrar a /live</span>
+                          </Link>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleBookLiveClass(cls.id)}
+                            disabled={bookingLoading === cls.id || availableQuota <= 0}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0071e3] text-white text-xs font-semibold hover:bg-[#0077ed] transition-all disabled:opacity-50 cursor-pointer"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            <span>{bookingLoading === cls.id ? 'Apartando...' : 'Apartar Cupo'}</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
 
           {/* Selector de hora según el país */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-[#f6f7f9] rounded-[12px] border border-[#d1d2e0] p-4">

@@ -485,7 +485,20 @@ ${upcomingSessions}`
         roleLabel
       } = liveKnowledgeContext;
 
-      // 1. Consultas sobre progreso, notas o calificaciones del usuario
+      // 1. Consultas sobre Clases en Vivo, Agendamiento o Cupos Mensuales
+      if (
+        q.includes('clase en vivo') ||
+        q.includes('agendar') ||
+        q.includes('tutor') ||
+        q.includes('cita') ||
+        q.includes('cupo') ||
+        q.includes('en vivo') ||
+        q.includes('live')
+      ) {
+        return `Hola ${studentName}. En IPT Course dispones de tu bolsa mensual de cupos para clases magistrales en vivo. Puedes revisar los horarios disponibles y apartar tu lugar con 1 clic en el Calendario. Una vez programada, podrás ingresar a la sala en /live donde se activará la videollamada tan pronto tu docente dé inicio a la sesión.`;
+      }
+
+      // 2. Consultas sobre progreso, notas o calificaciones del usuario
       if (
         q.includes('nota') ||
         q.includes('promedio') ||
