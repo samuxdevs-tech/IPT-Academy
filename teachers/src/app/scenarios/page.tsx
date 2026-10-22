@@ -107,7 +107,7 @@ export default function AdminScenariosPage() {
   };
 
   const createNewScenario = () => {
-    const defaultSlug = filterCourseSlug !== 'all' ? filterCourseSlug : (courses[0]?.slug || 'datagan-master-pro');
+    const defaultSlug = filterCourseSlug !== 'all' ? filterCourseSlug : (courses[0]?.slug || '');
     const newScenario: Scenario = {
       id: Date.now().toString(),
       courseSlug: defaultSlug,
@@ -262,7 +262,7 @@ export default function AdminScenariosPage() {
                     className={`w-full text-left p-3 rounded-lg text-sm transition-all ${selectedScenario?.id === sc.id ? 'bg-[#6d28d2] text-white font-medium shadow-md' : 'text-[#595c73] hover:bg-[#f6f7f9]'}`}
                   >
                     <div className="line-clamp-1">#{idx + 1} - {sc.question}</div>
-                    <div className="text-[10px] opacity-70 truncate mt-0.5">{sc.courseSlug || 'datagan-master-pro'}</div>
+                    <div className="text-[10px] opacity-70 truncate mt-0.5">{sc.courseSlug || 'Sin curso asignado'}</div>
                   </button>
                 ))
             )}
@@ -291,7 +291,7 @@ export default function AdminScenariosPage() {
                     <span>Curso Asociado (Fase 2 de este curso)</span>
                   </label>
                   <select
-                    value={selectedScenario.courseSlug || (courses[0]?.slug || 'datagan-master-pro')}
+                    value={selectedScenario.courseSlug || (courses[0]?.slug || '')}
                     onChange={e => setSelectedScenario({ ...selectedScenario, courseSlug: e.target.value })}
                     className="w-full px-4 py-2 bg-[#f6f7f9] border border-[#d1d2e0] rounded-lg text-sm font-medium"
                   >

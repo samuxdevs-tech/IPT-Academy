@@ -41,7 +41,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
   const queryCode = searchParams ? searchParams.get('code') || '' : '';
   const initialCode = (forcedCode || queryCode).trim().toUpperCase();
 
-  const [code, setCode] = useState(initialCode || 'IPT-CERT-2026-DATAGAN-PRO');
+  const [code, setCode] = useState(initialCode || '');
   const [cert, setCert] = useState<Certificate | null>(null);
   const [searchedCode, setSearchedCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -56,7 +56,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
     setNotFound(false);
     setSearchedCode(clean);
 
-    // 1. Primero intentar consultar en la base de datos local mock / localStorage
+    // 1. Primero intentar consultar en la base de datos local / localStorage
     const localDb = getLocalDatabase();
     const localCert = localDb.certificates?.find(
       (c) => c.id.toUpperCase() === clean || c.verificationHash?.toUpperCase() === clean
@@ -69,32 +69,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
       return;
     }
 
-    // 2. Si es el certificado demo de DataGan o coincide parcialmente
-    if (clean.includes('DATAGAN') || clean.includes('LOCAL') || clean.includes('TG-CERT') || clean.includes('IPT-CERT')) {
-      const demoCert: Certificate = {
-        id: clean,
-        userId: localDb.student?.uid || 'local-student-01',
-        studentName: localDb.student?.displayName || 'Iván Samuel Pérez',
-        studentEmail: localDb.student?.email || 'ivan@ipt.local',
-        courseSlug: 'datagan-master-pro',
-        courseTitle: 'Arquitectura de Datos y Gestión Operativa con DataGan Pro',
-        instructor: 'Iván Samuel Pérez Torrenegra',
-        instructorRole: 'Fundador y Director General · Ivan Perez Tech (IPT)',
-        issueDate: '2026-10-18T18:00:00Z',
-        issueDateFormatted: '18 de octubre de 2026',
-        completionHours: 20,
-        scoreAverage: 4.8,
-        progressPercent: 100,
-        verificationHash: `IPT-HASH-${clean}-VALIDATED`,
-        status: 'valid',
-      };
-      setCert(demoCert);
-      setNotFound(false);
-      setLoading(false);
-      return;
-    }
-
-    // 3. Consultar en Firebase RTDB si está disponible
+    // 2. Consultar en Firebase RTDB si está disponible
     try {
       const snap = await get(ref(db, `certificates/${clean}`));
       if (snap.exists()) {
@@ -117,9 +92,6 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
     if (initialCode) {
       setCode(initialCode);
       resolveCertificate(initialCode);
-    } else {
-      // Por defecto consultar el certificado estándar de prueba para experiencia fluida
-      resolveCertificate('IPT-CERT-2026-DATAGAN-PRO');
     }
   }, [initialCode]);
 

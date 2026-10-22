@@ -36,7 +36,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
   const { user } = useAuth();
 
   const [selectedSlug, setSelectedSlug] = useState<string>(
-    courseSlug || courses[0]?.slug || 'datagan-master-pro'
+    courseSlug || courses[0]?.slug || ''
   );
   const [copied, setCopied] = useState(false);
   const [userProgress, setUserProgress] = useState<Record<string, any>>({});
@@ -150,10 +150,9 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
 
   const computedGradeAverage = useMemo(() => {
     if (!gradedAssignments.length) {
-      // Fallback a la nota del registro de base de datos local si existe
       const localDb = getLocalDatabase();
-      const existingCert = localDb.certificates?.find(c => c.courseSlug === activeCourse?.slug);
-      return existingCert?.scoreAverage || 4.8;
+      const existingCert = localDb.certificates?.find((c) => c.courseSlug === activeCourse?.slug);
+      return existingCert?.scoreAverage || 0;
     }
     const sum = gradedAssignments.reduce((acc, a) => acc + (a.finalGrade || 0), 0);
     return Number((sum / gradedAssignments.length).toFixed(1));
@@ -165,7 +164,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
   const activeCertificate: Certificate = useMemo(() => {
     const localDb = getLocalDatabase();
     const existing = localDb.certificates?.find(
-      (c) => c.courseSlug === (activeCourse?.slug || 'datagan-master-pro')
+      (c) => c.courseSlug === (activeCourse?.slug || '')
     );
 
     const now = new Date();
@@ -174,26 +173,26 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
       'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
     ];
     const formattedDate = `${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
-    const id = existing?.id || 'IPT-CERT-2026-DATAGAN-PRO';
+    const id = existing?.id || `IPT-CERT-${Date.now()}`;
 
     return {
       id,
-      userId: user?.uid || 'local-student-01',
+      userId: user?.uid || '',
       studentName: officialStudentName,
-      studentEmail: user?.email || 'ivan@ipt.local',
-      courseSlug: activeCourse?.slug || 'datagan-master-pro',
-      courseTitle: activeCourse?.title || 'Arquitectura de Datos y Gestión Operativa con DataGan Pro',
-      instructor: 'Iván Samuel Pérez Torrenegra',
-      instructorRole: 'Fundador y Director General · Ivan Perez Tech (IPT)',
+      studentEmail: user?.email || '',
+      courseSlug: activeCourse?.slug || '',
+      courseTitle: activeCourse?.title || '',
+      instructor: activeCourse?.instructor?.name || 'Instructor IPT',
+      instructorRole: activeCourse?.instructor?.role || 'Docente Titular · IPT Course',
       issueDate: existing?.issueDate || now.toISOString(),
       issueDateFormatted: existing?.issueDateFormatted || formattedDate,
       completionHours: 20,
       scoreAverage: computedGradeAverage,
-      progressPercent: 100,
-      verificationHash: `IPT-HASH-7F4A9B1C-2026-SECURE`,
-      status: 'valid',
+      progressPercent: progressPercent,
+      verificationHash: existing?.verificationHash || `IPT-HASH-${id}`,
+      status: 'valid' as const,
     };
-  }, [activeCourse, officialStudentName, user, computedGradeAverage]);
+  }, [activeCourse, officialStudentName, user, computedGradeAverage, progressPercent]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(activeCertificate.id);
@@ -283,8 +282,28 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
           </div>
         </section>
 
-        {/* REGLA DE BLOQUEO ESTRICTO: % CURSO == 100% Y NOTA >= NOTA MÍNIMA */}
-        {!isCourseCompleted ? (
+        {/* CASO: AÚN NO HAY CURSOS REGISTRADOS EN LA PLATAFORMA */}
+        {!activeCourse ? (
+          <section className="bg-white rounded-3xl border border-[#e5e5e5] p-10 md:p-14 text-center space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-[#f2f2f2] flex items-center justify-center mx-auto text-[#606060]">
+              <Award className="w-7 h-7" />
+            </div>
+            <h2 className="text-lg font-bold text-[#0f0f0f]">
+              Aún no hay cursos publicados en la plataforma
+            </h2>
+            <p className="text-xs text-[#606060] max-w-md mx-auto leading-relaxed">
+              En cuanto un instructor o administrador publique un curso oficial y lo completes satisfactoriamente, aquí podrás consultar, verificar y descargar tu diploma oficial.
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/"
+                className="px-5 py-2.5 rounded-full bg-[#0f0f0f] hover:bg-[#272727] text-white text-xs font-semibold inline-block"
+              >
+                Volver al catálogo principal
+              </Link>
+            </div>
+          </section>
+        ) : !isCourseCompleted ? (
           <section className="bg-white rounded-3xl border-2 border-amber-400/40 shadow-sm p-8 md:p-12 text-center space-y-6">
             <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-600 mx-auto">
               <Lock className="w-8 h-8" />
@@ -321,7 +340,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
 
             <div>
               <Link
-                href={`/course?course=${activeCourse?.slug || 'datagan-master-pro'}`}
+                href={`/course?course=${activeCourse?.slug || ''}`}
                 className="px-6 py-3 rounded-xl bg-[#065fd4] hover:bg-[#054db2] text-white text-xs font-black uppercase tracking-wider inline-flex items-center gap-2 shadow-sm transition-all"
               >
                 <PlayCircle className="w-4 h-4" />

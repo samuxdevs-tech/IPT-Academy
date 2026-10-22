@@ -15,7 +15,7 @@ export interface LocalStudentUser {
 }
 
 export interface LocalDatabaseState {
-  student: LocalStudentUser;
+  student: LocalStudentUser | null;
   courses: Course[];
   assignments: AssignmentItem[];
   calendar: InstitutionalCalendarEvent[];
@@ -82,10 +82,11 @@ export function saveLocalDatabase(updated: Partial<LocalDatabaseState>): LocalDa
  * Actualiza el nombre del estudiante de prueba localmente sin requerir cuenta ni contraseña.
  */
 export function setLocalStudentName(name: string): LocalStudentUser {
-  const clean = name.trim() || 'Estudiante de Prueba';
+  const clean = name.trim() || 'Estudiante';
   const db = getLocalDatabase();
   const updatedStudent: LocalStudentUser = {
-    ...db.student,
+    uid: db.student?.uid || `local-${Date.now()}`,
+    role: db.student?.role || 'student',
     displayName: clean,
     email: `${clean.toLowerCase().replace(/\s+/g, '.')}@ipt.local`,
   };

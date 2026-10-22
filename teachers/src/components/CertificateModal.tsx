@@ -25,10 +25,10 @@ export default function CertificateModal({
   isOpen,
   onClose,
   user,
-  courseSlug = 'datagan-master-pro',
-  courseTitle = 'DataGan 360 & TecnoGan: Certificación de Operaciones y Modelación Zootécnica',
+  courseSlug = '',
+  courseTitle = '',
   defaultStudentName,
-  scoreAverage = 98,
+  scoreAverage = 5.0,
   progressPercent = 100,
   initialCertificate = null,
 }: CertificateModalProps) {

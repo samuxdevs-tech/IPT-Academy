@@ -121,6 +121,8 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
         'ipt_lms_calendar_v2',
         'ipt_lms_live_v1',
         'ipt_lms_live_v2',
+        'ipt_real_database_state_v1',
+        'ipt_course_real_submissions_v1',
       ].forEach((k) => localStorage.removeItem(k));
 
       const savedTz = localStorage.getItem(STORAGE_KEYS.tz);

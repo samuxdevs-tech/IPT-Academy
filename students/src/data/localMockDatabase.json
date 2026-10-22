@@ -1,10 +1,5 @@
 {
-  "student": {
-    "uid": "",
-    "displayName": "",
-    "email": "",
-    "role": "student"
-  },
+  "student": null,
   "courses": [],
   "assignments": [],
   "calendar": [],

@@ -3,12 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { VerifyView } from '@/app/verify/page';
 
-const DEFAULT_CODES = [
-  'IPT-CERT-2026-DATAGAN-PRO',
-  'cert-local-1',
-  'TG-CERT-DEMO',
-  'TG-CERT-8A9F2-X7B1',
-];
+const DEFAULT_CODES: string[] = ['IPT-VERIFY'];
 
 export function generateStaticParams() {
   const codes = new Set<string>(DEFAULT_CODES);
