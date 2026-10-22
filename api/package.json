@@ -5,14 +5,18 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "wrangler dev",
+    "test": "tsx --test src/tests/*.test.ts",
     "deploy": "wrangler deploy",
     "db:init": "wrangler d1 execute ipt-course-db --local --file=./schema.sql"
   },
   "dependencies": {
-    "hono": "^4.6.14"
+    "hono": "^4.6.14",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241218.0",
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.2",
     "wrangler": "^3.99.0"
   }

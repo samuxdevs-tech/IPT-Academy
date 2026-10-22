@@ -1,5 +1,15 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import {
+  CreateLiveClassSchema,
+  RequestBookingSchema,
+  ApproveBookingSchema,
+  RejectBookingSchema,
+  CancelBookingSchema,
+  GrantQuotaSchema,
+} from './schemas/liveClasses';
+import { LiveClassService } from './services/liveClassService';
+import { QuotaLedgerService } from './services/quotaLedgerService';
 
 export interface Env {
   DB: D1Database;
@@ -142,10 +152,10 @@ app.post('/api/assignments', async (c) => {
 app.post('/api/submissions/upload', async (c) => {
   try {
     const formData = await c.req.formData();
-    const file = formData.get('file');
+    const file = formData.get('file') as any;
     const submissionId = (formData.get('submissionId') as string) || `sub-${Date.now()}`;
 
-    if (!file || !(file instanceof File)) {
+    if (!file || typeof file === 'string' || !file.name) {
       return c.json({ success: false, error: 'No se envió ningún archivo' }, 400);
     }
 
@@ -567,6 +577,201 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA EXACTA (S
     });
   } catch (err: any) {
     return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// ============================================================================
+// 4. SISTEMA DE CLASES EN VIVO & LIBRO MAYOR DE CUPOS (CLASE AA+)
+// ============================================================================
+
+// 4.1. Crear una clase en vivo (Docente)
+app.post('/api/live/classes', async (c) => {
+  try {
+    const body = await c.req.json();
+    const parsed = CreateLiveClassSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ success: false, errors: parsed.error.format() }, 400);
+    }
+
+    const created = await LiveClassService.createLiveClass(c.env.DB, parsed.data);
+    return c.json({ success: true, data: created }, 201);
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 400);
+  }
+});
+
+// 4.2. Listar clases en vivo (Filtros: courseSlug, teacherUid, status)
+app.get('/api/live/classes', async (c) => {
+  try {
+    const courseSlug = c.req.query('courseSlug');
+    const teacherUid = c.req.query('teacherUid');
+    const status = c.req.query('status') || 'scheduled';
+
+    let query = `
+      SELECT c.*,
+             (SELECT COUNT(*) FROM class_bookings b WHERE b.class_id = c.id AND b.status IN ('pending_hold', 'confirmed')) as enrolled_count
+      FROM live_classes c
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (courseSlug) {
+      query += ' AND c.course_slug = ?';
+      params.push(courseSlug);
+    }
+    if (teacherUid) {
+      query += ' AND c.teacher_uid = ?';
+      params.push(teacherUid);
+    }
+    if (status !== 'all') {
+      query += ' AND c.status = ?';
+      params.push(status);
+    }
+
+    query += ' ORDER BY c.scheduled_at_utc ASC';
+
+    const result = await c.env.DB.prepare(query).bind(...params).all();
+    return c.json({ success: true, data: result.results || [] });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// 4.3. Detalle de una clase con sus inscritos
+app.get('/api/live/classes/:id', async (c) => {
+  try {
+    const id = c.req.param('id');
+    const liveClass = await c.env.DB.prepare('SELECT * FROM live_classes WHERE id = ?').bind(id).first();
+    if (!liveClass) {
+      return c.json({ success: false, error: 'Clase no encontrada' }, 404);
+    }
+
+    const bookings = await c.env.DB.prepare(
+      'SELECT * FROM class_bookings WHERE class_id = ? ORDER BY created_at_utc ASC'
+    ).bind(id).all();
+
+    return c.json({
+      success: true,
+      data: {
+        ...liveClass,
+        bookings: bookings.results || [],
+      },
+    });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// 4.4. Solicitar reserva de cupo (Estudiante vía TutorIA o Calendario)
+app.post('/api/live/bookings/request', async (c) => {
+  try {
+    const body = await c.req.json();
+    const parsed = RequestBookingSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ success: false, errors: parsed.error.format() }, 400);
+    }
+
+    const result = await LiveClassService.requestBooking(c.env.DB, parsed.data);
+    return c.json({ success: true, data: result }, 201);
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 400);
+  }
+});
+
+// 4.5. Aprobar reserva (Docente)
+app.post('/api/live/bookings/:id/approve', async (c) => {
+  try {
+    const bookingId = c.req.param('id');
+    const body = await c.req.json();
+    const parsed = ApproveBookingSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ success: false, errors: parsed.error.format() }, 400);
+    }
+
+    const result = await LiveClassService.approveBooking(c.env.DB, bookingId, parsed.data.teacherUid);
+    return c.json({ success: true, data: result });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 400);
+  }
+});
+
+// 4.6. Rechazar reserva (Docente)
+app.post('/api/live/bookings/:id/reject', async (c) => {
+  try {
+    const bookingId = c.req.param('id');
+    const body = await c.req.json();
+    const parsed = RejectBookingSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ success: false, errors: parsed.error.format() }, 400);
+    }
+
+    const result = await LiveClassService.rejectBooking(c.env.DB, bookingId, parsed.data.teacherUid, parsed.data.reason);
+    return c.json({ success: true, data: result });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 400);
+  }
+});
+
+// 4.7. Cancelar reserva (Estudiante con Regla de las 2 horas)
+app.post('/api/live/bookings/:id/cancel', async (c) => {
+  try {
+    const bookingId = c.req.param('id');
+    const body = await c.req.json();
+    const parsed = CancelBookingSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ success: false, errors: parsed.error.format() }, 400);
+    }
+
+    const result = await LiveClassService.cancelBooking(c.env.DB, bookingId, parsed.data.studentUid, parsed.data.reason);
+    return c.json({ success: true, data: result });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 400);
+  }
+});
+
+// 4.8. Barrido de reservas expiradas por TTL de 4 horas
+app.post('/api/live/bookings/sweep-expired', async (c) => {
+  try {
+    const result = await LiveClassService.sweepExpiredHolds(c.env.DB);
+    return c.json({ success: true, data: result });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// 4.9. Consulta de balance de cupos y libro mayor (Estudiante)
+app.get('/api/live/quotas/:studentUid', async (c) => {
+  try {
+    const studentUid = c.req.param('studentUid');
+    const balance = await QuotaLedgerService.getCurrentBalance(c.env.DB, studentUid);
+    const ledger = await QuotaLedgerService.getStudentLedger(c.env.DB, studentUid);
+
+    return c.json({
+      success: true,
+      data: {
+        studentUid,
+        availableQuota: balance,
+        ledger,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
+// 4.10. Asignar cupos mensuales (Planes de pago)
+app.post('/api/live/quotas/grant', async (c) => {
+  try {
+    const body = await c.req.json();
+    const parsed = GrantQuotaSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ success: false, errors: parsed.error.format() }, 400);
+    }
+
+    const newBalance = await QuotaLedgerService.grantQuota(c.env.DB, parsed.data);
+    return c.json({ success: true, data: { studentUid: parsed.data.studentUid, newBalance } });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 400);
   }
 });
 
