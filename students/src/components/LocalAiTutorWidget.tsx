@@ -32,6 +32,17 @@ type PositionZone = 'Abajo a la izquierda' | 'Abajo a la derecha' | 'Al medio';
 // Modelo ligero y rápido compatible con WebGPU para navegadores
 const WEBLLM_MODEL_ID = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
 
+// Helper seguro para formatear fechas sin riesgo de errores de undefined
+const safeDateSlice = (val?: string | null, len = 10): string => {
+  if (!val || typeof val !== 'string') return 'Fecha pendiente';
+  return val.slice(0, len);
+};
+
+const safeDateTime = (val?: string | null): string => {
+  if (!val || typeof val !== 'string') return 'Horario por definir';
+  return val.slice(0, 16).replace('T', ' ');
+};
+
 export default function LocalAiTutorWidget() {
   const { user, effectiveIsAdmin } = useAuth();
   const {
@@ -44,7 +55,7 @@ export default function LocalAiTutorWidget() {
   // Estado de carga silenciosa del motor IA (0 a 100)
   const [loadProgress, setLoadProgress] = useState<number>(0);
   const [isReady, setIsReady] = useState<boolean>(false);
-  const [engineMode, setEngineMode] = useState<'webllm' | 'local-rag'>('webllm');
+  const [engineMode, setEngineMode] = useState<'webllm' | 'local-rag'>('local-rag');
   const engineRef = useRef<any>(null);
 
   // Lecciones completadas del usuario actual sincronizadas desde Firebase
@@ -58,8 +69,8 @@ export default function LocalAiTutorWidget() {
     text: string;
   } | null>(null);
 
-  // Posición movible (por defecto abajo a la izquierda)
-  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 24, y: -1 });
+  // Posición movible con valores por defecto seguros
+  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 24, y: 500 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const dragStartRef = useRef<{
     pointerX: number;
@@ -71,7 +82,7 @@ export default function LocalAiTutorWidget() {
     pointerX: 0,
     pointerY: 0,
     startX: 24,
-    startY: 0,
+    startY: 500,
     moved: false
   });
 
@@ -146,10 +157,14 @@ export default function LocalAiTutorWidget() {
       const handleResize = () => {
         const mob = window.innerWidth < 768;
         const bottomMargin = mob ? 140 : 96;
-        setPosition((prev) => ({
-          x: Math.min(Math.max(12, prev.x), window.innerWidth - 84),
-          y: Math.min(Math.max(64, prev.y), window.innerHeight - bottomMargin)
-        }));
+        setPosition((prev) => {
+          const prevX = prev?.x ?? 24;
+          const prevY = prev?.y ?? 500;
+          return {
+            x: Math.min(Math.max(12, prevX), window.innerWidth - 84),
+            y: Math.min(Math.max(64, prevY), window.innerHeight - bottomMargin)
+          };
+        });
       };
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
@@ -158,10 +173,11 @@ export default function LocalAiTutorWidget() {
 
   // Determinar en qué zona de la pantalla está el icono movible
   const getPositionZoneLabel = useCallback(
-    (xPos: number): PositionZone => {
+    (xPos?: number): PositionZone => {
       if (typeof window === 'undefined') return 'Abajo a la izquierda';
+      const safeX = typeof xPos === 'number' && !isNaN(xPos) ? xPos : 24;
       const width = window.innerWidth;
-      const centerX = xPos + 32;
+      const centerX = safeX + 32;
       if (centerX < width * 0.35) {
         return 'Abajo a la izquierda';
       }
@@ -231,18 +247,40 @@ export default function LocalAiTutorWidget() {
     [user]
   );
 
-  // Inicialización silenciosa de WebLLM + Índice Contextual en vivo
+  // Inicialización persistente de WebLLM + Índice Contextual en vivo
   useEffect(() => {
     let cancelled = false;
-    let progressValue = 4;
-    setLoadProgress(4);
 
-    // Avance visual suave mientras se prepara el motor WebLLM o el motor contextual local
+    // Si ya existe la instancia global en memoria, reutilizarla instantáneamente (0ms)
+    if (typeof window !== 'undefined' && (window as any).__IPT_WEBLLM_ENGINE__) {
+      engineRef.current = (window as any).__IPT_WEBLLM_ENGINE__;
+      setEngineMode('webllm');
+      setLoadProgress(100);
+      setIsReady(true);
+      return;
+    }
+
+    // Si el usuario ya descargó el tutor previamente en este dispositivo, marcar listo al instante
+    const isCachedLocally =
+      typeof window !== 'undefined' &&
+      window.localStorage.getItem('ipt_ai_tutor_cached_v1') === 'true';
+
+    if (isCachedLocally) {
+      setLoadProgress(100);
+      setIsReady(true);
+    }
+
+    let progressValue = isCachedLocally ? 100 : 4;
+    if (!isCachedLocally) {
+      setLoadProgress(4);
+    }
+
+    // Avance visual suave mientras se prepara el motor
     const smoothTimer = setInterval(() => {
-      if (cancelled) return;
-      progressValue = Math.min(92, progressValue + Math.random() * 6 + 2);
+      if (cancelled || isCachedLocally) return;
+      progressValue = Math.min(92, progressValue + Math.random() * 8 + 3);
       setLoadProgress((prev) => (prev < 92 ? Math.max(prev, Math.round(progressValue)) : prev));
-    }, 380);
+    }, 280);
 
     const initLocalAi = async () => {
       try {
@@ -251,38 +289,59 @@ export default function LocalAiTutorWidget() {
           typeof navigator !== 'undefined' && 'gpu' in navigator && Boolean((navigator as any).gpu);
 
         if (hasWebGPU) {
-          const webllm = await import('@mlc-ai/web-llm');
-          const engine = await webllm.CreateMLCEngine(WEBLLM_MODEL_ID, {
-            initProgressCallback: (report) => {
-              if (cancelled) return;
-              const pct = Math.min(99, Math.max(8, Math.round((report.progress || 0) * 100)));
-              setLoadProgress((prev) => Math.max(prev, pct));
+          // Validar compatibilidad de shaders de 16 bits (f16) para evitar errores fatales en Windows/Intel GPUs
+          let supportsF16 = false;
+          try {
+            const adapter = await (navigator as any).gpu.requestAdapter();
+            if (adapter?.features?.has('shader-f16')) {
+              supportsF16 = true;
             }
-          });
-
-          if (!cancelled) {
-            engineRef.current = engine;
-            setEngineMode('webllm');
-            clearInterval(smoothTimer);
-            setLoadProgress(100);
-            setIsReady(true);
+          } catch {
+            supportsF16 = false;
           }
-          return;
+
+          if (supportsF16) {
+            const webllm = await import('@mlc-ai/web-llm');
+            const engine = await webllm.CreateMLCEngine(WEBLLM_MODEL_ID, {
+              initProgressCallback: (report) => {
+                if (cancelled) return;
+                const pct = Math.min(99, Math.max(8, Math.round((report.progress || 0) * 100)));
+                setLoadProgress((prev) => Math.max(prev, pct));
+              }
+            });
+
+            if (!cancelled) {
+              engineRef.current = engine;
+              if (typeof window !== 'undefined') {
+                (window as any).__IPT_WEBLLM_ENGINE__ = engine;
+                try {
+                  window.localStorage.setItem('ipt_ai_tutor_cached_v1', 'true');
+                } catch {}
+              }
+              setEngineMode('webllm');
+              clearInterval(smoothTimer);
+              setLoadProgress(100);
+              setIsReady(true);
+              return;
+            }
+          }
         }
       } catch (err) {
-        // Si el navegador no soporta WebGPU o falla la descarga de pesos remotos,
-        // activamos el motor neural contextual local para garantizar costo $0 y disponibilidad 100%
-        console.info('Usando motor contextual local de respaldo:', err);
+        console.info('Activando motor contextual local de alta velocidad:', err);
       }
 
-      // Completar carga con motor contextual local entrenado con los datos de Firebase
-      setTimeout(() => {
-        if (cancelled) return;
+      // Motor contextual local entrenado con Firebase (0 consumo de ancho de banda y 100% confiable)
+      if (!cancelled) {
         clearInterval(smoothTimer);
         setEngineMode('local-rag');
         setLoadProgress(100);
         setIsReady(true);
-      }, 2800);
+        if (typeof window !== 'undefined') {
+          try {
+            window.localStorage.setItem('ipt_ai_tutor_cached_v1', 'true');
+          } catch {}
+        }
+      }
     };
 
     initLocalAi();
@@ -293,19 +352,28 @@ export default function LocalAiTutorWidget() {
     };
   }, []);
 
-  // Disparar la notificación superior exacta apenas se llena al 100%
+  // Disparar la notificación superior exacta apenas se llena al 100% (una vez por sesión para no saturar)
   const hasNotifiedReadyRef = useRef<boolean>(false);
   useEffect(() => {
     if (isReady && !hasNotifiedReadyRef.current) {
       hasNotifiedReadyRef.current = true;
-      const zone = getPositionZoneLabel(position.x);
-      showTopBanner(
-        'ready',
-        `El tutor de inteligencia artificial se encuentra disponible, accede a través del logo (${zone})`,
-        8000
-      );
+      const alreadyNotified =
+        typeof sessionStorage !== 'undefined' &&
+        sessionStorage.getItem('ipt_ai_tutor_notified_v1') === 'true';
+
+      if (!alreadyNotified) {
+        try {
+          sessionStorage.setItem('ipt_ai_tutor_notified_v1', 'true');
+        } catch {}
+        const zone = getPositionZoneLabel(position?.x ?? 24);
+        showTopBanner(
+          'ready',
+          `El tutor de inteligencia artificial se encuentra disponible, accede a través del logo (${zone})`,
+          7000
+        );
+      }
     }
-  }, [isReady, position.x, getPositionZoneLabel, showTopBanner]);
+  }, [isReady, position?.x, getPositionZoneLabel, showTopBanner]);
 
   // Auto-scroll al último mensaje cuando el chat está abierto
   useEffect(() => {
@@ -361,7 +429,7 @@ export default function LocalAiTutorWidget() {
         : assignments
             .map(
               (a) =>
-                `Tarea "${a.title}" (${a.courseTitle}, vence ${a.dueDateUtc}): estado=${a.status}${
+                `Tarea "${a.title}" (${a.courseTitle}, vence ${safeDateSlice(a.dueDateUtc)}): estado=${a.status}${
                   a.finalGrade !== undefined ? `, nota=${a.finalGrade.toFixed(2)}/5.0` : ''
                 }`
             )
@@ -371,7 +439,7 @@ export default function LocalAiTutorWidget() {
       liveSessions.length === 0
         ? 'No hay clases en vivo programadas.'
         : liveSessions
-            .map((s) => `${s.title} con ${s.instructorName} (${s.startTimeUtc})`)
+            .map((s) => `${s.title} con ${s.instructorName} (${safeDateTime(s.startTimeUtc)})`)
             .join(' | ');
 
     return {
@@ -446,7 +514,7 @@ ${upcomingSessions}`
           return `¡Excelente trabajo, ${studentName}! Estás al día: no tienes tareas pendientes por entregar de las ${assignments.length} registradas en el curso.`;
         }
         const list = pending
-          .map((a) => `• "${a.title}" (${a.courseTitle}) — Fecha límite: ${a.dueDateUtc.slice(0, 10)}`)
+          .map((a) => `• "${a.title}" (${a.courseTitle}) — Fecha límite: ${safeDateSlice(a.dueDateUtc)}`)
           .join('\n');
         return `Tienes ${pending.length} tarea(s) pendiente(s) en este momento:\n${list}\n\nPuedes subir tu entrega desde la pestaña "Tareas" en el menú superior.`;
       }
@@ -459,14 +527,14 @@ ${upcomingSessions}`
         const sessionsText =
           liveSessions.length > 0
             ? `Clases en vivo programadas:\n${liveSessions
-                .map((s) => `• ${s.title} (${s.startTimeUtc.slice(0, 16).replace('T', ' ')}) con ${s.instructorName}`)
+                .map((s) => `• ${s.title} (${safeDateTime(s.startTimeUtc)}) con ${s.instructorName}`)
                 .join('\n')}`
             : '';
         const eventsText =
           calendarEvents.length > 0
             ? `Eventos del calendario:\n${calendarEvents
                 .slice(0, 4)
-                .map((e) => `• ${e.title} (${e.startUtc.slice(0, 10)})`)
+                .map((e) => `• ${e.title} (${safeDateSlice(e.startUtc)})`)
                 .join('\n')}`
             : '';
         return [sessionsText, eventsText].filter(Boolean).join('\n\n');
@@ -584,8 +652,8 @@ ${upcomingSessions}`
     dragStartRef.current = {
       pointerX: e.clientX,
       pointerY: e.clientY,
-      startX: position.x,
-      startY: position.y,
+      startX: position?.x ?? 24,
+      startY: position?.y ?? 500,
       moved: false
     };
   };
@@ -602,8 +670,10 @@ ${upcomingSessions}`
     if (typeof window !== 'undefined') {
       const mob = window.innerWidth < 768;
       const bottomMargin = mob ? 140 : 96;
-      const nextX = Math.min(Math.max(12, dragStartRef.current.startX + dx), window.innerWidth - 84);
-      const nextY = Math.min(Math.max(64, dragStartRef.current.startY + dy), window.innerHeight - bottomMargin);
+      const curStartX = dragStartRef.current?.startX ?? 24;
+      const curStartY = dragStartRef.current?.startY ?? 500;
+      const nextX = Math.min(Math.max(12, curStartX + dx), window.innerWidth - 84);
+      const nextY = Math.min(Math.max(64, curStartY + dy), window.innerHeight - bottomMargin);
       setPosition({ x: nextX, y: nextY });
     }
   };
@@ -632,7 +702,7 @@ ${upcomingSessions}`
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (loadProgress / 100) * circumference;
 
-  const currentZone = getPositionZoneLabel(position.x);
+  const currentZone = getPositionZoneLabel(position?.x ?? 24);
 
   return (
     <>
@@ -700,9 +770,9 @@ ${upcomingSessions}`
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           style={{
-            left: `${position.x}px`,
-            top: position.y >= 0 ? `${position.y}px` : undefined,
-            bottom: position.y < 0 ? '24px' : undefined,
+            left: `${position?.x ?? 24}px`,
+            top: (position?.y ?? 500) >= 0 ? `${position?.y ?? 500}px` : undefined,
+            bottom: (position?.y ?? 500) < 0 ? '24px' : undefined,
             touchAction: 'none'
           }}
           className={`fixed z-[95] select-none flex flex-col items-center group ${
