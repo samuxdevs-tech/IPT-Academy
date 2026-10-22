@@ -7,6 +7,7 @@ import {
   RejectBookingSchema,
   CancelBookingSchema,
   GrantQuotaSchema,
+  ManualRefundSchema,
 } from './schemas/liveClasses';
 import { LiveClassService } from './services/liveClassService';
 import { QuotaLedgerService } from './services/quotaLedgerService';
@@ -772,6 +773,26 @@ app.post('/api/live/quotas/grant', async (c) => {
     return c.json({ success: true, data: { studentUid: parsed.data.studentUid, newBalance } });
   } catch (err: any) {
     return c.json({ success: false, error: err.message }, 400);
+  }
+});
+
+// 4.11. Devolución manual de cupos (ESTRICTAMENTE HUMANO - Prohibido para IA)
+app.post('/api/live/quotas/manual-refund', async (c) => {
+  try {
+    const body = await c.req.json();
+    const parsed = ManualRefundSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ success: false, errors: parsed.error.format() }, 400);
+    }
+
+    const result = await QuotaLedgerService.manualAdminRefund(c.env.DB, parsed.data);
+    return c.json({
+      success: true,
+      message: `Se han devuelto ${parsed.data.amount} cupo(s) al estudiante de forma manual.`,
+      data: result,
+    });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 403);
   }
 });
 

@@ -296,4 +296,40 @@ export class LiveClassesService {
     }
     return 0;
   }
+
+  /**
+   * Devolución manual de cupos autorizada EXCLUSIVAMENTE por un humano
+   */
+  static async manualRefund(params: {
+    studentUid: string;
+    amount: number;
+    reason: string;
+    authorizedByAdminUid: string;
+  }): Promise<{ success: boolean; message: string; newBalance: number }> {
+    const idempotencyKey = `ref_manual_${Date.now()}_${params.studentUid}`;
+    try {
+      const res = await fetch(`${API_BASE}/api/live/quotas/manual-refund`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...params,
+          idempotencyKey,
+        }),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        return {
+          success: true,
+          message: json.message || 'Cupos devueltos con éxito.',
+          newBalance: json.data?.newBalance || 0,
+        };
+      } else {
+        const errJson = await res.json();
+        throw new Error(errJson.error || 'Error al autorizar la devolución manual.');
+      }
+    } catch (err: any) {
+      throw new Error(err.message || 'Error de conexión.');
+    }
+  }
 }

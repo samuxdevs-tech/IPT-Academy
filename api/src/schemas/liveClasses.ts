@@ -55,6 +55,18 @@ export const GrantQuotaSchema = z.object({
 
 export type GrantQuotaInput = z.infer<typeof GrantQuotaSchema>;
 
+// Esquema para Devolución Manual de Cupos (ESTRICTAMENTE HUMANO)
+export const ManualRefundSchema = z.object({
+  studentUid: z.string().min(1, 'El UID del estudiante es obligatorio'),
+  amount: z.number().int().min(1, 'La cantidad a devolver debe ser al menos 1'),
+  reason: z.string().min(5, 'Debes ingresar un motivo detallado para la devolución'),
+  authorizedByAdminUid: z.string().min(1, 'Se requiere la firma del administrador/docente humano'),
+  idempotencyKey: z.string().min(8, 'Se requiere clave de idempotencia'),
+  bookingId: z.string().optional(),
+});
+
+export type ManualRefundInput = z.infer<typeof ManualRefundSchema>;
+
 // Tipos de estados
 export type LiveClassStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 export type BookingStatus =

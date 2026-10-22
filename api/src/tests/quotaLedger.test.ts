@@ -227,3 +227,52 @@ test('5. Integridad del Historial de Auditoría (Ledger Statement)', async () =>
   const finalBalance = await QuotaLedgerService.getCurrentBalance(db, studentUid);
   assert.equal(finalBalance, 7, 'El balance final disponible debe ser exactamente 7');
 });
+
+test('6. Devolución Manual de Cupos Autorizada Exclusivamente por Humano', async () => {
+  const db = new MockD1Database();
+  const studentUid = 'student_refund_case';
+
+  // 1. Asignar 2 cupos
+  await QuotaLedgerService.grantQuota(db, {
+    studentUid,
+    amount: 2,
+    reason: 'Plan Básico',
+    idempotencyKey: 'grant_basic_01',
+  });
+
+  // 2. Administrador humano autoriza devolución manual por fallo de red justificado
+  const refundResult = await QuotaLedgerService.manualAdminRefund(db, {
+    studentUid,
+    amount: 1,
+    reason: 'Excusa médica validada por el docente',
+    authorizedByAdminUid: 'admin_ivan_samuel_perez',
+    idempotencyKey: 'manual_refund_med_01',
+  });
+
+  assert.equal(refundResult.newBalance, 3, 'El balance debe ser 3 tras la devolución manual');
+
+  const history = await QuotaLedgerService.getStudentLedger(db, studentUid);
+  const refundRow = history.find((h) => h.action === 'ADMIN_ADJUST');
+  assert.ok(refundRow, 'Debe existir la entrada ADMIN_ADJUST en el Ledger');
+  assert.equal(refundRow.delta, 1);
+  assert.match(refundRow.reason, /admin_ivan_samuel_perez/);
+});
+
+test('7. Prohibición Estricta: La IA (TutorIA) no puede devolver cupos', async () => {
+  const db = new MockD1Database();
+  const studentUid = 'student_ai_exploit';
+
+  // Intento de la IA de autorizar devolución
+  await assert.rejects(
+    async () => {
+      await QuotaLedgerService.manualAdminRefund(db, {
+        studentUid,
+        amount: 1,
+        reason: 'El estudiante me pidió amablemente un cupo',
+        authorizedByAdminUid: 'tutoria_virtual_bot',
+        idempotencyKey: 'illegal_ai_refund',
+      });
+    },
+    /HUMAN_AUTHORIZATION_REQUIRED/
+  );
+});

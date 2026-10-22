@@ -462,7 +462,8 @@ ${coursesSummary}
 - Tareas registradas:
 ${assignmentsSummary}
 - Clases en vivo:
-${upcomingSessions}`
+${upcomingSessions}
+- Política estricta de cupos: Como IA tienes terminantemente prohibido tramitar reembolsos, devoluciones o alterar balances de cupos. Si te solicitan una devolución, aclara que esta acción está reservada exclusivamente para un docente o administrador humano.`
     };
   }, [
     user,
@@ -484,6 +485,22 @@ ${upcomingSessions}`
         avgScore,
         roleLabel
       } = liveKnowledgeContext;
+
+      // 0. Solicitudes de devolución de cupos o reembolsos (Protegido: Solo humanos)
+      if (
+        q.includes('devolver cupo') ||
+        q.includes('devuelveme') ||
+        q.includes('devuélveme') ||
+        q.includes('devolución') ||
+        q.includes('devolucion') ||
+        q.includes('reembolso') ||
+        q.includes('reembolsar') ||
+        q.includes('regresar mi cupo') ||
+        q.includes('regresame mi cupo') ||
+        q.includes('regrésame mi cupo')
+      ) {
+        return `Hola ${studentName}. Como asistente virtual tengo terminantemente restringida cualquier modificación o reembolso de cupos. La devolución de créditos de clases en vivo es una operación contable delicada que debe ser autorizada y ejecutada exclusivamente por un docente o administrador humano. Por favor comunícate directamente con tu profesor o el equipo de soporte de IPT Course para que verifiquen tu caso.`;
+      }
 
       // 1. Consultas sobre Clases en Vivo, Agendamiento o Cupos Mensuales
       if (

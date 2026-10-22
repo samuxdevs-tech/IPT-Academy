@@ -44,7 +44,7 @@ export default function LiveClassesStudioModal({
   const { user } = useAuth();
   const { courses } = useLms();
 
-  const [activeTab, setActiveTab] = useState<'classes' | 'inbox' | 'new_class'>(defaultTab);
+  const [activeTab, setActiveTab] = useState<'classes' | 'inbox' | 'new_class' | 'refunds'>(defaultTab);
   const [classes, setClasses] = useState<LiveClassItem[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>('all');
   const [bookings, setBookings] = useState<ClassBookingItem[]>([]);
@@ -60,6 +60,12 @@ export default function LiveClassesStudioModal({
   const [formMaxCapacity, setFormMaxCapacity] = useState(15);
   const [formAutoApprove, setFormAutoApprove] = useState(false);
   const [creatingClass, setCreatingClass] = useState(false);
+
+  // Formulario para Devolución Manual de Cupos (Solo Humanos)
+  const [refundStudentUid, setRefundStudentUid] = useState('');
+  const [refundAmount, setRefundAmount] = useState(1);
+  const [refundReason, setRefundReason] = useState('');
+  const [processingRefund, setProcessingRefund] = useState(false);
 
   // Inicializar fecha por defecto (mañana a las 18:00)
   useEffect(() => {
@@ -191,6 +197,39 @@ export default function LiveClassesStudioModal({
     }
   };
 
+  // Manejador para Devolución Manual de Cupos (Solo Humanos)
+  const handleManualRefund = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.uid) {
+      alert('Debes ser un administrador humano autenticado para devolver cupos.');
+      return;
+    }
+    if (!refundStudentUid.trim() || !refundReason.trim()) {
+      alert('Ingresa el correo/UID del estudiante y el motivo justificado.');
+      return;
+    }
+
+    setProcessingRefund(true);
+    try {
+      const res = await LiveClassesService.manualRefund({
+        studentUid: refundStudentUid.trim(),
+        amount: refundAmount,
+        reason: refundReason.trim(),
+        authorizedByAdminUid: user.displayName || user.email || user.uid,
+      });
+
+      setActionNotice(`Devolución completada: ${refundAmount} cupo(s) reintegrados. Nuevo balance: ${res.newBalance}`);
+      setRefundStudentUid('');
+      setRefundReason('');
+      setRefundAmount(1);
+      setTimeout(() => setActionNotice(null), 5000);
+    } catch (err: any) {
+      alert(`Error en la devolución: ${err.message}`);
+    } finally {
+      setProcessingRefund(false);
+    }
+  };
+
   // Calcular tiempo restante del TTL
   const formatTtlRemaining = (expiresAtUtc: string) => {
     const expiresMs = new Date(expiresAtUtc).getTime();
@@ -301,6 +340,20 @@ export default function LiveClassesStudioModal({
               <div className="flex items-center space-x-1.5">
                 <Plus className="w-3.5 h-3.5" />
                 <span>Programar Clase</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('refunds')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                activeTab === 'refunds'
+                  ? 'bg-white text-neutral-900 shadow-sm'
+                  : 'text-neutral-600 hover:text-neutral-900'
+              }`}
+            >
+              <div className="flex items-center space-x-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Devolución de Cupos</span>
               </div>
             </button>
           </div>
@@ -711,6 +764,102 @@ export default function LiveClassesStudioModal({
                       <>
                         <Plus className="w-3.5 h-3.5" />
                         <span>Confirmar Programación</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* TAB 4: DEVOLUCIÓN MANUAL DE CUPOS (ESTRICTAMENTE HUMANO) */}
+          {activeTab === 'refunds' && (
+            <div className="bg-white rounded-xl p-6 border border-[#e5e5ea] max-w-2xl mx-auto space-y-4">
+              <div className="flex items-center space-x-3 pb-3 border-b border-[#e5e5ea]">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-neutral-900">Devolución Manual de Cupos (Solo Humanos)</h3>
+                  <p className="text-xs text-neutral-500">
+                    Operación protegida. La IA (TutorIA) no tiene permiso para devolver cupos.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start space-x-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <span className="font-bold">Política Estricta de Integridad Financiera</span>
+                  <p className="text-[11px] text-amber-800 leading-relaxed">
+                    Toda devolución queda auditada de forma inmutable en el Libro Mayor (`quota_ledger`) vinculada a tu firma de administrador humano. Úsalo para reposiciones por fallas técnicas justificadas o excusas médicas.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleManualRefund} className="space-y-4 pt-1">
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Correo o UID del Estudiante *
+                  </label>
+                  <input
+                    type="text"
+                    value={refundStudentUid}
+                    onChange={(e) => setRefundStudentUid(e.target.value)}
+                    placeholder="ejemplo@correo.com o student_uid"
+                    required
+                    className="w-full px-3 py-2 text-xs bg-[#f5f5f7] border border-[#e5e5ea] rounded-xl text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Cantidad de Cupos a Devolver *
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={refundAmount}
+                    onChange={(e) => setRefundAmount(Number(e.target.value))}
+                    required
+                    className="w-full px-3 py-2 text-xs bg-[#f5f5f7] border border-[#e5e5ea] rounded-xl text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Motivo Justificado de la Devolución (Obligatorio) *
+                  </label>
+                  <textarea
+                    value={refundReason}
+                    onChange={(e) => setRefundReason(e.target.value)}
+                    rows={3}
+                    placeholder="Describe por qué se autoriza la reposición (ej: Falla de energía eléctrica verificada en la zona)..."
+                    required
+                    className="w-full px-3 py-2 text-xs bg-[#f5f5f7] border border-[#e5e5ea] rounded-xl text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 resize-none"
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('classes')}
+                    className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold rounded-xl transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={processingRefund}
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center space-x-1.5"
+                  >
+                    {processingRefund ? (
+                      <span>Procesando en Ledger...</span>
+                    ) : (
+                      <>
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Autorizar Devolución Manual</span>
                       </>
                     )}
                   </button>

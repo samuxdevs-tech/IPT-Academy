@@ -250,4 +250,47 @@ export class QuotaLedgerService {
 
     return result.results || [];
   }
+
+  /**
+   * Devolución o ajuste manual de cupos ejecutado EXCLUSIVAMENTE por un humano autorizado.
+   * La IA (TutorIA) tiene PROHIBIDO invocar este método.
+   */
+  static async manualAdminRefund(
+    db: any,
+    params: {
+      studentUid: string;
+      amount: number;
+      reason: string;
+      authorizedByAdminUid: string;
+      idempotencyKey: string;
+      bookingId?: string;
+    }
+  ): Promise<{ newBalance: number; transactionId: string }> {
+    const callerId = params.authorizedByAdminUid.toLowerCase();
+    if (!params.authorizedByAdminUid || callerId.includes('ai') || callerId.includes('bot') || callerId.includes('tutoria')) {
+      throw new Error('HUMAN_AUTHORIZATION_REQUIRED: Solo un docente o administrador humano verificado puede autorizar la devolución de cupos.');
+    }
+
+    const currentBalance = await this.getCurrentBalance(db, params.studentUid);
+    const newBalance = currentBalance + params.amount;
+    const nowIso = new Date().toISOString();
+    const id = `qld_human_${crypto.randomUUID()}`;
+
+    await db.prepare(
+      `INSERT INTO quota_ledger (id, student_uid, booking_id, action, delta, balance_after, reason, idempotency_key, created_at_utc)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      id,
+      params.studentUid,
+      params.bookingId || null,
+      'ADMIN_ADJUST',
+      params.amount,
+      newBalance,
+      `[Devolución Manual Autorizada por Humano - Admin ${params.authorizedByAdminUid}]: ${params.reason}`,
+      params.idempotencyKey,
+      nowIso
+    ).run();
+
+    return { newBalance, transactionId: id };
+  }
 }
