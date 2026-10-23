@@ -469,3 +469,55 @@ export interface VideoRetentionPoint {
   replaysCount: number;
   topicLabel: string;
 }
+
+// ============================================================================
+// ESPACIOS DE TRABAJO, CLASES EN VIVO & LIBRO MAYOR DE CUPOS
+// ============================================================================
+
+export type WorkspaceMode = 'teacher' | 'admin';
+
+export interface LiveClassItem {
+  id: string;
+  courseSlug: string;
+  courseTitle: string;
+  title: string;
+  description: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  maxStudents: number;
+  enrolledStudentsCount: number;
+  status: 'scheduled' | 'live' | 'completed' | 'cancelled';
+  teacherUid: string;
+  teacherName: string;
+  roomName: string;
+  autoApprove: boolean;
+  recordingDriveUrl?: string;
+}
+
+export interface BookingItem {
+  id: string;
+  classId: string;
+  studentUid: string;
+  studentName: string;
+  studentEmail: string;
+  status: 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'attended';
+  requestedAt: string;
+  expiresAt: string;
+}
+
+export interface QuotaLedgerEntry {
+  id: string;
+  studentUid: string;
+  type:
+    | 'deposit_monthly'
+    | 'hold_booking'
+    | 'commit_consume'
+    | 'release_cancellation'
+    | 'manual_admin_refund';
+  delta: number;
+  balanceAfter: number;
+  reason: string;
+  authorizedByAdminUid?: string;
+  createdAt: string;
+}
+

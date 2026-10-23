@@ -6,6 +6,7 @@ import { ref, get, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { Course } from '@/types';
 import { normalizeCourse, cleanForFirebase } from '@/lib/courseUtils';
+import { useAuth } from '@/context/AuthContext';
 import WelcomeStudioView from '@/components/WelcomeStudioView';
 import TeacherStudioWorkspaceView from '@/components/TeacherStudioWorkspaceView';
 import MinimalistWorkspaceSelector from '@/components/MinimalistWorkspaceSelector';
@@ -22,15 +23,14 @@ function AdminStudioContent() {
   const requestedCourse = searchParams?.get('course') || undefined;
   const legacyStep = searchParams?.get('step');
   const queryWorkspace = searchParams?.get('workspace') as 'teacher' | 'admin' | null;
-
-  const [workspace, setWorkspace] = useState<'teacher' | 'admin' | null>(null);
+  const { workspace, setWorkspace } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateCourseModalOpen, setIsCreateCourseModalOpen] = useState(false);
   const [isAdminToolsModalOpen, setIsAdminToolsModalOpen] = useState(false);
   const [isLiveStudioModalOpen, setIsLiveStudioModalOpen] = useState(false);
 
-  // Sincronizar espacio de trabajo desde query param o almacenamiento local
+  // Sincronizar espacio de trabajo desde query param si viene explícito
   useEffect(() => {
     if (queryWorkspace === 'teacher' || queryWorkspace === 'admin') {
       setWorkspace(queryWorkspace);
@@ -40,23 +40,10 @@ function AdminStudioContent() {
       setWorkspace('admin');
       return;
     }
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('ipt_studio_workspace') as 'teacher' | 'admin' | null;
-      if (saved === 'teacher' || saved === 'admin') {
-        setWorkspace(saved);
-      }
-    }
-  }, [queryWorkspace, currentView, legacyStep]);
+  }, [queryWorkspace, currentView, legacyStep, setWorkspace]);
 
   const handleSelectWorkspace = (selected: 'teacher' | 'admin' | null) => {
     setWorkspace(selected);
-    if (typeof window !== 'undefined') {
-      if (selected) {
-        localStorage.setItem('ipt_studio_workspace', selected);
-      } else {
-        localStorage.removeItem('ipt_studio_workspace');
-      }
-    }
     const params = new URLSearchParams(searchParams?.toString() || '');
     if (selected) {
       params.set('workspace', selected);
@@ -66,7 +53,8 @@ function AdminStudioContent() {
       params.delete('course');
       params.delete('step');
     }
-    router.push(`/?${params.toString()}`);
+    const queryString = params.toString();
+    router.push(queryString ? `/?${queryString}` : '/');
   };
 
   // Cargar cursos desde Firebase Realtime Database

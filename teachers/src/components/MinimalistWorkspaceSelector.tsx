@@ -2,28 +2,27 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { ROLE_DEFINITIONS } from '@/lib/rbac';
 import { GraduationCap, Shield, Lock } from 'lucide-react';
 
 interface Props {
-  onSelectWorkspace: (workspace: 'teacher' | 'admin') => void;
+  onSelectWorkspace?: (workspace: 'teacher' | 'admin') => void;
 }
 
 export default function MinimalistWorkspaceSelector({ onSelectWorkspace }: Props) {
-  const { user, userRole } = useAuth();
+  const { userLevel, setWorkspace } = useAuth();
   const [deniedNotice, setDeniedNotice] = useState<string | null>(null);
-
-  const effectiveRole = user?.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' ? 'owner' : userRole;
-  const roleDef = ROLE_DEFINITIONS[effectiveRole] || ROLE_DEFINITIONS.student;
-  const userLevel = roleDef.level ?? 1;
 
   const handleSelectAdmin = () => {
     // Rol superior a 3 (Nivel 4: Owner / Superadministrador)
     if (userLevel > 3) {
       setDeniedNotice(null);
-      onSelectWorkspace('admin');
+      if (onSelectWorkspace) {
+        onSelectWorkspace('admin');
+      } else {
+        setWorkspace('admin');
+      }
     } else {
-      setDeniedNotice('Acceso restringido: el espacio de Administrador requiere rol superior a 3.');
+      setDeniedNotice('Acceso restringido: requiere rol de Administrador (Nivel superior a 3)');
       setTimeout(() => setDeniedNotice(null), 4000);
     }
   };
@@ -32,7 +31,11 @@ export default function MinimalistWorkspaceSelector({ onSelectWorkspace }: Props
     // Roles 2, 3 y superiores tienen acceso docente
     if (userLevel >= 2) {
       setDeniedNotice(null);
-      onSelectWorkspace('teacher');
+      if (onSelectWorkspace) {
+        onSelectWorkspace('teacher');
+      } else {
+        setWorkspace('teacher');
+      }
     } else {
       setDeniedNotice('Acceso restringido: requiere rol de Docente o Instructor (Nivel 2 o superior).');
       setTimeout(() => setDeniedNotice(null), 4000);

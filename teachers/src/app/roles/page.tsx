@@ -366,6 +366,35 @@ export default function AdminRolesPage() {
     return matchesRole && matchesSearch;
   });
 
+  // RESTRICCIÓN DE SEGURIDAD ESTRICTA: Nivel superior a 3 (Nivel 4: Superadmin/Owner)
+  if (!canManageRoles) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[70vh] px-4 select-none">
+        <div className="w-full max-w-md bg-white border border-[#e5e5ea] rounded-3xl p-8 text-center space-y-6 shadow-sm animate-in fade-in duration-300">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-base font-bold text-[#1d1d1f]">
+              Acceso restringido
+            </h1>
+            <p className="text-xs text-[#8e8e93] leading-relaxed">
+              El panel de Seguridad y Roles RBAC requiere rol de Administrador (Nivel superior a 3).
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] text-white text-xs font-semibold hover:bg-[#0077ed] transition-colors"
+            >
+              <span>Volver al Inicio</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 bg-[#f4f5f9] text-[#2a2b3f] font-sans pb-20">
       {/* Encabezado sincronizado con la misma validación de la tabla */}

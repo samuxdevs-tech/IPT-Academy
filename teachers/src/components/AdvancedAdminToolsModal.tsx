@@ -17,8 +17,14 @@ import {
   FileSpreadsheet,
   Clock,
   Search,
+  Shield,
+  RotateCcw,
+  Lock,
 } from 'lucide-react';
-import { Course, AssignmentItem } from '@/types';
+import { Course, AssignmentItem, QuotaLedgerEntry } from '@/types';
+import { ref, get, set, push } from 'firebase/database';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 
 interface AdvancedAdminToolsModalProps {
   isOpen: boolean;
@@ -36,13 +42,102 @@ export default function AdvancedAdminToolsModal({
   if (!isOpen) return null;
 
   const [activeTab, setActiveTab] = useState<
-    'bulk' | 'monitor' | 'audit' | 'cohorts' | 'notifications'
+    'bulk' | 'monitor' | 'audit' | 'cohorts' | 'notifications' | 'quotas'
   >('bulk');
 
+  const { user } = useAuth();
   const [bulkStatusNotice, setBulkStatusNotice] = useState<string | null>(null);
   const [notificationSubject, setNotificationSubject] = useState('');
   const [notificationBody, setNotificationBody] = useState('');
   const [notificationNotice, setNotificationNotice] = useState<string | null>(null);
+
+  // Estado para Libro Mayor de Cupos & Reembolso Manual Humano
+  const [quotaTargetUid, setQuotaTargetUid] = useState('');
+  const [quotaReason, setQuotaReason] = useState('');
+  const [quotaSearching, setQuotaSearching] = useState(false);
+  const [quotaStudentBalance, setQuotaStudentBalance] = useState<number | null>(null);
+  const [quotaStudentLedger, setQuotaStudentLedger] = useState<QuotaLedgerEntry[]>([]);
+  const [quotaActionNotice, setQuotaActionNotice] = useState<string | null>(null);
+  const [quotaSubmitting, setQuotaSubmitting] = useState(false);
+
+  const handleLookupQuota = async () => {
+    if (!quotaTargetUid.trim()) return;
+    setQuotaSearching(true);
+    setQuotaActionNotice(null);
+    try {
+      const cleanUid = quotaTargetUid.trim();
+      const quotaSnap = await get(ref(db, `student_quotas/${cleanUid}/live_classes`));
+      if (quotaSnap.exists()) {
+        const val = quotaSnap.val();
+        setQuotaStudentBalance(Number(val?.availableCredits ?? 0));
+      } else {
+        setQuotaStudentBalance(0);
+      }
+
+      const ledgerSnap = await get(ref(db, `quota_ledger/${cleanUid}`));
+      if (ledgerSnap.exists()) {
+        const data = ledgerSnap.val();
+        const entries: QuotaLedgerEntry[] = Object.keys(data).map((k) => ({
+          id: k,
+          studentUid: cleanUid,
+          ...data[k],
+        }));
+        setQuotaStudentLedger(
+          entries.sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        );
+      } else {
+        setQuotaStudentLedger([]);
+      }
+    } catch (err: any) {
+      console.warn('Error al consultar cupos:', err);
+    } finally {
+      setQuotaSearching(false);
+    }
+  };
+
+  const handleManualAdminRefund = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quotaTargetUid.trim() || !quotaReason.trim()) return;
+    setQuotaSubmitting(true);
+    setQuotaActionNotice(null);
+    try {
+      const cleanUid = quotaTargetUid.trim();
+      const current = quotaStudentBalance ?? 0;
+      const nextBalance = current + 1;
+
+      const newEntryRef = push(ref(db, `quota_ledger/${cleanUid}`));
+      const newEntry: Partial<QuotaLedgerEntry> = {
+        studentUid: cleanUid,
+        type: 'manual_admin_refund',
+        delta: 1,
+        balanceAfter: nextBalance,
+        reason: quotaReason.trim(),
+        authorizedByAdminUid: user?.uid || 'human_superadmin',
+        createdAt: new Date().toISOString(),
+      };
+
+      await set(newEntryRef, newEntry);
+      await set(ref(db, `student_quotas/${cleanUid}/live_classes`), {
+        availableCredits: nextBalance,
+        totalAllocatedThisMonth: nextBalance,
+        lastRefundAt: new Date().toISOString(),
+      });
+
+      setQuotaStudentBalance(nextBalance);
+      setQuotaReason('');
+      setQuotaActionNotice(
+        `Reembolso manual aprobado (+1 cupo). Saldo actualizado: ${nextBalance} cupos.`
+      );
+      handleLookupQuota();
+    } catch (err: any) {
+      console.error('Error al emitir reembolso:', err);
+      setQuotaActionNotice(`Error al emitir reembolso: ${err?.message || 'Permiso denegado'}`);
+    } finally {
+      setQuotaSubmitting(false);
+    }
+  };
 
   // Muestra de auditoría
   const auditLogs = [
@@ -227,6 +322,19 @@ export default function AdvancedAdminToolsModal({
           >
             <Bell className="w-3.5 h-3.5" />
             <span>Notificaciones</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('quotas')}
+            className={`py-3 px-3 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap min-h-[44px] flex items-center gap-1.5 ${
+              activeTab === 'quotas'
+                ? 'border-[#0071e3] text-[#0071e3]'
+                : 'border-transparent text-[#8e8e93] hover:text-[#1d1d1f]'
+            }`}
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>Libro Mayor de Cupos</span>
           </button>
         </div>
 
@@ -423,6 +531,148 @@ export default function AdvancedAdminToolsModal({
                 <span>Enviar Comunicado</span>
               </button>
             </form>
+          )}
+
+          {/* 6. Libro Mayor de Cupos & Reembolso Manual Humano (Fase 5) */}
+          {activeTab === 'quotas' && (
+            <div className="space-y-6">
+              {/* Alerta de Invariante de Seguridad */}
+              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs space-y-1">
+                <div className="flex items-center gap-2 font-bold text-amber-950">
+                  <Shield className="w-4 h-4 text-amber-700 shrink-0" />
+                  <span>Regla de Invariante de Auditoría Humana</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-amber-800">
+                  Solo un administrador humano autenticado (Nivel superior a 3) puede emitir reembolsos de cupos. Los asistentes automatizados o bots tienen estrictamente denegado alterar saldos o transacciones del libro mayor.
+                </p>
+              </div>
+
+              {quotaActionNotice && (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{quotaActionNotice}</span>
+                </div>
+              )}
+
+              {/* Buscador de Estudiante */}
+              <div className="bg-neutral-50 rounded-2xl border border-[#e5e5ea] p-4 space-y-3">
+                <label className="block text-xs font-bold text-[#1d1d1f]">
+                  Consultar Estado de Cupos por Identificador de Alumno (UID)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={quotaTargetUid}
+                    onChange={(e) => setQuotaTargetUid(e.target.value)}
+                    placeholder="Pega el UID del estudiante..."
+                    className="flex-1 px-3 py-2 rounded-xl border border-[#e5e5ea] bg-white text-xs text-[#1d1d1f] focus:outline-none focus:border-[#0071e3]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleLookupQuota}
+                    disabled={quotaSearching || !quotaTargetUid.trim()}
+                    className="px-4 py-2 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-50 transition-all cursor-pointer"
+                  >
+                    <Search className="w-3.5 h-3.5" />
+                    <span>{quotaSearching ? 'Consultando...' : 'Consultar'}</span>
+                  </button>
+                </div>
+
+                {quotaStudentBalance !== null && (
+                  <div className="mt-2 pt-2 border-t border-[#e5e5ea] flex items-center justify-between">
+                    <span className="text-xs text-[#8e8e93]">Saldo disponible para clases en vivo:</span>
+                    <span className="text-sm font-extrabold text-[#0071e3]">
+                      {quotaStudentBalance} {quotaStudentBalance === 1 ? 'cupo' : 'cupos'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Formulario de Reembolso Manual Humano */}
+              {quotaStudentBalance !== null && (
+                <form
+                  onSubmit={handleManualAdminRefund}
+                  className="bg-white rounded-2xl border border-[#e5e5ea] p-4 space-y-4"
+                >
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-[#1d1d1f] flex items-center gap-1.5">
+                      <RotateCcw className="w-3.5 h-3.5 text-[#0071e3]" />
+                      <span>Emitir Reembolso Manual (+1 Cupo)</span>
+                    </h4>
+                    <p className="text-[11px] text-[#8e8e93]">
+                      Cada reembolso quedará registrado de forma inmutable con tu firma de administrador humano.
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-[#1d1d1f]">
+                      Justificación obligatoria del Reembolso
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={quotaReason}
+                      onChange={(e) => setQuotaReason(e.target.value)}
+                      placeholder="Ej: Inconveniente técnico justificado durante la clase en vivo..."
+                      className="w-full px-3 py-2 rounded-xl border border-[#e5e5ea] text-xs text-[#1d1d1f] focus:outline-none focus:border-[#0071e3]"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={quotaSubmitting || !quotaReason.trim()}
+                    className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>{quotaSubmitting ? 'Procesando...' : 'Aprobar y Registrar Reembolso'}</span>
+                  </button>
+                </form>
+              )}
+
+              {/* Historial del Libro Mayor Inmutable */}
+              {quotaStudentLedger.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-[#1d1d1f]">
+                    Libro Mayor de Movimientos ({quotaStudentLedger.length})
+                  </h4>
+                  <div className="border border-[#e5e5ea] rounded-2xl overflow-hidden divide-y divide-[#e5e5ea] bg-white">
+                    {quotaStudentLedger.map((entry) => (
+                      <div key={entry.id} className="p-3 text-xs flex items-center justify-between gap-3">
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                entry.type === 'manual_admin_refund' || entry.type === 'deposit_monthly'
+                                  ? 'bg-emerald-50 text-emerald-700'
+                                  : 'bg-blue-50 text-blue-700'
+                              }`}
+                            >
+                              {entry.type}
+                            </span>
+                            <span className="font-semibold text-[#1d1d1f] truncate">
+                              {entry.reason || 'Sin detalle'}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-[#8e8e93]">
+                            {new Date(entry.createdAt).toLocaleString('es-CO')} {entry.authorizedByAdminUid ? `· Autorizado por admin` : ''}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span
+                            className={`font-bold ${
+                              entry.delta > 0 ? 'text-emerald-600' : 'text-rose-600'
+                            }`}
+                          >
+                            {entry.delta > 0 ? `+${entry.delta}` : entry.delta}
+                          </span>
+                          <p className="text-[10px] text-[#8e8e93]">Saldo: {entry.balanceAfter}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

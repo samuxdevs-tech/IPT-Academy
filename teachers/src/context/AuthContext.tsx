@@ -10,7 +10,9 @@ import {
   PermissionKey,
   normalizeUserRole,
   hasRolePermission,
+  ROLE_DEFINITIONS,
 } from '@/lib/rbac';
+import { WorkspaceMode } from '@/types';
 
 export const DEFAULT_OWNER_UIDS = [
   'fIBITLfS50bRxE72fqgzC5nnArX2',
@@ -37,6 +39,9 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   userRole: UserRole;
+  userLevel: number;
+  workspace: WorkspaceMode | null;
+  setWorkspace: (ws: WorkspaceMode | null) => void;
   isAdmin: boolean;
   isOperator: boolean;
   simulateStudentMode: boolean;
@@ -52,6 +57,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   userRole: 'student',
+  userLevel: 1,
+  workspace: null,
+  setWorkspace: () => {},
   isAdmin: false,
   isOperator: false,
   simulateStudentMode: false,
@@ -74,8 +82,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isOperator, setIsOperator] = useState(false);
   const [simulateStudentMode, setSimulateStudentMode] = useState(false);
   const [userLicenses, setUserLicenses] = useState<Record<string, string>>({});
+  const [workspace, setWorkspaceState] = useState<WorkspaceMode | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Cargar espacio de trabajo guardado
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ipt_studio_workspace') as WorkspaceMode | null;
+      if (saved === 'teacher' || saved === 'admin') {
+        setWorkspaceState(saved);
+      }
+    }
+  }, []);
+
+  const setWorkspace = useCallback((ws: WorkspaceMode | null) => {
+    setWorkspaceState(ws);
+    if (typeof window !== 'undefined') {
+      if (ws) {
+        localStorage.setItem('ipt_studio_workspace', ws);
+      } else {
+        localStorage.removeItem('ipt_studio_workspace');
+      }
+      window.dispatchEvent(new CustomEvent('ipt_workspace_changed', { detail: ws }));
+    }
+  }, []);
 
   // 1. Suscripción a Firebase Auth y carga de datos iniciales (SOLO al montar el proveedor)
   useEffect(() => {
@@ -282,12 +313,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const effectiveIsAdmin =
     isAdmin || (user?.uid ? DEFAULT_OWNER_UIDS.includes(user.uid) : false);
 
+  const effectiveRole = user?.uid && DEFAULT_OWNER_UIDS.includes(user.uid) ? 'owner' : userRole;
+  const userLevel = ROLE_DEFINITIONS[effectiveRole]?.level ?? 1;
+
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
-        userRole: user?.uid && DEFAULT_OWNER_UIDS.includes(user.uid) ? 'owner' : userRole,
+        userRole: effectiveRole,
+        userLevel,
+        workspace,
+        setWorkspace,
         isAdmin: effectiveIsAdmin,
         isOperator: isOperator || effectiveIsAdmin,
         simulateStudentMode: false,

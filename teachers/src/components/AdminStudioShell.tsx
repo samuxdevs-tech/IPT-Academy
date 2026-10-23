@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import SafeNavLink from '@/components/SafeNavLink';
 import Image from 'next/image';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import UserProfileMenu from '@/components/UserProfileMenu';
 import CommandPaletteModal from '@/components/CommandPaletteModal';
@@ -27,6 +27,7 @@ import {
   Layers,
   ChevronRight,
   Video,
+  ArrowLeft,
 } from 'lucide-react';
 import { ROLE_DEFINITIONS } from '@/lib/rbac';
 
@@ -75,6 +76,41 @@ const PRIMARY_STUDIO_NAV: NavItem[] = [
   },
 ];
 
+const TEACHER_STUDIO_NAV: NavItem[] = [
+  {
+    id: 'nav-live',
+    label: 'Clases en Vivo',
+    sublabel: 'Estudio de sesión y videollamada',
+    href: '/live',
+    icon: Video,
+    matchPath: '/live',
+  },
+  {
+    id: 'nav-assignments',
+    label: 'Tareas & Calificaciones',
+    sublabel: 'Bandeja y Focus Grader',
+    href: '/assignments',
+    icon: FileCheck2,
+    matchPath: '/assignments',
+  },
+  {
+    id: 'nav-calendar',
+    label: 'Calendario & Sesiones',
+    sublabel: 'Fechas y reuniones en vivo',
+    href: '/calendar',
+    icon: Calendar,
+    matchPath: '/calendar',
+  },
+  {
+    id: 'nav-students',
+    label: 'Estudiantes & Asistencia',
+    sublabel: 'Seguimiento pedagógico',
+    href: '/analytics',
+    icon: Users,
+    matchPath: '/analytics',
+  },
+];
+
 const SECONDARY_SYSTEM_NAV: NavItem[] = [
   {
     id: 'nav-roles',
@@ -97,9 +133,10 @@ const SECONDARY_SYSTEM_NAV: NavItem[] = [
 function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
+  const router = useRouter();
   const currentView = searchParams.get('view');
   const currentStep = searchParams.get('step');
-  const { user, userRole } = useAuth();
+  const { workspace, setWorkspace, user, userRole } = useAuth();
   const effectiveRole = user?.uid === 'fIBITLfS50bRxE72fqgzC5nnArX2' ? 'owner' : userRole;
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -119,6 +156,49 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const isSelectorOnly = pathname === '/' && !workspace && !currentView && !currentStep;
+
+  // 1. MODO HOME MINIMALISTA DIRECTO: Si no hay espacio seleccionado en el home, vista limpia sin sidebar
+  if (isSelectorOnly) {
+    return (
+      <div className="min-h-screen bg-[#f5f5f7] flex flex-col font-sans text-[#1d1d1f] antialiased selection:bg-[#0071e3] selection:text-white">
+        <header className="h-14 bg-white/80 backdrop-blur-md border-b border-[#e5e5ea] px-4 lg:px-8 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-white border border-[#e5e5ea] p-1 flex items-center justify-center shrink-0 shadow-2xs">
+              <Image
+                src="/favicon.png"
+                alt="IPT Course"
+                width={24}
+                height={24}
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-xs tracking-tight text-[#1d1d1f]">
+                IPT Course Studio
+              </span>
+              <span className="px-1.5 py-0.5 rounded-md bg-neutral-100 text-[#8e8e93] text-[9px] font-semibold uppercase tracking-wider">
+                Portal de Acceso
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <UserProfileMenu />
+          </div>
+        </header>
+
+        <main className="flex-1 flex flex-col justify-center items-center p-4">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  const isTeacher = workspace === 'teacher';
+  const primaryNav = isTeacher ? TEACHER_STUDIO_NAV : PRIMARY_STUDIO_NAV;
+  const secondaryNav = isTeacher ? [] : SECONDARY_SYSTEM_NAV;
+
   const isItemActive = (item: NavItem) => {
     if (item.href.includes('?view=courses')) {
       return pathname === '/' && (currentView === 'courses' || !!currentStep);
@@ -127,6 +207,23 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
   };
 
   const getBreadcrumbTitle = () => {
+    if (isTeacher) {
+      if (pathname === '/') {
+        return { section: 'Espacio Docente', title: 'Panel de Actividades' };
+      }
+      if (pathname.startsWith('/live')) {
+        return { section: 'Espacio Docente', title: 'Estudio de Clases en Vivo' };
+      }
+      if (pathname.startsWith('/assignments')) {
+        return { section: 'Espacio Docente', title: 'Tareas y Calificaciones' };
+      }
+      if (pathname.startsWith('/calendar')) {
+        return { section: 'Espacio Docente', title: 'Calendario y Sesiones' };
+      }
+      if (pathname.startsWith('/analytics')) {
+        return { section: 'Espacio Docente', title: 'Estudiantes y Asistencia' };
+      }
+    }
     if (pathname === '/') {
       if (currentView === 'courses' || currentStep) {
         return { section: 'Estudio de Formación', title: 'Gestor y Editor de Cursos' };
@@ -152,6 +249,11 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
   };
 
   const breadcrumb = getBreadcrumbTitle();
+
+  const handleResetWorkspace = () => {
+    setWorkspace(null);
+    router.push('/');
+  };
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] flex font-sans text-[#1d1d1f] antialiased selection:bg-[#0071e3] selection:text-white">
@@ -204,8 +306,12 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
                   <span className="font-bold text-xs tracking-tight text-[#1d1d1f] truncate">
                     IPT Course Studio
                   </span>
-                  <span className="px-1.5 py-0.5 rounded-md bg-[#0071e3]/10 text-[#0071e3] text-[9px] font-bold uppercase">
-                    Admin
+                  <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase ${
+                    isTeacher
+                      ? 'bg-blue-500/10 text-blue-600'
+                      : 'bg-[#0071e3]/10 text-[#0071e3]'
+                  }`}>
+                    {isTeacher ? 'Docente' : 'Admin'}
                   </span>
                 </div>
                 <p className="text-[10px] text-[#8e8e93] truncate">Ivan Perez Tech</p>
@@ -247,29 +353,19 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
                 Ctrl+K
               </kbd>
             </button>
-
-            {/* Acceso a Clases en Vivo & Live Studio */}
-            <button
-              type="button"
-              onClick={() => setIsLiveStudioOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
-            >
-              <Video className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">Clases en Vivo</span>
-            </button>
           </div>
         )}
 
         {/* Elementos de Navegación por Secciones */}
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-6">
-          {/* Módulos Principales */}
+          {/* Módulos Principales (Docente o Admin) */}
           <div className="space-y-1">
             {!sidebarCollapsed && (
               <p className="px-2 text-[10px] font-extrabold uppercase tracking-wider text-[#8e8e93] mb-1">
-                Operación Principal
+                {isTeacher ? 'Herramientas Docentes' : 'Operación Principal'}
               </p>
             )}
-            {PRIMARY_STUDIO_NAV.map((item) => {
+            {primaryNav.map((item) => {
               const Icon = item.icon;
               const active = isItemActive(item);
               return (
@@ -295,38 +391,40 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
             })}
           </div>
 
-          {/* Sistema & Biblioteca */}
-          <div className="space-y-1">
-            {!sidebarCollapsed && (
-              <p className="px-2 text-[10px] font-extrabold uppercase tracking-wider text-[#8e8e93] mb-1">
-                Control & Biblioteca
-              </p>
-            )}
-            {SECONDARY_SYSTEM_NAV.map((item) => {
-              const Icon = item.icon;
-              const active = isItemActive(item);
-              return (
-                <SafeNavLink
-                  key={item.id}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    active
-                      ? 'bg-white text-[#0071e3] shadow-2xs border border-[#e5e5ea] font-bold'
-                      : 'text-[#515154] hover:text-[#1d1d1f] hover:bg-neutral-200/40'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-[#0071e3]' : 'text-[#8e8e93]'}`} />
-                  {!sidebarCollapsed && (
-                    <div className="min-w-0 flex-1 truncate">
-                      <div className="truncate">{item.label}</div>
-                      <div className="text-[10px] font-normal text-[#8e8e93] truncate">{item.sublabel}</div>
-                    </div>
-                  )}
-                </SafeNavLink>
-              );
-            })}
-          </div>
+          {/* Sistema & Biblioteca (Solo visible para Admin) */}
+          {secondaryNav.length > 0 && (
+            <div className="space-y-1">
+              {!sidebarCollapsed && (
+                <p className="px-2 text-[10px] font-extrabold uppercase tracking-wider text-[#8e8e93] mb-1">
+                  Control & Biblioteca
+                </p>
+              )}
+              {secondaryNav.map((item) => {
+                const Icon = item.icon;
+                const active = isItemActive(item);
+                return (
+                  <SafeNavLink
+                    key={item.id}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      active
+                        ? 'bg-white text-[#0071e3] shadow-2xs border border-[#e5e5ea] font-bold'
+                        : 'text-[#515154] hover:text-[#1d1d1f] hover:bg-neutral-200/40'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-[#0071e3]' : 'text-[#8e8e93]'}`} />
+                    {!sidebarCollapsed && (
+                      <div className="min-w-0 flex-1 truncate">
+                        <div className="truncate">{item.label}</div>
+                        <div className="text-[10px] font-normal text-[#8e8e93] truncate">{item.sublabel}</div>
+                      </div>
+                    )}
+                  </SafeNavLink>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Footer del Sidebar: Enlace al Portal de Estudiantes */}
@@ -369,7 +467,29 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Controles de la derecha */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            {/* Botón para cambiar espacio de trabajo */}
+            <button
+              type="button"
+              onClick={handleResetWorkspace}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-[#8e8e93] hover:text-[#1d1d1f] hover:bg-[#e5e5ea]/50 border border-transparent hover:border-[#e5e5ea] transition-all cursor-pointer"
+              title="Volver al selector de espacio de trabajo"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Cambiar espacio</span>
+            </button>
+
+            {/* Badge de espacio activo */}
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                isTeacher
+                  ? 'bg-blue-50 border border-blue-200 text-blue-700'
+                  : 'bg-[#0071e3]/10 border border-[#0071e3]/20 text-[#0071e3]'
+              }`}
+            >
+              {isTeacher ? 'Docente' : 'Admin'}
+            </span>
+
             <button
               type="button"
               onClick={() => setIsCommandPaletteOpen(true)}
@@ -382,17 +502,7 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
               </kbd>
             </button>
 
-            {/* Acceso a Clases en Vivo & Live Studio */}
-            <button
-              type="button"
-              onClick={() => setIsLiveStudioOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
-            >
-              <Video className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">Clases en Vivo</span>
-            </button>
-
-            {/* Menú de Perfil Docente */}
+            {/* Menú de Perfil */}
             <UserProfileMenu />
           </div>
         </header>
@@ -405,47 +515,93 @@ function AdminStudioShellInner({ children }: { children: React.ReactNode }) {
           aria-label="Navegación móvil inferior"
           className="lg:hidden fixed bottom-3 left-4 right-4 z-40 bg-white/95 backdrop-blur-md border border-[#e5e5ea] rounded-2xl shadow-xl px-2 py-1.5 flex items-center justify-around"
         >
-          <SafeNavLink
-            href="/"
-            className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
-              pathname === '/' && !currentView && !currentStep ? 'text-[#0071e3]' : 'text-[#8e8e93]'
-            }`}
-          >
-            <Home className="w-4 h-4" />
-            <span>Inicio</span>
-          </SafeNavLink>
+          {isTeacher ? (
+            <>
+              <SafeNavLink
+                href="/live"
+                className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
+                  pathname.startsWith('/live') ? 'text-[#0071e3]' : 'text-[#8e8e93]'
+                }`}
+              >
+                <Video className="w-4 h-4" />
+                <span>En Vivo</span>
+              </SafeNavLink>
 
-          <SafeNavLink
-            href="/?view=courses"
-            className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
-              pathname === '/' && (currentView === 'courses' || !!currentStep)
-                ? 'text-[#0071e3]'
-                : 'text-[#8e8e93]'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Cursos</span>
-          </SafeNavLink>
+              <SafeNavLink
+                href="/assignments"
+                className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
+                  pathname.startsWith('/assignments') ? 'text-[#0071e3]' : 'text-[#8e8e93]'
+                }`}
+              >
+                <FileCheck2 className="w-4 h-4" />
+                <span>Tareas</span>
+              </SafeNavLink>
 
-          <SafeNavLink
-            href="/assignments"
-            className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
-              pathname.startsWith('/assignments') ? 'text-[#0071e3]' : 'text-[#8e8e93]'
-            }`}
-          >
-            <FileCheck2 className="w-4 h-4" />
-            <span>Tareas</span>
-          </SafeNavLink>
+              <SafeNavLink
+                href="/calendar"
+                className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
+                  pathname.startsWith('/calendar') ? 'text-[#0071e3]' : 'text-[#8e8e93]'
+                }`}
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Agenda</span>
+              </SafeNavLink>
 
-          <SafeNavLink
-            href="/analytics"
-            className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
-              pathname.startsWith('/analytics') ? 'text-[#0071e3]' : 'text-[#8e8e93]'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <span>Alumnos</span>
-          </SafeNavLink>
+              <SafeNavLink
+                href="/analytics"
+                className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
+                  pathname.startsWith('/analytics') ? 'text-[#0071e3]' : 'text-[#8e8e93]'
+                }`}
+              >
+                <Users className="w-4 h-4" />
+                <span>Alumnos</span>
+              </SafeNavLink>
+            </>
+          ) : (
+            <>
+              <SafeNavLink
+                href="/"
+                className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
+                  pathname === '/' && !currentView && !currentStep ? 'text-[#0071e3]' : 'text-[#8e8e93]'
+                }`}
+              >
+                <Home className="w-4 h-4" />
+                <span>Inicio</span>
+              </SafeNavLink>
+
+              <SafeNavLink
+                href="/?view=courses"
+                className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
+                  pathname === '/' && (currentView === 'courses' || !!currentStep)
+                    ? 'text-[#0071e3]'
+                    : 'text-[#8e8e93]'
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Cursos</span>
+              </SafeNavLink>
+
+              <SafeNavLink
+                href="/assignments"
+                className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
+                  pathname.startsWith('/assignments') ? 'text-[#0071e3]' : 'text-[#8e8e93]'
+                }`}
+              >
+                <FileCheck2 className="w-4 h-4" />
+                <span>Tareas</span>
+              </SafeNavLink>
+
+              <SafeNavLink
+                href="/analytics"
+                className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl text-[10px] font-bold transition-all min-h-[44px] justify-center ${
+                  pathname.startsWith('/analytics') ? 'text-[#0071e3]' : 'text-[#8e8e93]'
+                }`}
+              >
+                <Users className="w-4 h-4" />
+                <span>Alumnos</span>
+              </SafeNavLink>
+            </>
+          )}
 
           <button
             type="button"
