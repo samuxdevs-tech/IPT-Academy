@@ -7,6 +7,8 @@ import { db } from '@/lib/firebase';
 import { Course } from '@/types';
 import { normalizeCourse, cleanForFirebase } from '@/lib/courseUtils';
 import WelcomeStudioView from '@/components/WelcomeStudioView';
+import TeacherStudioWorkspaceView from '@/components/TeacherStudioWorkspaceView';
+import MinimalistWorkspaceSelector from '@/components/MinimalistWorkspaceSelector';
 import CourseSpreadsheetManager from '@/components/CourseSpreadsheetManager';
 import CreateCourseModal from '@/components/CreateCourseModal';
 import AdvancedAdminToolsModal from '@/components/AdvancedAdminToolsModal';
@@ -19,12 +21,53 @@ function AdminStudioContent() {
   const currentView = searchParams?.get('view');
   const requestedCourse = searchParams?.get('course') || undefined;
   const legacyStep = searchParams?.get('step');
+  const queryWorkspace = searchParams?.get('workspace') as 'teacher' | 'admin' | null;
 
+  const [workspace, setWorkspace] = useState<'teacher' | 'admin' | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateCourseModalOpen, setIsCreateCourseModalOpen] = useState(false);
   const [isAdminToolsModalOpen, setIsAdminToolsModalOpen] = useState(false);
   const [isLiveStudioModalOpen, setIsLiveStudioModalOpen] = useState(false);
+
+  // Sincronizar espacio de trabajo desde query param o almacenamiento local
+  useEffect(() => {
+    if (queryWorkspace === 'teacher' || queryWorkspace === 'admin') {
+      setWorkspace(queryWorkspace);
+      return;
+    }
+    if (currentView === 'courses' || legacyStep) {
+      setWorkspace('admin');
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ipt_studio_workspace') as 'teacher' | 'admin' | null;
+      if (saved === 'teacher' || saved === 'admin') {
+        setWorkspace(saved);
+      }
+    }
+  }, [queryWorkspace, currentView, legacyStep]);
+
+  const handleSelectWorkspace = (selected: 'teacher' | 'admin' | null) => {
+    setWorkspace(selected);
+    if (typeof window !== 'undefined') {
+      if (selected) {
+        localStorage.setItem('ipt_studio_workspace', selected);
+      } else {
+        localStorage.removeItem('ipt_studio_workspace');
+      }
+    }
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    if (selected) {
+      params.set('workspace', selected);
+    } else {
+      params.delete('workspace');
+      params.delete('view');
+      params.delete('course');
+      params.delete('step');
+    }
+    router.push(`/?${params.toString()}`);
+  };
 
   // Cargar cursos desde Firebase Realtime Database
   const loadCourses = async () => {
@@ -69,8 +112,7 @@ function AdminStudioContent() {
     const cleanData = cleanForFirebase(normalized);
     await set(ref(db, `courses/${normalized.slug}`), cleanData);
     setCourses((prev) => [...prev, normalized]);
-    // Redirigir a la vista de cursos para editarlo de inmediato
-    router.push(`/?view=courses&course=${normalized.slug}`);
+    router.push(`/?workspace=admin&view=courses&course=${normalized.slug}`);
   };
 
   if (isLoading) {
@@ -84,6 +126,30 @@ function AdminStudioContent() {
 
   const isSpreadsheetView = currentView === 'courses' || !!legacyStep;
 
+  // 1. PANTALLA PRINCIPAL MINIMALISTA: Si no hay espacio seleccionado, mostrar selector
+  if (!workspace && !isSpreadsheetView) {
+    return (
+      <MinimalistWorkspaceSelector onSelectWorkspace={handleSelectWorkspace} />
+    );
+  }
+
+  // 2. ESPACIO DOCENTE (NIVEL 2 Y 3)
+  if (workspace === 'teacher') {
+    return (
+      <>
+        <LiveClassesStudioModal
+          isOpen={isLiveStudioModalOpen}
+          onClose={() => setIsLiveStudioModalOpen(false)}
+        />
+        <TeacherStudioWorkspaceView
+          onOpenLiveStudio={() => setIsLiveStudioModalOpen(true)}
+          onResetWorkspace={() => handleSelectWorkspace(null)}
+        />
+      </>
+    );
+  }
+
+  // 3. ESPACIO ADMINISTRADOR (NIVEL SUPERIOR A 3)
   return (
     <>
       <CreateCourseModal
@@ -116,6 +182,7 @@ function AdminStudioContent() {
           onOpenCreateCourse={() => setIsCreateCourseModalOpen(true)}
           onOpenAdminTools={() => setIsAdminToolsModalOpen(true)}
           onOpenLiveStudio={() => setIsLiveStudioModalOpen(true)}
+          onResetWorkspace={() => handleSelectWorkspace(null)}
         />
       )}
     </>
