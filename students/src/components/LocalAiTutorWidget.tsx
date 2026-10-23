@@ -29,8 +29,8 @@ interface ChatMessage {
 
 type PositionZone = 'Abajo a la izquierda' | 'Abajo a la derecha' | 'Al medio';
 
-// Modelo ligero y rápido compatible con WebGPU para navegadores
-const WEBLLM_MODEL_ID = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
+// Modelo local de alto rendimiento (1.5B - 2B) compatible con WebGPU para navegadores
+const WEBLLM_MODEL_ID = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
 
 // Helper seguro para formatear fechas sin riesgo de errores de undefined
 const safeDateSlice = (val?: string | null, len = 10): string => {
@@ -263,7 +263,7 @@ export default function LocalAiTutorWidget() {
     // Si el usuario ya descargó el tutor previamente en este dispositivo, marcar listo al instante
     const isCachedLocally =
       typeof window !== 'undefined' &&
-      window.localStorage.getItem('ipt_ai_tutor_cached_v1') === 'true';
+      window.localStorage.getItem('ipt_ai_tutor_cached_2b_v1') === 'true';
 
     if (isCachedLocally) {
       setLoadProgress(100);
@@ -315,7 +315,7 @@ export default function LocalAiTutorWidget() {
               if (typeof window !== 'undefined') {
                 (window as any).__IPT_WEBLLM_ENGINE__ = engine;
                 try {
-                  window.localStorage.setItem('ipt_ai_tutor_cached_v1', 'true');
+                  window.localStorage.setItem('ipt_ai_tutor_cached_2b_v1', 'true');
                 } catch {}
               }
               setEngineMode('webllm');
@@ -338,7 +338,7 @@ export default function LocalAiTutorWidget() {
         setIsReady(true);
         if (typeof window !== 'undefined') {
           try {
-            window.localStorage.setItem('ipt_ai_tutor_cached_v1', 'true');
+            window.localStorage.setItem('ipt_ai_tutor_cached_2b_v1', 'true');
           } catch {}
         }
       }
