@@ -1,17 +1,5 @@
 {
   "projects": {
     "default": "ipt-course"
-  },
-  "targets": {
-    "ipt-course": {
-      "hosting": {
-        "students": [
-          "ipt-course"
-        ],
-        "teachers": [
-          "ipt-course-teachers"
-        ]
-      }
-    }
   }
 }
