@@ -8,6 +8,7 @@ import { ConditionalRule } from "@/lib/mockStudent";
 
 export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () => void }) {
   const [rules, setRules] = useState<ConditionalRule[]>([]);
+  const [progressionMode, setProgressionMode] = useState<"free" | "lesson_strict" | "module_strict">("free");
   const [loading, setLoading] = useState<boolean>(true);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [targetTitle, setTargetTitle] = useState<string>("");
@@ -15,18 +16,23 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
   const [minScore, setMinScore] = useState<number>(4.0);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
-  // Cargar reglas condicionales reales desde RTDB
+  const courseSlug = "datagan-360-certificacion-maestra";
+
+  // Cargar reglas condicionales y modo de progresión reales desde RTDB
   useEffect(() => {
-    const condRef = ref(rtdb, "courses/datagan-360-certificacion-maestra/conditionals");
+    const courseRef = ref(rtdb, `courses/${courseSlug}`);
     const unsubscribe = onValue(
-      condRef,
+      courseRef,
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          if (Array.isArray(data)) {
-            setRules(data);
-          } else if (typeof data === "object") {
-            setRules(Object.values(data));
+          if (data.progressionMode) {
+            setProgressionMode(data.progressionMode);
+          }
+          if (Array.isArray(data.conditionals)) {
+            setRules(data.conditionals);
+          } else if (typeof data.conditionals === "object") {
+            setRules(Object.values(data.conditionals));
           } else {
             setRules([]);
           }
@@ -44,14 +50,27 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
     return () => unsubscribe();
   }, []);
 
+  // Guardar modo de progresión en Firebase RTDB
+  const handleUpdateProgressionMode = async (mode: "free" | "lesson_strict" | "module_strict") => {
+    setProgressionMode(mode);
+    try {
+      setSaveStatus("Sincronizando modo...");
+      await set(ref(rtdb, `courses/${courseSlug}/progressionMode`), mode);
+      setSaveStatus("¡Modo Sincronizado!");
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch {
+      setSaveStatus("Error al sincronizar");
+    }
+  };
+
   // Guardar reglas en Firebase RTDB
   const handleSaveToRtdb = async (updated: ConditionalRule[]) => {
     try {
-      setSaveStatus("Guardando...");
-      const condRef = ref(rtdb, "courses/datagan-360-certificacion-maestra/conditionals");
+      setSaveStatus("Guardando candados...");
+      const condRef = ref(rtdb, `courses/${courseSlug}/conditionals`);
       await set(condRef, updated);
       setRules(updated);
-      setSaveStatus("Sincronizado en RTDB");
+      setSaveStatus("Candados Sincronizados");
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (err: any) {
       setSaveStatus("Error al guardar en Firebase");
@@ -123,6 +142,52 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
             <Plus className="w-4 h-4" />
             <span>Nueva Regla</span>
           </button>
+        </div>
+      </div>
+
+      {/* Selector de Modo de Progresión Global */}
+      <div className="bg-[#121217] rounded-2xl p-5 border border-white/10 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-violet-400">
+            Política de Progresión Académica (Transmitida a ipt-course-students)
+          </span>
+          <span className="text-xs text-zinc-400 font-mono">Modo activo: {progressionMode}</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {[
+            {
+              id: "free",
+              label: "Navegación Libre",
+              desc: "Los estudiantes pueden ver cualquier lección en cualquier orden sin restricciones.",
+            },
+            {
+              id: "lesson_strict",
+              label: "Secuencial Estricto",
+              desc: "El estudiante debe completar la lección previa antes de desbloquear la siguiente.",
+            },
+            {
+              id: "module_strict",
+              label: "Bloqueo por Módulo",
+              desc: "El estudiante debe aprobar las tareas del módulo para desbloquear el siguiente.",
+            },
+          ].map((mode) => (
+            <div
+              key={mode.id}
+              onClick={() => handleUpdateProgressionMode(mode.id as any)}
+              className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                progressionMode === mode.id
+                  ? "bg-violet-600/10 border-violet-500 shadow-sm"
+                  : "bg-[#181820] border-white/5 hover:border-white/15"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-white">{mode.label}</span>
+                {progressionMode === mode.id && <CheckCircle2 className="w-4 h-4 text-violet-400" />}
+              </div>
+              <p className="text-[11px] text-zinc-400 leading-relaxed">{mode.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
 

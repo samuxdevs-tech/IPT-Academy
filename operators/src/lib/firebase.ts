@@ -27,7 +27,7 @@ const firebaseConfig = {
   ),
   databaseURL: sanitizeEnv(
     process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-    "https://ipt-course-admin-default-rtdb.firebaseio.com"
+    "https://ipt-course-students-default-rtdb.firebaseio.com"
   ),
   projectId: "ipt-course-admin",
   storageBucket: sanitizeEnv(

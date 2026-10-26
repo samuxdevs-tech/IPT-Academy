@@ -1,349 +1,588 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { UserCheck, Shield, Key, Search, Edit2, CheckCircle2, X, RefreshCw, Users } from "lucide-react";
-import { rtdb } from "@/lib/firebase";
-import { ref, onValue, set, update } from "firebase/database";
+import {
+  Shield,
+  Key,
+  Search,
+  CheckCircle2,
+  X,
+  RefreshCw,
+  Users,
+  UserPlus,
+  Trash2,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Lock,
+  Mail,
+  UserCheck
+} from "lucide-react";
 
-interface RegisteredUser {
+interface OperatorAccount {
   uid: string;
-  name: string;
+  displayName: string;
   email: string;
-  currentRole: "student" | "teacher" | "operator" | "admin" | "owner";
-  activeLicenses: string[];
-  registeredDate: string;
+  role: "admin" | "teacher";
+  createdAt: string;
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://ipt-course-api.vercel.app";
+
 export function RegisteredAccountsView() {
-  const [users, setUsers] = useState<RegisteredUser[]>([]);
+  const [users, setUsers] = useState<OperatorAccount[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [editingUser, setEditingUser] = useState<RegisteredUser | null>(null);
-  const [selectedRole, setSelectedRole] = useState<string>("student");
-  const [updating, setUpdating] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Cargar cuentas reales desde Firebase RTDB: users y roles
-  useEffect(() => {
-    const usersRef = ref(rtdb, "users");
-    const rolesRef = ref(rtdb, "roles");
+  // Estados del modal de creación
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [newName, setNewName] = useState<string>("");
+  const [newEmail, setNewEmail] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+  const [creating, setCreating] = useState<boolean>(false);
 
-    let unsubUsers: (() => void) | null = null;
-    let unsubRoles: (() => void) | null = null;
+  // Estados del modal de cambio de contraseña
+  const [passwordModalUser, setPasswordModalUser] = useState<OperatorAccount | null>(null);
+  const [updatedPassword, setUpdatedPassword] = useState<string>("");
+  const [showUpdatedPassword, setShowUpdatedPassword] = useState<boolean>(false);
+  const [updatingPassword, setUpdatingPassword] = useState<boolean>(false);
 
-    let usersData: Record<string, any> = {};
-    let rolesData: Record<string, any> = {};
+  // Obtener token activo de sesión
+  const getAuthToken = () => {
+    return typeof window !== "undefined" ? sessionStorage.getItem("ipt_auth_token") : null;
+  };
 
-    const syncList = () => {
-      const list: RegisteredUser[] = [];
-      Object.entries(usersData).forEach(([uid, u]: [string, any]) => {
-        const roleInRoles = rolesData[uid];
-        const assignedRole = (
-          typeof roleInRoles === "string"
-            ? roleInRoles
-            : roleInRoles?.role || u.role || u.profile?.role || "student"
-        ).toLowerCase();
-
-        let licenses: string[] = [];
-        if (Array.isArray(u.licenses)) {
-          licenses = u.licenses;
-        } else if (u.licenses && typeof u.licenses === "object") {
-          licenses = Object.keys(u.licenses);
-        } else {
-          licenses = [];
-        }
-
-        list.push({
-          uid,
-          name: u.displayName || u.profile?.displayName || u.name || "Usuario IPT",
-          email: u.email || u.profile?.email || "usuario@ipt.com",
-          currentRole: (["student", "teacher", "operator", "admin", "owner"].includes(assignedRole)
-            ? assignedRole
-            : "student") as any,
-          activeLicenses: licenses,
-          registeredDate: u.createdAt
-            ? new Date(u.createdAt).toISOString().split("T")[0]
-            : "Hoy"
-        });
+  // Cargar usuarios desde la API segura
+  const fetchUsers = async () => {
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const token = getAuthToken();
+      const res = await fetch(`${API_BASE}/api/admin/users`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
       });
 
-      setUsers(list);
+      if (!res.ok) {
+        throw new Error("No se pudo obtener la lista de usuarios autorizados.");
+      }
+
+      const data = await res.json();
+      if (data.success && Array.isArray(data.users)) {
+        setUsers(data.users);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || "Error al conectar con la API de administración.");
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
-    unsubUsers = onValue(usersRef, (snap) => {
-      usersData = snap.val() || {};
-      syncList();
-    });
-
-    unsubRoles = onValue(rolesRef, (snap) => {
-      rolesData = snap.val() || {};
-      syncList();
-    });
-
-    return () => {
-      if (unsubUsers) unsubUsers();
-      if (unsubRoles) unsubRoles();
-    };
+  useEffect(() => {
+    fetchUsers();
   }, []);
+
+  // Generar contraseña segura aleatoria de 14 caracteres
+  const generateSecurePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*";
+    let pass = "";
+    for (let i = 0; i < 14; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pass;
+  };
+
+  // Crear nuevo usuario
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName || !newEmail || !newPassword) return;
+
+    setCreating(true);
+    setErrorMessage(null);
+
+    try {
+      const token = getAuthToken();
+      const res = await fetch(`${API_BASE}/api/admin/users`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          displayName: newName.trim(),
+          email: newEmail.trim().toLowerCase(),
+          password: newPassword,
+          role: "teacher",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "No se pudo crear la cuenta en el servidor.");
+      }
+
+      setToastMessage(`Cuenta para ${newName} creada exitosamente con credenciales cifradas.`);
+      setShowCreateModal(false);
+      setNewName("");
+      setNewEmail("");
+      setNewPassword("");
+      fetchUsers();
+      setTimeout(() => setToastMessage(null), 5000);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Fallo al crear la cuenta.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // Actualizar contraseña de un usuario existente
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordModalUser || !updatedPassword) return;
+
+    setUpdatingPassword(true);
+    setErrorMessage(null);
+
+    try {
+      const token = getAuthToken();
+      const res = await fetch(`${API_BASE}/api/admin/users/${passwordModalUser.uid}/password`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          password: updatedPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "No se pudo actualizar la contraseña.");
+      }
+
+      setToastMessage(`Contraseña actualizada con éxito para ${passwordModalUser.email}.`);
+      setPasswordModalUser(null);
+      setUpdatedPassword("");
+      setTimeout(() => setToastMessage(null), 5000);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Fallo al actualizar contraseña.");
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
+  // Eliminar usuario
+  const handleDeleteUser = async (user: OperatorAccount) => {
+    if (user.email === "administrator@ivanperez.tech") {
+      alert("Acción protegida: No es posible eliminar al Administrador Principal.");
+      return;
+    }
+
+    const confirmed = window.confirm(`¿Confirmas la revocación definitiva del acceso para ${user.email}?`);
+    if (!confirmed) return;
+
+    try {
+      const token = getAuthToken();
+      const res = await fetch(`${API_BASE}/api/admin/users/${user.uid}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "No se pudo eliminar el usuario.");
+      }
+
+      setToastMessage(`Usuario ${user.email} eliminado del servidor seguro.`);
+      fetchUsers();
+      setTimeout(() => setToastMessage(null), 5000);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Fallo al eliminar el usuario.");
+    }
+  };
 
   const filteredUsers = users.filter(
     (u) =>
-      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.uid.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleOpenEditModal = (user: RegisteredUser) => {
-    setEditingUser(user);
-    setSelectedRole(user.currentRole);
-  };
-
-  const handleSaveRoleChange = async () => {
-    if (!editingUser) return;
-    setUpdating(true);
-
-    try {
-      // 1. Guardar en /roles/{uid}
-      const roleRef = ref(rtdb, `roles/${editingUser.uid}`);
-      await set(roleRef, {
-        role: selectedRole,
-        updatedAt: new Date().toISOString(),
-        updatedBy: "samuxdevs"
-      });
-
-      // 2. Guardar en /users/{uid}/role
-      const userRef = ref(rtdb, `users/${editingUser.uid}`);
-      await update(userRef, {
-        role: selectedRole,
-        updatedAt: new Date().toISOString()
-      });
-
-      setToastMessage(`Rol de ${editingUser.name} actualizado exitosamente a ${selectedRole.toUpperCase()}.`);
-      setEditingUser(null);
-      setTimeout(() => setToastMessage(null), 4000);
-    } catch (err: any) {
-      alert("Error al actualizar el rol en la base de datos.");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "owner":
-        return "bg-rose-500/10 text-rose-300 border border-rose-500/20";
-      case "admin":
-        return "bg-violet-500/10 text-violet-300 border border-violet-500/20";
-      case "teacher":
-        return "bg-blue-500/10 text-blue-300 border border-blue-500/20";
-      case "operator":
-        return "bg-amber-500/10 text-amber-300 border border-amber-500/20";
-      default:
-        return "bg-[#181820] text-zinc-400 border border-white/5";
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Header Bar Pro */}
-      <div className="bg-[#121217] rounded-2xl p-5 border border-white/10 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-[#121217] rounded-3xl p-6 border border-white/10 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-400">
-              Directorio Maestro de Acceso
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2.5 py-0.5 rounded-full">
+              Control Criptográfico RBAC
             </span>
-            <span className="text-[10px] font-bold text-violet-300 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
-              Control de Licencias
+            <span className="text-[10px] font-semibold text-zinc-400 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full font-mono">
+              JWT HS256 + Bcrypt
             </span>
           </div>
-          <h2 className="text-base font-bold text-white tracking-tight mt-0.5">
-            Cuentas Registradas y Gobernanza de Roles
+          <h2 className="text-lg font-semibold text-white tracking-tight">
+            Gobernanza de Cuentas y Accesos
           </h2>
-          <p className="text-xs text-zinc-400 mt-1 max-w-xl">
-            Inspección de credenciales, roles asignados y licencias vigentes. Permite reasignar roles de sistema en caliente con sincronización inmediata.
+          <p className="text-xs text-zinc-400 mt-1 max-w-xl leading-relaxed">
+            Gestión directa de credenciales para docentes y operadores. Las contraseñas son cifradas con Bcrypt en el servidor y nunca se almacenan en texto plano.
           </p>
         </div>
 
-        <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Buscar por nombre, correo o UID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-[#181820] border border-white/10 rounded-full text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative w-full sm:w-64">
+            <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Buscar operador o correo..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-[#181820] border border-white/10 rounded-full text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30"
+            />
+          </div>
+
+          <button
+            onClick={() => {
+              setNewName("");
+              setNewEmail("");
+              setNewPassword(generateSecurePassword());
+              setShowCreateModal(true);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-black hover:bg-zinc-200 rounded-full text-xs font-semibold tracking-tight transition-all active:scale-[0.98] shadow-md shrink-0"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Crear Usuario</span>
+          </button>
         </div>
       </div>
 
+      {/* Alertas */}
       {toastMessage && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 px-4 py-3 rounded-2xl text-xs font-medium flex items-center gap-2.5">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Tabla de Cuentas Dark Pro */}
-      <div className="bg-[#121217] rounded-2xl border border-white/10 shadow-lg overflow-hidden">
+      {errorMessage && (
+        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-300 px-4 py-3 rounded-2xl text-xs font-medium flex items-center gap-2.5">
+          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+      {/* Tabla de Cuentas */}
+      <div className="bg-[#121217] rounded-3xl border border-white/10 shadow-lg overflow-hidden">
         {loading ? (
           <div className="p-16 text-center text-zinc-400">
-            <RefreshCw className="w-6 h-6 mx-auto animate-spin mb-2 text-violet-500" />
-            <p className="text-xs font-medium">Cargando cuentas registradas de RTDB...</p>
+            <RefreshCw className="w-6 h-6 mx-auto animate-spin mb-3 text-zinc-400" />
+            <p className="text-xs font-medium">Consultando directorio seguro de operadores...</p>
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="p-16 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-[#181820] flex items-center justify-center mx-auto mb-3 text-zinc-500">
+            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3 text-zinc-500">
               <Users className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-bold text-white">No se encontraron cuentas</h3>
+            <h3 className="text-sm font-semibold text-white">No se encontraron cuentas</h3>
             <p className="text-xs text-zinc-400 max-w-sm mx-auto mt-1">
-              No hay usuarios que coincidan con los criterios de búsqueda.
+              No hay operadores que coincidan con la búsqueda.
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-[#181820] text-zinc-400 font-bold uppercase tracking-wider text-[10px] border-b border-white/10">
-                  <th className="px-6 py-3.5">Usuario & Identificador</th>
-                  <th className="px-6 py-3.5">Rol de Sistema</th>
-                  <th className="px-6 py-3.5">Licencias Activas</th>
-                  <th className="px-6 py-3.5">Fecha de Registro</th>
-                  <th className="px-6 py-3.5 text-right">Acción</th>
+                <tr className="bg-[#181820] text-zinc-400 font-semibold uppercase tracking-wider text-[10px] border-b border-white/10">
+                  <th className="px-6 py-3.5">Operador</th>
+                  <th className="px-6 py-3.5">Rol Criptográfico</th>
+                  <th className="px-6 py-3.5">Fecha de Alta</th>
+                  <th className="px-6 py-3.5 text-right">Acciones de Seguridad</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {filteredUsers.map((user) => (
-                  <tr key={user.uid} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-white">{user.name}</div>
-                      <div className="text-[11px] text-zinc-400">{user.email}</div>
-                      <span className="font-mono text-[9px] text-zinc-500 mt-0.5 inline-block">
-                        {user.uid}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getRoleBadge(
-                          user.currentRole
-                        )}`}
-                      >
-                        {user.currentRole}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {user.activeLicenses.map((lic) => (
+                {filteredUsers.map((user) => {
+                  const isMasterAdmin = user.email === "administrator@ivanperez.tech";
+                  return (
+                    <tr key={user.uid} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-semibold text-white">{user.displayName}</div>
+                        <div className="text-[11px] text-zinc-400 mt-0.5">{user.email}</div>
+                        <span className="font-mono text-[9px] text-zinc-600 mt-0.5 inline-block">
+                          {user.uid}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                            user.role === "admin"
+                              ? "bg-rose-500/10 text-rose-300 border border-rose-500/20"
+                              : "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
+                          }`}
+                        >
                           <span
-                            key={lic}
-                            className="bg-[#181820] text-zinc-300 border border-white/5 px-2 py-0.5 rounded text-[10px] font-mono"
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              user.role === "admin" ? "bg-rose-400" : "bg-emerald-400"
+                            }`}
+                          />
+                          {user.role === "admin" ? "Administrador" : "Docente"}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-zinc-400 font-mono text-[11px]">
+                        {new Date(user.createdAt).toLocaleDateString("es-ES", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </td>
+
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setPasswordModalUser(user);
+                              setUpdatedPassword(generateSecurePassword());
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#181820] hover:bg-[#22222d] border border-white/10 text-zinc-200 hover:text-white rounded-xl text-xs font-medium transition-all"
+                            title="Cambiar contraseña"
                           >
-                            {lic}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-zinc-400 font-mono text-[11px]">
-                      {user.registeredDate}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleOpenEditModal(user)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#181820] hover:bg-[#20202c] border border-white/10 text-white rounded-lg text-xs font-semibold transition-all active:scale-[0.97]"
-                      >
-                        <Edit2 className="w-3.5 h-3.5 text-violet-400" />
-                        <span>Cambiar Rol</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                            <Key className="w-3.5 h-3.5 text-zinc-400" />
+                            <span>Contraseña</span>
+                          </button>
+
+                          {!isMasterAdmin && (
+                            <button
+                              onClick={() => handleDeleteUser(user)}
+                              className="p-1.5 bg-[#181820] hover:bg-rose-500/20 border border-white/10 text-zinc-400 hover:text-rose-300 rounded-xl transition-all"
+                              title="Revocar acceso"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      {/* Modal Plegable para Cambiar Rol Dark Pro */}
-      {editingUser && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-[#121217] rounded-2xl border border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-5 border-b border-white/10 bg-[#181820] flex items-center justify-between">
+      {/* Modal para Crear Nuevo Operador */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#121217] rounded-3xl border border-white/10 shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-5 border-b border-white/10 bg-[#16161c] flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-white">Reasignar Rol de Sistema</h3>
-                <p className="text-[11px] text-zinc-400">{editingUser.name}</p>
+                <h3 className="text-sm font-semibold text-white">Alta de Nuevo Operador</h3>
+                <p className="text-[11px] text-zinc-400">Generación de credenciales con cifrado Bcrypt</p>
               </div>
               <button
-                onClick={() => setEditingUser(null)}
+                onClick={() => setShowCreateModal(false)}
                 className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Selecciona el nuevo nivel de privilegios para esta cuenta. Al confirmar, los permisos se propagarán en tiempo real a Firebase Realtime Database.
-              </p>
-
-              <div className="space-y-2">
-                {[
-                  { id: "student", label: "Estudiante", desc: "Acceso estándar al aula virtual y tareas." },
-                  { id: "teacher", label: "Docente / Instructor", desc: "Studio docente, rúbricas, videollamadas y calificaciones." },
-                  { id: "operator", label: "Operador Académico", desc: "Gestión de cupos, soporte y directivas asistidas." },
-                  { id: "admin", label: "Administrador", desc: "Monitoreo, control de litigios y gobernanza de roles." },
-                  { id: "owner", label: "Propietario (IPT Master)", desc: "Privilegios irrestrictos del sistema y facturación." },
-                ].map((option) => (
-                  <label
-                    key={option.id}
-                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                      selectedRole === option.id
-                        ? "border-violet-500 bg-violet-500/10 shadow-xs"
-                        : "border-white/5 bg-[#181820] hover:bg-[#20202c]"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="roleChoice"
-                      value={option.id}
-                      checked={selectedRole === option.id}
-                      onChange={(e) => setSelectedRole(e.target.value)}
-                      className="mt-0.5 text-violet-600 focus:ring-violet-500"
-                    />
-                    <div>
-                      <div className="text-xs font-bold text-white">{option.label}</div>
-                      <div className="text-[11px] text-zinc-400 mt-0.5">{option.desc}</div>
-                    </div>
-                  </label>
-                ))}
+            <form onSubmit={handleCreateUser} className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-zinc-400 block">
+                  Nombre completo
+                </label>
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Prof. Carlos Mendoza"
+                  required
+                  className="w-full bg-[#181820] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30"
+                />
               </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-zinc-400 block">
+                  Correo institucional
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="docente@ipt.com"
+                    required
+                    className="w-full bg-[#181820] border border-white/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-medium text-zinc-400">
+                    Contraseña segura
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setNewPassword(generateSecurePassword())}
+                    className="text-[10px] text-zinc-400 hover:text-white underline"
+                  >
+                    Generar aleatoria
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Mínimo 8 caracteres"
+                    required
+                    minLength={8}
+                    className="w-full bg-[#181820] border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30 font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white"
+                  >
+                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <span className="text-[10px] text-zinc-500 block">
+                  La contraseña se contrasta con Bcrypt (10 rondas de salt) en el servidor.
+                </span>
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black hover:bg-zinc-200 rounded-xl text-xs font-semibold tracking-tight transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                  {creating ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-black" />
+                      <span>Cifrando en Servidor...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="w-3.5 h-3.5 text-black" />
+                      <span>Crear Cuenta</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Actualizar Contraseña */}
+      {passwordModalUser && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#121217] rounded-3xl border border-white/10 shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-5 border-b border-white/10 bg-[#16161c] flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-white">Actualizar Contraseña</h3>
+                <p className="text-[11px] text-zinc-400">{passwordModalUser.email}</p>
+              </div>
+              <button
+                onClick={() => setPasswordModalUser(null)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="px-6 py-4 bg-[#181820] border-t border-white/10 flex items-center justify-end gap-3">
-              <button
-                onClick={() => setEditingUser(null)}
-                className="px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveRoleChange}
-                disabled={updating}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-xs font-bold transition-all active:scale-[0.97] shadow-md shadow-violet-600/30"
-              >
-                {updating ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Actualizando...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Confirmar Cambio</span>
-                  </>
-                )}
-              </button>
-            </div>
+            <form onSubmit={handleUpdatePassword} className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-medium text-zinc-400">
+                    Nueva contraseña segura
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setUpdatedPassword(generateSecurePassword())}
+                    className="text-[10px] text-zinc-400 hover:text-white underline"
+                  >
+                    Generar aleatoria
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type={showUpdatedPassword ? "text" : "password"}
+                    value={updatedPassword}
+                    onChange={(e) => setUpdatedPassword(e.target.value)}
+                    placeholder="Mínimo 8 caracteres"
+                    required
+                    minLength={8}
+                    className="w-full bg-[#181820] border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30 font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowUpdatedPassword(!showUpdatedPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white"
+                  >
+                    {showUpdatedPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setPasswordModalUser(null)}
+                  className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingPassword}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black hover:bg-zinc-200 rounded-xl text-xs font-semibold tracking-tight transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                  {updatingPassword ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-black" />
+                      <span>Actualizando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Key className="w-3.5 h-3.5 text-black" />
+                      <span>Guardar Nueva Contraseña</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { ApiClient, SubmissionItem } from "@/lib/apiClient";
 import { rtdb } from "@/lib/firebase";
-import { ref, get } from "firebase/database";
+import { ref, get, set, update } from "firebase/database";
 
 export function QuickGradingView() {
   const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
@@ -105,11 +105,55 @@ export function QuickGradingView() {
     if (!currentSub) return;
     const finalGrade = calculateFinalGrade();
 
-    await ApiClient.saveGrading(currentSub.id, {
-      finalGrade,
-      teacherFeedbackText: feedbackText,
-      criterionGrades,
-    });
+    // 1. Guardar en RTDB: submissions
+    try {
+      await set(ref(rtdb, `submissions/${currentSub.id}`), {
+        ...currentSub,
+        status: "graded",
+        final_grade: finalGrade,
+        teacher_feedback_text: feedbackText,
+        graded_at: new Date().toISOString(),
+      });
+    } catch {}
+
+    // 2. Sincronizar en lms_assignments consumido por los estudiantes
+    try {
+      const asgSnap = await get(ref(rtdb, "lms_assignments"));
+      if (asgSnap.exists()) {
+        const val = asgSnap.val();
+        const list = Array.isArray(val) ? val : Object.values(val);
+        const updated = list.map((a: any) => {
+          if (a.id === currentSub.assignment_id) {
+            return {
+              ...a,
+              status: "graded",
+              finalGrade: finalGrade,
+              multimediaFeedback: {
+                writtenFeedback: feedbackText,
+                gradedAtUtc: new Date().toISOString(),
+                gradedBy: "Docente Titular IPT",
+              },
+            };
+          }
+          return a;
+        });
+        await set(ref(rtdb, "lms_assignments"), updated);
+      }
+    } catch {}
+
+    // 3. Sincronizar en progress/${student_uid} para el libro de notas del estudiante
+    try {
+      await set(ref(rtdb, `progress/${currentSub.student_uid}/datagan-360-certificacion-maestra/corte1Grade`), finalGrade);
+    } catch {}
+
+    // 4. Respaldar en API si está disponible
+    try {
+      await ApiClient.saveGrading(currentSub.id, {
+        finalGrade,
+        teacherFeedbackText: feedbackText,
+        criterionGrades,
+      });
+    } catch {}
 
     setSavedSuccess(true);
     setTimeout(() => {

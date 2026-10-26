@@ -71,10 +71,10 @@ export function QuestionBankView() {
       q.id,
       q.moduleName,
       q.prompt,
-      q.options[0] || "",
-      q.options[1] || "",
-      q.options[2] || "",
-      q.options[3] || "",
+      q.options?.[0] || "",
+      q.options?.[1] || "",
+      q.options?.[2] || "",
+      q.options?.[3] || "",
       q.correctIndex,
       q.explanation
     ]);

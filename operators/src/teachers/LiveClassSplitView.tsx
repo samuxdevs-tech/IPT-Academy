@@ -17,10 +17,12 @@ import {
   Sparkles,
   Send,
   Inbox,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Calendar,
+  Radio
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
-import { ref, get } from "firebase/database";
+import { ref, get, set, update, onValue } from "firebase/database";
 
 interface EnrolledStudent {
   uid: string;
@@ -38,7 +40,23 @@ interface PreparedResource {
   size: string;
 }
 
+interface LiveVirtualSession {
+  id: string;
+  title: string;
+  courseSlug: string;
+  moduleId?: string;
+  instructorName: string;
+  provider: "zoom" | "teams" | "google_meet" | "jitsi";
+  joinUrl: string;
+  startTimeUtc: string;
+  durationMinutes: number;
+  cloudRecordingUrl?: string;
+  cloudRecordingState?: "processing" | "ready" | "none";
+}
+
 export function LiveClassSplitView() {
+  const [sessions, setSessions] = useState<LiveVirtualSession[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const [isLiveActive, setIsLiveActive] = useState<boolean>(false);
   const [enrolledStudents, setEnrolledStudents] = useState<EnrolledStudent[]>([]);
   const [preparedResources, setPreparedResources] = useState<PreparedResource[]>([]);
@@ -47,50 +65,76 @@ export function LiveClassSplitView() {
   const [micMuted, setMicMuted] = useState<boolean>(false);
   const [cameraOff, setCameraOff] = useState<boolean>(false);
   const [activeQuizLaunched, setActiveQuizLaunched] = useState<boolean>(false);
+  const [quizQuestion, setQuizQuestion] = useState<string>("¿Cuál es el criterio principal de validación para esta lección?");
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
 
+  // Escuchar sesiones en vivo y usuarios reales de RTDB
   useEffect(() => {
-    async function fetchRealLiveSessionData() {
-      setLoading(true);
-      try {
-        // 1. Cargar alumnos inscritos a sesiones en vivo desde RTDB: class_bookings o lms_live_sessions
-        const bookingsSnap = await get(ref(rtdb, "class_bookings"));
-        const usersSnap = await get(ref(rtdb, "users"));
-        const usersVal = usersSnap.exists() ? usersSnap.val() : {};
+    const sessionsRef = ref(rtdb, "lms_live_sessions");
+    const usersRef = ref(rtdb, "users");
 
-        if (bookingsSnap.exists()) {
-          const val = bookingsSnap.val();
-          const list: EnrolledStudent[] = Object.keys(val).map(k => {
-            const b = val[k];
-            const u = usersVal[b.studentUid] || {};
-            return {
-              uid: b.studentUid || k,
-              name: u.displayName || b.studentName || `Estudiante (${k.substring(0, 6)})`,
-              email: u.email || b.studentEmail || "Sin correo",
-              availableQuotas: b.availableQuotas ?? 2,
-              hasConfirmedHold: b.status === "confirmed",
-              quotaDeducted: true
-            };
-          });
-          setEnrolledStudents(list);
-        } else {
-          setEnrolledStudents([]);
+    const unsubSessions = onValue(sessionsRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        const list: LiveVirtualSession[] = Array.isArray(val)
+          ? val.filter(Boolean)
+          : Object.keys(val).map((k) => ({ ...val[k], id: val[k].id || k }));
+        setSessions(list);
+        if (list.length > 0 && !selectedSessionId) {
+          setSelectedSessionId(list[0].id);
         }
-
-        // 2. Recursos preparados (comienza limpio hasta que el docente adjunte archivos)
-        setPreparedResources([]);
-      } catch (err) {
-        console.warn("No se pudieron cargar datos sincrónicos:", err);
-      } finally {
-        setLoading(false);
+      } else {
+        setSessions([]);
       }
-    }
+    });
 
-    fetchRealLiveSessionData();
+    const unsubUsers = onValue(usersRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        const list: EnrolledStudent[] = Object.keys(val)
+          .map((k) => {
+            const u = val[k] || {};
+            const userEmail = typeof u.email === "string" ? u.email : "";
+            return {
+              uid: k,
+              name: u.displayName || u.name || (userEmail ? userEmail.split("@")[0] : "") || "Estudiante",
+              email: userEmail || "Sin correo",
+              availableQuotas: u.availableQuotas ?? 3,
+              hasConfirmedHold: true,
+              quotaDeducted: true,
+            };
+          })
+          .filter((s) => !s.email.toLowerCase().includes("administrator@ivanperez.tech") && !s.email.toLowerCase().includes("docente@"));
+
+        setEnrolledStudents(list);
+      } else {
+        setEnrolledStudents([]);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      unsubSessions();
+      unsubUsers();
+    };
   }, []);
 
+  // Timer de transmisión activa
+  useEffect(() => {
+    let timer: any;
+    if (isLiveActive) {
+      timer = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setElapsedSeconds(0);
+    }
+    return () => clearInterval(timer);
+  }, [isLiveActive]);
+
   const toggleQuotaDeduction = (uid: string) => {
-    setEnrolledStudents(prev =>
-      prev.map(s => {
+    setEnrolledStudents((prev) =>
+      prev.map((s) => {
         if (s.uid === uid) {
           return { ...s, quotaDeducted: !s.quotaDeducted };
         }
@@ -99,20 +143,72 @@ export function LiveClassSplitView() {
     );
   };
 
-  const verifiedCount = enrolledStudents.filter(s => s.quotaDeducted).length;
+  const formatTimer = (totalSec: number) => {
+    const mins = Math.floor(totalSec / 60).toString().padStart(2, "0");
+    const secs = (totalSec % 60).toString().padStart(2, "0");
+    return `${mins}:${secs}`;
+  };
 
-  const handleStartLive = () => {
-    if (verifiedCount === 0) {
+  const selectedSession = sessions.find((s) => s.id === selectedSessionId);
+  const verifiedCount = enrolledStudents.filter((s) => s.quotaDeducted).length;
+
+  const handleStartLive = async () => {
+    if (verifiedCount === 0 && enrolledStudents.length > 0) {
       alert("Debes confirmar la asistencia de al menos un estudiante con cupo antes de iniciar la transmisión.");
       return;
     }
+
+    // Actualizar estado en Firebase RTDB para que el estudiante vea la sesión en directo
+    if (selectedSessionId) {
+      try {
+        await update(ref(rtdb, `lms_live_sessions/${selectedSessionId}`), {
+          cloudRecordingState: "processing",
+        });
+      } catch (err) {
+        console.warn("No se pudo actualizar estado de sesión en RTDB:", err);
+      }
+    }
+
     setIsLiveActive(true);
   };
 
-  const handleStopLive = () => {
+  const handleStopLive = async () => {
     if (confirm("¿Deseas finalizar la sesión y cerrar la sala en vivo?")) {
       setIsLiveActive(false);
       setActiveQuizLaunched(false);
+
+      if (selectedSessionId) {
+        try {
+          await update(ref(rtdb, `lms_live_sessions/${selectedSessionId}`), {
+            cloudRecordingState: "ready",
+          });
+        } catch (err) {
+          console.warn("No se pudo actualizar estado de sesión finalizada:", err);
+        }
+      }
+    }
+  };
+
+  const handleToggleQuiz = async () => {
+    const nextState = !activeQuizLaunched;
+    setActiveQuizLaunched(nextState);
+
+    // Notificar en RTDB si se lanza quiz a estudiantes
+    try {
+      if (nextState) {
+        await set(ref(rtdb, "active_live_quiz"), {
+          active: true,
+          sessionId: selectedSessionId,
+          question: quizQuestion,
+          launchedAt: new Date().toISOString(),
+        });
+      } else {
+        await set(ref(rtdb, "active_live_quiz"), {
+          active: false,
+        });
+      }
+    } catch (err) {
+      console.warn("No se pudo sincronizar el quiz en vivo:", err);
     }
   };
 
@@ -121,9 +217,13 @@ export function LiveClassSplitView() {
       {/* Session Header Card Pro */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#121217] border border-white/10 shadow-lg">
         <div className="flex items-center gap-3.5">
-          <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
-            isLiveActive ? "bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse" : "bg-violet-500/10 text-violet-400 border border-violet-500/20"
-          }`}>
+          <div
+            className={`w-11 h-11 rounded-xl flex items-center justify-center ${
+              isLiveActive
+                ? "bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse"
+                : "bg-violet-500/10 text-violet-400 border border-violet-500/20"
+            }`}
+          >
             <Video className="w-5 h-5" />
           </div>
           <div>
@@ -133,6 +233,7 @@ export function LiveClassSplitView() {
               </h2>
               {isLiveActive ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white animate-pulse">
+                  <Radio className="w-3 h-3 animate-ping" />
                   EN VIVO
                 </span>
               ) : (
@@ -142,20 +243,33 @@ export function LiveClassSplitView() {
               )}
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Control de cupos por clase sincrónica (per-class quota deduction) y visor integrado de recursos docentes.
+              Control de cupos por clase sincrónica, visor de asistentes y sincronización directa con el calendario de estudiantes.
             </p>
           </div>
         </div>
 
-        <div>
+        <div className="flex items-center gap-3">
+          {sessions.length > 0 && !isLiveActive && (
+            <select
+              value={selectedSessionId}
+              onChange={(e) => setSelectedSessionId(e.target.value)}
+              className="px-3 py-2 bg-[#181820] border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500"
+            >
+              {sessions.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.title} ({s.provider})
+                </option>
+              ))}
+            </select>
+          )}
+
           {!isLiveActive ? (
             <button
               onClick={handleStartLive}
-              disabled={verifiedCount === 0}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all active:scale-[0.97] shadow-md shadow-emerald-600/20 disabled:opacity-40"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all active:scale-[0.97] shadow-md shadow-emerald-600/20"
             >
               <Play className="w-3.5 h-3.5 fill-white" />
-              <span>INICIAR CLASE ({verifiedCount} Cupos Confirmados)</span>
+              <span>INICIAR CLASE ({verifiedCount} Asistentes)</span>
             </button>
           ) : (
             <button
@@ -180,10 +294,10 @@ export function LiveClassSplitView() {
                   <div>
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <Users className="w-4 h-4 text-violet-400" />
-                      Validación de Cupos para la Hora Programada
+                      Validación de Asistencia de Estudiantes Registrados
                     </h3>
                     <p className="text-xs text-zinc-400 mt-0.5">
-                      Selecciona a los estudiantes que asisten a la hora acordada. El sistema gastará 1 cupo de su saldo al iniciar.
+                      Verifica a los alumnos que participarán en esta sesión. Los datos provienen directamente de la base de datos de estudiantes.
                     </p>
                   </div>
                   <span className="text-xs font-mono font-bold bg-[#181820] text-violet-300 px-3 py-1 rounded-full border border-violet-500/30">
@@ -193,14 +307,14 @@ export function LiveClassSplitView() {
 
                 {loading ? (
                   <div className="p-16 text-center text-zinc-500 text-xs">
-                    Cargando lista de inscritos...
+                    Cargando lista de estudiantes de IPT Course...
                   </div>
                 ) : enrolledStudents.length === 0 ? (
                   <div className="p-16 text-center text-zinc-500 text-xs">
-                    No hay solicitudes de cupo registradas para esta hora.
+                    No hay estudiantes registrados en la plataforma en este momento.
                   </div>
                 ) : (
-                  <div className="mt-5 space-y-2">
+                  <div className="mt-5 space-y-2 max-h-[380px] overflow-y-auto pr-1">
                     {enrolledStudents.map((stu) => (
                       <div
                         key={stu.uid}
@@ -229,7 +343,7 @@ export function LiveClassSplitView() {
                             {stu.availableQuotas} cupos
                           </span>
                           <div className="text-[10px] text-zinc-500">
-                            {stu.quotaDeducted ? "Cupo debitado" : "Sin debitar"}
+                            {stu.quotaDeducted ? "Confirmado" : "Sin confirmar"}
                           </div>
                         </div>
                       </div>
@@ -241,35 +355,49 @@ export function LiveClassSplitView() {
               <div className="bg-[#14141c] p-4 rounded-xl border border-white/10 text-xs text-zinc-300 flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
                 <span>
-                  <strong>Regla de Gobernanza IPT:</strong> La videollamada interactiva no arrancará transmisiones de video ni de pantalla hasta que des clic en "Iniciar Clase en Vivo".
+                  <strong>Sesión Conectada:</strong> Al iniciar, el estado en tiempo real cambiará en la plataforma estudiantil para permitir el ingreso inmediato.
                 </span>
               </div>
             </div>
           ) : (
             <div className="h-full flex flex-col justify-between p-5">
-              <div className="flex-1 bg-black/80 rounded-xl border border-white/10 flex items-center justify-center relative overflow-hidden">
+              <div className="flex-1 bg-black/80 rounded-xl border border-white/10 flex items-center justify-center relative overflow-hidden min-h-[420px]">
                 <div className="text-center p-6 space-y-3">
-                  <div className="w-16 h-16 rounded-2xl bg-violet-600/20 text-violet-400 flex items-center justify-center mx-auto border border-violet-500/30">
+                  <div className="w-16 h-16 rounded-2xl bg-rose-600/20 text-rose-400 flex items-center justify-center mx-auto border border-rose-500/30 animate-pulse">
                     <Video className="w-8 h-8" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-white">Transmisión Activa del Docente</p>
                     <p className="text-xs text-zinc-400 mt-1">
-                      {verifiedCount} estudiantes conectados en sala sincrónica (Jitsi Meet Bridge)
+                      {selectedSession ? selectedSession.title : "Sesión Sincrónica en Directo"}
+                    </p>
+                    <p className="text-[11px] text-zinc-500 font-mono mt-0.5">
+                      {verifiedCount} estudiantes con acceso autorizado
                     </p>
                   </div>
+
+                  {selectedSession?.joinUrl && (
+                    <a
+                      href={selectedSession.joinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold"
+                    >
+                      Abrir Sala Virtual ({selectedSession.provider})
+                    </a>
+                  )}
                 </div>
 
                 {activeQuizLaunched && (
-                  <div className="absolute top-4 right-4 bg-violet-900/90 border border-violet-400/40 p-4 rounded-xl max-w-xs shadow-xl animate-in zoom-in-95">
+                  <div className="absolute top-4 right-4 bg-violet-950/90 border border-violet-400/40 p-4 rounded-xl max-w-xs shadow-xl animate-in zoom-in-95">
                     <span className="text-[10px] font-bold uppercase text-violet-200 block mb-1">
                       Quiz en Vivo Desplegado
                     </span>
                     <p className="text-xs font-bold text-white">
-                      ¿Cuál es la fórmula zootécnica de presión de pastoreo en UGM/ha?
+                      {quizQuestion}
                     </p>
                     <span className="text-[10px] text-violet-300 font-mono mt-1 block">
-                      Respondido: 3 / {verifiedCount} alumnos
+                      Enviado a {verifiedCount} estudiantes
                     </span>
                   </div>
                 )}
@@ -298,9 +426,7 @@ export function LiveClassSplitView() {
                     <span>{cameraOff ? "Cámara Off" : "Cámara"}</span>
                   </button>
 
-                  <button
-                    className="p-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-semibold flex items-center gap-2 transition-colors"
-                  >
+                  <button className="p-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-semibold flex items-center gap-2 transition-colors">
                     <Share2 className="w-4 h-4" />
                     <span>Compartir Pantalla</span>
                   </button>
@@ -308,7 +434,7 @@ export function LiveClassSplitView() {
 
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                  <span className="text-xs font-mono text-zinc-300">REC: 18:42</span>
+                  <span className="text-xs font-mono text-zinc-300">REC: {formatTimer(elapsedSeconds)}</span>
                 </div>
               </div>
             </div>
@@ -327,7 +453,7 @@ export function LiveClassSplitView() {
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
-                Recursos Docente
+                Recursos
               </button>
               <button
                 onClick={() => setActiveSideTab("quizzes")}
@@ -337,7 +463,7 @@ export function LiveClassSplitView() {
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
-                Quizzes en Vivo
+                Quizzes
               </button>
               <button
                 onClick={() => setActiveSideTab("attendees")}
@@ -354,30 +480,16 @@ export function LiveClassSplitView() {
             {activeSideTab === "resources" && (
               <div className="space-y-3">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 block">
-                  Archivos Listos para Compartir Pantalla
+                  Material y Referencias Docente
                 </span>
-                <div className="space-y-2">
-                  {preparedResources.map((res) => (
-                    <div
-                      key={res.id}
-                      className="p-3.5 rounded-xl bg-[#181820] border border-white/5 flex items-center justify-between text-xs hover:border-white/15 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5 overflow-hidden">
-                        {res.type === "xlsx" ? (
-                          <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
-                        ) : (
-                          <FileText className="w-4 h-4 text-violet-400 shrink-0" />
-                        )}
-                        <div className="truncate">
-                          <p className="font-bold text-white truncate">{res.name}</p>
-                          <span className="text-[10px] text-zinc-500 font-mono">{res.size}</span>
-                        </div>
-                      </div>
-                      <button className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white text-[11px] font-semibold transition-colors shrink-0">
-                        Abrir
-                      </button>
-                    </div>
-                  ))}
+                <div className="p-4 rounded-xl bg-[#181820] border border-white/5 space-y-3 text-xs">
+                  <p className="text-zinc-400">
+                    Sube o enlaza recursos para acompañar la clase en vivo. Todos los enlaces se comparten automáticamente con los estudiantes en sesión.
+                  </p>
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between">
+                    <span className="font-medium text-white truncate">Guía de Prácticas y Metodología IPT</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">PDF</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -385,17 +497,23 @@ export function LiveClassSplitView() {
             {activeSideTab === "quizzes" && (
               <div className="space-y-3">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 block">
-                  Lanzador Interactivo a Mitad de Clase
+                  Lanzador Interactivo en Vivo
                 </span>
                 <div className="p-4 rounded-xl bg-[#181820] border border-white/5 space-y-3">
-                  <p className="text-xs font-bold text-white">
-                    Quiz de Validación: Fórmulas Zootécnicas de Presión de Pastoreo
-                  </p>
+                  <div>
+                    <label className="text-[11px] text-zinc-400 block mb-1">Pregunta del Quiz en Vivo:</label>
+                    <input
+                      type="text"
+                      value={quizQuestion}
+                      onChange={(e) => setQuizQuestion(e.target.value)}
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-violet-500"
+                    />
+                  </div>
                   <p className="text-[11px] text-zinc-400">
                     Al activar este quiz, se desplegará instantáneamente en las pantallas de todos los alumnos presentes.
                   </p>
                   <button
-                    onClick={() => setActiveQuizLaunched(!activeQuizLaunched)}
+                    onClick={handleToggleQuiz}
                     className={`w-full py-2 rounded-xl text-xs font-bold transition-all ${
                       activeQuizLaunched
                         ? "bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-600/30"
@@ -411,20 +529,24 @@ export function LiveClassSplitView() {
             {activeSideTab === "attendees" && (
               <div className="space-y-2">
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 block">
-                  Estudiantes con Cupo Consumido
+                  Estudiantes con Acceso Confirmado
                 </span>
-                {enrolledStudents.filter(s => s.quotaDeducted).map((stu) => (
-                  <div
-                    key={stu.uid}
-                    className="p-3 rounded-xl bg-[#181820] border border-white/5 flex items-center justify-between text-xs"
-                  >
-                    <div>
-                      <p className="font-bold text-white">{stu.name}</p>
-                      <p className="text-[10px] text-zinc-500 font-mono">{stu.email}</p>
-                    </div>
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  </div>
-                ))}
+                <div className="max-h-[350px] overflow-y-auto space-y-1 pr-1">
+                  {enrolledStudents
+                    .filter((s) => s.quotaDeducted)
+                    .map((stu) => (
+                      <div
+                        key={stu.uid}
+                        className="p-3 rounded-xl bg-[#181820] border border-white/5 flex items-center justify-between text-xs"
+                      >
+                        <div>
+                          <p className="font-bold text-white">{stu.name}</p>
+                          <p className="text-[10px] text-zinc-500 font-mono">{stu.email}</p>
+                        </div>
+                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                      </div>
+                    ))}
+                </div>
               </div>
             )}
           </div>

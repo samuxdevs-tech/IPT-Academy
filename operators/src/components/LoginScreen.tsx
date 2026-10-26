@@ -79,7 +79,7 @@ export function LoginScreen() {
                   setEmail(e.target.value);
                   if (error) clearError();
                 }}
-                placeholder="usuario@ivanperez.tech"
+                placeholder="usuario@correo.com"
                 required
                 autoComplete="email"
                 className="w-full bg-[#18181d] border border-white/10 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30 focus:border-white/30 transition-all font-medium"

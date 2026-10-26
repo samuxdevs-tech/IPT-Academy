@@ -480,6 +480,146 @@ app.get('/api/admin/overview', async (c) => {
   });
 });
 
+// 5.1. Listar usuarios y operadores registrados
+app.get('/api/admin/users', async (c) => {
+  seedAdmin();
+  seedTeacher();
+  const list = Array.from(usersStore.values()).map(u => ({
+    uid: u.uid,
+    email: u.email,
+    displayName: u.displayName,
+    role: u.role,
+    createdAt: u.createdAt,
+  }));
+  return c.json({ success: true, users: list });
+});
+
+// 5.2. Crear nuevo usuario (Docente / Operador) con contraseña segura
+app.post('/api/admin/users', async (c) => {
+  try {
+    const body = await c.req.json();
+    const email = (body.email || '').trim().toLowerCase();
+    const password = (body.password || '').trim();
+    const displayName = (body.displayName || '').trim();
+    const requestedRole = (body.role || 'teacher').toLowerCase();
+
+    if (!email || !password || !displayName) {
+      return c.json({ success: false, error: 'Nombre completo, correo institucional y contraseña son requeridos.' }, 400);
+    }
+
+    if (password.length < 8) {
+      return c.json({ success: false, error: 'Por seguridad, la contraseña debe contener al menos 8 caracteres.' }, 400);
+    }
+
+    // Regla estricta: Solo administrator@ivanperez.tech puede ser admin.
+    if (requestedRole === 'admin' || email === ADMIN_EMAIL.toLowerCase()) {
+      return c.json({ success: false, error: 'Restricción de seguridad: Solo existe una cuenta con rol de Administrador del sistema.' }, 403);
+    }
+
+    // Bloquear cuentas de estudiantes
+    if (email.includes('student') || email.includes('estudiante')) {
+      return c.json({ success: false, error: 'Acceso denegado: El portal no admite cuentas estudiantiles.' }, 403);
+    }
+
+    if (usersStore.has(email)) {
+      return c.json({ success: false, error: 'Ya existe un usuario registrado con este correo institucional.' }, 400);
+    }
+
+    const role: 'teacher' = 'teacher';
+    const passwordHash = bcrypt.hashSync(password, 10);
+    const uid = 'usr_' + Math.random().toString(36).substring(2, 10);
+
+    const newUser: AuthUser = {
+      uid,
+      email,
+      passwordHash,
+      displayName,
+      role,
+      createdAt: new Date().toISOString(),
+    };
+
+    usersStore.set(email, newUser);
+
+    return c.json({
+      success: true,
+      message: 'Usuario creado exitosamente con contraseña segura.',
+      user: {
+        uid: newUser.uid,
+        email: newUser.email,
+        displayName: newUser.displayName,
+        role: newUser.role,
+        createdAt: newUser.createdAt,
+      }
+    });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message || 'Error al crear usuario.' }, 500);
+  }
+});
+
+// 5.3. Actualizar contraseña de un operador
+app.put('/api/admin/users/:uid/password', async (c) => {
+  try {
+    const uid = c.req.param('uid');
+    const body = await c.req.json();
+    const newPassword = (body.password || '').trim();
+
+    if (!newPassword || newPassword.length < 8) {
+      return c.json({ success: false, error: 'La nueva contraseña debe tener al menos 8 caracteres.' }, 400);
+    }
+
+    let foundUser: AuthUser | null = null;
+    let foundEmail = '';
+    for (const [email, user] of usersStore.entries()) {
+      if (user.uid === uid) {
+        foundUser = user;
+        foundEmail = email;
+        break;
+      }
+    }
+
+    if (!foundUser) {
+      return c.json({ success: false, error: 'Usuario no encontrado.' }, 404);
+    }
+
+    foundUser.passwordHash = bcrypt.hashSync(newPassword, 10);
+    usersStore.set(foundEmail, foundUser);
+
+    return c.json({ success: true, message: `Contraseña actualizada exitosamente para ${foundUser.email}` });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message || 'Error al actualizar contraseña.' }, 500);
+  }
+});
+
+// 5.4. Eliminar operador
+app.delete('/api/admin/users/:uid', async (c) => {
+  try {
+    const uid = c.req.param('uid');
+
+    let foundEmail = '';
+    let foundUser: AuthUser | null = null;
+    for (const [email, user] of usersStore.entries()) {
+      if (user.uid === uid) {
+        foundUser = user;
+        foundEmail = email;
+        break;
+      }
+    }
+
+    if (!foundUser) {
+      return c.json({ success: false, error: 'Usuario no encontrado.' }, 404);
+    }
+
+    if (foundEmail === ADMIN_EMAIL.toLowerCase()) {
+      return c.json({ success: false, error: 'Acción prohibida: No es posible eliminar al Administrador Principal.' }, 403);
+    }
+
+    usersStore.delete(foundEmail);
+    return c.json({ success: true, message: `Usuario ${foundEmail} eliminado exitosamente.` });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message || 'Error al eliminar usuario.' }, 500);
+  }
+});
+
 // ============================================================================
 // 1. TAREAS (ASSIGNMENTS)
 // ============================================================================
