@@ -1,26 +1,32 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { LoginScreen } from "@/components/LoginScreen";
-import { StudentAccessDenied } from "@/components/StudentAccessDenied";
 import { TeacherStudioWorkspace } from "@/teachers/TeacherStudioWorkspace";
 import { AdminGatekeeper } from "@/guards/AdminGatekeeper";
-import { Shield, Eye, LogOut, Lock, UserCircle, Sparkles } from "lucide-react";
+import {
+  ShieldCheck,
+  GraduationCap,
+  ArrowRight,
+  ArrowLeft,
+  LogOut,
+  Eye,
+  SlidersHorizontal,
+} from "lucide-react";
 
 export default function OperatorsRootPage() {
   const router = useRouter();
-  const { user, operatorProfile, loading, logout } = useAuth();
-  const [activeArea, setActiveArea] = useState<"teachers" | "admin">("teachers");
+  const { user, operatorProfile, viewMode, setViewMode, loading, logout } = useAuth();
 
-  // 1. Pantalla de Carga Dark Pro
+  // 1. Pantalla de Carga Apple Minimalista
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-[#0a0a0c] flex flex-col items-center justify-center p-6 text-center antialiased text-white">
-        <div className="w-9 h-9 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <div className="relative w-36 h-9 mb-2">
+      <div className="min-h-[100dvh] bg-[#09090b] flex flex-col items-center justify-center p-6 text-center antialiased text-white">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mb-4" />
+        <div className="relative w-36 h-8 mb-2">
           <Image
             src="/logo-horizontal.png"
             alt="IPT Course"
@@ -29,8 +35,8 @@ export default function OperatorsRootPage() {
             priority
           />
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
-          Comprobando Credenciales Firebase Auth
+        <span className="text-[11px] font-medium text-zinc-500 tracking-wide">
+          Verificando credenciales de acceso...
         </span>
       </div>
     );
@@ -41,21 +47,142 @@ export default function OperatorsRootPage() {
     return <LoginScreen />;
   }
 
-  // 3. Si el usuario autenticado tiene rol de estudiante, denegar acceso a operadores
-  if (operatorProfile.role === "student") {
-    return <StudentAccessDenied />;
-  }
-
   const handleOpenPreview = () => {
     router.push("/preview?preview=true");
   };
 
+  const isAdmin = operatorProfile.role === "admin";
+  const firstName = operatorProfile.displayName
+    ? operatorProfile.displayName.split(" ")[0]
+    : "Operador";
+
+  // 3. Si el usuario es Administrador y NO ha elegido vista, mostrar Homepage de Selección Minimalista
+  if (isAdmin && !viewMode) {
+    return (
+      <div className="min-h-[100dvh] bg-[#09090b] text-white antialiased flex flex-col selection:bg-rose-600 selection:text-white relative overflow-hidden">
+        {/* Sutil halo ambiental de fondo */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[360px] bg-white/[0.02] rounded-full blur-[140px] pointer-events-none" />
+
+        {/* Barra Superior Minimalista */}
+        <header className="w-full px-6 py-4 flex items-center justify-between border-b border-white/5 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="relative w-32 h-8">
+              <Image
+                src="/logo-horizontal.png"
+                alt="IPT Course"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleOpenPreview}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 text-xs font-medium transition-all"
+            >
+              <Eye className="w-3.5 h-3.5 text-zinc-400" />
+              <span className="hidden sm:inline">Modo Alumno</span>
+            </button>
+
+            <div className="h-4 w-px bg-white/10" />
+
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-zinc-400">{operatorProfile.email}</span>
+              <button
+                onClick={logout}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-white/5 transition-colors"
+                title="Cerrar Sesión"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Contenido Principal: Homepage de Bienvenida y Selección */}
+        <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-12 relative z-10 max-w-4xl mx-auto w-full">
+          <div className="text-center space-y-3 mb-10">
+            <span className="inline-block text-[11px] font-semibold text-rose-400 uppercase tracking-widest bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">
+              Administración Central
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white">
+              Bienvenido, {firstName}
+            </h1>
+            <p className="text-sm sm:text-base text-zinc-400 font-normal">
+              Defina el perfil al que va a ingresar
+            </p>
+          </div>
+
+          {/* Tarjetas de Selección de Perfil */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full max-w-2xl">
+            {/* Opción 1: Perfil Docente */}
+            <div
+              onClick={() => setViewMode("teacher")}
+              className="group cursor-pointer rounded-3xl bg-[#121216] border border-white/10 hover:border-white/25 p-7 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/60 relative overflow-hidden"
+            >
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:scale-105 transition-transform">
+                  <GraduationCap className="w-6 h-6 text-zinc-200" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white tracking-tight flex items-center justify-between">
+                    <span>Docente</span>
+                    <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                  </h2>
+                  <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+                    Acceso al Teachers Studio para gestionar tareas, calificaciones, rúbricas de evaluación y sesiones en vivo.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between text-xs text-zinc-400 group-hover:text-white font-medium">
+                <span>Ingresar como Docente</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              </div>
+            </div>
+
+            {/* Opción 2: Perfil Administrador */}
+            <div
+              onClick={() => setViewMode("admin")}
+              className="group cursor-pointer rounded-3xl bg-[#121216] border border-white/10 hover:border-rose-500/40 p-7 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-rose-950/20 relative overflow-hidden"
+            >
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 group-hover:scale-105 transition-transform">
+                  <ShieldCheck className="w-6 h-6 text-rose-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white tracking-tight flex items-center justify-between">
+                    <span>Administrador</span>
+                    <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-rose-400 group-hover:translate-x-1 transition-all" />
+                  </h2>
+                  <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+                    Panel de gobernanza para monitorear infraestructura, identidades, registros de auditoría y controles del sistema.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between text-xs text-zinc-400 group-hover:text-rose-300 font-medium">
+                <span>Ingresar como Administrador</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // 4. Si el usuario es Docente (o un Admin que seleccionó vista 'teacher')
+  // Nota: Si es docente, viewMode se fuerza automáticamente a 'teacher'.
+  const activeView = viewMode || "teacher";
+
   return (
-    <div className="min-h-[100dvh] bg-[#0a0a0c] text-white antialiased selection:bg-violet-600 selection:text-white flex flex-col">
-      {/* Top Floating Pro Bar */}
+    <div className="min-h-[100dvh] bg-[#09090b] text-white antialiased flex flex-col selection:bg-rose-600 selection:text-white relative">
+      {/* Barra Superior Pro */}
       <header className="sticky top-0 z-40 bg-[#0e0e12]/90 backdrop-blur-md border-b border-white/10 transition-all">
         <div className="w-full px-4 sm:px-6 h-14 flex items-center justify-between text-xs">
-          {/* Logo & Section Identity */}
           <div className="flex items-center gap-3">
             <div className="relative w-32 h-8">
               <Image
@@ -69,10 +196,10 @@ export default function OperatorsRootPage() {
             <div className="hidden md:flex items-center gap-1.5 text-xs text-zinc-400 border-l border-white/10 pl-3">
               <span>Suite Operativa</span>
               <span className="text-zinc-600">/</span>
-              <span className="font-bold text-white tracking-tight flex items-center gap-1.5">
-                {activeArea === "teachers" ? (
+              <span className="font-semibold text-white tracking-tight flex items-center gap-1.5">
+                {activeView === "teacher" ? (
                   <>
-                    <span className="w-2 h-2 rounded-full bg-violet-500" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     Teachers Studio
                   </>
                 ) : (
@@ -85,52 +212,29 @@ export default function OperatorsRootPage() {
             </div>
           </div>
 
-          {/* User Session & Navigation Pills */}
           <div className="flex items-center gap-2.5">
-            {/* Modo Alumno */}
             <button
               onClick={handleOpenPreview}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 text-xs font-semibold transition-all active:scale-[0.97]"
-              title="Abre la experiencia del curso con Estudiante Mock para comprobar bloqueos"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 text-xs font-medium transition-all"
+              title="Abre la experiencia del curso con Estudiante Mock"
             >
-              <Eye className="w-3.5 h-3.5 text-amber-400" />
+              <Eye className="w-3.5 h-3.5 text-zinc-400" />
               <span className="hidden sm:inline">Modo Alumno</span>
-              <span className="font-mono text-[10px] text-amber-200 bg-amber-500/20 px-1.5 py-0.5 rounded-full">?preview=true</span>
             </button>
 
-            {/* Alternador de Área (Teachers / Admin) */}
-            {activeArea === "teachers" ? (
-              <button
-                onClick={() => setActiveArea("admin")}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#181822] hover:bg-[#222230] text-zinc-200 border border-white/10 text-xs font-semibold transition-all active:scale-[0.97]"
-              >
-                <Shield className="w-3.5 h-3.5 text-violet-400" />
-                <span>Gobernanza Admin</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => setActiveArea("teachers")}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold transition-all active:scale-[0.97] shadow-sm shadow-violet-600/25"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Volver a Docentes</span>
-              </button>
-            )}
-
-            {/* User Profile Pill & Sign Out */}
             <div className="flex items-center gap-2 pl-2 border-l border-white/10">
               <div className="hidden sm:flex flex-col text-right">
-                <span className="text-xs font-semibold text-white leading-tight">
-                  {operatorProfile.displayName || "Docente IPT"}
+                <span className="text-xs font-medium text-white leading-tight">
+                  {operatorProfile.displayName || "Operador IPT"}
                 </span>
-                <span className="text-[10px] text-violet-400 font-mono font-medium">
+                <span className="text-[10px] text-zinc-400 font-mono">
                   {operatorProfile.role.toUpperCase()}
                 </span>
               </div>
 
               <button
                 onClick={logout}
-                className="p-2 rounded-full text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                className="p-2 rounded-full text-zinc-400 hover:text-rose-400 hover:bg-white/5 transition-colors"
                 title="Cerrar Sesión"
               >
                 <LogOut className="w-4 h-4" />
@@ -140,21 +244,36 @@ export default function OperatorsRootPage() {
         </div>
       </header>
 
-      {/* Renderizado de Área */}
+      {/* Área de Trabajo según Perfil Activo */}
       <main className="flex-1 flex flex-col">
-        {activeArea === "teachers" ? (
+        {activeView === "teacher" ? (
           <TeacherStudioWorkspace
             userProfile={operatorProfile}
-            onGoToAdmin={() => setActiveArea("admin")}
+            onGoToAdmin={() => {
+              if (isAdmin) setViewMode("admin");
+            }}
             onOpenPreview={handleOpenPreview}
           />
         ) : (
           <AdminGatekeeper
             userProfile={operatorProfile}
-            onBackToTeachers={() => setActiveArea("teachers")}
+            onBackToTeachers={() => setViewMode("teacher")}
           />
         )}
       </main>
+
+      {/* Botón Flotante Rojo Inferior Izquierdo: Solo para Administradores para volver al Selector de Perfil */}
+      {isAdmin && (
+        <button
+          onClick={() => setViewMode(null)}
+          className="fixed bottom-5 left-5 z-50 inline-flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-500 text-white shadow-xl shadow-rose-950/60 border border-rose-400/30 transition-all hover:scale-105 active:scale-95 group font-medium text-xs backdrop-blur-md"
+          title="Volver a selección de perfil"
+          aria-label="Volver a selección de perfil"
+        >
+          <ArrowLeft className="w-4 h-4 text-white transition-transform group-hover:-translate-x-0.5" />
+          <span className="hidden sm:inline">Cambiar Perfil</span>
+        </button>
+      )}
     </div>
   );
 }

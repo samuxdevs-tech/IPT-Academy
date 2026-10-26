@@ -13,26 +13,35 @@ function sanitizeEnv(val: string | undefined, fallback: string): string {
 
 const resolvedProjectId = sanitizeEnv(
   process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  "ipt-course"
+  "ipt-course-admin"
 );
 
 const firebaseConfig = {
   apiKey: sanitizeEnv(
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    "AIzaSyCjbPjcwHwmlgUTvMhjrB3uD0aTuWFKeFo"
+    "AIzaSyCUl6THRfhQEEcTtrfSKmSG9sAZGMbX1No"
   ),
   authDomain: sanitizeEnv(
     process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    `${resolvedProjectId}.firebaseapp.com`
+    "ipt-course-admin-2a354.firebaseapp.com"
   ),
   databaseURL: sanitizeEnv(
     process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-    "https://ipt-course-default-rtdb.firebaseio.com"
+    "https://ipt-course-admin-default-rtdb.firebaseio.com"
   ),
-  projectId: resolvedProjectId,
-  storageBucket: `${resolvedProjectId}.firebasestorage.app`,
-  messagingSenderId: "148819588636",
-  appId: "1:148819588636:web:1caeeb4bbcb352c8928373"
+  projectId: "ipt-course-admin",
+  storageBucket: sanitizeEnv(
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    "ipt-course-admin.firebasestorage.app"
+  ),
+  messagingSenderId: sanitizeEnv(
+    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    "628909926872"
+  ),
+  appId: sanitizeEnv(
+    process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    "1:628909926872:web:f1fb3a00c2b745a708eaad"
+  )
 };
 
 export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);

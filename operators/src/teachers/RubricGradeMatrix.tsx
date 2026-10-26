@@ -43,45 +43,12 @@ export function RubricGradeMatrix() {
       setLoading(true);
       try {
         // 1. Cargar rúbrica real desde RTDB
-        const rubricSnap = await get(ref(rtdb, "courses/datagan-360-certificacion-maestra/rubric"));
+        const rubricSnap = await get(ref(rtdb, "courses/rubric"));
         if (rubricSnap.exists()) {
           const val = rubricSnap.val();
           setRubricCriteria(Array.isArray(val) ? val : Object.values(val));
         } else {
-          // Rúbrica estándar del curso maestro
-          const defaultRubric: RubricCriterion[] = [
-            {
-              id: "crit-1",
-              title: "1. Rigor Metodológico y Cálculo Zootécnico",
-              weightPercent: 40,
-              levels: [
-                { title: "Sobresaliente", points: 5.0, description: "Aplica fórmulas exactas de aforo y justifica la carga animal." },
-                { title: "Aceptable", points: 3.5, description: "Procedimiento correcto con errores numéricos menores." },
-                { title: "Insuficiente", points: 1.5, description: "Omite pasos críticos o copia respuestas sin procedimiento." }
-              ]
-            },
-            {
-              id: "crit-2",
-              title: "2. Análisis Forrajero y Conclusiones del Hato",
-              weightPercent: 35,
-              levels: [
-                { title: "Sobresaliente", points: 5.0, description: "Conclusiones técnicas profundas con propuesta de valor." },
-                { title: "Aceptable", points: 3.5, description: "Conclusiones básicas sin soporte numérico integral." },
-                { title: "Insuficiente", points: 1.0, description: "Sin conclusiones aplicadas a la finca." }
-              ]
-            },
-            {
-              id: "crit-3",
-              title: "3. Calidad de Entrega y Formato Oficial",
-              weightPercent: 25,
-              levels: [
-                { title: "Sobresaliente", points: 5.0, description: "Documento profesional, ordenado y en el formato requerido." },
-                { title: "Aceptable", points: 3.5, description: "Formato admisible pero con desorganización visual." },
-                { title: "Insuficiente", points: 2.0, description: "Entrega descuidada y fuera de norma." }
-              ]
-            }
-          ];
-          setRubricCriteria(defaultRubric);
+          setRubricCriteria([]);
         }
 
         // 2. Cargar notas reales de alumnos desde RTDB (progress/ o users/)
@@ -99,9 +66,9 @@ export function RubricGradeMatrix() {
             const studentName = userInfo.displayName || userInfo.profile?.displayName || `Alumno (${uid.substring(0, 6)})`;
             const email = userInfo.email || userInfo.profile?.email || "Sin correo";
 
-            const c1 = Number(p.corte1Grade ?? p.examScore ?? 4.0);
-            const c2 = Number(p.corte2Grade ?? 4.0);
-            const c3 = Number(p.corte3Grade ?? 4.0);
+            const c1 = Number(p.corte1Grade ?? p.examScore ?? 0);
+            const c2 = Number(p.corte2Grade ?? 0);
+            const c3 = Number(p.corte3Grade ?? 0);
             const avg = c1 * 0.3 + c2 * 0.3 + c3 * 0.4;
 
             rows.push({

@@ -33,9 +33,9 @@ export function ConcurrencyScaleManager() {
             }
           }
         });
-        setCurrentCcu(Math.max(1, activeCount));
+        setCurrentCcu(activeCount);
       } else {
-        setCurrentCcu(1);
+        setCurrentCcu(0);
       }
       setLoading(false);
     });

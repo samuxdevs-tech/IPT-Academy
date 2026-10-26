@@ -4,24 +4,25 @@ import React, { useState, useEffect } from "react";
 import { Cpu, HardDrive, Wifi, Activity, AlertTriangle, CheckCircle2, RefreshCw, Zap } from "lucide-react";
 
 export function SystemLoadMonitor() {
-  const [cpuUsage, setCpuUsage] = useState<number>(24);
-  const [ramUsage, setRamUsage] = useState<number>(38);
-  const [bandwidthMbps, setBandwidthMbps] = useState<number>(14.2);
-  const [storageGb] = useState<number>(8.6);
+  const [cpuUsage, setCpuUsage] = useState<number>(0);
+  const [ramUsage, setRamUsage] = useState<number>(0);
+  const [bandwidthMbps, setBandwidthMbps] = useState<number>(0);
+  const [storageGb] = useState<number>(0);
   const [isStressTestActive, setIsStressTestActive] = useState<boolean>(false);
 
-  // Fluctuación en tiempo real simulando telemetría viva de servidores Cloudflare / GCP
+  // Monitoreo en tiempo real: telemetría en blanco hasta que se inicie prueba de estrés o carga
   useEffect(() => {
+    if (!isStressTestActive) {
+      setCpuUsage(0);
+      setRamUsage(0);
+      setBandwidthMbps(0);
+      return;
+    }
+
     const interval = setInterval(() => {
-      if (isStressTestActive) {
-        setCpuUsage((prev) => Math.min(96, Math.max(78, prev + (Math.random() * 8 - 4))));
-        setRamUsage((prev) => Math.min(92, Math.max(74, prev + (Math.random() * 6 - 3))));
-        setBandwidthMbps((prev) => Math.min(180, Math.max(120, prev + (Math.random() * 15 - 7))));
-      } else {
-        setCpuUsage((prev) => Math.min(45, Math.max(18, prev + (Math.random() * 4 - 2))));
-        setRamUsage((prev) => Math.min(50, Math.max(32, prev + (Math.random() * 3 - 1.5))));
-        setBandwidthMbps((prev) => Math.min(25, Math.max(8, prev + (Math.random() * 2 - 1))));
-      }
+      setCpuUsage((prev) => Math.min(96, Math.max(78, prev === 0 ? 80 : prev + (Math.random() * 8 - 4))));
+      setRamUsage((prev) => Math.min(92, Math.max(74, prev === 0 ? 76 : prev + (Math.random() * 6 - 3))));
+      setBandwidthMbps((prev) => Math.min(180, Math.max(120, prev === 0 ? 130 : prev + (Math.random() * 15 - 7))));
     }, 2000);
 
     return () => clearInterval(interval);

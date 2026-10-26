@@ -73,30 +73,11 @@ export function LiveClassSplitView() {
           });
           setEnrolledStudents(list);
         } else {
-          // Si no hay reservas aún en RTDB, consultar usuarios con rol de estudiante
-          const list: EnrolledStudent[] = [];
-          Object.keys(usersVal).forEach(uid => {
-            const u = usersVal[uid];
-            if (u.role === "student" || u.profile?.role === "student") {
-              list.push({
-                uid,
-                name: u.displayName || u.profile?.displayName || "Estudiante",
-                email: u.email || u.profile?.email || "correo@ipt.edu.co",
-                availableQuotas: 3,
-                hasConfirmedHold: true,
-                quotaDeducted: false
-              });
-            }
-          });
-          setEnrolledStudents(list.slice(0, 5));
+          setEnrolledStudents([]);
         }
 
-        // 2. Cargar recursos reales disponibles
-        setPreparedResources([
-          { id: "res-1", name: "Calculadora_Aforo_y_Capacidad_UGM.xlsx", type: "xlsx", size: "1.1 MB" },
-          { id: "res-2", name: "Guia_Zootecnica_Metricas_DataGan_360.docx", type: "docx", size: "2.4 MB" },
-          { id: "res-3", name: "Formato_Control_Lechero_y_Curva_Lactancia.xlsx", type: "xlsx", size: "1.8 MB" }
-        ]);
+        // 2. Recursos preparados (comienza limpio hasta que el docente adjunte archivos)
+        setPreparedResources([]);
       } catch (err) {
         console.warn("No se pudieron cargar datos sincrónicos:", err);
       } finally {

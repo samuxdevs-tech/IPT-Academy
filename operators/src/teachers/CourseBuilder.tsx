@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FolderPlus,
   Plus,
@@ -18,7 +18,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
-import { ref, set } from "firebase/database";
+import { ref, set, get } from "firebase/database";
 
 export interface LessonItem {
   id: string;
@@ -41,57 +41,30 @@ export interface ModuleItem {
   lessons: LessonItem[];
 }
 
-const INITIAL_MODULES: ModuleItem[] = [
-  {
-    id: "mod-1",
-    title: "Módulo 1 · Cimientos Operativos y Diagnóstico de Entrada",
-    description: "Configuración inicial de la plataforma, parametrización de unidades y aforo de potreros.",
-    lessons: [
-      {
-        id: "les-1-1",
-        title: "1.1 Configuración de Perfil y Parametrización Oficial",
-        description: "Establece los datos de contacto y unidades de medida.",
-        duration: "08:30",
-        videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-        inVideoCheckpoints: [
-          {
-            timeSeconds: 180,
-            question: "¿Por qué es fundamental registrar el teléfono con indicativo internacional?",
-            options: ["Para cobros automáticos", "Para alertas críticas zootécnicas", "Opcional"],
-            correctIndex: 1,
-          }
-        ]
-      },
-      {
-        id: "les-1-2",
-        title: "1.2 Diagnóstico Forrajero y Estimación de Materia Seca",
-        description: "Cálculo matemático de oferta forrajera en campo.",
-        duration: "14:15",
-        videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      }
-    ]
-  },
-  {
-    id: "mod-2",
-    title: "Módulo 2 · Gestión de Forrajes y Rotación Estratégica",
-    description: "Cálculo de capacidad de carga en UGM/ha y división de apartos.",
-    lessons: [
-      {
-        id: "les-2-1",
-        title: "2.1 Fórmulas Zootécnicas de Presión de Pastoreo",
-        description: "Cómo evitar la degradación del suelo mediante rotación planificada.",
-        duration: "18:40",
-      }
-    ]
-  }
-];
-
 export function CourseBuilder({ onOpenPreview }: { onOpenPreview: () => void }) {
-  const [modules, setModules] = useState<ModuleItem[]>(INITIAL_MODULES);
+  const [modules, setModules] = useState<ModuleItem[]>([]);
   const [activeModuleIndex, setActiveModuleIndex] = useState<number>(0);
   const [selectedLesson, setSelectedLesson] = useState<LessonItem | null>(null);
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
   const [draggedModuleIdx, setDraggedModuleIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function loadRealModules() {
+      try {
+        const snap = await get(ref(rtdb, "courses/modules"));
+        if (snap.exists()) {
+          const val = snap.val();
+          const list = Array.isArray(val) ? val : Object.values(val);
+          setModules(list);
+        } else {
+          setModules([]);
+        }
+      } catch (err) {
+        setModules([]);
+      }
+    }
+    loadRealModules();
+  }, []);
 
   const handleAddModule = () => {
     const newMod: ModuleItem = {
@@ -217,7 +190,25 @@ export function CourseBuilder({ onOpenPreview }: { onOpenPreview: () => void }) 
           </div>
 
           <div className="space-y-2">
-            {modules.map((mod, idx) => (
+            {modules.length === 0 ? (
+              <div className="bg-[#121217] rounded-2xl border border-dashed border-white/10 p-8 text-center space-y-3">
+                <div className="w-10 h-10 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto text-violet-400">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <p className="text-xs font-bold text-white">Sin módulos creados</p>
+                <p className="text-[11px] text-zinc-400 max-w-xs mx-auto">
+                  La estructura del curso está completamente en blanco. Haz clic en "Nuevo Módulo" para comenzar.
+                </p>
+                <button
+                  onClick={handleAddModule}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20 active:scale-[0.98]"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Crear Primer Módulo</span>
+                </button>
+              </div>
+            ) : (
+              modules.map((mod, idx) => (
               <div
                 key={mod.id}
                 draggable
@@ -264,7 +255,7 @@ export function CourseBuilder({ onOpenPreview }: { onOpenPreview: () => void }) 
                   <ChevronRight className={`w-4 h-4 ${activeModuleIndex === idx ? "text-violet-400" : "text-zinc-600"}`} />
                 </div>
               </div>
-            ))}
+            )))}
           </div>
         </div>
 

@@ -52,40 +52,8 @@ function StudentPreviewInner() {
           setSelectedLessonId(mods[0].lessons[0].id);
         }
       } else {
-        // Fallback estructural si aún no se han subido módulos a RTDB
-        const fallbackMods = [
-          {
-            id: "mod-1",
-            title: "Módulo 1 · Cimientos Operativos y Diagnóstico de Entrada",
-            lessons: [
-              { id: "les-1-1", title: "1.1 Configuración de Perfil Oficial", duration: "08:30" },
-              { id: "les-1-2", title: "1.2 Diagnóstico Forrajero y Materia Seca", duration: "14:15" },
-            ],
-            examId: "exam-modulo-1",
-            examTitle: "Examen de Certificación · Módulo 1"
-          },
-          {
-            id: "mod-2",
-            title: "Módulo 2 · Gestión de Forrajes y Pastoreo Rotacional",
-            lessons: [
-              { id: "les-2-1", title: "2.1 Fórmulas Zootécnicas de Presión de Pastoreo", duration: "18:40" },
-              { id: "les-2-2", title: "2.2 División de Apartos y Leyes de Voisin", duration: "16:20" },
-            ],
-            examId: "exam-modulo-2",
-            examTitle: "Evaluación Técnica · Módulo 2"
-          },
-          {
-            id: "mod-3",
-            title: "Módulo 3 · Parámetros Reproductivos e IATF",
-            lessons: [
-              { id: "les-3-1", title: "3.1 Protocolos Hormonales en Ganado de Carne", duration: "22:10" }
-            ],
-            examId: "exam-modulo-3",
-            examTitle: "Examen de Corte · Módulo 3"
-          }
-        ];
-        setCourseModules(fallbackMods);
-        setSelectedLessonId("les-1-1");
+        setCourseModules([]);
+        setSelectedLessonId("");
       }
       setLoading(false);
     });
@@ -189,15 +157,37 @@ function StudentPreviewInner() {
       )}
 
       {/* Main Student Shell */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Columna Izquierda: Reproductor o Pantalla de Bloqueo */}
-        <div className="lg:col-span-2 space-y-4">
-          {loading ? (
-            <div className="bg-[#121217] rounded-2xl p-16 text-center border border-white/10 shadow-sm">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto text-violet-400 mb-2" />
-              <p className="text-xs text-[#a1a1aa]">Cargando curso...</p>
+      {loading ? (
+        <div className="flex-1 max-w-xl mx-auto p-12 text-center my-auto">
+          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-violet-400 mb-2" />
+          <p className="text-xs text-[#a1a1aa]">Cargando curso...</p>
+        </div>
+      ) : courseModules.length === 0 ? (
+        <div className="flex-1 max-w-lg w-full mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+          <div className="bg-[#121217] rounded-3xl border border-white/10 p-10 text-center space-y-4 shadow-xl w-full">
+            <div className="w-14 h-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto text-violet-400">
+              <BookOpen className="w-7 h-7" />
             </div>
-          ) : isCurrentModuleLocked ? (
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-white tracking-tight">Curso 100% en Blanco</h3>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                No hay módulos ni lecciones registrados en la base de datos oficial. Los estudiantes experimentarán esta vista cuando no existan contenidos creados.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/")}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-violet-600/20 active:scale-[0.98]"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Volver a Studio Docente</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Columna Izquierda: Reproductor o Pantalla de Bloqueo */}
+          <div className="lg:col-span-2 space-y-4">
+            {isCurrentModuleLocked ? (
             /* Bloqueo Legítimo por Condicional Pedagógico */
             <div className="bg-[#121217] rounded-2xl border border-rose-500/20 p-12 text-center space-y-4 shadow-lg">
               <div className="w-16 h-16 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto border border-rose-500/20">
@@ -340,7 +330,8 @@ function StudentPreviewInner() {
           </div>
         </div>
       </div>
-    </div>
+    )}
+  </div>
   );
 }
 

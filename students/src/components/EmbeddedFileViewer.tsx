@@ -42,16 +42,7 @@ export default function EmbeddedFileViewer({
   const isDocx = ['docx', 'doc'].includes(ext);
   const isXlsx = ['xlsx', 'xls', 'csv'].includes(ext);
 
-  // Fallback demo file URLs if only a filename is passed
-  const effectiveUrl = fileUrl && fileUrl.startsWith('http')
-    ? fileUrl
-    : isPdf
-    ? 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
-    : isImage
-    ? 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1280&q=80'
-    : isDocx
-    ? 'https://calibre-ebook.com/downloads/demos/demo.docx'
-    : fileUrl || '';
+  const effectiveUrl = fileUrl && fileUrl.startsWith('http') ? fileUrl : '';
 
   // Google Docs Viewer URL for embedded DOCX / PDF
   const googleDocsViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(

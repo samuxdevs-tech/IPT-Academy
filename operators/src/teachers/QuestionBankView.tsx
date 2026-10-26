@@ -40,30 +40,7 @@ export function QuestionBankView() {
           }));
           setQuestions(items);
         } else {
-          // Si no hay nodo question_bank, extraer preguntas reales de los módulos del curso
-          const courseSnap = await get(ref(rtdb, "courses/datagan-360-certificacion-maestra/modules"));
-          if (courseSnap.exists()) {
-            const mods = courseSnap.val();
-            const extracted: QuestionBankItem[] = [];
-            (Array.isArray(mods) ? mods : Object.values(mods)).forEach((m: any) => {
-              (m.lessons || []).forEach((l: any) => {
-                (l.checkpointQuiz || l.inVideoCheckpoints || []).forEach((q: any, i: number) => {
-                  extracted.push({
-                    id: q.id || `q-${m.id}-${i}`,
-                    moduleId: m.id || "modulo-1",
-                    moduleName: m.title || "Módulo 1",
-                    prompt: q.prompt || q.question || "Pregunta de evaluación",
-                    options: q.options || ["Opción A", "Opción B", "Opción C"],
-                    correctIndex: q.correctIndex ?? 0,
-                    explanation: q.explanation || "Explicación zootécnica de referencia."
-                  });
-                });
-              });
-            });
-            setQuestions(extracted);
-          } else {
-            setQuestions([]);
-          }
+          setQuestions([]);
         }
       } catch (err) {
         console.warn("No se pudo leer question_bank en RTDB:", err);

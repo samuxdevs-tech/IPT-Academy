@@ -50,7 +50,7 @@ export function RegisteredAccountsView() {
         } else if (u.licenses && typeof u.licenses === "object") {
           licenses = Object.keys(u.licenses);
         } else {
-          licenses = ["datagan-360-certificacion-maestra"];
+          licenses = [];
         }
 
         list.push({
@@ -63,20 +63,9 @@ export function RegisteredAccountsView() {
           activeLicenses: licenses,
           registeredDate: u.createdAt
             ? new Date(u.createdAt).toISOString().split("T")[0]
-            : "2026-10-01"
+            : "Hoy"
         });
       });
-
-      if (list.length === 0) {
-        list.push({
-          uid: "usr-samuxdevs",
-          name: "Iván Samuel Pérez Torrenegra",
-          email: "samuxdevs@gmail.com",
-          currentRole: "owner",
-          activeLicenses: ["datagan-360-certificacion-maestra", "ipt-software-ia"],
-          registeredDate: "2026-09-01"
-        });
-      }
 
       setUsers(list);
       setLoading(false);

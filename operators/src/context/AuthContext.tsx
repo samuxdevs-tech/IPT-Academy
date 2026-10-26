@@ -1,39 +1,27 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import {
-  onAuthStateChanged,
-  User,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut,
-  IdTokenResult
-} from "firebase/auth";
-import { ref, get, set } from "firebase/database";
-import { auth, rtdb, OperatorUserProfile } from "@/lib/firebase";
 
-export const OWNER_UIDS = [
-  "fIBITLfS50bRxE72fqgzC5nnArX2",
-];
+export interface OperatorUser {
+  uid: string;
+  email: string;
+  displayName: string;
+  role: "admin" | "teacher";
+  isAdmin: boolean;
+  isTeacher: boolean;
+  photoURL?: string | null;
+}
 
-export const OWNER_EMAILS = [
-  "samuxdevs@gmail.com",
-  "ivanpereztech13@gmail.com",
-  "admin@ipt.com",
-  "admin@iptapps.com",
-  "ivan@ipt.edu.co",
-];
-
-export type OperatorUser = OperatorUserProfile;
+export type OperatorUserProfile = OperatorUser;
 
 interface AuthContextType {
-  user: User | null;
+  user: OperatorUser | null;
   operatorProfile: OperatorUser | null;
+  viewMode: "teacher" | "admin" | null;
+  setViewMode: (mode: "teacher" | "admin" | null) => void;
   loading: boolean;
   error: string | null;
   loginWithEmail: (email: string, pass: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -41,133 +29,179 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   operatorProfile: null,
+  viewMode: null,
+  setViewMode: () => {},
   loading: true,
   error: null,
   loginWithEmail: async () => {},
-  loginWithGoogle: async () => {},
   logout: async () => {},
   clearError: () => {},
 });
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://ipt-course-api.vercel.app";
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<OperatorUser | null>(null);
   const [operatorProfile, setOperatorProfile] = useState<OperatorUser | null>(null);
+  const [viewMode, setViewModeState] = useState<"teacher" | "admin" | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 1. Restaurar sesión desde JWT almacenado o Cookie de servidor
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!firebaseUser) {
-        setUser(null);
-        setOperatorProfile(null);
-        setLoading(false);
+    let mounted = true;
+
+    async function checkSession() {
+      const token = typeof window !== "undefined" ? sessionStorage.getItem("ipt_auth_token") : null;
+      const savedViewMode = typeof window !== "undefined" ? (sessionStorage.getItem("ipt_view_mode") as "teacher" | "admin" | null) : null;
+
+      if (!token) {
+        if (mounted) setLoading(false);
         return;
       }
 
-      setUser(firebaseUser);
-
       try {
-        // 1. Verificar si es Owner por UID o Email
-        const isOwner =
-          OWNER_UIDS.includes(firebaseUser.uid) ||
-          (firebaseUser.email && OWNER_EMAILS.includes(firebaseUser.email.toLowerCase()));
-
-        // 2. Leer Claims criptográficas
-        const tokenResult: IdTokenResult = await firebaseUser.getIdTokenResult();
-        const claims = tokenResult.claims;
-
-        // 3. Consultar rol en Firebase Realtime Database
-        let rtdbRole: string | null = null;
-        try {
-          const roleSnap = await get(ref(rtdb, `roles/${firebaseUser.uid}`));
-          if (roleSnap.exists()) {
-            rtdbRole = roleSnap.val();
-          }
-        } catch (dbErr) {
-          console.warn("No se pudo consultar roles en RTDB:", dbErr);
-        }
-
-        // Determinar rol efectivo
-        let effectiveRole: OperatorUser["role"] = "student";
-
-        if (isOwner) {
-          effectiveRole = "owner";
-        } else if (claims.admin === true || rtdbRole === "admin" || rtdbRole === "owner") {
-          effectiveRole = "admin";
-        } else if (rtdbRole === "teacher" || rtdbRole === "instructor") {
-          effectiveRole = "teacher";
-        } else if (rtdbRole === "operator") {
-          effectiveRole = "operator";
-        } else if (rtdbRole === "student") {
-          effectiveRole = "student";
-        } else {
-          // Si no tiene rol asignado en RTDB, consultar si está en admins/
-          try {
-            const adminSnap = await get(ref(rtdb, `admins/${firebaseUser.uid}`));
-            if (adminSnap.exists() && adminSnap.val() === true) {
-              effectiveRole = "admin";
-            }
-          } catch {}
-        }
-
-        const isAdmin = effectiveRole === "admin" || effectiveRole === "owner";
-        const isTeacher = effectiveRole === "teacher" || isAdmin || effectiveRole === "operator";
-
-        setOperatorProfile({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "Operador IPT",
-          role: effectiveRole,
-          isAdmin,
-          isTeacher,
-          photoURL: firebaseUser.photoURL,
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
         });
-      } catch (err: any) {
-        console.error("Error resolviendo perfil de operador:", err);
-        setError("Error validando permisos de acceso.");
-      } finally {
-        setLoading(false);
-      }
-    });
 
-    return () => unsubscribe();
+        if (!res.ok) {
+          throw new Error("Sesión inválida o expirada");
+        }
+
+        const data = await res.json();
+        if (data.success && data.user) {
+          const u = data.user;
+          const isAdmin = u.role === "admin";
+          const profile: OperatorUser = {
+            uid: u.uid,
+            email: u.email,
+            displayName: u.displayName || (isAdmin ? "Iván Pérez" : "Docente IPT"),
+            role: u.role,
+            isAdmin,
+            isTeacher: true,
+          };
+
+          if (mounted) {
+            setUser(profile);
+            setOperatorProfile(profile);
+
+            // Docente entra directo a teacher; Admin respeta viewMode persistido o null
+            if (u.role === "teacher") {
+              setViewModeState("teacher");
+            } else if (savedViewMode === "teacher" || savedViewMode === "admin") {
+              setViewModeState(savedViewMode);
+            } else {
+              setViewModeState(null);
+            }
+          }
+        } else {
+          throw new Error("Respuesta de sesión no exitosa");
+        }
+      } catch (err) {
+        if (mounted) {
+          sessionStorage.removeItem("ipt_auth_token");
+          sessionStorage.removeItem("ipt_view_mode");
+          setUser(null);
+          setOperatorProfile(null);
+          setViewModeState(null);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    checkSession();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
+  // 2. Control de vista persistente para el Administrador
+  const setViewMode = (mode: "teacher" | "admin" | null) => {
+    setViewModeState(mode);
+    if (typeof window !== "undefined") {
+      if (mode) {
+        sessionStorage.setItem("ipt_view_mode", mode);
+      } else {
+        sessionStorage.removeItem("ipt_view_mode");
+      }
+    }
+  };
+
+  // 3. Inicio de sesión mediante JWT en /api/auth/login
   const loginWithEmail = async (email: string, pass: string) => {
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email.trim(), pass);
-    } catch (err: any) {
-      console.error("Fallo al iniciar sesión:", err);
-      if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
-        setError("Credenciales incorrectas. Verifica tu correo y contraseña.");
-      } else if (err.code === "auth/too-many-requests") {
-        setError("Demasiados intentos fallidos. Inténtalo de nuevo más tarde.");
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email: email.trim(), password: pass }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Credenciales incorrectas o cuenta no autorizada.");
+      }
+
+      const u = data.user;
+      const isAdmin = u.role === "admin";
+      const profile: OperatorUser = {
+        uid: u.uid,
+        email: u.email,
+        displayName: u.displayName || (isAdmin ? "Iván Pérez" : "Docente IPT"),
+        role: u.role,
+        isAdmin,
+        isTeacher: true,
+      };
+
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("ipt_auth_token", data.token);
+      }
+
+      setUser(profile);
+      setOperatorProfile(profile);
+
+      // Si es docente entra directo en teacher; si es admin va a la pantalla de selección
+      if (u.role === "teacher") {
+        setViewMode("teacher");
       } else {
-        setError(err.message || "Error al autenticar con el servidor de IPT.");
+        setViewMode(null);
       }
-      throw err;
-    }
-  };
-
-  const loginWithGoogle = async () => {
-    setError(null);
-    try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-      await signInWithPopup(auth, provider);
     } catch (err: any) {
-      if (err.code !== "auth/popup-closed-by-user") {
-        setError("No se pudo completar el acceso con Google.");
-      }
+      setError(err.message || "Fallo en la comunicación con el servidor seguro.");
       throw err;
     }
   };
 
+  // 4. Cierre de sesión seguro
   const logout = async () => {
-    await signOut(auth);
+    try {
+      await fetch(`${API_BASE}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {}
+
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("ipt_auth_token");
+      sessionStorage.removeItem("ipt_view_mode");
+    }
+
     setUser(null);
     setOperatorProfile(null);
+    setViewModeState(null);
   };
 
   return (
@@ -175,10 +209,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         operatorProfile,
+        viewMode,
+        setViewMode,
         loading,
         error,
         loginWithEmail,
-        loginWithGoogle,
         logout,
         clearError: () => setError(null),
       }}

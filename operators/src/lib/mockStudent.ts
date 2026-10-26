@@ -13,29 +13,7 @@ export interface ConditionalRule {
   minScore: number; // ej: 4.0
 }
 
-export const DEFAULT_CONDITIONALS: ConditionalRule[] = [
-  {
-    targetId: 'modulo-2',
-    targetTitle: 'Módulo 2 · Gestión de Forrajes y Pastoreo Rotacional',
-    requiredQuizOrExamId: 'exam-modulo-1',
-    requiredQuizTitle: 'Examen de Certificación · Módulo 1',
-    minScore: 4.0,
-  },
-  {
-    targetId: 'modulo-3',
-    targetTitle: 'Módulo 3 · Parámetros Reproductivos e IATF',
-    requiredQuizOrExamId: 'exam-modulo-2',
-    requiredQuizTitle: 'Evaluación Técnica · Módulo 2',
-    minScore: 4.0,
-  },
-  {
-    targetId: 'modulo-4',
-    targetTitle: 'Módulo 4 · Costos Operativos y Trazabilidad',
-    requiredQuizOrExamId: 'exam-modulo-3',
-    requiredQuizTitle: 'Examen de Corte · Módulo 3',
-    minScore: 4.0,
-  }
-];
+export const DEFAULT_CONDITIONALS: ConditionalRule[] = [];
 
 export class MockStudentManager {
   private progress: MockStudentProgress;

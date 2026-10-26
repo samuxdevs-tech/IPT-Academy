@@ -1,5 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { sign, verify } from 'hono/jwt';
+import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
+import bcrypt from 'bcryptjs';
 import {
   CreateLiveClassSchema,
   RequestBookingSchema,
@@ -23,28 +26,7 @@ const app = new Hono<{ Bindings: Env }>();
 // Shims de persistencia y almacenamiento en memoria para ejecución desacoplada en Vercel / Edge
 class InMemoryD1Shim {
   private data: Record<string, any[]> = {
-    assignments: [
-      {
-        id: 'assign-ipt-001',
-        course_slug: 'ipt-software-ia',
-        course_title: 'Ingeniería de Software e IA - IPT',
-        module_title: 'Módulo 1: Arquitectura y Modelado',
-        cut_id: 'corte-1',
-        weight_percent: 25,
-        title: 'Diseño e Implementación de Arquitectura Limpia',
-        instructions: 'Crear un módulo desacoplado con TypeScript, Zod y control estricto de tipos...',
-        due_date_utc: new Date(Date.now() + 86400000 * 5).toISOString(),
-        allowed_extensions: '["zip", "pdf", "ts"]',
-        max_file_size_mb: 25,
-        status: 'published',
-        rubric_json: JSON.stringify([
-          { criterion: 'Dominio de Tipos y TypeScript Estricto', maxScore: 50, score: 0 },
-          { criterion: 'Desacoplamiento y Cobertura de Pruebas', maxScore: 50, score: 0 }
-        ]),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-    ],
+    assignments: [],
     submissions: [],
     submission_files: [],
     rubric_evaluations: [],
@@ -203,6 +185,298 @@ app.get('/health', (c) => {
     securityShield: 'active',
     studentAccessBlocked: true,
     time: new Date().toISOString() 
+  });
+});
+
+// ============================================================================
+// 4. AUTENTICACIÓN PROPIA JWT + BCRYPT (ZERO FIREBASE AUTH)
+// ============================================================================
+
+export const ADMIN_EMAIL = 'administrator@ivanperez.tech';
+const JWT_SECRET = process.env.JWT_SECRET || 'ipt_course_jwt_master_secret_2026_9b8a7c6d5e4f3a2b1c';
+
+interface AuthUser {
+  uid: string;
+  email: string;
+  passwordHash: string;
+  displayName: string;
+  role: 'admin' | 'teacher';
+  createdAt: string;
+}
+
+// Almacén seguro en memoria para autenticación desacoplada
+const usersStore = new Map<string, AuthUser>();
+
+// Pre-semilla del administrador maestro único
+const seedAdmin = () => {
+  const adminKey = ADMIN_EMAIL.toLowerCase();
+  if (!usersStore.has(adminKey)) {
+    usersStore.set(adminKey, {
+      uid: 'admin_ipt_master_001',
+      email: ADMIN_EMAIL,
+      passwordHash: bcrypt.hashSync(process.env.ADMIN_INITIAL_PASSWORD || 'AdminIPT2026!*', 10),
+      displayName: 'Iván Samuel Pérez Torrenegra',
+      role: 'admin',
+      createdAt: new Date().toISOString(),
+    });
+  }
+};
+seedAdmin();
+
+// Pre-semilla de docente institucional
+const seedTeacher = () => {
+  const teacherEmail = 'docente@ipt.com';
+  if (!usersStore.has(teacherEmail)) {
+    usersStore.set(teacherEmail, {
+      uid: 'teacher_ipt_001',
+      email: teacherEmail,
+      passwordHash: bcrypt.hashSync('DocenteIPT2026!*', 10),
+      displayName: 'Docente Titular IPT',
+      role: 'teacher',
+      createdAt: new Date().toISOString(),
+    });
+  }
+};
+seedTeacher();
+
+// 4.1. Endpoint de Inicio de Sesión
+app.post('/api/auth/login', async (c) => {
+  try {
+    const body = await c.req.json();
+    const email = (body.email || '').trim().toLowerCase();
+    const password = body.password || '';
+
+    if (!email || !password) {
+      return c.json({ success: false, error: 'Correo institucional y contraseña requeridos.' }, 400);
+    }
+
+    // Asegurar semilla en caso de reinicio de ciclo de vida del contenedor
+    seedAdmin();
+    seedTeacher();
+
+    const user = usersStore.get(email);
+    if (!user) {
+      return c.json({ success: false, error: 'Credenciales inválidas o cuenta no registrada.' }, 401);
+    }
+
+    const passwordMatches = bcrypt.compareSync(password, user.passwordHash);
+    if (!passwordMatches) {
+      return c.json({ success: false, error: 'Contraseña incorrecta.' }, 401);
+    }
+
+    // Regla estricta: Solo el correo de entorno es Administrador
+    const effectiveRole: 'admin' | 'teacher' = (email === ADMIN_EMAIL.toLowerCase()) ? 'admin' : 'teacher';
+
+    const payload = {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      role: effectiveRole,
+      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), // 24 horas
+    };
+
+    const token = await sign(payload, JWT_SECRET, 'HS256');
+
+    // Cookie segura de sesión HttpOnly + Secure + SameSite=Strict
+    setCookie(c, 'ipt_session', token, {
+      path: '/',
+      secure: true,
+      httpOnly: true,
+      sameSite: 'Strict',
+      maxAge: 60 * 60 * 24,
+    });
+
+    return c.json({
+      success: true,
+      token,
+      user: {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        role: effectiveRole,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message || 'Error en inicio de sesión.' }, 500);
+  }
+});
+
+// 4.2. Endpoint de Registro de Operadores (Docentes / Administrador)
+app.post('/api/auth/register', async (c) => {
+  try {
+    const body = await c.req.json();
+    const email = (body.email || '').trim().toLowerCase();
+    const password = body.password || '';
+    const displayName = (body.displayName || '').trim() || (email === ADMIN_EMAIL.toLowerCase() ? 'Iván Samuel Pérez Torrenegra' : 'Docente IPT');
+
+    if (!email || !password) {
+      return c.json({ success: false, error: 'Correo institucional y contraseña requeridos.' }, 400);
+    }
+
+    if (password.length < 6) {
+      return c.json({ success: false, error: 'La contraseña debe tener mínimo 6 caracteres.' }, 400);
+    }
+
+    // Bloquear explícitamente cuentas de estudiantes
+    if ((email.includes('student') || email.includes('estudiante')) && email !== ADMIN_EMAIL.toLowerCase()) {
+      return c.json({ success: false, error: 'Acceso denegado: El portal no admite cuentas estudiantiles.' }, 403);
+    }
+
+    seedAdmin();
+    const effectiveRole: 'admin' | 'teacher' = (email === ADMIN_EMAIL.toLowerCase()) ? 'admin' : 'teacher';
+    const passwordHash = bcrypt.hashSync(password, 10);
+    const uid = 'usr_' + Math.random().toString(36).substring(2, 10);
+
+    const newUser: AuthUser = {
+      uid,
+      email,
+      passwordHash,
+      displayName,
+      role: effectiveRole,
+      createdAt: new Date().toISOString(),
+    };
+
+    usersStore.set(email, newUser);
+
+    const payload = {
+      uid,
+      email,
+      displayName,
+      role: effectiveRole,
+      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24),
+    };
+
+    const token = await sign(payload, JWT_SECRET, 'HS256');
+
+    setCookie(c, 'ipt_session', token, {
+      path: '/',
+      secure: true,
+      httpOnly: true,
+      sameSite: 'Strict',
+      maxAge: 60 * 60 * 24,
+    });
+
+    return c.json({
+      success: true,
+      token,
+      user: {
+        uid,
+        email,
+        displayName,
+        role: effectiveRole,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message || 'Error en registro.' }, 500);
+  }
+});
+
+// 4.3. Verificación de Sesión Activa (/api/auth/me)
+app.get('/api/auth/me', async (c) => {
+  try {
+    const authHeader = c.req.header('authorization') || '';
+    let token = '';
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7).trim();
+    }
+    if (!token) {
+      token = getCookie(c, 'ipt_session') || '';
+    }
+
+    if (!token) {
+      return c.json({ success: false, error: 'No existe sesión activa.' }, 401);
+    }
+
+    const decoded = await verify(token, JWT_SECRET, 'HS256') as any;
+    if (!decoded || !decoded.email) {
+      return c.json({ success: false, error: 'Token de sesión inválido.' }, 401);
+    }
+
+    const effectiveRole: 'admin' | 'teacher' = (decoded.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? 'admin' : 'teacher';
+
+    return c.json({
+      success: true,
+      user: {
+        uid: decoded.uid,
+        email: decoded.email,
+        displayName: decoded.displayName || (effectiveRole === 'admin' ? 'Iván Samuel Pérez Torrenegra' : 'Docente IPT'),
+        role: effectiveRole,
+      },
+    });
+  } catch (err: any) {
+    return c.json({ success: false, error: 'Sesión expirada o no autorizada.' }, 401);
+  }
+});
+
+// 4.4. Cierre de Sesión
+app.post('/api/auth/logout', (c) => {
+  deleteCookie(c, 'ipt_session', { path: '/' });
+  return c.json({ success: true, message: 'Sesión finalizada exitosamente.' });
+});
+
+// ============================================================================
+// 5. RBAC ESTRICTO EN SERVIDOR: MIDDLEWARE Y RUTAS /api/admin/*
+// ============================================================================
+// Si un docente altera el cliente para enviar viewMode=admin, las rutas /api/admin/*
+// deben rechazarlo con un 403 Forbidden irrecuperable.
+app.use('/api/admin/*', async (c, next) => {
+  try {
+    const authHeader = c.req.header('authorization') || '';
+    let token = '';
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7).trim();
+    }
+    if (!token) {
+      token = getCookie(c, 'ipt_session') || '';
+    }
+
+    if (!token) {
+      return c.json({
+        success: false,
+        error: 'ACCESO DENEGADO (401 Unauthorized): Se requiere token criptográfico de sesión.',
+        code: 'TOKEN_REQUIRED'
+      }, 401);
+    }
+
+    const decoded = await verify(token, JWT_SECRET, 'HS256') as any;
+    if (!decoded || decoded.role !== 'admin' || decoded.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      return c.json({
+        success: false,
+        error: 'ACCESO DENEGADO (403 Forbidden): Privilegios de administrador requeridos. Su rol verificado no cuenta con permisos para ejecutar esta acción.',
+        code: 'ADMIN_PRIVILEGES_FORBIDDEN'
+      }, 403);
+    }
+
+    (c as any).user = decoded;
+    await next();
+  } catch (err: any) {
+    return c.json({
+      success: false,
+      error: 'ACCESO DENEGADO (403 Forbidden): Verificación de firma criptográfica fallida.',
+      code: 'INVALID_SIGNATURE'
+    }, 403);
+  }
+});
+
+// Métricas y gobernanza de administradores
+app.get('/api/admin/overview', async (c) => {
+  seedAdmin();
+  return c.json({
+    success: true,
+    data: {
+      administrator: ADMIN_EMAIL,
+      totalRegisteredOperators: usersStore.size,
+      operators: Array.from(usersStore.values()).map(u => ({
+        uid: u.uid,
+        email: u.email,
+        displayName: u.displayName,
+        role: u.role,
+        createdAt: u.createdAt,
+      })),
+      securityShield: 'Active and Enforced',
+      rbacEnforcement: 'Strict Server-Side',
+      timestamp: new Date().toISOString(),
+    }
   });
 });
 

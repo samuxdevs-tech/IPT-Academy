@@ -9,7 +9,7 @@ export function StudentAccessDenied() {
   const { user, operatorProfile, logout } = useAuth();
 
   const handleGoToStudentPortal = () => {
-    window.location.href = "https://datagan-course.web.app";
+    window.location.href = "https://ipt-course-students.web.app";
   };
 
   return (

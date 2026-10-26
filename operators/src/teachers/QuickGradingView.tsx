@@ -25,10 +25,7 @@ export function QuickGradingView() {
   const [aiSuggestion, setAiSuggestion] = useState<any | null>(null);
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
-  const [criterionGrades, setCriterionGrades] = useState<{ [key: string]: number }>({
-    "crit-1": 4.5,
-    "crit-2": 4.0
-  });
+  const [criterionGrades, setCriterionGrades] = useState<{ [key: string]: number }>({});
   const [feedbackText, setFeedbackText] = useState<string>("");
 
   useEffect(() => {
@@ -61,33 +58,7 @@ export function QuickGradingView() {
             }));
             setSubmissions(list);
           } else {
-            const lmsSnap = await get(ref(rtdb, "lms_assignments"));
-            if (lmsSnap.exists()) {
-              const lmsVal = lmsSnap.val();
-              const lmsList: SubmissionItem[] = (Array.isArray(lmsVal) ? lmsVal : Object.values(lmsVal))
-                .filter((a: any) => a.submittedFiles && a.submittedFiles.length > 0)
-                .map((a: any) => ({
-                  id: a.id || `sub-${Math.random()}`,
-                  assignment_id: a.id || "assign-01",
-                  student_uid: a.userId || a.student_id || "stu-001",
-                  student_name: a.studentName || "Estudiante IPT",
-                  student_email: a.studentEmail || "estudiante@ipt.com",
-                  submitted_at: a.submittedAtUtc || a.dueDateUtc || new Date().toISOString(),
-                  submission_text_content: a.instructions || "Entrega de tarea oficial de Datagan 360.",
-                  status: (a.grade ? 'graded' : 'pending') as 'pending' | 'graded',
-                  final_grade: a.grade || null,
-                  teacher_feedback_text: a.feedback || null,
-                  teacher_audio_r2_url: null,
-                  files: a.submittedFiles.map((f: any) => ({
-                    file_name: f.fileName,
-                    file_size: f.sizeMb ? f.sizeMb * 1024 * 1024 : 102400,
-                    download_url: f.downloadUrl || "#"
-                  }))
-                }));
-              setSubmissions(lmsList);
-            } else {
-              setSubmissions([]);
-            }
+            setSubmissions([]);
           }
         }
       } catch (err) {
