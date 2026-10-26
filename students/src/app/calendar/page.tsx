@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import SafeNavLink from '@/components/navigation/SafeNavLink';
 import {
   Calendar as CalendarIcon,
   Globe,
@@ -724,13 +725,13 @@ export default function InstitutionalCalendarPage() {
 
                     <div className="flex flex-wrap items-center justify-end gap-2 pt-1 text-[13px]">
                       {ev.linkedAssignmentId ? (
-                        <Link
+                        <SafeNavLink
                           href={`/assignments?id=${ev.linkedAssignmentId}`}
                           className="font-medium text-[#6d28d2] hover:underline inline-flex items-center gap-1"
                         >
                           <span>Abrir esta tarea</span>
                           <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
+                        </SafeNavLink>
                       ) : ev.locationOrUrl.startsWith('http') ? (
                         <a
                           href={ev.locationOrUrl}

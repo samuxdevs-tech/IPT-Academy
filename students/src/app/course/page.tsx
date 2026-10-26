@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import SafeNavLink from '@/components/navigation/SafeNavLink';
 import {
   Play,
   Pause,
@@ -384,14 +385,13 @@ function VideoStudioContent() {
                 ))}
               </select>
 
-              <Link
-                href={`/assignments?course=${activeCourse.slug}`}
-                prefetch={true}
+              <SafeNavLink
+                href={activeCourse?.slug ? `/assignments?course=${encodeURIComponent(activeCourse.slug)}` : '/assignments'}
                 className="px-4 py-2 rounded-full bg-[#0f0f0f] hover:bg-[#272727] text-white text-xs font-semibold inline-flex items-center gap-1.5"
               >
                 <FileCheck2 className="w-3.5 h-3.5" />
                 <span>Ir a las tareas</span>
-              </Link>
+              </SafeNavLink>
             </div>
           </div>
 

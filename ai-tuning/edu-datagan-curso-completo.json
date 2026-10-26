@@ -1,0 +1,573 @@
+{
+  "slug": "test",
+  "title": "TEST",
+  "subtitle": "Centro de Mando, Analítica Zootécnica, Configuración del Sistema y Control de Acceso por Roles",
+  "description": "Programa de capacitación técnica oficial para la plataforma DataGan 360. Diseñado para productores ganaderos, zootecnistas, administradores de fincas y equipos operativos. Cubre desde el dominio del Centro de Mando y Dashboard de Analítica (telemetría satelital, UGG/ha, eficiencia forrajera y producción) y la parametrización maestra del sistema (seguridad, alertas, carga masiva en 2 pasos y valoración comercial), hasta la arquitectura de seguridad y permisos granulares por roles de trabajo.",
+  "thumbnail": "https://pub-ac305c99ed4042c9976f0abc2d0123b3.r2.dev/images/datagan-course-cover-v2.jpeg?v=2",
+  "instructor": {
+    "name": "Iván Samuel Pérez Torrenegra & Equipo Técnico DataGan",
+    "role": "Líder de Arquitectura Zootécnica y Fundador de IPT (Ivan Perez Tech)",
+    "avatar": "/images/logo.webp"
+  },
+  "category": "Ganadería de Precisión y AgTech",
+  "level": "Profesional / Aplicado",
+  "rating": 4.98,
+  "ratingsCount": 215,
+  "published": true,
+  "visibility": "public",
+  "accessType": "free",
+  "price": 0,
+  "licenseToken": "6d41ccc947a0a11f678a11debca412b2827ea313006a4149ee17840691524329",
+  "approxHours": "6 horas académicas",
+  "whatYouWillLearn": [
+    "Navegar fluidamente por el Centro de Mando de DataGan 360 y auditar potreros en el visor satelital.",
+    "Calcular y monitorear la Carga Animal en UGG (450 kg de peso vivo) para prevenir subutilización y sobrepastoreo.",
+    "Comparar los indicadores de Kg Carne/Ha/Año y L Leche/Ha/Año frente a los estándares de referencia FEDEGÁN.",
+    "Personalizar alertas operativas automáticas para celos, palpaciones, partos, inventario de medicamentos y ordeño.",
+    "Ejecutar migraciones masivas de datos desde Excel en dos pasos lógicos respetando la jerarquía relacional.",
+    "Definir magnitudes estándar de finca (ha/m², kg/lb, L/botellas) y precio en pie para la valoración patrimonial del hato.",
+    "Crear perfiles de trabajo a medida asignando permisos granulares (agregar, modificar, eliminar y ver) en 46 submódulos.",
+    "Garantizar el cumplimiento de la Ley 1581 de Habeas Data mediante copias cifradas y portabilidad total de la información."
+  ],
+  "progressionMode": "lesson_strict",
+  "phase2Visible": true,
+  "phase3Visible": true,
+  "phase3Mode": "in_course",
+  "modules": [
+    {
+      "id": "modulo-1-introduccion-centro-mando",
+      "title": "Módulo 1: Introducción, Centro de Mando y Configuración Maestra",
+      "description": "Inmersión fundamental en DataGan 360. Comprende la telemetría satelital del predio, la lectura zootécnica de eficiencia forrajera en el Dashboard, la configuración de seguridad, alertas tempranas, migración masiva en Excel y respaldo de datos.",
+      "order": 1,
+      "lessons": [
+        {
+          "id": "les-1-1-dashboard-analitica",
+          "title": "1.1 Dashboard de Analítica: Telemetría de Potreros, Carga Animal y Eficiencia por Hectárea",
+          "description": "Recorrido audiovisual interactivo por el Dashboard principal: inicio de sesión, visor satelital interactivo, semáforo de potreros (disponibles, ocupados y descanso), cálculo zootécnico de Carga Animal en UGG (450 kg) y contrastación frente a los rangos FEDEGÁN.",
+          "order": 1,
+          "videoType": "mp4",
+          "videoUrl": "/videos/datagan360-tour-locutado.mp4",
+          "duration": "02:49",
+          "durationSeconds": 169,
+          "metrics": [
+            "carga_animal_ugg_ha",
+            "eficiencia_kg_carne_ha_ano",
+            "eficiencia_litros_leche_ha_ano",
+            "tasa_extraccion_anual",
+            "indice_ocupacion_potreros",
+            "dias_descanso_forrajero",
+            "benchmarking_fedegan_productividad"
+          ],
+          "resources": [
+            {
+              "id": "res-1-1-guia-carga-animal",
+              "title": "Guía Técnica: Cálculo de Carga Animal en UGG y Aforo de Pasturas (.pdf)",
+              "url": "/resources/Guia_Calculo_Carga_Animal_UGG_DataGan.pdf",
+              "type": "document",
+              "description": "Manual práctico con tablas de equivalencia zootécnica a UGG de 450 kg, métodos de aforo y cálculo de biomasa forrajera disponible.",
+              "fileSize": "145 KB",
+              "extension": "pdf",
+              "popQuizQuestions": []
+            },
+            {
+              "id": "res-1-2-glosario-fedegan",
+              "title": "Compendio de Métricas y Rangos de Referencia FEDEGÁN (.docx)",
+              "url": "/resources/Compendio_Metricas_FEDEGAN_DataGan.docx",
+              "type": "document",
+              "description": "Fichas técnicas de productividad nacional para kg de carne/ha/año, litros de leche/ha/año y porcentaje óptimo de extracción.",
+              "fileSize": "38 KB",
+              "extension": "docx",
+              "popQuizQuestions": []
+            },
+            {
+              "id": "res-1-3-video-tour-hd",
+              "title": "Video Master en Alta Definición: Dashboard de Analítica (.mp4)",
+              "url": "/videos/datagan360-tour-locutado.mp4",
+              "type": "document",
+              "description": "Archivo master locutado con audio sincronizado a 0.85x para consulta y estudio sin conexión.",
+              "fileSize": "14.7 MB",
+              "extension": "mp4",
+              "popQuizQuestions": []
+            }
+          ],
+          "inVideoCheckpoints": [
+            {
+              "id": "iv-1-1-1-potreros-estados",
+              "timestampSeconds": 36,
+              "prompt": "En el bloque 'Gestiona tus Potreros' del visor satelital, ¿cuáles son los 3 estados forrajeros en los que DataGan 360 clasifica operativamente las praderas del predio?",
+              "options": [
+                "Disponibles, Ocupados y Descansando.",
+                "Fértiles, Áridos y Encharcados.",
+                "Comprados, Alquilados y En Venta.",
+                "Sembrados, Fumigados y Cosechados."
+              ],
+              "correctIndex": 0,
+              "explanation": "DataGan 360 clasifica los potreros en 3 estados operativos: 'Disponibles' (praderas maduras con tiempo de descanso óptimo listas para pastoreo), 'Ocupados' (con lotes pastando actualmente) y 'Descansando' (en periodo vegetativo de recuperación para evitar el sobrepastoreo)."
+            },
+            {
+              "id": "iv-1-1-2-carga-animal-ugg",
+              "timestampSeconds": 68,
+              "prompt": "En el panel de 'Eficiencia por Hectárea', la Carga Animal marca 0,12 UGG/ha con estado de 'Subutilización'. Desde la zootecnia práctica, ¿qué significa este resultado?",
+              "options": [
+                "Que el suelo está sufriendo degradación y pisoteo excesivo por exceso de cabezas en el lote.",
+                "Que la finca tiene suficiente forraje para albergar más animales y está desaprovechando capacidad de carga por tener menos animales de los que la tierra sostiene.",
+                "Que las vacas están consumiendo más ración de concentrado del límite permitido en la configuración del software.",
+                "Que los potreros deben ser fumigados con herbicida de inmediato antes del ingreso del ganado."
+              ],
+              "correctIndex": 1,
+              "explanation": "La 'Subutilización' forrajera indica que la producción de biomasa por hectárea excede la demanda del hato actual. El pasto no consumido se lignifica (envejece), pierde proteína y disminuye la rentabilidad potencial del metro cuadrado de tierra."
+            }
+          ],
+          "checkpointQuiz": [
+            {
+              "id": "q-1-1-1",
+              "prompt": "¿A cuántos kilogramos de peso vivo equivale exactamente una Unidad Gran Ganado (UGG) en las fórmulas zootécnicas de DataGan 360?",
+              "options": [
+                "350 kg de peso vivo.",
+                "400 kg de peso vivo.",
+                "450 kg de peso vivo.",
+                "500 kg de peso vivo."
+              ],
+              "correctIndex": 2,
+              "explanation": "Por estándar zootécnico internacional y lineamiento FEDEGÁN, 1 UGG equivale a 450 kg de peso vivo, lo que permite estandarizar terneros, novillos y vacas bajo una misma unidad forrajera de consumo."
+            },
+            {
+              "id": "q-1-1-2",
+              "prompt": "¿Qué mide el indicador zootécnico de 'Tasa de Extracción' dentro del resumen anual del hato?",
+              "options": [
+                "La cantidad de litros de leche extraídos por vaca en el ordeño de la mañana.",
+                "El porcentaje del inventario ganadero que fue vendido o comercializado durante los últimos 365 días.",
+                "El porcentaje de grasa y sólidos totales extraídos en el tanque de enfriamiento.",
+                "La velocidad con la que el lote consume el aforo total del potrero."
+              ],
+              "correctIndex": 1,
+              "explanation": "La Tasa de Extracción representa el porcentaje de animales comercializados (ceba, descarte reproductivo o crías vendidas) durante el último año respecto al inventario total del predio, reflejando la liquidez comercial del hato."
+            }
+          ]
+        },
+        {
+          "id": "les-1-2-configuracion-sistema",
+          "title": "1.2 Configuración Integral: Mi Perfil, Alertas Tempranas, Carga Masiva y Respaldo Legal",
+          "description": "Dominio de las herramientas de gobernanza de la cuenta: actualización de credenciales y seguridad, calibración del motor de alertas operativas (celo, palpación, medicamentos y ordeño), protocolo de migración masiva en dos pasos desde Excel, ajuste de unidades de medida con precio en pie y descarga de respaldos bajo Ley 1581 de Habeas Data.",
+          "order": 2,
+          "videoType": "mp4",
+          "videoUrl": "/videos/datagan360-configuracion-locutado.mp4",
+          "duration": "03:45",
+          "durationSeconds": 225,
+          "metrics": [
+            "seguridad_acceso_sesiones",
+            "preferencias_alertas_reproductivas",
+            "alertas_inventario_stock_minimo",
+            "orden_jerarquico_carga_masiva",
+            "unidades_medida_estandar",
+            "valoracion_comercial_precio_kilo",
+            "cumplimiento_habeas_data_ley1581"
+          ],
+          "resources": [
+            {
+              "id": "res-1-2-plantilla-paso1",
+              "title": "Plantilla Excel Oficial: Paso 1 - Datos Independientes (.xlsx)",
+              "url": "/resources/plantilla_datos_independientes.xlsx",
+              "type": "document",
+              "description": "Plantilla maestra de importación que contiene las hojas de Finca, Personas, Empresas y Potreros.",
+              "fileSize": "42 KB",
+              "extension": "xlsx",
+              "popQuizQuestions": []
+            },
+            {
+              "id": "res-1-2-plantilla-paso2",
+              "title": "Plantilla Excel Oficial: Paso 2 - Datos Dependientes (.xlsx)",
+              "url": "/resources/plantilla_datos_dependientes.xlsx",
+              "type": "document",
+              "description": "Plantilla de importación para animales, lotes, pesajes, controles lecheros y movimientos contables.",
+              "fileSize": "68 KB",
+              "extension": "xlsx",
+              "popQuizQuestions": []
+            },
+            {
+              "id": "res-1-2-manual-configuracion",
+              "title": "Manual de Parámetros del Sistema y Seguridad de la Cuenta (.pdf)",
+              "url": "/resources/Manual_Configuracion_DataGan_360.pdf",
+              "type": "document",
+              "description": "Guía paso a paso sobre gobernanza de datos, política de contraseñas, auditoría de cargues y marco legal de Habeas Data.",
+              "fileSize": "180 KB",
+              "extension": "pdf",
+              "popQuizQuestions": []
+            },
+            {
+              "id": "res-1-2-video-master-config",
+              "title": "Video Master en Alta Definición: Configuraciones y Migración (.mp4)",
+              "url": "/videos/datagan360-configuracion-locutado.mp4",
+              "type": "document",
+              "description": "Video locutado con el recorrido completo del menú de configuración, alertas y carga masiva.",
+              "fileSize": "8.7 MB",
+              "extension": "mp4",
+              "popQuizQuestions": []
+            }
+          ],
+          "inVideoCheckpoints": [
+            {
+              "id": "iv-1-2-1-alertas-preferencias",
+              "timestampSeconds": 82,
+              "prompt": "En el modal 'Preferencias de Alertas', ¿cuál es el beneficio operativo de calibrar alertas como 'Celo (18-24 días)' y 'Parto probable (>280 días)'?",
+              "options": [
+                "Permite que el sistema envíe órdenes automáticas de compra a proveedores de medicamentos.",
+                "Notifica con anticipación a los vaqueros y veterinarios para preparar lotes de inseminación, comederos de maternidad y chequeos ginecológicos sin perder ciclos biológicos.",
+                "Aumenta la velocidad de conexión a internet de la antena satelital de la finca.",
+                "Elimina la necesidad de registrar los pesajes de terneros al nacer."
+              ],
+              "correctIndex": 1,
+              "explanation": "Las alertas reproductivas tempranas evitan días abiertos improductivos en las vacas, asegurando que el personal atienda celos en el momento fértil exacto y supervise partos con tiempo para reducir la mortalidad neonatal."
+            },
+            {
+              "id": "iv-1-2-2-carga-masiva-orden",
+              "timestampSeconds": 140,
+              "prompt": "¿Por qué DataGan 360 exige con una advertencia amarilla subir PRIMERO la plantilla del Paso 1 (Datos Independientes) y LUEGO la del Paso 2 (Datos Dependientes)?",
+              "options": [
+                "Por un límite de peso de descarga en el navegador web.",
+                "Porque los animales, pesajes y registros lecheros requieren que las fincas, personas y potreros ya existan en la base de datos para poder vincularse relacionalmente sin errores.",
+                "Porque el Paso 2 es opcional y solo aplica para fincas certificadas en Buenas Prácticas Ganaderas.",
+                "Para que las hojas de cálculo de Excel no se mezclen en la carpeta de descargas del usuario."
+              ],
+              "correctIndex": 1,
+              "explanation": "En una arquitectura relacional, los datos dependientes (animales, servicios, finanzas) poseen claves foráneas que apuntan a entidades maestras (finca, potreros, proveedores). Si se cargan animales sin haber creado antes la finca y los potreros, el sistema no tiene dónde alojarlos."
+            },
+            {
+              "id": "iv-1-2-3-unidades-precio-pie",
+              "timestampSeconds": 185,
+              "prompt": "Al definir el precio comercial de referencia por kilo en pie (ejemplo: $10.000 COP) en Unidades de Medida, ¿qué cálculo automático habilita la plataforma?",
+              "options": [
+                "El costo del flete por camión hacia la planta de beneficio municipal.",
+                "La valoración patrimonial total del hato multiplicando la biomasa animal registrada por el precio vigente de mercado.",
+                "El precio sugerido al consumidor final para la libra de carne en expendios urbanos.",
+                "El cobro mensual de suscripción a la plataforma DataGan 360."
+              ],
+              "correctIndex": 1,
+              "explanation": "Al ingresar el valor comercial del kilo en pie y mantener actualizados los pesajes individuales, DataGan 360 computa en tiempo real el valor patrimonial de los activos biológicos de la empresa para balances contables y solicitudes financieras."
+            }
+          ],
+          "checkpointQuiz": [
+            {
+              "id": "q-1-2-1",
+              "prompt": "Si durante una importación en Carga Masiva detectas que subiste información equivocada en un archivo Excel, ¿cuál es el procedimiento seguro que ofrece DataGan 360?",
+              "options": [
+                "Formatear el computador y crear una cuenta nueva con otro correo.",
+                "Ingresar a 'Ver historial de cargues', localizar el registro por fecha y hora, y presionar el botón para revertir o eliminar dicho lote de datos de manera limpia.",
+                "Modificar manualmente los miles de registros uno por uno en las tablas del hato.",
+                "Esperar 30 días calendario hasta que el sistema limpie automáticamente los errores."
+              ],
+              "correctIndex": 1,
+              "explanation": "El módulo 'Historial de cargues' registra cada transacción masiva con fecha, hora y archivo origen, permitiendo revertir en bloque la importación sin afectar la integridad del resto de registros existentes."
+            },
+            {
+              "id": "q-1-2-2",
+              "prompt": "¿Qué derecho operativo y legal confiere la opción de descarga de copia bajo la Ley 1581 de Habeas Data en la sección Mis Datos y Respaldo?",
+              "options": [
+                "Permite al propietario exportar en cualquier momento una copia consolidada y cifrada de todo su historial productivo, financiero y genético, garantizando la portabilidad y propiedad indiscutible de su información.",
+                "Autoriza a DataGan a vender los datos de producción a cadenas de supermercados.",
+                "Obliga al usuario a firmar un contrato de exclusividad de 5 años con TecnoGan.",
+                "Exonera al predio del pago de impuestos ganaderos municipales."
+              ],
+              "correctIndex": 0,
+              "explanation": "En cumplimiento estricto del principio de autodeterminación informativa y la Ley Estatutaria 1581 de 2012, el usuario es el dueño legítimo de sus datos y puede descargarlos íntegramente cifrados para su archivo propio o migración a otras plataformas."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modulo-2-administracion-roles-seguridad",
+      "title": "Módulo 2: Administración del Sistema y Control de Acceso por Roles",
+      "description": "Aprende a gobernar los niveles de acceso de tu equipo de trabajo mediante la creación de roles personalizados y la asignación granular de permisos en las 7 áreas clave de la empresa ganadera. Incluye el flujo completo de personal de campo y georreferenciación de fincas.",
+      "order": 2,
+      "lessons": [
+        {
+          "id": "les-2-1-roles-permisos-granulares",
+          "title": "2.1 Creación de Roles y Matriz de Permisos Granulares de Acceso",
+          "description": "Guía práctica para configurar la seguridad operativa de DataGan 360: navegación por la lista de roles, creación de perfiles a medida (ej. Gerente regional), asignación granular de permisos (agregar, modificar, eliminar y ver) sobre 46 módulos organizados en 7 categorías estratégicas, y guardado seguro.",
+          "order": 1,
+          "videoType": "mp4",
+          "videoUrl": "/videos/datagan360-roles-locutado.mp4",
+          "duration": "02:53",
+          "durationSeconds": 173,
+          "metrics": [
+            "roles_activos_creados",
+            "usuarios_con_rol_asignado",
+            "matriz_permisos_granulares_46_modulos",
+            "seguridad_principio_minimo_privilegio",
+            "auditoria_acciones_por_usuario"
+          ],
+          "resources": [
+            {
+              "id": "res-2-1-matriz-roles",
+              "title": "Matriz de Asignación de Roles y Permisos Ganaderos (.pdf)",
+              "url": "/resources/Matriz_Roles_Permisos_DataGan_360.pdf",
+              "type": "document",
+              "description": "Plantilla con perfiles predefinidos de referencia: Administrador General, Mayordomo / Vaquero, Médico Veterinario, Contador / Tesorero y Operador de Ordeño.",
+              "fileSize": "112 KB",
+              "extension": "pdf",
+              "popQuizQuestions": []
+            },
+            {
+              "id": "res-2-1-organigrama-finca",
+              "title": "Plantilla de Estructura Organizacional y Cargos de Campo (.xlsx)",
+              "url": "/resources/Organigrama_Cargos_Finca.xlsx",
+              "type": "document",
+              "description": "Formato para mapear empleados de nómina, contratistas externos y sus niveles de responsabilidad operativa.",
+              "fileSize": "35 KB",
+              "extension": "xlsx",
+              "popQuizQuestions": []
+            },
+            {
+              "id": "res-2-1-video-master-roles",
+              "title": "Video Master en Alta Definición: Creación de Roles (.mp4)",
+              "url": "/videos/datagan360-roles-locutado.mp4",
+              "type": "document",
+              "description": "Video locutado con la demostración paso a paso de la creación del rol Gerente regional y la prueba de los botones Seleccionar todo y Limpiar.",
+              "fileSize": "7.6 MB",
+              "extension": "mp4",
+              "popQuizQuestions": []
+            }
+          ],
+          "inVideoCheckpoints": [
+            {
+              "id": "iv-2-1-1-permisos-granulares",
+              "timestampSeconds": 25,
+              "prompt": "Al desplegar un módulo como 'Trabajadores (Usuarios)' o 'Fincas', ¿cuáles son los 4 permisos individuales que DataGan 360 permite configurar de forma independiente?",
+              "options": [
+                "Agregar, Modificar, Eliminar y Ver.",
+                "Imprimir, Copiar, Pegar y Exportar.",
+                "Iniciar sesión, Apagar servidor, Crear base de datos y Respaldar.",
+                "Comprar, Vender, Facturar y Cobrar."
+              ],
+              "correctIndex": 0,
+              "explanation": "El sistema sigue el estándar CRUD de seguridad (Create, Read, Update, Delete), permitiendo autorizar individualmente si un empleado puede 'Agregar' registros nuevos, 'Modificar' los ya existentes, 'Eliminar' información o únicamente 'Ver' (modo solo lectura)."
+            },
+            {
+              "id": "iv-2-1-2-salud-veterinario",
+              "timestampSeconds": 85,
+              "prompt": "Si estás configurando un perfil para el Médico Veterinario del predio, ¿cuál de las siguientes categorías contiene los módulos de palpaciones, mastitis, celos, servicios y procedimientos?",
+              "options": [
+                "Finanzas.",
+                "Salud Animal.",
+                "Localización RFID.",
+                "Administración."
+              ],
+              "correctIndex": 1,
+              "explanation": "La categoría 'Salud Animal' agrupa 11 submódulos clínicos y reproductivos especializados: abortos, celos, genealogía, mastitis, nacimientos, palpaciones, procedimientos, servicios (monta e inseminación) y síntomas."
+            },
+            {
+              "id": "iv-2-1-3-botones-directivos",
+              "timestampSeconds": 158,
+              "prompt": "¿Qué función cumplen los botones 'Seleccionar todo' y 'Limpiar' en la pantalla de Crear Roles?",
+              "options": [
+                "Eliminan todos los animales registrados en la finca y cierran la sesión.",
+                "Habilitan de un solo golpe los 4 permisos en todos los 46 módulos de la plataforma (ideal para perfiles gerenciales), o devuelven todas las casillas a cero para comenzar desde limpio.",
+                "Seleccionan a todos los trabajadores de la nómina para enviarles un mensaje de texto masivo.",
+                "Descargan todas las tablas de la base de datos a un archivo comprimido ZIP."
+              ],
+              "correctIndex": 1,
+              "explanation": "Para evitar tener que hacer clic en cientos de casillas cuando se crea un rol directivo de máxima autoridad, 'Seleccionar todo' activa todos los permisos instantáneamente, mientras que 'Limpiar' resetea la matriz para configuraciones restrictivas."
+            }
+          ],
+          "checkpointQuiz": [
+            {
+              "id": "q-2-1-1",
+              "prompt": "¿Por qué es una buena práctica de gestión ganadera asignar a los vaqueros un rol con permiso de 'Agregar' y 'Ver', pero sin permiso de 'Eliminar'?",
+              "options": [
+                "Porque los vaqueros no tienen acceso a teléfonos celulares con pantalla táctil.",
+                "Para que puedan registrar ordeños, pesajes y nacimientos en el corral diariamente, pero impidiendo que se borren accidentalmente registros históricos que alteren las auditorías zootécnicas.",
+                "Porque el permiso de eliminar tiene un costo adicional en la factura mensual de DataGan 360.",
+                "Para obligar a los vaqueros a ingresar únicamente desde computadores portátiles."
+              ],
+              "correctIndex": 1,
+              "explanation": "El principio de mínimo privilegio en seguridad informática dicta que cada colaborador debe tener las facultades operativas para su trabajo (ingresar pesajes y tratamientos) sin la facultad de borrar datos consolidados, protegiendo la trazabilidad histórica de la finca."
+            },
+            {
+              "id": "q-2-1-2",
+              "prompt": "Una vez creado el rol 'Gerente regional' y guardado en el sistema, ¿dónde queda disponible y qué acciones se pueden realizar sobre él?",
+              "options": [
+                "Se envía por correo a la Dian para aprobación fiscal.",
+                "Aparece registrado en la 'Lista de Roles', con su ID asignado, listo para asociarse a cualquier cuenta de trabajador, editarse o eliminarse según se requiera.",
+                "Queda bloqueado permanentemente y nunca más podrá modificarse.",
+                "Se elimina automáticamente a las 24 horas si ningún trabajador lo usa."
+              ],
+              "correctIndex": 1,
+              "explanation": "El nuevo rol pasa a formar parte del catálogo de grupos de la empresa, mostrándose en la Lista de Roles con su ID único y botones para actualizar sus permisos en cualquier momento o eliminarlo si el cargo desaparece."
+            }
+          ]
+        },
+        {
+          "id": "les-admin-trabajadores-fincas",
+          "slug": "trabajadores-fincas-estructura-empresa",
+          "moduleTitle": "Módulo de Administración: Estructura de la Empresa Ganadera",
+          "title": "Creación de Trabajadores, Vínculo con Roles y Georreferenciación de Fincas",
+          "subtitle": "Gestión de Personal de Campo, Llaves Únicas para Carga Masiva, Cálculo de Carga por Hectárea y Telemetría Satelital",
+          "description": "Capacitación práctica paso a paso sobre la administración de personal y predios en DataGan 360. Enseña a registrar trabajadores con validación en tiempo real, comprender el papel crítico de la cédula como llave única en la Carga Masiva, gestionar permisos mediante la casilla de acceso al sistema, conectar encargados con nuevas fincas, dominar la importancia matemática del área en hectáreas para los cálculos de Carga Animal (UGG/ha) y FEDEGÁN, y georreferenciar predios en el visor satelital para activar el clima y el estrés calórico (ITH).",
+          "order": 3,
+          "videoType": "mp4",
+          "videoUrl": "/videos/datagan360-trabajadores-fincas-locutado.mp4",
+          "duration": "03:19",
+          "durationSeconds": 199,
+          "metrics": [
+            "administracion_personal_campo",
+            "llave_unica_cedula_carga_masiva",
+            "vinculacion_trabajador_rol_sistema",
+            "asignacion_encargados_por_finca",
+            "calculo_carga_animal_ugg_hectarea",
+            "benchmarking_productividad_fedegan",
+            "georreferenciacion_satelital_gps_predio",
+            "activacion_clima_indice_estres_ith"
+          ],
+          "resources": [
+            {
+              "id": "res-tf-1-guia-llave-unica",
+              "title": "Ficha Técnica: Mapeo de Identificación de Trabajadores y Llaves Únicas (.pdf)",
+              "url": "/resources/Ficha_Tecnica_Identificacion_Trabajadores_DataGan.pdf",
+              "type": "document",
+              "description": "Guía práctica que explica el uso de la cédula de ciudadanía como clave primaria para vincular automáticamente personal en las plantillas de Carga Masiva.",
+              "fileSize": "95 KB",
+              "extension": "pdf",
+              "popQuizQuestions": []
+            },
+            {
+              "id": "res-tf-2-manual-hectaje-carga",
+              "title": "Manual Zootécnico: Relación entre Área (Hectáreas), UGG y FEDEGÁN (.pdf)",
+              "url": "/resources/Manual_Area_Hectareas_Carga_Animal_DataGan.pdf",
+              "type": "document",
+              "description": "Documento técnico que detalla cómo el software toma las hectáreas registradas para calcular la Carga Animal en UGG/ha, kg de carne/ha/año y litros de leche/ha/año.",
+              "fileSize": "140 KB",
+              "extension": "pdf",
+              "popQuizQuestions": []
+            },
+            {
+              "id": "res-tf-3-plantilla-estructura-empresa",
+              "title": "Plantilla Excel: Estructura Organizacional, Fincas y Personal de Campo (.xlsx)",
+              "url": "/resources/Plantilla_Estructura_Personal_Fincas.xlsx",
+              "type": "document",
+              "description": "Formato estandarizado para registrar colaboradores de nómina, contratistas, predios rurales y encargados antes de la carga al sistema.",
+              "fileSize": "36 KB",
+              "extension": "xlsx",
+              "popQuizQuestions": []
+            },
+            {
+              "id": "res-tf-4-video-master-hd",
+              "title": "Video Master en Alta Definición: Trabajadores y Fincas (.mp4)",
+              "url": "/videos/datagan360-trabajadores-fincas-locutado.mp4",
+              "type": "document",
+              "description": "Archivo master del recorrido audiovisual con audio sincronizado a 199 segundos para consulta sin conexión a internet.",
+              "fileSize": "9.7 MB",
+              "extension": "mp4",
+              "popQuizQuestions": []
+            }
+          ],
+          "inVideoCheckpoints": [
+            {
+              "id": "iv-tf-1-cedula-llave-unica",
+              "timestampSeconds": 28,
+              "prompt": "Según lo explicado en el video durante el ingreso del número de documento, ¿por qué es fundamental ingresar la cédula exacta del trabajador en el sistema?",
+              "options": [
+                "Porque el sistema la utiliza como llave única para enlazar al trabajador en las plantillas Excel de Carga Masiva.",
+                "Para descontar automáticamente los aportes de seguridad social de su cuenta bancaria personal.",
+                "Para bloquear el acceso a su teléfono celular si se desplaza fuera de los linderos de la finca.",
+                "Para tramitar automáticamente un crédito ganadero en el banco municipal."
+              ],
+              "correctIndex": 0,
+              "explanation": "La locución y el video especifican literalmente que en la operación real la cédula exacta es la llave única indispensable para que el motor relacional de Carga Masiva asocie las labores y pesajes al colaborador correspondiente sin duplicar registros."
+            },
+            {
+              "id": "iv-tf-2-acceso-sistema-roles",
+              "timestampSeconds": 65,
+              "prompt": "Al marcar la casilla '¿Es trabajador con acceso al sistema?', ¿cuáles son los 4 campos específicos que se despliegan para configurar al colaborador?",
+              "options": [
+                "Salario básico, talla de dotación, marca de vehículo y fecha de cumpleaños.",
+                "Username, Contraseña, Roles y Fincas con acceso.",
+                "Historial de vacunación propio, tipo de sangre, régimen pensional y cesantías.",
+                "Número de cuenta corriente, tarjeta de crédito empresarial y firma digital ante notaría."
+              ],
+              "correctIndex": 1,
+              "explanation": "Al activar la casilla de acceso, el formulario habilita Username (nombre de usuario), Contraseña, el selector de Fincas con acceso y el desplegable de Roles para vincularlo a los permisos granulares previamente configurados."
+            },
+            {
+              "id": "iv-tf-3-estado-sin-acceso",
+              "timestampSeconds": 78,
+              "prompt": "Al desmarcar la casilla de acceso al sistema y presionar 'Crear Trabajador', ¿con qué estado queda registrado Juan Sebastián Pérez en la Lista de Trabajadores?",
+              "options": [
+                "Administrador Principal.",
+                "Sin acceso (como personal de campo sin usuario digital).",
+                "Suspendido por falta de credenciales.",
+                "En espera de aprobación por el ICA."
+              ],
+              "correctIndex": 1,
+              "explanation": "El video muestra que al guardar el formulario con la casilla desmarcada, el trabajador se lista exitosamente con el estado 'Sin acceso', lo que indica que es personal operativo de campo disponible para asignarse como encargado pero sin credenciales web."
+            },
+            {
+              "id": "iv-tf-4-area-base-matematica",
+              "timestampSeconds": 115,
+              "prompt": "Durante la explicación en el campo 'Área (Hectáreas) *', ¿cuáles son los 3 cálculos zootécnicos clave que DataGan 360 fundamenta sobre este hectaje?",
+              "options": [
+                "Calcular la Carga Animal en UGG por hectárea, medir los kg de carne y litros de leche frente a los estándares de FEDEGÁN, y dimensionar los potreros.",
+                "Estimar el precio comercial de venta de la tierra en el mercado inmobiliario rural.",
+                "Calcular el impuesto predial unificado ante la alcaldía municipal.",
+                "Determinar la cantidad exacta de lluvia que caerá sobre el predio en el próximo semestre."
+              ],
+              "correctIndex": 0,
+              "explanation": "Tal como se expone en la pausa del video, el área en hectáreas es el denominador matemático de toda la zootecnia en DataGan 360: permite computar la Carga Animal (UGG/ha), comparar la productividad anual frente a las tablas FEDEGÁN y calcular la rotación forrajera."
+            },
+            {
+              "id": "iv-tf-5-mapa-satelital-ith",
+              "timestampSeconds": 178,
+              "prompt": "Al marcar la ubicación geográfica de la finca sobre el visor satelital interactivo, ¿qué variables y funciones automáticas se activan en la plataforma?",
+              "options": [
+                "El cobro de peajes satelitales en las carreteras intermunicipales.",
+                "La captura automática de coordenadas GPS y la habilitación del clima satelital junto con el índice de estrés calórico (ITH) en la pestaña Geografía.",
+                "El envío de patrullas de policía ambiental a la finca.",
+                "La compra automática de fertilizantes químicos en el almacén agropecuario más cercano."
+              ],
+              "correctIndex": 1,
+              "explanation": "El video enseña que al fijar el punto en el mapa satelital, el sistema guarda las coordenadas exactas que activan la telemetría climática en tiempo real y el cálculo del ITH (Índice de Temperatura y Humedad) para monitorear el estrés calórico del ganado."
+            }
+          ],
+          "checkpointQuiz": [
+            {
+              "id": "q-tf-1-vinculo-encargado",
+              "prompt": "En el modal Crear Finca, ¿cómo se demostró la conexión inmediata entre el módulo de Trabajadores y el módulo de Fincas?",
+              "options": [
+                "Hubo que volver a escribir manualmente todos los nombres y cédulas del encargado en una casilla de texto en blanco.",
+                "En el campo 'Encargado *', la lista desplegable mostró y permitió seleccionar directamente a Juan Sebastián Pérez García, el trabajador recién creado en el módulo anterior.",
+                "Se requirió apagar y encender el navegador para que el sistema sincronizara los nuevos trabajadores.",
+                "Fue necesario enviar un correo electrónico al soporte técnico solicitando el enlace entre módulos."
+              ],
+              "correctIndex": 1,
+              "explanation": "En el video se muestra cómo al desplegar el campo 'Encargado *' aparece de inmediato Juan Sebastián Pérez García, evidenciando la integridad relacional instantánea entre ambos submódulos administrativos."
+            },
+            {
+              "id": "q-tf-2-proposito-productivo",
+              "prompt": "Al configurar la finca 'Prueba 2', ¿qué función cumple la selección del 'Propósito *' (como Producción Beefmaster)?",
+              "options": [
+                "Establece la raza de los perros de pastoreo de la casa principal.",
+                "Alimenta los modelos predictivos de producción de carne y leche dentro del Dashboard de Analítica.",
+                "Define el color de la pintura para los establos y corrales.",
+                "Modifica el tipo de letra y el logotipo de las facturas de venta."
+              ],
+              "correctIndex": 1,
+              "explanation": "El propósito productivo orienta el algoritmo del Dashboard para evaluar las curvas de ganancia de peso (en hatos de carne) o de persistencia lactacional (en hatos lecheros o doble propósito) según el modelo zootécnico del predio."
+            },
+            {
+              "id": "q-tf-3-boton-ubicacion-actual",
+              "prompt": "Si el administrador o ganadero está registrando la finca físicamente desde el terreno usando su celular o computador con GPS, ¿qué botón le permite capturar las coordenadas al instante sin buscar en el mapa?",
+              "options": [
+                "'Buscar en Google Maps'.",
+                "'Usar mi ubicación actual'.",
+                "'Limpiar coordenadas'.",
+                "'Activar satélite'."
+              ],
+              "correctIndex": 1,
+              "explanation": "El botón 'Usar mi ubicación actual' utiliza el sensor de geolocalización del navegador del dispositivo para fijar la latitud y longitud exactas del predio con un solo toque."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

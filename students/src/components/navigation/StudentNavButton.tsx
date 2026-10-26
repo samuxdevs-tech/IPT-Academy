@@ -42,13 +42,13 @@ export default function StudentNavButton({
         } ${className}`}
       >
         <Icon
-          className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-105 ${
+          className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-105 pointer-events-none ${
             isActive ? 'text-[#065fd4]' : 'text-[#2a2a2a]'
           }`}
         />
-        <span className="truncate flex-1 text-[13px] leading-tight">{label}</span>
+        <span className="truncate flex-1 text-[13px] leading-tight pointer-events-none">{label}</span>
         {badge && (
-          <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-[#cc0000] text-white shrink-0 shadow-xs">
+          <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-[#cc0000] text-white shrink-0 shadow-xs pointer-events-none">
             {badge}
           </span>
         )}
@@ -71,7 +71,7 @@ export default function StudentNavButton({
             : 'font-normal text-[#0f0f0f] hover:bg-[#f5f5f5] active:bg-[#ebebeb]'
         } ${className}`}
       >
-        <div className="relative">
+        <div className="relative pointer-events-none">
           <Icon
             className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
               isActive ? 'text-[#065fd4]' : 'text-[#2a2a2a]'
@@ -83,7 +83,7 @@ export default function StudentNavButton({
             </span>
           )}
         </div>
-        <span className="text-[10px] truncate max-w-full text-center mt-1 leading-tight font-medium">
+        <span className="text-[10px] truncate max-w-full text-center mt-1 leading-tight font-medium pointer-events-none">
           {shortLabel}
         </span>
       </SafeNavLink>

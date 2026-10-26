@@ -281,7 +281,7 @@ function StudentAssignmentsContent() {
                 }`}
               >
                 <FileText className="w-4 h-4 shrink-0" />
-                <span>Tareas ({assignments.length})</span>
+                <span>Tareas ({filteredList.length})</span>
               </button>
 
               <button
@@ -307,7 +307,7 @@ function StudentAssignmentsContent() {
               >
                 <div className="flex items-center justify-between px-1">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
-                    Actividades ({assignments.length})
+                    Actividades ({filteredList.length})
                   </h3>
                   <span className="text-[11px] font-semibold text-blue-600">
                     Ponderación por corte
@@ -315,7 +315,7 @@ function StudentAssignmentsContent() {
                 </div>
 
                 <div className="space-y-3">
-                  {assignments.map((asg) => {
+                  {filteredList.map((asg) => {
                     const isSelected = asg.id === activeAssignment.id;
                     const asgSub = submissionsList.find((s) => s.assignmentId === asg.id);
                     const asgGraded = asgSub?.status === 'graded';

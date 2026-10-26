@@ -3,6 +3,7 @@
 import React, { useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import SafeNavLink from '@/components/navigation/SafeNavLink';
 import {
   Download,
   Award,
@@ -346,21 +347,21 @@ function GradebookContent() {
                       </td>
                       <td className="py-4 px-4">
                         {asg.multimediaFeedback ? (
-                          <Link
+                          <SafeNavLink
                             href={`/assignments?id=${asg.id}`}
                             className="text-[13px] font-medium text-[#6d28d2] hover:underline inline-flex items-center gap-1"
                           >
                             <Volume2 className="w-4 h-4" />
                             <span>Escuchar o leer comentarios</span>
-                          </Link>
+                          </SafeNavLink>
                         ) : (
-                          <Link
+                          <SafeNavLink
                             href={`/assignments?id=${asg.id}`}
                             className="text-[13px] font-medium text-[#6d28d2] hover:underline inline-flex items-center gap-1"
                           >
                             <span>Abrir tarea</span>
                             <ArrowRight className="w-3.5 h-3.5" />
-                          </Link>
+                          </SafeNavLink>
                         )}
                       </td>
                       <td className="py-4 px-6 text-right">

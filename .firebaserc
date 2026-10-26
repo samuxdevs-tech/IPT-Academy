@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "ipt-course"
+    "default": "ipt-course-students",
+    "students": "ipt-course-students",
+    "admin": "ipt-course-admin"
   }
 }

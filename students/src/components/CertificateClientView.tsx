@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import SafeNavLink from '@/components/navigation/SafeNavLink';
 import Image from 'next/image';
 import {
   Award,
@@ -362,12 +363,12 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
                 Has completado el 100% de las lecciones, pero tu calificación promedio actual es de <strong>{computedGradeAverage.toFixed(1)} / 5.0</strong>. La nota mínima para certificar este curso es de <strong>{minPassingGrade.toFixed(1)} / 5.0</strong>.
               </p>
             </div>
-            <Link
+            <SafeNavLink
               href="/assignments"
               className="px-5 py-2.5 rounded-xl bg-[#0f0f0f] hover:bg-black text-white text-xs font-bold inline-flex items-center gap-2"
             >
               <span>Revisar entregas y tareas pendientes</span>
-            </Link>
+            </SafeNavLink>
           </section>
         ) : (
           /* CERTIFICADO DESBLOQUEADO (100% COMPLETADO + APROBADO) */

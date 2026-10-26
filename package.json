@@ -4,9 +4,12 @@
   "private": true,
   "description": "IPT Course — Portal de Formación Técnica y Clases en Línea de Ivan Perez Tech (IPT)",
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
-    "build": "npm --prefix frontend run build",
-    "deploy": "npm --prefix frontend run build && npx firebase-tools deploy"
+    "dev:students": "npm --prefix students run dev",
+    "dev:operators": "npm --prefix operators run dev",
+    "build:students": "npm --prefix students run build",
+    "build:operators": "npm --prefix operators run build",
+    "deploy:operators": "npm --prefix operators run deploy",
+    "deploy:students": "npm --prefix students run build && npx firebase-tools deploy --only hosting"
   },
   "dependencies": {
     "dotenv": "^18.0.7"
