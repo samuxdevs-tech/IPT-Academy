@@ -79,7 +79,7 @@ export default function DalaPricing() {
   ];
 
   return (
-    <section id="membresias" className="relative py-24 px-6 z-10 border-t border-[#ffffff]/10">
+    <section id="membresias" className="relative py-28 px-6 z-10 border-t border-[#ffffff]/10">
       <div className="max-w-[1280px] mx-auto w-full">
         {/* Header Block */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16 items-end">
@@ -99,15 +99,15 @@ export default function DalaPricing() {
           </div>
         </div>
 
-        {/* Pricing Cards Grid */}
+        {/* Pricing Cards Grid — Solid Opaque Surfaces so particles NEVER disrupt text */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {tiers.map((tier) => (
             <div
               key={tier.id}
-              className={`p-7 rounded-[24px] flex flex-col justify-between transition-all duration-300 ${
+              className={`relative z-10 p-7 rounded-[24px] flex flex-col justify-between transition-all duration-300 ${
                 tier.isPrimary
-                  ? 'bg-[#8052ff]/[0.08] border-2 border-[#8052ff] shadow-[0_0_30px_rgba(128,82,255,0.2)]'
-                  : 'bg-[#ffffff]/[0.02] border border-[#ffffff]/10 hover:border-[#ffffff]/25'
+                  ? 'bg-[#0d091b] border-2 border-[#8052ff] shadow-[0_0_40px_rgba(128,82,255,0.3)]'
+                  : 'bg-[#09090b] border border-[#ffffff]/15 hover:border-[#ffffff]/30 shadow-xl'
               }`}
             >
               <div>

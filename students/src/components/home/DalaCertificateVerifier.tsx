@@ -29,7 +29,6 @@ export default function DalaCertificateVerifier() {
     setResult(null);
 
     try {
-      // Query RTDB for certificate record
       const certRef = ref(db, `certificates/${code}`);
       const snap = await get(certRef);
 
@@ -44,7 +43,6 @@ export default function DalaCertificateVerifier() {
           isAuthentic: true,
         });
       } else {
-        // Fallback: Check if it matches IPT standard certificate folio regex (IPT-YYYY-XXXX)
         const isValidFormat = /^IPT-[0-9]{4}-[A-Z0-9]{4,10}$/i.test(code);
         if (isValidFormat) {
           setResult({
@@ -63,7 +61,6 @@ export default function DalaCertificateVerifier() {
         }
       }
     } catch (err) {
-      // Offline fallback check format
       const isValidFormat = /^IPT-[0-9]{4}-[A-Z0-9]{4,10}$/i.test(code);
       setResult({
         found: isValidFormat,
@@ -79,7 +76,7 @@ export default function DalaCertificateVerifier() {
   };
 
   return (
-    <section id="verificar" className="relative py-24 px-6 z-10 border-t border-[#ffffff]/10">
+    <section id="verificar" className="relative py-28 px-6 z-10 border-t border-[#ffffff]/10">
       <div className="max-w-[1280px] mx-auto w-full">
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -97,7 +94,7 @@ export default function DalaCertificateVerifier() {
           </div>
 
           <div className="lg:col-span-6">
-            <div className="p-8 rounded-[24px] bg-[#ffffff]/[0.03] border border-[#ffffff]/10 backdrop-blur-md">
+            <div className="relative z-10 p-8 rounded-[24px] bg-[#09090b] border border-[#ffffff]/15 shadow-2xl">
               <form onSubmit={handleVerify} className="space-y-4">
                 <label htmlFor="folioInput" className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a]">
                   Código de Folio Oficial (ej: IPT-2026-F94A)

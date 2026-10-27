@@ -9,54 +9,70 @@ interface DalaCatalogProps {
   courses: Course[];
 }
 
+const DEFAULT_IPT_SPECIALIZATIONS = [
+  {
+    id: 'c1',
+    slug: 'introduccion-ingenieria-ipt',
+    title: 'Fundamentos de Arquitectura de Software e Ingeniería',
+    description:
+      'Aprende los principios estructurales del desarrollo moderno de software, separación de responsabilidades y metodologías de diseño escalable.',
+    category: 'Ingeniería de Software',
+    lessonsCount: 8,
+    isFreePublic: true,
+  },
+  {
+    id: 'c2',
+    slug: 'ipt-master-fullstack',
+    title: 'IPT Master: Arquitectura Fullstack e Inteligencia Artificial',
+    description:
+      'Construcción de aplicaciones distribuidas modernas, bases de datos reactivas, autenticación por roles y despliegues serverless de alta concurrencia.',
+    category: 'Ingeniería de Software',
+    lessonsCount: 16,
+    courseModality: 'dynamic',
+  },
+  {
+    id: 'c3',
+    slug: 'arquitectura-cloud-ipt',
+    title: 'Arquitectura Cloud Resiliente y Microservicios',
+    description:
+      'Diseño de topologías de alta disponibilidad, orquestación de contenedores, balanceo de carga y políticas de recuperación ante desastres.',
+    category: 'Arquitectura & Cloud',
+    lessonsCount: 12,
+    courseModality: 'dynamic',
+  },
+  {
+    id: 'c4',
+    slug: 'sistemas-distribuidos-ipt',
+    title: 'Sistemas Distribuidos y Procesamiento de Eventos',
+    description:
+      'Patrones de consistencia eventual, colas de mensajería, streaming de datos con idempotencia y monitoreo de telemetría en tiempo real.',
+    category: 'Sistemas Distribuidos',
+    lessonsCount: 14,
+    courseModality: 'dynamic',
+  },
+];
+
 export default function DalaCatalog({ courses }: DalaCatalogProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
 
-  // Fallback courses if RTDB has none
+  // Merge real courses with curriculum specializations
   const catalogCourses = useMemo(() => {
-    if (courses && courses.length > 0) return courses;
-    return [
-      {
-        id: 'c1',
-        slug: 'introduccion-ingenieria-ipt',
-        title: 'Fundamentos de Arquitectura de Software e Ingeniería',
-        description:
-          'Aprende los principios estructurales del desarrollo moderno de software, separación de responsabilidades y metodologías de diseño escalable.',
-        lessons: new Array(8).fill(null),
-        category: 'Ingeniería de Software',
-        isFreePublic: true,
-      },
-      {
-        id: 'c2',
-        slug: 'ipt-master-fullstack',
-        title: 'Ingeniería Fullstack y Sistemas en Producción',
-        description:
-          'Construcción de aplicaciones web distribuidas con Next.js, bases de datos en tiempo real, autenticación segura y despliegues serverless.',
-        lessons: new Array(16).fill(null),
-        category: 'Ingeniería de Software',
-        courseModality: 'dynamic',
-      },
-      {
-        id: 'c3',
-        slug: 'arquitectura-cloud-ipt',
-        title: 'Arquitectura Cloud Resiliente y Microservicios',
-        description:
-          'Diseño de topologías de alta disponibilidad, orquestación de contenedores, balanceo de carga y políticas de recuperación ante desastres.',
-        lessons: new Array(12).fill(null),
-        category: 'Arquitectura & Cloud',
-        courseModality: 'dynamic',
-      },
-      {
-        id: 'c4',
-        slug: 'sistemas-distribuidos-ipt',
-        title: 'Sistemas Distribuidos y Procesamiento de Eventos',
-        description:
-          'Patrones de consistencia eventual, colas de mensajería, streaming de datos con idempotencia y monitoreo de telemetría en tiempo real.',
-        lessons: new Array(14).fill(null),
-        category: 'Sistemas Distribuidos',
-        courseModality: 'dynamic',
-      },
-    ] as unknown as Course[];
+    const list = [...(courses || [])];
+    DEFAULT_IPT_SPECIALIZATIONS.forEach((spec) => {
+      if (!list.some((c) => c.slug === spec.slug || c.title === spec.title)) {
+        list.push({
+          id: spec.id,
+          slug: spec.slug,
+          title: spec.title,
+          description: spec.description,
+          category: spec.category,
+          isFreePublic: spec.isFreePublic,
+          courseModality: spec.courseModality,
+          modules: [],
+        } as unknown as Course);
+      }
+    });
+    return list;
   }, [courses]);
 
   const categories = ['Todos', 'Ingeniería de Software', 'Arquitectura & Cloud', 'Sistemas Distribuidos'];
@@ -67,7 +83,7 @@ export default function DalaCatalog({ courses }: DalaCatalogProps) {
   }, [catalogCourses, selectedCategory]);
 
   return (
-    <section id="catalogo" className="relative py-24 px-6 z-10 border-t border-[#ffffff]/10">
+    <section id="catalogo" className="relative py-28 px-6 z-10 border-t border-[#ffffff]/10">
       <div className="max-w-[1280px] mx-auto w-full">
         {/* Header Block — Two-column asymmetric rhythm */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16 items-end">
@@ -87,7 +103,7 @@ export default function DalaCatalog({ courses }: DalaCatalogProps) {
           </div>
         </div>
 
-        {/* Categories Bar */}
+        {/* Categories Filter Tabs */}
         <div className="flex flex-wrap items-center gap-2 mb-12">
           {categories.map((cat) => (
             <button
@@ -96,8 +112,8 @@ export default function DalaCatalog({ courses }: DalaCatalogProps) {
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded-full text-[13px] uppercase tracking-[0.025em] font-medium transition-all ${
                 selectedCategory === cat
-                  ? 'bg-white text-black font-semibold'
-                  : 'bg-[#ffffff]/[0.05] text-[#9a9a9a] hover:text-white hover:bg-[#ffffff]/10'
+                  ? 'bg-white text-black font-semibold shadow-lg'
+                  : 'bg-[#ffffff]/[0.06] text-[#9a9a9a] hover:text-white hover:bg-[#ffffff]/12'
               }`}
             >
               {cat}
@@ -105,38 +121,42 @@ export default function DalaCatalog({ courses }: DalaCatalogProps) {
           ))}
         </div>
 
-        {/* Courses Grid — Borderless Cards Floating on Black Canvas */}
+        {/* Courses Grid — Solid Opaque Cards so particles NEVER pass through text */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredCourses.map((course: any, idx: number) => {
             const isFree =
               course.isFreePublic === true ||
               course.slug === 'introduccion-ingenieria-ipt' ||
               (!course.courseModality && !course.isDynamic);
-            const totalL = course.lessons?.length || 8;
+            const totalL =
+              course.lessonsCount ||
+              course.lessons?.length ||
+              course.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) ||
+              8;
 
             return (
               <div
                 key={course.id || course.slug || idx}
-                className="group p-8 rounded-[24px] bg-[#ffffff]/[0.02] border border-[#ffffff]/10 hover:border-[#8052ff]/50 transition-all duration-300 flex flex-col justify-between hover:bg-[#ffffff]/[0.04]"
+                className="relative z-10 group p-8 rounded-[24px] bg-[#09090b] border border-[#ffffff]/15 hover:border-[#8052ff]/60 shadow-xl transition-all duration-300 flex flex-col justify-between hover:bg-[#0c0c10]"
               >
                 <div>
                   <div className="flex items-center justify-between gap-3 mb-6">
                     {isFree ? (
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#ffb829] bg-[#ffb829]/10 px-3 py-1 rounded-full border border-[#ffb829]/20">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#ffb829] bg-[#ffb829]/15 px-3 py-1 rounded-full border border-[#ffb829]/25">
                         Acceso Libre · Trial
                       </span>
                     ) : (
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#8052ff] bg-[#8052ff]/10 px-3 py-1 rounded-full border border-[#8052ff]/20">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#8052ff] bg-[#8052ff]/15 px-3 py-1 rounded-full border border-[#8052ff]/25">
                         Especialización Pro
                       </span>
                     )}
-                    <span className="text-[12px] text-[#9a9a9a] flex items-center gap-1.5">
+                    <span className="text-[12px] text-[#9a9a9a] flex items-center gap-1.5 font-light">
                       <BookOpen className="w-3.5 h-3.5" />
                       {totalL} lecciones
                     </span>
                   </div>
 
-                  <h3 className="text-[22px] font-normal text-white leading-tight tracking-[-0.02em] mb-3 group-hover:text-[#ffffff] transition-colors">
+                  <h3 className="text-[22px] font-normal text-white leading-tight tracking-[-0.02em] mb-3">
                     {course.title}
                   </h3>
 

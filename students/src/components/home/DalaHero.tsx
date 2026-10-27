@@ -48,13 +48,13 @@ export default function DalaHero({ freeCourse }: DalaHeroProps) {
             de problemas en entornos de producción.
           </p>
 
-          {/* Spotlight Gateway for the Free / Trial Course */}
-          <div className="p-6 sm:p-8 rounded-[24px] bg-[#ffffff]/[0.03] border border-[#ffffff]/10 backdrop-blur-sm max-w-[580px] hover:border-[#8052ff]/40 transition-colors">
+          {/* Spotlight Gateway for the Free / Trial Course — Solid Surface for Pure Legibility */}
+          <div className="relative z-10 p-6 sm:p-8 rounded-[24px] bg-[#09090b] border border-[#ffffff]/15 shadow-2xl max-w-[580px] hover:border-[#8052ff]/50 transition-colors">
             <div className="flex items-center justify-between gap-4 mb-3">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#8052ff] bg-[#8052ff]/10 px-3 py-1 rounded-full border border-[#8052ff]/20">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#8052ff] bg-[#8052ff]/15 px-3 py-1 rounded-full border border-[#8052ff]/25">
                 Puerta de Entrada Oficial
               </span>
-              <div className="flex items-center gap-3 text-[12px] text-[#9a9a9a]">
+              <div className="flex items-center gap-3 text-[12px] text-[#9a9a9a] font-light">
                 <span className="flex items-center gap-1">
                   <BookOpen className="w-3.5 h-3.5" />
                   {totalLessons} lecciones
