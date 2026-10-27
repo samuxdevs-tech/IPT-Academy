@@ -66,7 +66,7 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
 });
 
-const PUBLIC_PATHS = ['/login', '/register', '/verify', '/legal', '/live'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/verify', '/legal', '/live'];
 const ACCESS_THROTTLE_MS = 30 * 60 * 1000;
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -240,9 +240,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (loading) return;
 
-    const isPublicPath = PUBLIC_PATHS.some(
-      (p) => pathname === p || pathname?.startsWith(`${p}/`)
-    );
+    const isPublicPath =
+      pathname === '/' ||
+      PUBLIC_PATHS.filter((p) => p !== '/').some(
+        (p) => pathname === p || (pathname ? pathname.startsWith(p + '/') : false)
+      );
 
     if (!user && !isPublicPath) {
       router.push('/login');
