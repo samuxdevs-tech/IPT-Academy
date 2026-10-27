@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
 @theme {
+  /* Dala Tokens */
+  --color-void: #000000;
+  --color-bone-white: #ffffff;
+  --color-ash-gray: #9a9a9a;
+  --color-silver-mist: #bdbdbd;
+  --color-electric-iris: #8052ff;
+  --color-saffron-spark: #ffb829;
+  --color-deep-verdant: #15846e;
   /* Colors — IPT Course Brand Identity */
   --color-ink: #0f0f0f;
   --color-obsidian: #111320;

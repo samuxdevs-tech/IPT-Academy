@@ -173,6 +173,7 @@ export interface Module {
   description: string;
   order: number;
   lessons: Lesson[];
+  resources?: Resource[];
 }
 
 export type ProgressionMode = 'free' | 'lesson_strict' | 'module_strict';
@@ -195,6 +196,12 @@ export interface Course {
   ratingsCount: number;
   modules: Module[];
   published: boolean;
+  courseType?: 'static' | 'dynamic';
+  isFreePublic?: boolean;
+  isDynamic?: boolean;
+  courseModality?: string;
+  lessons?: any[];
+  licenseHash?: string;
   approxHours?: string;
   whatYouWillLearn?: string[];
   progressionMode?: ProgressionMode;
@@ -325,6 +332,12 @@ export interface SandboxMission {
   solutionSteps: string[];
   autoFillPayload: Record<string, any>;
   published: boolean;
+  courseType?: 'static' | 'dynamic';
+  isFreePublic?: boolean;
+  isDynamic?: boolean;
+  courseModality?: string;
+  lessons?: any[];
+  licenseHash?: string;
 }
 
 export interface Certificate {
@@ -444,6 +457,18 @@ export interface SubmittedFileItem {
   sha256Receipt: string;
 }
 
+export type AssignmentTargetType = 'course' | 'individual' | 'batch';
+
+export interface StudentGroup {
+  id: string;
+  name: string;
+  description?: string;
+  courseSlug: string;
+  studentUids: string[];
+  createdAtUtc: string;
+  updatedAtUtc: string;
+}
+
 export interface AssignmentItem {
   id: string;
   courseSlug: string;
@@ -464,6 +489,12 @@ export interface AssignmentItem {
   plagiarismReport?: PlagiarismAnalysisReport;
   multimediaFeedback?: TeacherMultimediaFeedback;
   finalGrade?: number; // 0.0 to 5.0
+  assignmentTarget?: AssignmentTargetType;
+  targetLicenseHash?: string;
+  targetStudentUid?: string;
+  targetStudentName?: string;
+  targetGroupId?: string;
+  targetGroupName?: string;
 }
 
 // ============================================================================
