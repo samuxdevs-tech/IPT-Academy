@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Play, ArrowRight, Sparkles, BookOpen } from 'lucide-react';
+import { Play, ArrowRight, BookOpen } from 'lucide-react';
 import { Course } from '@/types';
+import DalaHeroArchitecturePreview from '@/components/home/DalaHeroArchitecturePreview';
 
 interface DalaHeroProps {
   freeCourse: Course | null;
@@ -13,7 +14,7 @@ export default function DalaHero({ freeCourse }: DalaHeroProps) {
   const trialSlug = freeCourse?.slug || 'introduccion-ingenieria-ipt';
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center px-6 py-20 z-10 overflow-hidden">
+    <section className="relative min-h-[85vh] flex items-center justify-center px-6 py-20 z-10 overflow-hidden">
       <div className="max-w-[1280px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Column: Editorial Headline & Actions */}
         <div className="lg:col-span-7 flex flex-col justify-center">
@@ -26,13 +27,13 @@ export default function DalaHero({ freeCourse }: DalaHeroProps) {
           </div>
 
           {/* Monumental Headline */}
-          <h1 className="text-[52px] sm:text-[72px] md:text-[88px] font-normal text-white leading-[0.98] tracking-[-0.04em] mb-8">
+          <h1 className="text-[52px] sm:text-[72px] md:text-[84px] font-normal text-white leading-[0.98] tracking-[-0.04em] mb-8">
             Aprende operando <br />
             <span className="text-[#ffffff]">sistemas reales.</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-[17px] sm:text-[20px] font-extralight text-[#bdbdbd] leading-[1.5] max-w-[560px] mb-10">
+          <p className="text-[17px] sm:text-[19px] font-extralight text-[#bdbdbd] leading-[1.5] max-w-[560px] mb-10">
             La plataforma de formación técnica avanzada donde adquieres maestría práctica a través de
             software en vivo, retroalimentación docente continua y resolución de problemas en
             entornos de producción.
@@ -54,7 +55,7 @@ export default function DalaHero({ freeCourse }: DalaHeroProps) {
               <h3 className="text-[20px] sm:text-[22px] font-normal text-white tracking-[-0.02em] mb-2">
                 IPT Master: Arquitectura de Software e Inteligencia Artificial
               </h3>
-              <p className="text-[13px] font-extralight text-[#bdbdbd] leading-relaxed">
+              <p className="text-[13px] font-extralight text-[#bdbdbd] leading-relaxed font-light">
                 Aprende a diseñar sistemas distribuidos, microservicios y aplicaciones de producción con los estándares de IPT.
               </p>
             </div>
@@ -80,15 +81,9 @@ export default function DalaHero({ freeCourse }: DalaHeroProps) {
           </div>
         </div>
 
-        {/* Right Column: Dynamic Anchor para el Cerebro Anatómico */}
-        <div
-          id="hero-brain-anchor"
-          className="lg:col-span-5 flex items-center justify-center min-h-[460px] pointer-events-none"
-        >
-          {/* Halo sutil de fondo para resaltar el cerebro */}
-          <div className="relative w-full max-w-[440px] aspect-square rounded-full flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full bg-radial from-[#8052ff]/15 via-[#15846e]/8 to-transparent blur-3xl opacity-70" />
-          </div>
+        {/* Right Column: Visual de Arquitectura de Sistemas en Tiempo Real */}
+        <div className="lg:col-span-5 flex items-center justify-center min-h-[460px]">
+          <DalaHeroArchitecturePreview />
         </div>
       </div>
     </section>

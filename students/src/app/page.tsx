@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { useLms } from '@/context/LmsContext';
-import DalaConstellationCanvas from '@/components/home/DalaConstellationCanvas';
+import DalaQuantumGridBackground from '@/components/home/DalaQuantumGridBackground';
 import DalaHeader from '@/components/home/DalaHeader';
 import DalaHero from '@/components/home/DalaHero';
 import DalaMissionVision from '@/components/home/DalaMissionVision';
@@ -28,8 +28,8 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen bg-[#000000] text-[#ffffff] font-sans selection:bg-[#8052ff] selection:text-white overflow-x-hidden">
-      {/* Scroll-Reactive HTML5 Canvas Background (Morphing Constellation) */}
-      <DalaConstellationCanvas />
+      {/* Malla Topológica de Grid Cuántico (Estilo Linear / Vercel Deep Tech) */}
+      <DalaQuantumGridBackground />
 
       {/* Main Structural Flow */}
       <div className="relative z-10 flex flex-col min-h-screen">
