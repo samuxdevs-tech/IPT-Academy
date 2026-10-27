@@ -70,7 +70,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className={`${interSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#ffffff] text-[#0f0f0f]">
+      <body className="min-h-full flex flex-col bg-[#000000] text-[#ffffff]">
         <MinimalistPreloader />
         <AuthProvider>
           <LmsProvider>
