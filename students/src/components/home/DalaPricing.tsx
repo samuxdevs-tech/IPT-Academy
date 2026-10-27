@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { YourPlanRequestModal } from '@/components/YourPlanRequestModal';
 import { Check, Sparkles, Building2 } from 'lucide-react';
 import { formatCop } from '@/lib/subscriptionEngine';
 
 export default function DalaPricing() {
+  const [isYourPlanModalOpen, setIsYourPlanModalOpen] = useState(false);
   const tiers = [
     {
       id: 'free',
@@ -61,19 +63,20 @@ export default function DalaPricing() {
     },
     {
       id: 'your_plan',
-      name: 'Plan Corporativo',
-      badge: 'Equipos y Empresas',
+      name: 'Your Plan',
+      badge: 'A tu Medida',
       price: 'A convenir',
-      period: 'según asientos',
-      description: 'Capacitación técnica para departamentos de ingeniería y empresas de base tecnológica.',
+      period: 'según requerimientos',
+      description: 'Para cualquier persona con requerimientos específicos, temario a la medida, mentoría o proyectos especiales.',
       features: [
-        'Asientos de estudiantes centralizados',
-        'Bolsa configurable de créditos en vivo',
-        'Métricas grupales de rendimiento y avance',
-        'Facturación corporativa con soporte directo',
+        'Temario adaptado a tus necesidades específicas',
+        'Acompañamiento y mentoría directa 1 a 1',
+        'Flexibilidad total de horarios y ritmo',
+        'Evaluación y certificación personalizada',
+        'Atención y seguimiento directo con el equipo IPT',
       ],
       ctaText: 'Contactar Asesoría',
-      ctaHref: 'mailto:contacto@ivanperez.tech?subject=Plan%20Corporativo%20IPT%20Course',
+      ctaHref: '#',
       isPrimary: false,
     },
   ];
@@ -148,21 +151,35 @@ export default function DalaPricing() {
               </div>
 
               <div>
-                <Link
-                  href={tier.ctaHref}
-                  className={`w-full py-3 rounded-[24px] text-[13px] font-semibold uppercase tracking-[0.025em] flex items-center justify-center transition-all ${
-                    tier.isPrimary
-                      ? 'bg-[#8052ff] hover:bg-[#6e3df0] text-white shadow-[0_0_20px_rgba(128,82,255,0.35)]'
-                      : 'bg-[#ffffff]/10 hover:bg-[#ffffff]/20 text-white'
-                  }`}
-                >
-                  {tier.ctaText}
-                </Link>
+                {tier.id === 'your_plan' ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsYourPlanModalOpen(true)}
+                    className="w-full py-3 rounded-[24px] text-[13px] font-semibold uppercase tracking-[0.025em] flex items-center justify-center transition-all bg-[#ffffff]/10 hover:bg-[#ffffff]/20 text-white cursor-pointer"
+                  >
+                    {tier.ctaText}
+                  </button>
+                ) : (
+                  <Link
+                    href={tier.ctaHref}
+                    className={`w-full py-3 rounded-[24px] text-[13px] font-semibold uppercase tracking-[0.025em] flex items-center justify-center transition-all ${
+                      tier.isPrimary
+                        ? 'bg-[#8052ff] hover:bg-[#6e3df0] text-white shadow-[0_0_20px_rgba(128,82,255,0.35)]'
+                        : 'bg-[#ffffff]/10 hover:bg-[#ffffff]/20 text-white'
+                    }`}
+                  >
+                    {tier.ctaText}
+                  </Link>
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
+      <YourPlanRequestModal
+        isOpen={isYourPlanModalOpen}
+        onClose={() => setIsYourPlanModalOpen(false)}
+      />
     </section>
   );
 }

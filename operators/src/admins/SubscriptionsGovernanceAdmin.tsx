@@ -3,6 +3,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   CreditCard,
+  Mail,
+  Clock,
+  XCircle,
+  ExternalLink,
+  Copy,
+  Sparkles,
   Building2,
   BookOpen,
   Users,
@@ -441,6 +447,28 @@ export function SubscriptionsGovernanceAdmin() {
       );
     } catch {
       alert("Error al aprobar la solicitud de Your Plan.");
+    }
+  };
+
+  const handleUpdateYourPlanStatus = async (
+    reqItem: any,
+    newStatus: "accepted" | "denied" | "pending"
+  ) => {
+    try {
+      const now = new Date().toISOString();
+      await set(ref(rtdb, `lms_your_plan_requests/${reqItem.id}`), {
+        ...reqItem,
+        status: newStatus,
+        reviewedAt: now,
+        reviewedBy: "admin",
+      });
+      notify(
+        `Solicitud de ${reqItem.fullName || reqItem.userName || reqItem.organizationName || "usuario"} marcada como ${
+          newStatus === "accepted" ? "ACEPTADA" : newStatus === "denied" ? "DENEGADA" : "PENDIENTE"
+        }.`
+      );
+    } catch {
+      alert("Error al actualizar el estado de la solicitud.");
     }
   };
 
@@ -1329,49 +1357,186 @@ export function SubscriptionsGovernanceAdmin() {
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {yourPlanRequests.length === 0 ? (
                 <div className="p-8 rounded-xl bg-[#181820] border border-white/5 text-center text-xs text-zinc-400">
-                  No hay solicitudes pendientes de llamada para "Your Plan" en este momento.
+                  No hay solicitudes recibidas para "Your Plan" en este momento.
                 </div>
               ) : (
-                yourPlanRequests.map((reqItem) => (
-                  <div
-                    key={reqItem.id}
-                    className="p-4 rounded-xl bg-[#181820] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white">
-                          {reqItem.organizationName || reqItem.userName}
-                        </span>
-                        <span className="px-2 py-0.5 rounded bg-violet-500/20 text-violet-300 text-[10px] font-bold uppercase">
-                          {reqItem.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-zinc-300">
-                        Contacto: {reqItem.userName} ({reqItem.userEmail}) · Tel:{" "}
-                        {reqItem.contactPhone}
-                      </p>
-                      <p className="text-[11px] text-zinc-400">
-                        Solicita: {reqItem.seatsRequested} cupos ·{" "}
-                        {reqItem.desiredDynamicCourses} cursos dinámicos ·{" "}
-                        {reqItem.desiredWeeklyLiveSessions} sesiones/sem ·{" "}
-                        {reqItem.desiredTrialDays} días de prueba
-                      </p>
-                    </div>
+                yourPlanRequests.map((reqItem) => {
+                  const contactName = reqItem.fullName || reqItem.userName || reqItem.organizationName || "Interesado";
+                  const contactEmail = reqItem.email || reqItem.userEmail || "sin-correo@gmail.com";
+                  const descText = reqItem.description || (reqItem.seatsRequested ? `Solicita ${reqItem.seatsRequested} cupos y ${reqItem.desiredDynamicCourses || 0} cursos dinámicos.` : "Sin descripción de requerimientos");
+                  const currentStatus = reqItem.status || "pending";
+                  const createdDate = reqItem.createdAt ? new Date(reqItem.createdAt).toLocaleString("es-CO") : "Reciente";
 
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleApproveYourPlanRequest(reqItem)}
-                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold cursor-pointer"
-                      >
-                        Aprobar y Activar "Your Plan" ({customTrialDays}d gratis)
-                      </button>
+                  // Plantillas de correo personal
+                  const acceptSubject = encodeURIComponent("Aceptación de Asesoría - Your Plan IPT Course");
+                  const acceptBody = encodeURIComponent(
+                    `Hola ${contactName},\n\nHemos evaluado tu solicitud para Your Plan en IPT Course y nos complace comunicarte que ha sido ACEPTADA.\n\nRespecto a los requerimientos específicos que nos compartiste:\n"${descText}"\n\nPodemos estructurar tu acompañamiento formativo a la medida. ¿En qué horario te resultaría más cómodo coordinar una breve llamada de bienvenida para coordinar temario y detalles?\n\nCordialmente,\nEquipo IPT Course\nhttps://iptapps.com`
+                  );
+
+                  const denySubject = encodeURIComponent("Respuesta a tu solicitud - Your Plan IPT Course");
+                  const denyBody = encodeURIComponent(
+                    `Hola ${contactName},\n\nAgradecemos tu interés en IPT Course y el tiempo dedicado a presentarnos tus requerimientos para Your Plan.\n\nTras analizar en detalle el alcance solicitado:\n"${descText}"\n\nLamentamos informarte que en este momento no disponemos de la disponibilidad docente o técnica requerida para atender estos requerimientos específicos con el nivel de calidad exigido, por lo que no es posible admitir tu solicitud en este ciclo.\n\nTe invitamos a explorar los programas regulares en nuestra plataforma o volver a contactarnos en el futuro.\n\nCordialmente,\nEquipo IPT Course\nhttps://iptapps.com`
+                  );
+
+                  return (
+                    <div
+                      key={reqItem.id}
+                      className="p-5 rounded-2xl bg-[#181820] border border-white/10 space-y-4 shadow-lg hover:border-white/20 transition-all"
+                    >
+                      {/* Cabecera de la Solicitud */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-sm font-extrabold text-white">
+                            {contactName}
+                          </span>
+                          {currentStatus === "accepted" ? (
+                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold uppercase flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              Aceptado
+                            </span>
+                          ) : currentStatus === "denied" ? (
+                            <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[10px] font-bold uppercase flex items-center gap-1">
+                              <XCircle className="w-3 h-3" />
+                              Denegado
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-bold uppercase flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              Pendiente de Respuesta
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 text-[11px] text-zinc-400 font-mono">
+                          <span>{createdDate}</span>
+                        </div>
+                      </div>
+
+                      {/* Datos de Contacto y Requerimientos */}
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
+                        <div className="md:col-span-4 space-y-2 bg-[#121217] p-3 rounded-xl border border-white/5">
+                          <div>
+                            <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">
+                              Gmail / Correo Electrónico
+                            </span>
+                            <a
+                              href={`mailto:${contactEmail}`}
+                              className="text-violet-300 font-bold hover:underline break-all"
+                            >
+                              {contactEmail}
+                            </a>
+                          </div>
+                          {reqItem.contactPhone && (
+                            <div>
+                              <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">
+                                Teléfono
+                              </span>
+                              <span className="text-zinc-300 font-mono">{reqItem.contactPhone}</span>
+                            </div>
+                          )}
+                          <div>
+                            <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">
+                              Consentimiento Datos
+                            </span>
+                            <span className="text-emerald-400 font-semibold">
+                              {reqItem.consentAccepted ? "Aceptado (Ley 1581)" : "Registrado"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="md:col-span-8 bg-[#121217] p-3 rounded-xl border border-white/5 space-y-1.5">
+                          <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-semibold">
+                            Descripción de Requerimientos Específicos
+                          </span>
+                          <p className="text-xs text-zinc-200 leading-relaxed whitespace-pre-wrap">
+                            {descText}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Barra de Acciones del Operador */}
+                      <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-3">
+                        {/* Selector de Estado */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-zinc-400 font-semibold">
+                            Marcar estado:
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateYourPlanStatus(reqItem, "accepted")}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              currentStatus === "accepted"
+                                ? "bg-emerald-600 text-white"
+                                : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                            }`}
+                          >
+                            ✓ Aceptar (Accept)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateYourPlanStatus(reqItem, "denied")}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              currentStatus === "denied"
+                                ? "bg-rose-600 text-white"
+                                : "bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                            }`}
+                          >
+                            ✗ Denegar (Denied)
+                          </button>
+                          {currentStatus !== "pending" && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateYourPlanStatus(reqItem, "pending")}
+                              className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-xs font-medium cursor-pointer"
+                            >
+                              Restablecer
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Enlaces de Envío Personal de Gmail */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <a
+                            href={`mailto:${contactEmail}?subject=${acceptSubject}&body=${acceptBody}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-200 text-xs font-bold transition-colors cursor-pointer"
+                            title="Abre Gmail o tu cliente con la plantilla de aceptación prellenada"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            <span>Mandar Gmail Aceptación</span>
+                          </a>
+
+                          <a
+                            href={`mailto:${contactEmail}?subject=${denySubject}&body=${denyBody}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 border border-rose-500/40 text-rose-200 text-xs font-bold transition-colors cursor-pointer"
+                            title="Abre Gmail o tu cliente con la plantilla de denegación prellenada"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            <span>Mandar Gmail Denegación</span>
+                          </a>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(contactEmail);
+                              notify(`Correo ${contactEmail} copiado al portapapeles.`);
+                            }}
+                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 text-xs cursor-pointer"
+                            title="Copiar dirección de correo"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
