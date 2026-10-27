@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Search, ShieldCheck, CheckCircle2, AlertCircle, ExternalLink, Award } from 'lucide-react';
 import { ref, get } from 'firebase/database';
 import { db } from '@/lib/firebase';
+import { IptLogoIcon } from '@/components/IptLogoIcon';
 
 interface VerificationResult {
   found: boolean;
@@ -76,27 +77,50 @@ export default function DalaCertificateVerifier() {
   };
 
   return (
-    <section id="verificar" className="relative py-28 px-6 z-10 border-t border-[#ffffff]/10">
+    <section
+      id="verificar"
+      className="relative pt-20 pb-16 px-6 z-10 border-t border-[#ffffff]/10 bg-[#000000]"
+    >
       <div className="max-w-[1280px] mx-auto w-full">
-        {/* Two-column layout */}
+        {/* Two-column layout con ancla para el favicon de partículas */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6">
-            <span className="text-[13px] font-semibold uppercase tracking-[0.05em] text-[#ffb829] block mb-3">
-              Validador de Credenciales Oficiales
-            </span>
-            <h2 className="text-[40px] sm:text-[52px] font-normal text-white leading-[1.05] tracking-[-0.04em] mb-6">
+          <div className="lg:col-span-6 space-y-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8052ff]/15 text-[#8052ff] text-[11px] font-semibold border border-[#8052ff]/30">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Cierre de Formación y Certificación Criptográfica</span>
+            </div>
+
+            <h2 className="text-[36px] sm:text-[48px] font-normal text-white leading-[1.08] tracking-[-0.03em]">
               Autenticidad verificable en tiempo real.
             </h2>
-            <p className="text-[17px] font-extralight text-[#bdbdbd] leading-[1.5] max-w-[480px]">
+
+            <p className="text-[15px] font-extralight text-[#bdbdbd] leading-[1.6] max-w-[480px]">
               Ingresa el código o folio único impreso en cualquier certificado emitido por IPT
-              Course para validar al instante su legitimidad, titular y fecha de expedición.
+              Course para validar al instante su legitimidad criptográfica, titular y fecha de expedición.
             </p>
+
+            {/* Ancla para el Favicon de Partículas */}
+            <div
+              id="crypto-anchor"
+              className="pt-2 flex items-center gap-4 text-xs font-mono text-[#9a9a9a]"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-[#09090b] border border-[#ffffff]/15 flex items-center justify-center">
+                <IptLogoIcon className="w-7 h-7" />
+              </div>
+              <div>
+                <p className="text-white font-medium">Bóveda Criptográfica IPT</p>
+                <p className="text-[11px] text-[#9a9a9a]">Sello de verificación descentralizado</p>
+              </div>
+            </div>
           </div>
 
           <div className="lg:col-span-6">
-            <div className="relative z-10 p-8 rounded-[24px] bg-[#09090b] border border-[#ffffff]/15 shadow-2xl">
+            <div className="relative z-10 p-7 sm:p-8 rounded-[24px] bg-[#09090b] border border-[#ffffff]/15 shadow-2xl">
               <form onSubmit={handleVerify} className="space-y-4">
-                <label htmlFor="folioInput" className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a]">
+                <label
+                  htmlFor="folioInput"
+                  className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a]"
+                >
                   Código de Folio Oficial (ej: IPT-2026-F94A)
                 </label>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -113,7 +137,7 @@ export default function DalaCertificateVerifier() {
                   <button
                     type="submit"
                     disabled={loading || !folioInput.trim()}
-                    className="px-6 py-3 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] disabled:opacity-50 text-white text-[13px] font-semibold uppercase tracking-[0.025em] flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(128,82,255,0.4)] shrink-0"
+                    className="px-6 py-3 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] disabled:opacity-50 text-white text-[13px] font-semibold uppercase tracking-[0.025em] flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(128,82,255,0.4)] shrink-0 cursor-pointer"
                   >
                     <Search className="w-4 h-4" />
                     <span>{loading ? 'Consultando...' : 'Verificar'}</span>
@@ -134,7 +158,9 @@ export default function DalaCertificateVerifier() {
                         <p className="text-white font-medium">{result.studentName}</p>
                         <p className="text-[#bdbdbd] font-extralight">{result.courseTitle}</p>
                         <div className="flex items-center justify-between text-[11px] text-[#9a9a9a] pt-2">
-                          <span>Folio: <span className="font-mono text-white">{result.folio}</span></span>
+                          <span>
+                            Folio: <span className="font-mono text-white">{result.folio}</span>
+                          </span>
                           <span>{result.issueDate}</span>
                         </div>
                       </div>

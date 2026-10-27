@@ -5,7 +5,7 @@ import { useLms } from '@/context/LmsContext';
 import DalaConstellationCanvas from '@/components/home/DalaConstellationCanvas';
 import DalaHeader from '@/components/home/DalaHeader';
 import DalaHero from '@/components/home/DalaHero';
-import DalaCatalog from '@/components/home/DalaCatalog';
+import DalaMissionVision from '@/components/home/DalaMissionVision';
 import DalaPricing from '@/components/home/DalaPricing';
 import DalaCertificateVerifier from '@/components/home/DalaCertificateVerifier';
 import DalaFooter from '@/components/home/DalaFooter';
@@ -37,7 +37,7 @@ export default function HomePage() {
 
         <main className="flex-1">
           <DalaHero freeCourse={freeCourse} />
-          <DalaCatalog courses={courses} />
+          <DalaMissionVision />
           <DalaPricing />
           <DalaCertificateVerifier />
         </main>

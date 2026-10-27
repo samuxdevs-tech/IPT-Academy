@@ -2,7 +2,7 @@ import { ref, set, serverTimestamp } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { User } from 'firebase/auth';
 
-export const CURRENT_LEGAL_VERSION = 'v2026.10-rev2';
+export const CURRENT_LEGAL_VERSION = 'v2026.10-rev3';
 
 export type LegalSectionId =
   | 'aviso_legal'
@@ -42,12 +42,12 @@ export interface LegalAcceptanceRecord {
 
 export const IPT_OWNER_INFO = {
   commercialName: 'Ivan Perez Tech (IPT) — IPT Course',
-  legalOwner: 'Iván Samuel Pérez Torrenegra',
+  legalOwner: 'Ivan Perez',
   identificationType: 'Persona Natural Comerciante con Matrícula Mercantil y Registro Único Tributario (RUT)',
-  mercantileRegistry: 'Inscripción activa en la Cámara de Comercio de Barranquilla (Atlántico, Colombia)',
-  domicile: 'Barranquilla, Atlántico, República de Colombia',
+  mercantileRegistry: 'Inscripción activa en la Cámara de Comercio de Montería (Córdoba, Colombia)',
+  domicile: 'Montería, Córdoba, República de Colombia',
   officialEmail: 'ivanpereztech13@gmail.com',
-  websiteUrl: 'https://ipt-course-students.web.app',
+  websiteUrl: 'https://iptapps.com',
   updatedDate: 'Octubre de 2026'
 };
 
@@ -130,7 +130,7 @@ export const LEGAL_DOCUMENTS: LegalSectionDocument[] = [
       },
       {
         heading: '3.2. Propiedad Intelectual y Restricciones de Uso',
-        body: 'Todos los contenidos, lecciones audiovisuales, diagramas, códigos informáticos, marcas y diseños incorporados en la plataforma son de propiedad exclusiva de Iván Samuel Pérez Torrenegra (Ivan Perez Tech) y se encuentran amparados por la Ley 23 de 1982 y los tratados internacionales sobre derechos de autor.',
+        body: 'Todos los contenidos, lecciones audiovisuales, diagramas, códigos informáticos, marcas y diseños incorporados en la plataforma son de propiedad exclusiva de Ivan Perez (Ivan Perez Tech) y se encuentran amparados por la Ley 23 de 1982 y los tratados internacionales sobre derechos de autor.',
         bullets: [
           'Queda prohibida la reproducción, descarga no autorizada, redistribución pública o comunicación de materiales a través de cualquier medio.',
           'Queda expresamente prohibido someter los sistemas a ingeniería inversa, extracción masiva de datos (scraping) o descompilación.'
@@ -157,21 +157,21 @@ export const LEGAL_DOCUMENTS: LegalSectionDocument[] = [
       },
       {
         heading: '4.2. Cláusula Compromisoria / Arbitraje Institucional en Derecho',
-        body: 'Vencido el término de arreglo directo sin que las partes hayan alcanzado un acuerdo total, toda controversia o diferencia relativa a este contrato o a la prestación de los servicios será resuelta de manera exclusiva y vinculante por un Tribunal de Arbitramento administrado por el Centro de Conciliación y Arbitraje de la Cámara de Comercio de Barranquilla (Atlántico, República de Colombia), con sujeción a las siguientes reglas inmodificables:',
+        body: 'Vencido el término de arreglo directo sin que las partes hayan alcanzado un acuerdo total, toda controversia o diferencia relativa a este contrato o a la prestación de los servicios será resuelta de manera exclusiva y vinculante por un Tribunal de Arbitramento administrado por el Centro de Conciliación y Arbitraje de la Cámara de Comercio de Montería (Córdoba, República de Colombia), con sujeción a las siguientes reglas inmodificables:',
         bullets: [
-          'El Tribunal se regirá por el reglamento del Centro de Conciliación y Arbitraje de la Cámara de Comercio de Barranquilla y las disposiciones de la Ley 1563 de 2012.',
+          'El Tribunal se regirá por el reglamento del Centro de Conciliación y Arbitraje de la Cámara de Comercio de Montería y las disposiciones de la Ley 1563 de 2012.',
           'El Tribunal estará compuesto por un (1) árbitro único designado de mutuo acuerdo entre las partes; en caso de falta de acuerdo dentro de los diez (10) días hábiles siguientes a la solicitud, el árbitro será designado por el Centro de Arbitraje mediante sorteo.',
-          'El procedimiento arbitral sesionará en Barranquilla (Colombia) y el fallo será estrictamente en derecho.',
+          'El procedimiento arbitral sesionará en Montería (Colombia) y el fallo será estrictamente en derecho.',
           'El laudo arbitral expedido será definitivo, inimpugnable y tendrá plenos efectos de cosa juzgada para las partes, renunciando expresamente a la jurisdicción ordinaria.'
         ]
       },
       {
         heading: '4.3. Renuncia Expresa a Acciones Colectivas (Class Action Waiver)',
-        body: 'El usuario declara y acepta que cualquier procedimiento para resolver o litigar controversias se llevará a cabo exclusivamente de forma individual. El usuario renuncia irrevocablemente al derecho de iniciar, promover, coadyuvar o integrarse como demandante o miembro de grupo en cualquier acción colectiva, acción popular, acción de grupo o proceso multi-demandante frente a Iván Samuel Pérez Torrenegra o Ivan Perez Tech (IPT).'
+        body: 'El usuario declara y acepta que cualquier procedimiento para resolver o litigar controversias se llevará a cabo exclusivamente de forma individual. El usuario renuncia irrevocablemente al derecho de iniciar, promover, coadyuvar o integrarse como demandante o miembro de grupo en cualquier acción colectiva, acción popular, acción de grupo o proceso multi-demandante frente a Ivan Perez o Ivan Perez Tech (IPT).'
       },
       {
         heading: '4.4. Límite Máximo de Responsabilidad Patrimonial',
-        body: 'En la máxima medida autorizada por la ley aplicable, la responsabilidad total agregada y acumulada de Iván Samuel Pérez Torrenegra y de la marca Ivan Perez Tech (IPT), por cualquier daño, perjuicio, falta, incumplimiento contractual o extracontractual, se limita única y exclusivamente a la suma total efectivamente pagada por el usuario a IPT durante los tres (3) meses inmediatamente anteriores al hecho que dio origen al reclamo. En servicios o cuentas gratuitas, la responsabilidad máxima total no excederá en ningún caso el valor equivalente a un (1) Salario Mínimo Legal Diario Vigente (1 SMLDV).'
+        body: 'En la máxima medida autorizada por la ley aplicable, la responsabilidad total agregada y acumulada de Ivan Perez y de la marca Ivan Perez Tech (IPT), por cualquier daño, perjuicio, falta, incumplimiento contractual o extracontractual, se limita única y exclusivamente a la suma total efectivamente pagada por el usuario a IPT durante los tres (3) meses inmediatamente anteriores al hecho que dio origen al reclamo. En servicios o cuentas gratuitas, la responsabilidad máxima total no excederá en ningún caso el valor equivalente a un (1) Salario Mínimo Legal Diario Vigente (1 SMLDV).'
       },
       {
         heading: '4.5. Exclusión Taxativa de Daños Consecuenciales y Lucro Cesante',

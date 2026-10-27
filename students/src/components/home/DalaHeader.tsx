@@ -4,14 +4,14 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { IptLogoIcon } from '@/components/IptLogoIcon';
 import { useAuth } from '@/context/AuthContext';
-import { LogOut, User, Sparkles, ExternalLink, ShieldCheck } from 'lucide-react';
+import { LogOut, User, Sparkles, ExternalLink, ShieldCheck, BookOpen } from 'lucide-react';
 
 export default function DalaHeader() {
   const { user, effectiveIsAdmin, userRole, logout } = useAuth();
   const isTeacher = userRole === 'instructor';
-  const isOperator = effectiveIsAdmin || userRole === 'owner' || userRole === 'operator';
+  const isOperator = effectiveIsAdmin;
+
   const [scrolled, setScrolled] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,14 +23,14 @@ export default function DalaHeader() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+      className={`sticky top-0 z-40 transition-all duration-300 ${
         scrolled
-          ? 'bg-[#000000]/85 backdrop-blur-md border-b border-[#ffffff]/10'
-          : 'bg-transparent'
+          ? 'bg-[#000000]/85 backdrop-blur-md border-b border-[#ffffff]/10 shadow-2xl'
+          : 'bg-transparent border-b border-transparent'
       }`}
     >
       <div className="max-w-[1280px] mx-auto px-6 h-20 flex items-center justify-between">
-        {/* Logo Lockup */}
+        {/* Logo Lockup Oficial */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-8 h-8 flex items-center justify-center transform group-hover:scale-105 transition-transform">
             <IptLogoIcon className="w-8 h-8" />
@@ -42,11 +42,18 @@ export default function DalaHeader() {
 
         {/* Public Navigation Links */}
         <nav className="hidden md:flex items-center gap-8">
+          <Link
+            href="/home"
+            className="text-[13px] uppercase tracking-[0.03em] font-semibold text-[#8052ff] hover:text-white transition-colors flex items-center gap-1.5"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Campus (/home)</span>
+          </Link>
           <a
-            href="#catalogo"
+            href="#mision-vision"
             className="text-[13px] uppercase tracking-[0.03em] font-semibold text-[#9a9a9a] hover:text-white transition-colors"
           >
-            Catálogo
+            Misión y Visión
           </a>
           <a
             href="#membresias"
@@ -62,27 +69,25 @@ export default function DalaHeader() {
           </a>
         </nav>
 
-        {/* Dynamic Action Buttons based on Verified Role (RBAC) */}
+        {/* Dynamic Action Buttons */}
         <div className="flex items-center gap-4">
           {!user ? (
             <>
-              {/* Unauthenticated Visitor: Public Links Only */}
               <Link
                 href="/login"
                 className="text-[13px] uppercase tracking-[0.03em] font-semibold text-[#9a9a9a] hover:text-white transition-colors px-3 py-2"
               >
                 Iniciar Sesión
               </Link>
-              <a
-                href="#curso-liberado"
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] text-white text-[13px] font-semibold uppercase tracking-[0.03em] transition-all duration-200 hover:shadow-[0_0_20px_rgba(128,82,255,0.4)]"
+              <Link
+                href="/home"
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] text-white text-[13px] font-semibold uppercase tracking-[0.03em] transition-all duration-200 hover:shadow-[0_0_20px_rgba(128,82,255,0.4)] cursor-pointer"
               >
-                Comenzar Prueba Gratuita
-              </a>
+                Entrar al Campus
+              </Link>
             </>
           ) : (
             <>
-              {/* Authenticated User: Conditional Role Privileges */}
               {isOperator ? (
                 <a
                   href="https://ipt-course-admin-2a354.web.app"
@@ -107,53 +112,22 @@ export default function DalaHeader() {
                 </a>
               ) : (
                 <Link
-                  href="/course"
-                  className="inline-flex items-center justify-center px-5 py-2 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] text-white text-[13px] font-semibold uppercase tracking-[0.03em] transition-all"
+                  href="/home"
+                  className="inline-flex items-center justify-center px-5 py-2 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] text-white text-[13px] font-semibold uppercase tracking-[0.03em] transition-all shadow-[0_0_15px_rgba(128,82,255,0.4)]"
                 >
-                  Entrar al Campus
+                  Panel de Estudio (/home)
                 </Link>
               )}
 
-              {/* Profile Menu Dropdown */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setProfileOpen((prev) => !prev)}
-                  className="w-9 h-9 rounded-full bg-[#111111] border border-[#ffffff]/15 flex items-center justify-center text-white hover:border-[#8052ff] transition-colors"
-                  aria-label="Menú de usuario"
-                >
-                  <User className="w-4 h-4 text-[#bdbdbd]" />
-                </button>
-
-                {profileOpen && (
-                  <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-[#0a0a0a] border border-[#ffffff]/15 p-2 shadow-2xl z-50">
-                    <div className="px-3 py-2 border-b border-[#ffffff]/10">
-                      <p className="text-[12px] font-semibold text-white truncate">
-                        {user.displayName || 'Estudiante IPT'}
-                      </p>
-                      <p className="text-[11px] text-[#9a9a9a] truncate">{user.email}</p>
-                    </div>
-                    <Link
-                      href="/course"
-                      onClick={() => setProfileOpen(false)}
-                      className="w-full text-left px-3 py-2 rounded-lg text-[12px] text-[#bdbdbd] hover:text-white hover:bg-[#ffffff]/5 flex items-center gap-2 mt-1"
-                    >
-                      Mis Cursos
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setProfileOpen(false);
-                        logout();
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-lg text-[12px] text-[#f43f5e] hover:bg-[#f43f5e]/10 flex items-center gap-2 mt-1"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      Cerrar Sesión
-                    </button>
-                  </div>
-                )}
-              </div>
+              {/* Botón de Salir */}
+              <button
+                type="button"
+                onClick={logout}
+                title="Cerrar sesión"
+                className="p-2 rounded-full border border-[#ffffff]/15 hover:border-[#ffffff]/30 text-[#9a9a9a] hover:text-white transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </>
           )}
         </div>

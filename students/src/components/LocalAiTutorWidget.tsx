@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import {
   X,
@@ -44,6 +45,10 @@ const safeDateTime = (val?: string | null): string => {
 };
 
 export default function LocalAiTutorWidget() {
+  const pathname = usePathname();
+  if (pathname === '/' || pathname === '/legal' || pathname.startsWith('/login') || pathname.startsWith('/register')) {
+    return null;
+  }
   const { user, effectiveIsAdmin } = useAuth();
   const {
     courses,

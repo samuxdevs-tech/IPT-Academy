@@ -8,39 +8,50 @@ export default function DalaFooter() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative py-16 px-6 z-10 border-t border-[#ffffff]/10 bg-[#000000]">
-      <div className="max-w-[1280px] mx-auto w-full">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b border-[#ffffff]/10">
-          <div className="md:col-span-5">
-            <div className="flex items-center gap-3 mb-4">
+    <footer className="relative z-10 border-t border-[#ffffff]/10 bg-[#000000] text-white overflow-hidden">
+      <div className="max-w-[1280px] mx-auto w-full px-6 pt-12 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10 border-b border-[#ffffff]/10">
+          <div className="md:col-span-5 space-y-4">
+            <div className="flex items-center gap-3">
               <IptLogoIcon className="w-7 h-7 shrink-0" />
               <span className="text-white text-[15px] font-semibold tracking-[-0.02em]">
                 IPT <span className="font-light text-[#bdbdbd]">Course</span>
               </span>
             </div>
-            <p className="text-[14px] font-extralight text-[#9a9a9a] leading-relaxed max-w-[380px] mb-6">
-              Plataforma de formación técnica y arquitectura de software de Ivan Perez Tech (IPT).
-              Diseñada para la formación de alto nivel basada en simulación y software operativo real.
+            <p className="text-[13px] font-extralight text-[#9a9a9a] leading-relaxed max-w-[380px]">
+              Plataforma de formación técnica y arquitectura de software de Ivan Perez (IPT).
+              Diseñada para la formación práctica mediante simulación y software operativo real.
             </p>
-            <div className="text-[12px] font-mono text-[#9a9a9a]/70">
-              Cámara de Comercio Municipal · Matrícula Formal IPT
+            <div className="text-[11px] font-mono text-[#9a9a9a]/80 space-y-1">
+              <p>Inscrito en la Cámara de Comercio de Montería · Matrícula Mercantil Formal</p>
+              <p>
+                Portal oficial:{' '}
+                <a
+                  href="https://iptapps.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[#8052ff] hover:underline"
+                >
+                  iptapps.com
+                </a>
+              </p>
             </div>
           </div>
 
-          <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+          <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-6">
             <div>
-              <span className="text-[12px] uppercase tracking-[0.05em] font-semibold text-white block mb-4">
+              <span className="text-[11px] uppercase tracking-[0.06em] font-semibold text-white block mb-3 font-mono">
                 Plataforma
               </span>
-              <ul className="space-y-2.5 text-[13px] text-[#9a9a9a] font-extralight">
+              <ul className="space-y-2 text-[12px] text-[#9a9a9a] font-light">
                 <li>
-                  <a href="#curso-liberado" className="hover:text-white transition-colors">
-                    Curso de Prueba
-                  </a>
+                  <Link href="/home" className="hover:text-white transition-colors">
+                    Campus Estudiantil (/home)
+                  </Link>
                 </li>
                 <li>
-                  <a href="#catalogo" className="hover:text-white transition-colors">
-                    Especializaciones
+                  <a href="#mision-vision" className="hover:text-white transition-colors">
+                    Misión y Visión
                   </a>
                 </li>
                 <li>
@@ -57,14 +68,24 @@ export default function DalaFooter() {
             </div>
 
             <div>
-              <span className="text-[12px] uppercase tracking-[0.05em] font-semibold text-white block mb-4">
+              <span className="text-[11px] uppercase tracking-[0.06em] font-semibold text-white block mb-3 font-mono">
                 Ecosistema IPT
               </span>
-              <ul className="space-y-2.5 text-[13px] text-[#9a9a9a] font-extralight">
+              <ul className="space-y-2 text-[12px] text-[#9a9a9a] font-light">
                 <li>
                   <Link href="/login" className="hover:text-white transition-colors">
                     Acceso a Alumnos
                   </Link>
+                </li>
+                <li>
+                  <a
+                    href="https://iptapps.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    iptapps.com
+                  </a>
                 </li>
                 <li>
                   <a
@@ -76,37 +97,27 @@ export default function DalaFooter() {
                     Portal Docente
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="https://ivanperez.tech"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-white transition-colors"
-                  >
-                    Ivan Perez Tech
-                  </a>
-                </li>
               </ul>
             </div>
 
             <div>
-              <span className="text-[12px] uppercase tracking-[0.05em] font-semibold text-white block mb-4">
-                Transparencia
+              <span className="text-[11px] uppercase tracking-[0.06em] font-semibold text-white block mb-3 font-mono">
+                Marco Legal
               </span>
-              <ul className="space-y-2.5 text-[13px] text-[#9a9a9a] font-extralight">
+              <ul className="space-y-2 text-[12px] text-[#9a9a9a] font-light">
                 <li>
-                  <Link href="/legal" className="hover:text-white transition-colors">
-                    Términos de Servicio
+                  <Link href="/legal?tab=aviso_legal" className="hover:text-white transition-colors">
+                    Aviso Legal (Montería)
                   </Link>
                 </li>
                 <li>
-                  <Link href="/legal" className="hover:text-white transition-colors">
+                  <Link href="/legal?tab=privacidad" className="hover:text-white transition-colors">
                     Privacidad y Datos
                   </Link>
                 </li>
                 <li>
-                  <Link href="/legal" className="hover:text-white transition-colors">
-                    Condiciones de Membresía
+                  <Link href="/legal?tab=litigios" className="hover:text-white transition-colors">
+                    Litigios y Arbitraje
                   </Link>
                 </li>
               </ul>
@@ -114,12 +125,12 @@ export default function DalaFooter() {
           </div>
         </div>
 
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[12px] text-[#9a9a9a] font-light">
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#9a9a9a] font-light">
           <div>
-            © {currentYear} IPT (Ivan Perez Tech). Todos los derechos reservados.
+            © {currentYear} IPT · Ivan Perez. Todos los derechos reservados.
           </div>
-          <div className="flex items-center gap-6">
-            <span>Infraestructura Segura</span>
+          <div className="flex items-center gap-5 text-[#9a9a9a]/90">
+            <span>Montería, Colombia</span>
             <span>Certificación Criptográfica</span>
           </div>
         </div>

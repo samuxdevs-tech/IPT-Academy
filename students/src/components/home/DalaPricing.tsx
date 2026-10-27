@@ -100,7 +100,7 @@ export default function DalaPricing() {
         </div>
 
         {/* Pricing Cards Grid — Solid Opaque Surfaces so particles NEVER disrupt text */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div id="pricing-cards-container" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {tiers.map((tier) => (
             <div
               key={tier.id}

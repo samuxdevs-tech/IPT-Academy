@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { LmsProvider } from "@/context/LmsContext";
 import { SubscriptionProvider } from "@/context/SubscriptionContext";
 import LocalAiTutorWidget from "@/components/LocalAiTutorWidget";
+import PqrSupportWidget from "@/components/PqrSupportWidget";
 import LegalComplianceSystem from "@/components/LegalComplianceSystem";
 import StudentPortalShell from "@/components/StudentPortalShell";
 import SubscriptionCheckoutModal from "@/components/SubscriptionCheckoutModal";
@@ -18,14 +19,14 @@ const interSans = Inter({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
   interactiveWidget: "resizes-content",
 };
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://ipt-course-students.web.app";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://iptapps.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -34,10 +35,10 @@ export const metadata: Metadata = {
     template: "%s | IPT Course",
   },
   description:
-    "Portal de formación de Ivan Perez Tech (IPT). Cursos estáticos, cursos dinámicos con evaluación docente y sesiones de clases en vivo.",
-  authors: [{ name: "IPT (Ivan Perez Tech)", url: siteUrl }],
-  creator: "IPT (Ivan Perez Tech)",
-  publisher: "IPT (Ivan Perez Tech)",
+    "Portal de formación técnica y arquitectura de software de Ivan Perez Tech (IPT).",
+  authors: [{ name: "Ivan Perez (IPT)", url: "https://iptapps.com" }],
+  creator: "Ivan Perez",
+  publisher: "Ivan Perez",
   manifest: "/manifest.json",
   alternates: {
     canonical: "/",
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
     siteName: "IPT Course",
     title: "IPT Course | Campus Virtual, Cursos y Clases en Vivo",
     description:
-      "Cursos estáticos, cursos dinámicos con evaluación docente y sesiones de clases en vivo.",
+      "Plataforma de formación técnica y arquitectura de software de Ivan Perez Tech (IPT).",
   },
   appleWebApp: {
     capable: true,
@@ -80,6 +81,7 @@ export default function RootLayout({
               <IdentityVerificationPrompt />
               <LegalComplianceSystem />
               <LocalAiTutorWidget />
+              <PqrSupportWidget />
             </SubscriptionProvider>
           </LmsProvider>
         </AuthProvider>
