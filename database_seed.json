@@ -1795,7 +1795,23 @@
                   "size": "4 KB"
                 }
               ],
-              "inVideoCheckpoints": [],
+              "inVideoCheckpoints": [
+                {
+                  "id": "cp-datagan-v2-033",
+                  "timestampSeconds": 33,
+                  "timestampFormatted": "00:33",
+                  "triggerContext": "El narrador explica que al digitar las hectáreas que mide el potrero, la barra superior descuenta automáticamente el área total de la finca.",
+                  "prompt": "¿Qué función cumple la barra superior de áreas al registrar un nuevo potrero en el sistema?",
+                  "options": [
+                    "Calcula de forma automática los costos de fertilización por hectárea.",
+                    "Descuenta el valor de la superficie ingresada para evitar asignar más tierra de la disponible en la finca.",
+                    "Actualiza el inventario de bovinos disponibles para ese potrero.",
+                    "Modifica automáticamente el tipo de pasto seleccionado."
+                  ],
+                  "correctIndex": 1,
+                  "explanation": "El sistema descuenta automáticamente el metraje o hectáreas del área total de la finca para prevenir que se asignen más hectáreas de las que realmente se poseen."
+                }
+              ],
               "checkpointQuiz": [
                 {
                   "id": "q-pot-lot-1",
@@ -1923,7 +1939,23 @@
                   "size": "4 KB"
                 }
               ],
-              "inVideoCheckpoints": [],
+              "inVideoCheckpoints": [
+                {
+                  "id": "cp-datagan-v4-025",
+                  "timestampSeconds": 25,
+                  "timestampFormatted": "00:25",
+                  "triggerContext": "Al elegir el animal o escanear su chapeta, aparece una cinta recordando cuánto pesó la última vez para evaluar su condición corporal.",
+                  "prompt": "¿Qué información clave muestra el sistema de manera inmediata al seleccionar o escanear un animal en el módulo de pesaje?",
+                  "options": [
+                    "El valor comercial exacto del animal en el mercado actual.",
+                    "Una cinta que recuerda el último peso registrado para identificar cambios en la condición corporal.",
+                    "El historial completo de vacunas aplicadas en los últimos dos años.",
+                    "El potrero exacto donde nacerá su próxima cría."
+                  ],
+                  "correctIndex": 1,
+                  "explanation": "El sistema muestra el último peso registrado para que el usuario sepa de inmediato si el animal ganó o perdió peso respecto al pesaje anterior."
+                }
+              ],
               "checkpointQuiz": [
                 {
                   "id": "q-pes-lec-1",
@@ -2275,7 +2307,23 @@
                   "size": "4 KB"
                 }
               ],
-              "inVideoCheckpoints": [],
+              "inVideoCheckpoints": [
+                {
+                  "id": "cp-datagan-t2-v4-021",
+                  "timestampSeconds": 21,
+                  "timestampFormatted": "00:21",
+                  "triggerContext": "El narrador explica que al bajar se visualiza a la izquierda el detalle de cuentas y a la derecha el historial con todas las ventas, compras e insumos registrados.",
+                  "prompt": "¿Qué información se refleja de manera integrada en la sección del historial de cuentas del módulo financiero?",
+                  "options": [
+                    "Únicamente los préstamos bancarios activos y sus intereses.",
+                    "Todas las ventas de leche, compras de insumos y actividades registradas en los demás módulos de la plataforma.",
+                    "El sueldo mensual de los operarios de la finca.",
+                    "Las alertas sanitarias y de vacunación del ganado."
+                  ],
+                  "correctIndex": 1,
+                  "explanation": "El historial de cuentas consolida de forma cruzada todas las operaciones financieras derivadas de ventas, compras e insumos provenientes de los demás módulos."
+                }
+              ],
               "checkpointQuiz": [
                 {
                   "id": "q-cue-pat-1",
@@ -2864,7 +2912,23 @@
                   "size": "4 KB"
                 }
               ],
-              "inVideoCheckpoints": [],
+              "inVideoCheckpoints": [
+                {
+                  "id": "cp-datagan-v2-033",
+                  "timestampSeconds": 33,
+                  "timestampFormatted": "00:33",
+                  "triggerContext": "El narrador explica que al digitar las hectáreas que mide el potrero, la barra superior descuenta automáticamente el área total de la finca.",
+                  "prompt": "¿Qué función cumple la barra superior de áreas al registrar un nuevo potrero en el sistema?",
+                  "options": [
+                    "Calcula de forma automática los costos de fertilización por hectárea.",
+                    "Descuenta el valor de la superficie ingresada para evitar asignar más tierra de la disponible en la finca.",
+                    "Actualiza el inventario de bovinos disponibles para ese potrero.",
+                    "Modifica automáticamente el tipo de pasto seleccionado."
+                  ],
+                  "correctIndex": 1,
+                  "explanation": "El sistema descuenta automáticamente el metraje o hectáreas del área total de la finca para prevenir que se asignen más hectáreas de las que realmente se poseen."
+                }
+              ],
               "checkpointQuiz": [
                 {
                   "id": "q-pot-lot-1",
@@ -2992,7 +3056,23 @@
                   "size": "4 KB"
                 }
               ],
-              "inVideoCheckpoints": [],
+              "inVideoCheckpoints": [
+                {
+                  "id": "cp-datagan-v4-025",
+                  "timestampSeconds": 25,
+                  "timestampFormatted": "00:25",
+                  "triggerContext": "Al elegir el animal o escanear su chapeta, aparece una cinta recordando cuánto pesó la última vez para evaluar su condición corporal.",
+                  "prompt": "¿Qué información clave muestra el sistema de manera inmediata al seleccionar o escanear un animal en el módulo de pesaje?",
+                  "options": [
+                    "El valor comercial exacto del animal en el mercado actual.",
+                    "Una cinta que recuerda el último peso registrado para identificar cambios en la condición corporal.",
+                    "El historial completo de vacunas aplicadas en los últimos dos años.",
+                    "El potrero exacto donde nacerá su próxima cría."
+                  ],
+                  "correctIndex": 1,
+                  "explanation": "El sistema muestra el último peso registrado para que el usuario sepa de inmediato si el animal ganó o perdió peso respecto al pesaje anterior."
+                }
+              ],
               "checkpointQuiz": [
                 {
                   "id": "q-pes-lec-1",
@@ -3344,7 +3424,23 @@
                   "size": "4 KB"
                 }
               ],
-              "inVideoCheckpoints": [],
+              "inVideoCheckpoints": [
+                {
+                  "id": "cp-datagan-t2-v4-021",
+                  "timestampSeconds": 21,
+                  "timestampFormatted": "00:21",
+                  "triggerContext": "El narrador explica que al bajar se visualiza a la izquierda el detalle de cuentas y a la derecha el historial con todas las ventas, compras e insumos registrados.",
+                  "prompt": "¿Qué información se refleja de manera integrada en la sección del historial de cuentas del módulo financiero?",
+                  "options": [
+                    "Únicamente los préstamos bancarios activos y sus intereses.",
+                    "Todas las ventas de leche, compras de insumos y actividades registradas en los demás módulos de la plataforma.",
+                    "El sueldo mensual de los operarios de la finca.",
+                    "Las alertas sanitarias y de vacunación del ganado."
+                  ],
+                  "correctIndex": 1,
+                  "explanation": "El historial de cuentas consolida de forma cruzada todas las operaciones financieras derivadas de ventas, compras e insumos provenientes de los demás módulos."
+                }
+              ],
               "checkpointQuiz": [
                 {
                   "id": "q-cue-pat-1",
