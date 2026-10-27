@@ -1,0 +1,107 @@
+﻿{
+  "slug": "datagan-master-pro",
+  "title": "Datagan Master Pro",
+  "subtitle": "Domina la gestión ganadera de precisión",
+  "description": "El programa definitivo para digitalizar tu finca. Aprende a tomar decisiones basadas en datos reales, optimizar la rotación de potreros, proyectar aforos y manejar el módulo de salud animal como un profesional.",
+  "thumbnail": "https://images.unsplash.com/photo-1548043657-b08e5a6fc382?q=80&w=800&auto=format&fit=crop",
+  "instructor": {
+    "name": "Iván Pérez",
+    "role": "CEO & Lead Engineer",
+    "avatar": "https://ui-avatars.com/api/?name=Ivan+Perez&background=6d28d2&color=fff"
+  },
+  "category": "Zootecnia y Tecnología",
+  "level": "Avanzado",
+  "rating": 4.9,
+  "ratingsCount": 142,
+  "published": true,
+  "modules": [
+    {
+      "id": "mod-1",
+      "title": "Fundamentos y Configuración Inicial",
+      "description": "Configura los parámetros de tu finca antes de empezar a recolectar datos.",
+      "order": 1,
+      "lessons": [
+        {
+          "id": "les-1-1",
+          "title": "1.1 El nuevo paradigma ganadero",
+          "description": "Introducción a la plataforma y por qué los datos vencen a la intuición.",
+          "order": 1,
+          "videoType": "youtube",
+          "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          "duration": "12 min",
+          "metrics": ["registro_nacimientos", "inventario_base"],
+          "checkpointQuiz": [
+            {
+              "id": "chk-1",
+              "prompt": "¿Cuál es la principal ventaja de digitalizar el inventario base?",
+              "options": [
+                "Aumentar el precio de venta del ganado.",
+                "Tener trazabilidad inmediata y reducir la incertidumbre.",
+                "Reducir el consumo de agua en los potreros.",
+                "Eliminar la necesidad de vacunas."
+              ],
+              "correctIndex": 1,
+              "explanation": "La trazabilidad permite saber exactamente qué se tiene y proyectar decisiones a futuro, eliminando los datos estimados o 'a ojo'."
+            }
+          ],
+          "inVideoCheckpoints": [
+            {
+              "id": "invid-1",
+              "timestampSeconds": 120,
+              "prompt": "Según lo que acabamos de ver, ¿la intuición es suficiente para una ganadería escalable?",
+              "options": [
+                "Sí, si el ganadero tiene experiencia.",
+                "No, se requiere cruzar variables cuantitativas."
+              ],
+              "correctIndex": 1,
+              "explanation": "La memoria falla y los volúmenes grandes de animales requieren un sistema centralizado de datos."
+            }
+          ]
+        },
+        {
+          "id": "les-1-2",
+          "title": "1.2 Creación de Lotes y Potreros",
+          "description": "Mapea tu terreno y segmenta a los animales estratégicamente.",
+          "order": 2,
+          "videoType": "youtube",
+          "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          "duration": "18 min",
+          "metrics": ["aforo_pastos", "rotacion_potreros"],
+          "checkpointQuiz": []
+        }
+      ]
+    },
+    {
+      "id": "mod-2",
+      "title": "Reproducción y Nacimientos",
+      "description": "Gestión del ciclo reproductivo y registro exacto de las crías.",
+      "order": 2,
+      "lessons": [
+        {
+          "id": "les-2-1",
+          "title": "2.1 Protocolo de Registro de Nacimientos",
+          "description": "Cómo ingresar un nuevo ternero al sistema asegurando la trazabilidad materna.",
+          "order": 1,
+          "videoType": "youtube",
+          "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          "duration": "15 min",
+          "metrics": ["registro_nacimientos", "tasa_natalidad"],
+          "checkpointQuiz": [
+            {
+              "id": "chk-2-1",
+              "prompt": "¿Qué dato es fundamental al registrar un nacimiento para el cálculo genético?",
+              "options": [
+                "El color del ternero.",
+                "El ID de la madre (vaca).",
+                "El clima de ese día.",
+                "La marca de la báscula."
+              ],
+              "correctIndex": 1,
+              "explanation": "Vincular el ID de la madre permite hacer seguimiento al intervalo entre partos y la habilidad materna."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

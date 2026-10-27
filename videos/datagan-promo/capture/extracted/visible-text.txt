@@ -1,0 +1,10 @@
+[h1] Datagan Academy
+[p] Inicia sesión para continuar con tus cursos
+[button] Continuar con Google
+[button] Correo
+[button] Teléfono SMS
+[label] Correo Electrónico
+[label] Contraseña
+[button] Iniciar Sesión
+[p] ¿No tienes cuenta?
+[a] Regístrate aquí

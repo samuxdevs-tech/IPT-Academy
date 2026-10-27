@@ -1,0 +1,243 @@
+{
+  "video_key": "datagan360-v5-configuracion-locutado",
+  "total_cues": 47,
+  "start_time": 4.0,
+  "end_time": 125.903,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.19,
+      "text": "Junto a tu nombre de usuario en la esquina superior"
+    },
+    {
+      "start": 10.19,
+      "end": 11.907,
+      "text": "izquierda encontrarás el acceso rápido a"
+    },
+    {
+      "start": 11.907,
+      "end": 13.023,
+      "text": "Configuración del Sistema."
+    },
+    {
+      "start": 13.023,
+      "end": 15.084,
+      "text": "Vamos a recorrer sus seis herramientas empezando"
+    },
+    {
+      "start": 15.084,
+      "end": 15.685,
+      "text": "por Mi Perfil."
+    },
+    {
+      "start": 16.0,
+      "end": 18.823,
+      "text": "En estos campos colocarás tu información real de"
+    },
+    {
+      "start": 18.823,
+      "end": 20.176,
+      "text": "administrador: nombres,"
+    },
+    {
+      "start": 20.176,
+      "end": 21.235,
+      "text": "usuario de acceso,"
+    },
+    {
+      "start": 21.235,
+      "end": 23.999,
+      "text": "correo electrónico y tu documento de identidad,"
+    },
+    {
+      "start": 23.999,
+      "end": 26.881,
+      "text": "además de poder cambiar tu foto o cerrar sesiones"
+    },
+    {
+      "start": 26.881,
+      "end": 28.411,
+      "text": "abiertas en otros equipos."
+    },
+    {
+      "start": 32.0,
+      "end": 34.533,
+      "text": "Abajo registrarás tu número celular y el"
+    },
+    {
+      "start": 34.533,
+      "end": 37.509,
+      "text": "departamento y municipio donde resides antes de"
+    },
+    {
+      "start": 37.509,
+      "end": 38.776,
+      "text": "guardar los cambios."
+    },
+    {
+      "start": 38.776,
+      "end": 40.739,
+      "text": "Regresamos con el botón Volver."
+    },
+    {
+      "start": 46.0,
+      "end": 48.465,
+      "text": "En Alertas y Notificaciones decidirás qué avisos"
+    },
+    {
+      "start": 48.465,
+      "end": 51.084,
+      "text": "quieres que te envíe el sistema: desde repeticiones"
+    },
+    {
+      "start": 51.084,
+      "end": 51.495,
+      "text": "de celo,"
+    },
+    {
+      "start": 51.495,
+      "end": 53.6,
+      "text": "chequeos de palpación y partos probables,"
+    },
+    {
+      "start": 53.6,
+      "end": 56.681,
+      "text": "hasta alertas cuando se esté acabando un insumo en Finanzas."
+    },
+    {
+      "start": 57.0,
+      "end": 59.772,
+      "text": "En Unidades de Medida defines tus unidades de área,"
+    },
+    {
+      "start": 59.772,
+      "end": 60.587,
+      "text": "peso y volumen,"
+    },
+    {
+      "start": 60.587,
+      "end": 63.087,
+      "text": "y ajustas el Precio de Referencia por Kilo: el"
+    },
+    {
+      "start": 63.087,
+      "end": 65.696,
+      "text": "valor que pongas aquí valorará automáticamente a"
+    },
+    {
+      "start": 65.696,
+      "end": 67.925,
+      "text": "todos tus bovinos que no tengan un precio"
+    },
+    {
+      "start": 67.925,
+      "end": 68.523,
+      "text": "individual."
+    },
+    {
+      "start": 72.0,
+      "end": 75.121,
+      "text": "Como ves en el recuadro inferior de Configuración Actual,"
+    },
+    {
+      "start": 75.121,
+      "end": 77.859,
+      "text": "la tarifa queda fijada de inmediato para alimentar"
+    },
+    {
+      "start": 77.859,
+      "end": 79.995,
+      "text": "las tarjetas financieras del Dashboard."
+    },
+    {
+      "start": 82.0,
+      "end": 84.476,
+      "text": "En Mis Datos y Respaldo podrás exportar toda la"
+    },
+    {
+      "start": 84.476,
+      "end": 87.215,
+      "text": "información que llevas registrada en el software: ya"
+    },
+    {
+      "start": 87.215,
+      "end": 89.744,
+      "text": "sea dividida en los dos archivos de estructura y"
+    },
+    {
+      "start": 89.744,
+      "end": 90.271,
+      "text": "operación,"
+    },
+    {
+      "start": 90.271,
+      "end": 92.905,
+      "text": "o abajo en un único Excel legal bajo la Ley quince"
+    },
+    {
+      "start": 92.905,
+      "end": 93.643,
+      "text": "ochenta y uno."
+    },
+    {
+      "start": 98.0,
+      "end": 100.797,
+      "text": "El botón Ir a Carga Masiva nos conecta directo con"
+    },
+    {
+      "start": 100.797,
+      "end": 103.594,
+      "text": "el importador de Excel: recuerda que siempre debes"
+    },
+    {
+      "start": 103.594,
+      "end": 106.335,
+      "text": "subir primero el archivo del Paso Uno con fincas,"
+    },
+    {
+      "start": 106.335,
+      "end": 107.454,
+      "text": "terceros y potreros,"
+    },
+    {
+      "start": 107.454,
+      "end": 110.195,
+      "text": "y luego el del Paso Dos con animales y registros."
+    },
+    {
+      "start": 116.0,
+      "end": 116.626,
+      "text": "Por último,"
+    },
+    {
+      "start": 116.626,
+      "end": 119.301,
+      "text": "en Eliminar Cuenta encontrarás el formulario de"
+    },
+    {
+      "start": 119.301,
+      "end": 121.179,
+      "text": "baja permanente de la plataforma,"
+    },
+    {
+      "start": 121.179,
+      "end": 123.74,
+      "text": "protegido mediante frase de confirmación para"
+    },
+    {
+      "start": 123.74,
+      "end": 125.903,
+      "text": "resguardar la integridad de tus datos."
+    }
+  ]
+}

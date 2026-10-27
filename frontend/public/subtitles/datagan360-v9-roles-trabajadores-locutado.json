@@ -1,0 +1,253 @@
+{
+  "video_key": "datagan360-v9-roles-trabajadores-locutado",
+  "total_cues": 49,
+  "start_time": 4.0,
+  "end_time": 143.483,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.685,
+      "text": "En el menú Admin gestionamos a nuestro equipo de"
+    },
+    {
+      "start": 10.685,
+      "end": 13.314,
+      "text": "trabajo en dos pasos: primero creamos el Rol de"
+    },
+    {
+      "start": 13.314,
+      "end": 15.72,
+      "text": "permisos y luego registramos al Trabajador."
+    },
+    {
+      "start": 15.72,
+      "end": 18.461,
+      "text": "Presionamos Crear Roles y aquí escribes el nombre"
+    },
+    {
+      "start": 18.461,
+      "end": 20.195,
+      "text": "del cargo que vas a configurar."
+    },
+    {
+      "start": 23.0,
+      "end": 25.461,
+      "text": "Debajo verás todos los módulos de la web"
+    },
+    {
+      "start": 25.461,
+      "end": 27.123,
+      "text": "organizados por categorías."
+    },
+    {
+      "start": 27.123,
+      "end": 28.6,
+      "text": "Al desplegar cualquiera,"
+    },
+    {
+      "start": 28.6,
+      "end": 31.738,
+      "text": "puedes marcar su círculo principal si quieres darle"
+    },
+    {
+      "start": 31.738,
+      "end": 33.154,
+      "text": "control total para ver,"
+    },
+    {
+      "start": 33.154,
+      "end": 35.123,
+      "text": "agregar, modificar y eliminar..."
+    },
+    {
+      "start": 36.0,
+      "end": 38.487,
+      "text": "...o marcar únicamente casillas específicas si"
+    },
+    {
+      "start": 38.487,
+      "end": 41.244,
+      "text": "prefieres que ese empleado pueda meter datos nuevos"
+    },
+    {
+      "start": 41.244,
+      "end": 43.299,
+      "text": "pero tenga prohibido borrar registros."
+    },
+    {
+      "start": 44.0,
+      "end": 47.234,
+      "text": "Configuras de la misma forma qué podrá hacer en Bovinos,"
+    },
+    {
+      "start": 47.234,
+      "end": 48.908,
+      "text": "Producción, Salud o Finanzas,"
+    },
+    {
+      "start": 48.908,
+      "end": 51.853,
+      "text": "presionas Crear Rol abajo a la derecha y ese perfil"
+    },
+    {
+      "start": 51.853,
+      "end": 54.683,
+      "text": "ya queda disponible para asignarlo a tu personal."
+    },
+    {
+      "start": 62.0,
+      "end": 65.05,
+      "text": "Ahora sí pasamos en el menú lateral a Trabajadores"
+    },
+    {
+      "start": 65.05,
+      "end": 67.062,
+      "text": "y presionamos Crear Trabajadores."
+    },
+    {
+      "start": 67.062,
+      "end": 69.685,
+      "text": "En este formulario ingresarás los nombres y"
+    },
+    {
+      "start": 69.685,
+      "end": 71.82,
+      "text": "apellidos reales de tu colaborador,"
+    },
+    {
+      "start": 71.82,
+      "end": 73.955,
+      "text": "mayordomo, ordeñador o veterinario."
+    },
+    {
+      "start": 77.0,
+      "end": 79.43,
+      "text": "Seleccionas su tipo de documento de identidad e"
+    },
+    {
+      "start": 79.43,
+      "end": 80.93,
+      "text": "ingresas su número de cédula;"
+    },
+    {
+      "start": 80.93,
+      "end": 83.308,
+      "text": "recuerda que este trabajador que crees aquí lo"
+    },
+    {
+      "start": 83.308,
+      "end": 85.893,
+      "text": "usarás luego como encargado de fincas o en la mano"
+    },
+    {
+      "start": 85.893,
+      "end": 87.083,
+      "text": "de obra de Actividades."
+    },
+    {
+      "start": 93.0,
+      "end": 96.054,
+      "text": "Eliges el departamento y municipio donde vive o"
+    },
+    {
+      "start": 96.054,
+      "end": 97.419,
+      "text": "labora el trabajador."
+    },
+    {
+      "start": 102.0,
+      "end": 104.632,
+      "text": "Aquí digitas su número de celular y su correo"
+    },
+    {
+      "start": 104.632,
+      "end": 105.627,
+      "text": "electrónico real,"
+    },
+    {
+      "start": 105.627,
+      "end": 108.435,
+      "text": "verificando que ambos campos se pongan en verde."
+    },
+    {
+      "start": 120.0,
+      "end": 122.224,
+      "text": "Presta atención a esta casilla: si este empleado va"
+    },
+    {
+      "start": 122.224,
+      "end": 124.099,
+      "text": "a entrar a la aplicación desde su celular o"
+    },
+    {
+      "start": 124.099,
+      "end": 124.578,
+      "text": "computador,"
+    },
+    {
+      "start": 124.578,
+      "end": 126.54,
+      "text": "marcas ¿Es trabajador con acceso al sistema?,"
+    },
+    {
+      "start": 126.54,
+      "end": 127.412,
+      "text": "le creas su usuario,"
+    },
+    {
+      "start": 127.412,
+      "end": 129.462,
+      "text": "le asignas el Rol que creamos hace un momento y"
+    },
+    {
+      "start": 129.462,
+      "end": 130.683,
+      "text": "marcas qué fincas puede ver."
+    },
+    {
+      "start": 131.0,
+      "end": 131.592,
+      "text": "En cambio,"
+    },
+    {
+      "start": 131.592,
+      "end": 134.195,
+      "text": "si es un trabajador de campo que no usará la"
+    },
+    {
+      "start": 134.195,
+      "end": 137.271,
+      "text": "plataforma pero necesitas asignarle tareas y pagarle"
+    },
+    {
+      "start": 137.271,
+      "end": 138.513,
+      "text": "jornales en Finanzas,"
+    },
+    {
+      "start": 138.513,
+      "end": 139.756,
+      "text": "desmarcas la casilla,"
+    },
+    {
+      "start": 139.756,
+      "end": 142.477,
+      "text": "presionas Crear trabajador y queda listo en tu"
+    },
+    {
+      "start": 142.477,
+      "end": 143.483,
+      "text": "nómina operativa."
+    }
+  ]
+}

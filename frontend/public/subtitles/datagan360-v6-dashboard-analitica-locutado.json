@@ -1,0 +1,228 @@
+{
+  "video_key": "datagan360-v6-dashboard-analitica-locutado",
+  "total_cues": 44,
+  "start_time": 4.0,
+  "end_time": 99.083,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.041,
+      "text": "Una vez que has registrado potreros, animales,"
+    },
+    {
+      "start": 10.041,
+      "end": 10.884,
+      "text": "ordeños y finanzas,"
+    },
+    {
+      "start": 10.884,
+      "end": 13.103,
+      "text": "así cobra vida la pestaña Analítica del Dashboard:"
+    },
+    {
+      "start": 13.103,
+      "end": 15.1,
+      "text": "arriba ves cuántos potreros tienes ocupados o"
+    },
+    {
+      "start": 15.1,
+      "end": 17.052,
+      "text": "descansando junto a sus polígonos en el mapa"
+    },
+    {
+      "start": 17.052,
+      "end": 17.496,
+      "text": "satelital."
+    },
+    {
+      "start": 17.646,
+      "end": 20.039,
+      "text": "En la barra de Filtros puedes elegir si deseas"
+    },
+    {
+      "start": 20.039,
+      "end": 22.64,
+      "text": "analizar los últimos treinta días o abrir un rango"
+    },
+    {
+      "start": 22.64,
+      "end": 25.345,
+      "text": "personalizado de fechas para auditar cualquier época"
+    },
+    {
+      "start": 25.345,
+      "end": 25.761,
+      "text": "del año."
+    },
+    {
+      "start": 29.0,
+      "end": 32.095,
+      "text": "Al pasar el mouse por las tarjetas de Eficiencia por Hectárea,"
+    },
+    {
+      "start": 32.095,
+      "end": 33.543,
+      "text": "el sistema cruza tus pesajes,"
+    },
+    {
+      "start": 33.543,
+      "end": 35.989,
+      "text": "ordeños y hectáreas de potreros para mostrarte tu"
+    },
+    {
+      "start": 35.989,
+      "end": 38.036,
+      "text": "producción de carne y leche por hectárea,"
+    },
+    {
+      "start": 38.036,
+      "end": 40.283,
+      "text": "tu carga en Unidades Gran Ganado y tu tasa de"
+    },
+    {
+      "start": 40.283,
+      "end": 41.681,
+      "text": "extracción frente a FEDEGÁN."
+    },
+    {
+      "start": 42.0,
+      "end": 44.643,
+      "text": "En el Resumen Analítico tienes doce indicadores en"
+    },
+    {
+      "start": 44.643,
+      "end": 47.075,
+      "text": "tiempo real: cuántas vacas están en lactancia,"
+    },
+    {
+      "start": 47.075,
+      "end": 49.136,
+      "text": "nacimientos del periodo, toros activos,"
+    },
+    {
+      "start": 49.136,
+      "end": 50.775,
+      "text": "cuál es tu vaca más productora,"
+    },
+    {
+      "start": 50.775,
+      "end": 53.683,
+      "text": "el peso promedio del hato y el estado general de salud."
+    },
+    {
+      "start": 54.0,
+      "end": 54.345,
+      "text": "Debajo,"
+    },
+    {
+      "start": 54.345,
+      "end": 56.714,
+      "text": "la sección de Producción convierte tus registros"
+    },
+    {
+      "start": 56.714,
+      "end": 59.23,
+      "text": "diarios en gráficas visuales: la curva de leche día"
+    },
+    {
+      "start": 59.23,
+      "end": 59.624,
+      "text": "por día,"
+    },
+    {
+      "start": 59.624,
+      "end": 61.598,
+      "text": "el balance de potreros en pastoreo y los"
+    },
+    {
+      "start": 61.598,
+      "end": 62.683,
+      "text": "nacimientos por fecha."
+    },
+    {
+      "start": 63.0,
+      "end": 63.459,
+      "text": "Más abajo,"
+    },
+    {
+      "start": 63.459,
+      "end": 65.573,
+      "text": "el Resumen Financiero trae automáticamente los"
+    },
+    {
+      "start": 65.573,
+      "end": 67.549,
+      "text": "datos del módulo de Finanzas: tus ingresos,"
+    },
+    {
+      "start": 67.549,
+      "end": 67.916,
+      "text": "egresos,"
+    },
+    {
+      "start": 67.916,
+      "end": 70.259,
+      "text": "el valor actual de tu bodega de inventario y cuánto"
+    },
+    {
+      "start": 70.259,
+      "end": 71.684,
+      "text": "vale hoy todo tu ganado sumado."
+    },
+    {
+      "start": 72.0,
+      "end": 74.293,
+      "text": "Incluso cruza tus gastos contra los litros"
+    },
+    {
+      "start": 74.293,
+      "end": 76.804,
+      "text": "ordeñados para decirte cuántos pesos te cuesta"
+    },
+    {
+      "start": 76.804,
+      "end": 78.387,
+      "text": "producir cada litro de leche,"
+    },
+    {
+      "start": 78.387,
+      "end": 81.171,
+      "text": "graficando a la derecha el flujo de caja mes a mes."
+    },
+    {
+      "start": 89.0,
+      "end": 89.609,
+      "text": "Finalmente,"
+    },
+    {
+      "start": 89.609,
+      "end": 92.379,
+      "text": "en la base tienes el comparativo automático frente"
+    },
+    {
+      "start": 92.379,
+      "end": 95.094,
+      "text": "a los estándares ideales de tu tipo de ganadería,"
+    },
+    {
+      "start": 95.094,
+      "end": 97.808,
+      "text": "indicándote en qué métricas superas el promedio y"
+    },
+    {
+      "start": 97.808,
+      "end": 99.083,
+      "text": "cuáles debes optimizar."
+    }
+  ]
+}

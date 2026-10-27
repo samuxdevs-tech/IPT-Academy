@@ -1,0 +1,192 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:08,000 --> 00:00:10,959
+En el módulo de Trazabilidad registras las enfermedades,
+
+4
+00:00:10,959 --> 00:00:11,646
+tratamientos,
+
+5
+00:00:11,646 --> 00:00:14,077
+vacunas y salidas de ganado que impactan en el
+
+6
+00:00:14,077 --> 00:00:15,610
+Dashboard y en el Inventario.
+
+7
+00:00:15,610 --> 00:00:18,199
+Arriba puedes buscar un animal individual —o leer
+
+8
+00:00:18,199 --> 00:00:20,683
+su chip con Detectar Animal— para ver su ficha.
+
+9
+00:00:21,000 --> 00:00:23,152
+Abajo tienes cuatro formularios: en Enfermedad
+
+10
+00:00:23,152 --> 00:00:25,492
+eliges la categoría de la patología y describes el
+
+11
+00:00:25,492 --> 00:00:26,053
+diagnóstico;
+
+12
+00:00:26,053 --> 00:00:28,252
+recuerda que lo que guardes aquí actualizará la
+
+13
+00:00:28,252 --> 00:00:30,217
+Salud del Hato y el detector de brotes del
+
+14
+00:00:30,217 --> 00:00:30,685
+Dashboard.
+
+15
+00:00:31,000 --> 00:00:33,074
+En la segunda pestaña, Tratamiento,
+
+16
+00:00:33,074 --> 00:00:35,623
+describes qué le aplicarás y en Seleccionar
+
+17
+00:00:35,623 --> 00:00:38,645
+Medicamento eliges el fármaco directamente desde tu
+
+18
+00:00:38,645 --> 00:00:40,008
+Inventario de Finanzas;
+
+19
+00:00:40,008 --> 00:00:41,727
+al poner la dosis y los días,
+
+20
+00:00:41,727 --> 00:00:45,283
+el sistema descontará esos mililitros o litros de tu bodega.
+
+21
+00:00:47,000 --> 00:00:48,986
+En la tercera pestaña, Vacunación,
+
+22
+00:00:48,986 --> 00:00:51,789
+eliges el biológico disponible en tu Inventario,
+
+23
+00:00:51,789 --> 00:00:54,593
+indicas cuántas dosis aplicaste y qué enfermedad
+
+24
+00:00:54,593 --> 00:00:57,105
+previene —como Fiebre Aftosa o Brucelosis—;
+
+25
+00:00:57,105 --> 00:00:59,850
+esto descontará la vacuna del stock y subirá tu
+
+26
+00:00:59,850 --> 00:01:01,427
+puntaje en el semáforo ICA.
+
+27
+00:01:07,000 --> 00:01:09,624
+Y en la pestaña Movimiento registras cuando un
+
+28
+00:01:09,624 --> 00:01:12,306
+animal sale de la finca o se vende: seleccionas
+
+29
+00:01:12,306 --> 00:01:12,705
+Salida,
+
+30
+00:01:12,705 --> 00:01:14,645
+el motivo —como traslado o feria—,
+
+31
+00:01:14,645 --> 00:01:17,555
+vinculas al socio desde el directorio de Terceros y
+
+32
+00:01:17,555 --> 00:01:19,267
+escribes el predio de destino.
+
+33
+00:01:26,000 --> 00:01:28,507
+Colocas la fecha y hora del embarque y presionas
+
+34
+00:01:28,507 --> 00:01:31,118
+Registrar Movimiento para que quede asentado en el
+
+35
+00:01:31,118 --> 00:01:32,267
+expediente del animal.
+
+36
+00:01:40,000 --> 00:01:40,593
+Ahora bien,
+
+37
+00:01:40,593 --> 00:01:42,534
+cuando haces jornada de vacunación o
+
+38
+00:01:42,534 --> 00:01:45,338
+desparasitación en manga no tienes que ir animal por
+
+39
+00:01:45,338 --> 00:01:47,710
+animal: filtras arriba por Lote —o presionas
+
+40
+00:01:47,710 --> 00:01:50,082
+Seleccionar todos los animales de la finca—,
+
+41
+00:01:50,082 --> 00:01:52,617
+marcas los ejemplares en la lista y das clic en
+
+42
+00:01:52,617 --> 00:01:53,803
+Registrar Actividades.
+
+43
+00:02:01,000 --> 00:02:03,794
+Así un solo registro de vacuna o tratamiento se
+
+44
+00:02:03,794 --> 00:02:05,816
+aplicará a todo el grupo a la vez.
+
+45
+00:02:05,816 --> 00:02:08,313
+Y en el menú lateral, dentro de Historial,
+
+46
+00:02:08,313 --> 00:02:09,324
+podrás consultar,
+
+47
+00:02:09,324 --> 00:02:12,000
+ver el detalle o descargar en Excel todos los
+
+48
+00:02:12,000 --> 00:02:13,843
+eventos sanitarios registrados.
+

@@ -1,98 +1,204 @@
-"use client";
+'use client';
 
-import React, { useState } from 'react';
-import { auth } from '@/lib/firebase';
-import {
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
-  sendPasswordResetEmail,
-} from 'firebase/auth';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '@/lib/firebase';
+import { IptAuthService } from '@/services/iptAuthService';
 import {
-  LEGAL_DOCUMENTS,
-  LegalSectionId,
   recordUserLegalAcceptance,
-  CURRENT_LEGAL_VERSION,
+  LEGAL_DOCUMENTS,
+  LegalSectionId
 } from '@/lib/legalData';
-import { Scale, X, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Scale, X, ArrowLeft } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const resetTokenParam = searchParams?.get('token') || '';
+  const initialView = searchParams?.get('view') || '';
+
+  const [activeTab, setActiveTab] = useState<'personal' | 'corporate'>('personal');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [acceptedLegal, setAcceptedLegal] = useState(false);
+  const [corporateCode, setCorporateCode] = useState('');
+
+  // Separación estricta de consentimiento legal
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [previewLegalSection, setPreviewLegalSection] = useState<LegalSectionId | null>(null);
-  const [error, setError] = useState('');
-  const [resetMessage, setResetMessage] = useState('');
+
+  // Estados de recuperación de contraseña
   const [isResetMode, setIsResetMode] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [activeResetToken, setActiveResetToken] = useState(resetTokenParam);
+
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (resetTokenParam) {
+      setActiveResetToken(resetTokenParam);
+      setIsResetMode(true);
+    } else if (initialView === 'reset') {
+      setIsResetMode(true);
+    }
+  }, [resetTokenParam, initialView]);
+
+  const validateLegalCheckboxes = () => {
+    if (!acceptedTerms || !acceptedPrivacy) {
+      setError('Debes marcar ambas casillas: aceptar el Aviso Legal / Términos y la Política de Privacidad.');
+      return false;
+    }
+    return true;
+  };
+
+  // Manejo de Login Clásico / Personal
+  const handlePersonalLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setResetMessage('');
+    setSuccessMessage('');
 
-    if (!acceptedLegal) {
-      setError(
-        'Debes marcar la casilla de aceptación del Aviso Legal, Política de Privacidad (Habeas Data), Términos y Condiciones, Retracto y Política de Cookies para iniciar sesión.'
-      );
-      return;
-    }
+    if (!validateLegalCheckboxes()) return;
 
     setLoading(true);
     try {
-      const cred = await signInWithEmailAndPassword(auth, email, password);
-      await recordUserLegalAcceptance(cred.user, 'email_login');
+      // 1. Autenticar primero contra el motor propio IPT Auth (Cloudflare D1)
+      const res = await IptAuthService.login(email, password);
+
+      if (!res.success) {
+        // Fallback a Firebase Auth si es una cuenta que aún no sincronizó
+        try {
+          const cred = await signInWithEmailAndPassword(auth, email, password);
+          await recordUserLegalAcceptance(cred.user, 'email_login');
+          router.push('/');
+          return;
+        } catch {
+          setError(res.error || 'Credenciales incorrectas. Verifica tus datos o recupera tu contraseña.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 2. Conectar sesión en Firebase de forma sincronizada
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        await recordUserLegalAcceptance(cred.user, 'email_login');
+      } catch {}
+
       router.push('/');
-    } catch {
-      setError('Correo o contraseña incorrectos. Verifica tus datos o crea una cuenta.');
+    } catch (err: any) {
+      setError(err.message || 'Error al iniciar sesión.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
+  // Manejo de Acceso Corporativo / Institucional (SSO)
+  const handleCorporateLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setResetMessage('');
-    if (!email.trim()) {
-      setError('Ingresa tu correo electrónico para enviarte el enlace de recuperación.');
-      return;
-    }
+    setSuccessMessage('');
+
+    if (!validateLegalCheckboxes()) return;
+
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email.trim());
-      setResetMessage(
-        'Te hemos enviado un correo con el enlace para cambiar tu contraseña. Revisa tu bandeja de entrada o la carpeta de correo no deseado.'
-      );
-    } catch {
-      setError('No pudimos enviar el correo de recuperación. Verifica que la dirección esté bien escrita.');
+      const res = await IptAuthService.verifyCorporateSSO(email, corporateCode);
+      if (!res.success) {
+        setError(res.error || 'Acceso corporativo no autorizado.');
+        setLoading(false);
+        return;
+      }
+      router.push('/');
+    } catch (err: any) {
+      setError(err.message || 'Error en autenticación institucional.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleAuth = async () => {
+  // Manejo de Google OAuth Directo
+  const handleGoogleLogin = async () => {
     setError('');
-    setResetMessage('');
+    setSuccessMessage('');
 
-    if (!acceptedLegal) {
-      setError(
-        'Antes de continuar con Google, marca la casilla de aceptación previa y expresa de nuestras Políticas Legales y de Privacidad (Habeas Data).'
-      );
+    if (!validateLegalCheckboxes()) return;
+
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+
+      // Sincronizar y registrar sesión en Cloudflare D1
+      await IptAuthService.verifyGoogleOAuth(idToken);
+      await recordUserLegalAcceptance(result.user, 'google_login');
+      router.push('/');
+    } catch (err: any) {
+      setError('No se pudo completar el inicio de sesión con Google. Intenta nuevamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Solicitud de Recuperación de Contraseña (Despacho con Resend)
+  const handleRequestPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    if (!email.trim() || !email.includes('@')) {
+      setError('Ingresa tu correo electrónico registrado.');
       return;
     }
 
     setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const cred = await signInWithPopup(auth, provider);
-      await recordUserLegalAcceptance(cred.user, 'google_login');
-      router.push('/');
-    } catch {
-      setError('No se pudo iniciar sesión con Google. Inténtalo de nuevo.');
+      const res = await IptAuthService.requestPasswordReset(email.trim());
+      setSuccessMessage(res.message);
+    } catch (err: any) {
+      setError(err.message || 'Error al solicitar recuperación.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Confirmación de Nueva Contraseña con Token
+  const handleConfirmPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    if (newPassword.length < 6) {
+      setError('La nueva contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await IptAuthService.confirmPasswordReset(activeResetToken, newPassword);
+      if (!res.success) {
+        setError(res.error || 'No se pudo actualizar la contraseña.');
+        setLoading(false);
+        return;
+      }
+
+      setSuccessMessage('Tu contraseña ha sido actualizada con éxito. Ya puedes iniciar sesión.');
+      setTimeout(() => {
+        setIsResetMode(false);
+        setActiveResetToken('');
+        setPassword('');
+      }, 2500);
+    } catch (err: any) {
+      setError(err.message || 'Error al procesar el cambio de clave.');
     } finally {
       setLoading(false);
     }
@@ -103,287 +209,484 @@ export default function LoginPage() {
     : null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#e9eaf2] p-4 py-10">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-[#d1d2e0] p-7 sm:p-8">
-        <div className="text-center mb-6">
-          <Link href="/" className="inline-block mb-3">
-            <img
-              src="/logo.png"
-              alt="IPT Course"
-              width={180}
-              height={58}
-              className="h-12 w-auto mx-auto object-contain"
-            />
+    <div className="min-h-screen bg-[#000000] text-white flex items-center justify-center p-4 py-12 relative selection:bg-[#8052ff] selection:text-white">
+      {/* Resplandor atmosférico Dala */}
+      <div className="absolute inset-0 bg-radial from-[#8052ff]/10 via-transparent to-transparent pointer-events-none opacity-40 blur-3xl" />
+
+      <div className="relative z-10 max-w-[480px] w-full bg-[#09090b] border border-[#ffffff]/15 rounded-[28px] p-8 sm:p-10 shadow-2xl">
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
+            <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 transform group-hover:scale-105 transition-transform">
+              <polygon points="12,2 22,20 2,20" fill="#8052ff" stroke="#ffffff" strokeWidth="0.8" />
+            </svg>
+            <span className="text-white text-[18px] font-semibold tracking-[-0.02em]">
+              IPT <span className="font-light text-[#bdbdbd]">Course</span>
+            </span>
           </Link>
-          <p className="text-[#595c73] text-sm">
+          <h1 className="text-[26px] font-normal text-white tracking-[-0.03em] mb-2">
+            {isResetMode ? 'Recuperar Contraseña' : 'Iniciar Sesión'}
+          </h1>
+          <p className="text-[13px] font-extralight text-[#9a9a9a]">
             {isResetMode
-              ? 'Recupera el acceso a tu cuenta'
-              : 'Inicia sesión para continuar con tus clases, tareas y notas'}
+              ? 'Te enviaremos un enlace seguro para crear tu nueva clave'
+              : 'Accede a tus cursos, evaluaciones y sesiones en vivo'}
           </p>
         </div>
 
+        {/* Mensajes de Alerta */}
         {error && (
-          <div
-            className="bg-red-50 text-red-600 p-3 rounded-lg text-xs font-medium mb-5 border border-red-100 leading-relaxed"
-            role="alert"
-          >
-            {error}
+          <div className="mb-6 p-4 rounded-2xl bg-[#f43f5e]/10 border border-[#f43f5e]/30 flex items-start gap-3 text-[12px] text-white">
+            <AlertCircle className="w-4 h-4 text-[#f43f5e] shrink-0 mt-0.5" />
+            <span className="leading-relaxed font-light">{error}</span>
           </div>
         )}
 
-        {resetMessage && (
-          <div
-            className="bg-emerald-50 text-emerald-700 p-3.5 rounded-lg text-xs font-medium mb-5 border border-emerald-200 leading-relaxed"
-            role="status"
-          >
-            {resetMessage}
+        {successMessage && (
+          <div className="mb-6 p-4 rounded-2xl bg-[#15846e]/15 border border-[#15846e]/40 flex items-start gap-3 text-[12px] text-white">
+            <CheckCircle2 className="w-4 h-4 text-[#15846e] shrink-0 mt-0.5" />
+            <span className="leading-relaxed font-light">{successMessage}</span>
           </div>
         )}
 
         {isResetMode ? (
-          <form onSubmit={handlePasswordReset} className="space-y-4">
-            <div>
-              <label htmlFor="reset-email" className="block text-sm font-medium text-[#2a2b3f] mb-1">
-                Correo electrónico registrado
-              </label>
-              <input
-                id="reset-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-[#d1d2e0] rounded-lg px-4 py-2 focus-visible:ring-2 focus-visible:ring-[#1d4ed8] focus-visible:outline-hidden"
-                placeholder="usuario@ejemplo.com"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#1d4ed8] text-white rounded-lg py-2.5 font-bold hover:bg-[#1e40af] disabled:opacity-50 transition-all cursor-pointer"
-            >
-              {loading ? 'Enviando enlace...' : 'Enviar enlace de recuperación'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsResetMode(false);
-                setError('');
-                setResetMessage('');
-              }}
-              className="w-full text-center text-sm font-semibold text-[#595c73] hover:text-[#2a2b3f] py-1.5 cursor-pointer"
-            >
-              ← Volver al inicio de sesión
-            </button>
-          </form>
-        ) : (
-          <div className="space-y-5">
-            {/* Casilla obligatoria de Autorización Legal y Habeas Data al momento del Login */}
-            <div className="p-3.5 rounded-xl bg-[#f8fafc] border border-[#cbd5e1] space-y-2.5">
-              <label className="flex items-start gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={acceptedLegal}
-                  onChange={(e) => {
-                    setAcceptedLegal(e.target.checked);
-                    if (e.target.checked) setError('');
-                  }}
-                  className="w-4 h-4 mt-0.5 accent-[#1d4ed8] shrink-0 cursor-pointer"
-                />
-                <span className="text-[11px] text-[#1e293b] leading-relaxed">
-                  Acepto de forma previa, expresa e informada el{' '}
-                  <button
-                    type="button"
-                    onClick={() => setPreviewLegalSection('aviso_legal')}
-                    className="text-[#1d4ed8] font-bold hover:underline"
-                  >
-                    Aviso Legal
-                  </button>
-                  , la{' '}
-                  <button
-                    type="button"
-                    onClick={() => setPreviewLegalSection('privacidad')}
-                    className="text-[#1d4ed8] font-bold hover:underline"
-                  >
-                    Política de Privacidad y Tratamiento de Datos (Habeas Data - Ley 1581 de 2012)
-                  </button>
-                  , los{' '}
-                  <button
-                    type="button"
-                    onClick={() => setPreviewLegalSection('terminos')}
-                    className="text-[#1d4ed8] font-bold hover:underline"
-                  >
-                    Términos y Condiciones
-                  </button>
-                  , las{' '}
-                  <button
-                    type="button"
-                    onClick={() => setPreviewLegalSection('retracto_pagos')}
-                    className="text-[#1d4ed8] font-bold hover:underline"
-                  >
-                    Condiciones de Compra, Retracto y Reversión de Pago (Ley 1480 de 2011)
-                  </button>{' '}
-                  y la{' '}
-                  <button
-                    type="button"
-                    onClick={() => setPreviewLegalSection('cookies')}
-                    className="text-[#1d4ed8] font-bold hover:underline"
-                  >
-                    Política de Cookies
-                  </button>
-                  .
-                </span>
-              </label>
-              <div className="flex items-center justify-between text-[10px] text-[#64748b] pt-1 border-t border-[#e2e8f0]">
-                <span>Se generará constancia digital de aceptación ({CURRENT_LEGAL_VERSION})</span>
-                <Link href="/legal" className="text-[#1d4ed8] font-semibold hover:underline">
-                  Ver todo →
-                </Link>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleGoogleAuth}
-              disabled={loading}
-              className="w-full bg-white border border-[#d1d2e0] text-[#2a2b3f] rounded-lg py-2.5 font-bold hover:bg-[#f6f7f9] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              Continuar con Google
-            </button>
-
-            <div className="flex items-center gap-3 text-xs text-[#595c73]">
-              <span className="flex-1 h-px bg-[#e9eaf2]" />
-              <span>o con tu correo</span>
-              <span className="flex-1 h-px bg-[#e9eaf2]" />
-            </div>
-
-            <form onSubmit={handleEmailAuth} className="space-y-4">
+          /* =========================================================================
+             MODO DE RECUPERACIÓN DE CONTRASEÑA
+             ========================================================================= */
+          activeResetToken ? (
+            <form onSubmit={handleConfirmPasswordReset} className="space-y-5">
               <div>
-                <label htmlFor="login-email" className="block text-sm font-medium text-[#2a2b3f] mb-1">
-                  Correo electrónico
+                <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a] mb-2">
+                  Nueva Contraseña
                 </label>
                 <input
-                  id="login-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full border border-[#d1d2e0] rounded-lg px-4 py-2 focus-visible:ring-2 focus-visible:ring-[#1d4ed8] focus-visible:outline-hidden"
-                  placeholder="usuario@ejemplo.com"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                   required
                 />
               </div>
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label htmlFor="login-password" className="block text-sm font-medium text-[#2a2b3f]">
-                    Contraseña
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsResetMode(true);
-                      setError('');
-                      setResetMessage('');
-                    }}
-                    className="text-xs font-semibold text-[#1d4ed8] hover:underline cursor-pointer"
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </button>
-                </div>
+                <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a] mb-2">
+                  Confirmar Nueva Contraseña
+                </label>
                 <input
-                  id="login-password"
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border border-[#d1d2e0] rounded-lg px-4 py-2 focus-visible:ring-2 focus-visible:ring-[#1d4ed8] focus-visible:outline-hidden"
-                  placeholder="Tu contraseña"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repite tu nueva contraseña"
+                  className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                   required
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#2a2b3f] text-white rounded-lg py-2.5 font-bold hover:bg-black disabled:opacity-50 mt-2 cursor-pointer"
+                className="w-full py-3.5 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] disabled:opacity-50 text-white text-[13px] font-semibold uppercase tracking-[0.025em] transition-all shadow-[0_0_20px_rgba(128,82,255,0.4)]"
               >
-                {loading ? 'Iniciando y registrando aceptación...' : 'Iniciar Sesión'}
+                {loading ? 'Actualizando...' : 'Guardar Nueva Contraseña'}
               </button>
             </form>
+          ) : (
+            <form onSubmit={handleRequestPasswordReset} className="space-y-5">
+              <div>
+                <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a] mb-2">
+                  Correo Electrónico Registrado
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="estudiante@ejemplo.com"
+                  className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] disabled:opacity-50 text-white text-[13px] font-semibold uppercase tracking-[0.025em] transition-all shadow-[0_0_20px_rgba(128,82,255,0.4)]"
+              >
+                {loading ? 'Enviando enlace...' : 'Enviar Enlace de Recuperación'}
+              </button>
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsResetMode(false)}
+                  className="text-[12px] text-[#9a9a9a] hover:text-white inline-flex items-center gap-1.5"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Volver a Iniciar Sesión</span>
+                </button>
+              </div>
+            </form>
+          )
+        ) : (
+          /* =========================================================================
+             MODO DE INICIO DE SESIÓN
+             ========================================================================= */
+          <div>
+            {/* Selector de Tipo de Acceso */}
+            <div className="flex p-1 rounded-[24px] bg-[#000000] border border-[#ffffff]/10 mb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('personal');
+                  setError('');
+                }}
+                className={`flex-1 py-2 text-[12px] font-semibold rounded-[20px] transition-all ${
+                  activeTab === 'personal'
+                    ? 'bg-[#ffffff]/15 text-white'
+                    : 'text-[#9a9a9a] hover:text-white'
+                }`}
+              >
+                Personal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('corporate');
+                  setError('');
+                }}
+                className={`flex-1 py-2 text-[12px] font-semibold rounded-[20px] transition-all ${
+                  activeTab === 'corporate'
+                    ? 'bg-[#ffffff]/15 text-white'
+                    : 'text-[#9a9a9a] hover:text-white'
+                }`}
+              >
+                Corporativo / SSO
+              </button>
+            </div>
+
+            {/* Botón de Google OAuth Oficial (Solo en pestaña personal) */}
+            {activeTab === 'personal' && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                  className="w-full py-3 rounded-[24px] bg-[#000000] border border-[#ffffff]/20 hover:border-[#8052ff] text-white text-[13px] font-semibold flex items-center justify-center gap-3 transition-colors disabled:opacity-50"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                  <span>Continuar con Google</span>
+                </button>
+
+                <div className="relative flex items-center justify-center my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-[#ffffff]/10" />
+                  </div>
+                  <span className="relative px-4 bg-[#09090b] text-[11px] font-mono uppercase text-[#9a9a9a]">
+                    O con correo
+                  </span>
+                </div>
+              </>
+            )}
+
+            {/* Formulario según la pestaña */}
+            {activeTab === 'personal' ? (
+              <form onSubmit={handlePersonalLogin} className="space-y-4">
+                <div>
+                  <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a] mb-1.5">
+                    Correo Electrónico
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="estudiante@ejemplo.com"
+                    className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a]">
+                      Contraseña
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsResetMode(true);
+                        setError('');
+                        setSuccessMessage('');
+                      }}
+                      className="text-[11px] text-[#ffb829] hover:underline"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Tu contraseña secreta"
+                    className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
+                    required
+                  />
+                </div>
+
+                {/* Doble Casilla Legal Independiente */}
+                <div className="space-y-2 pt-1">
+                  {/* Check 1: Aviso Legal y Términos */}
+                  <div className="p-3 rounded-2xl bg-[#000000] border border-[#ffffff]/10">
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={acceptedTerms}
+                        onChange={(e) => {
+                          setAcceptedTerms(e.target.checked);
+                          if (e.target.checked && acceptedPrivacy) setError('');
+                        }}
+                        className="w-4 h-4 mt-0.5 accent-[#8052ff] shrink-0 cursor-pointer"
+                      />
+                      <span className="text-[11px] text-[#bdbdbd] font-extralight leading-relaxed">
+                        Acepto el{' '}
+                        <button
+                          type="button"
+                          onClick={() => setPreviewLegalSection('aviso_legal')}
+                          className="text-[#8052ff] font-medium hover:underline"
+                        >
+                          Aviso Legal
+                        </button>
+                        , los{' '}
+                        <button
+                          type="button"
+                          onClick={() => setPreviewLegalSection('terminos')}
+                          className="text-[#8052ff] font-medium hover:underline"
+                        >
+                          Términos de Servicio
+                        </button>{' '}
+                        y las cláusulas de{' '}
+                        <button
+                          type="button"
+                          onClick={() => setPreviewLegalSection('litigios')}
+                          className="text-[#8052ff] font-medium hover:underline"
+                        >
+                          Litigios y Arbitraje
+                        </button>
+                        .
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Check 2: Política de Privacidad y Habeas Data */}
+                  <div className="p-3 rounded-2xl bg-[#000000] border border-[#ffffff]/10">
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={acceptedPrivacy}
+                        onChange={(e) => {
+                          setAcceptedPrivacy(e.target.checked);
+                          if (e.target.checked && acceptedTerms) setError('');
+                        }}
+                        className="w-4 h-4 mt-0.5 accent-[#8052ff] shrink-0 cursor-pointer"
+                      />
+                      <span className="text-[11px] text-[#bdbdbd] font-extralight leading-relaxed">
+                        Acepto la{' '}
+                        <button
+                          type="button"
+                          onClick={() => setPreviewLegalSection('privacidad')}
+                          className="text-[#8052ff] font-medium hover:underline"
+                        >
+                          Política de Privacidad
+                        </button>{' '}
+                        y autorizo el tratamiento de mis datos personales (Habeas Data - Ley 1581 de 2012).
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] disabled:opacity-50 text-white text-[13px] font-semibold uppercase tracking-[0.025em] transition-all shadow-[0_0_20px_rgba(128,82,255,0.4)] mt-2"
+                >
+                  {loading ? 'Ingresando...' : 'Iniciar Sesión'}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleCorporateLogin} className="space-y-4">
+                <div>
+                  <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a] mb-1.5">
+                    Correo Corporativo / Institucional
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="usuario@empresa.com"
+                    className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a] mb-1.5">
+                    Código de Organización o Convenio
+                  </label>
+                  <input
+                    type="text"
+                    value={corporateCode}
+                    onChange={(e) => setCorporateCode(e.target.value)}
+                    placeholder="Ej: IPT-ORG-CORP o CORP2026"
+                    className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors uppercase font-mono"
+                    required
+                  />
+                </div>
+
+                {/* Doble Casilla Legal Independiente en Corporativo */}
+                <div className="space-y-2 pt-1">
+                  <div className="p-3 rounded-2xl bg-[#000000] border border-[#ffffff]/10">
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={acceptedTerms}
+                        onChange={(e) => {
+                          setAcceptedTerms(e.target.checked);
+                          if (e.target.checked && acceptedPrivacy) setError('');
+                        }}
+                        className="w-4 h-4 mt-0.5 accent-[#8052ff] shrink-0 cursor-pointer"
+                      />
+                      <span className="text-[11px] text-[#bdbdbd] font-extralight leading-relaxed">
+                        Acepto el{' '}
+                        <button
+                          type="button"
+                          onClick={() => setPreviewLegalSection('aviso_legal')}
+                          className="text-[#8052ff] font-medium hover:underline"
+                        >
+                          Aviso Legal
+                        </button>{' '}
+                        y las condiciones de acceso corporativo.
+                      </span>
+                    </label>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-[#000000] border border-[#ffffff]/10">
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={acceptedPrivacy}
+                        onChange={(e) => {
+                          setAcceptedPrivacy(e.target.checked);
+                          if (e.target.checked && acceptedTerms) setError('');
+                        }}
+                        className="w-4 h-4 mt-0.5 accent-[#8052ff] shrink-0 cursor-pointer"
+                      />
+                      <span className="text-[11px] text-[#bdbdbd] font-extralight leading-relaxed">
+                        Acepto la{' '}
+                        <button
+                          type="button"
+                          onClick={() => setPreviewLegalSection('privacidad')}
+                          className="text-[#8052ff] font-medium hover:underline"
+                        >
+                          Política de Privacidad
+                        </button>{' '}
+                        y tratamiento de datos empresariales.
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] disabled:opacity-50 text-white text-[13px] font-semibold uppercase tracking-[0.025em] transition-all shadow-[0_0_20px_rgba(128,82,255,0.4)] mt-2"
+                >
+                  {loading ? 'Verificando con tu empresa...' : 'Ingresar con Cuenta Corporativa'}
+                </button>
+              </form>
+            )}
+
+            {/* Enlace al Registro */}
+            <div className="pt-6 border-t border-[#ffffff]/10 text-center text-[13px] text-[#9a9a9a] font-light">
+              ¿No tienes una cuenta aún?{' '}
+              <Link href="/register" className="text-white font-medium hover:text-[#8052ff] transition-colors">
+                Regístrate aquí
+              </Link>
+            </div>
           </div>
         )}
-
-        <p className="text-center text-sm text-[#595c73] mt-6">
-          ¿No tienes cuenta?{' '}
-          <Link href="/register" className="text-[#1d4ed8] font-bold hover:underline">
-            Regístrate aquí
-          </Link>
-        </p>
       </div>
 
-      {/* Modal rápido para consultar cualquiera de los 5 documentos legales sin salir del Login */}
-      {activeDoc && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full border border-[#cbd5e1] shadow-2xl overflow-hidden flex flex-col max-h-[82vh]">
-            <div className="bg-[#0f172a] text-white px-5 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0">
-                <Scale className="w-4 h-4 text-blue-400 shrink-0" />
-                <h3 className="font-bold text-sm truncate">{activeDoc.title}</h3>
+      {/* Modal de Lectura Legal In-Situ */}
+      {previewLegalSection && activeDoc && (
+        <div className="fixed inset-0 z-50 bg-[#000000]/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#09090b] border border-[#ffffff]/15 rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
+            <div className="p-6 border-b border-[#ffffff]/10 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Scale className="w-5 h-5 text-[#8052ff]" />
+                <h3 className="text-[16px] font-semibold text-white">{activeDoc.title}</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setPreviewLegalSection(null)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-[#9a9a9a] hover:text-white"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-5 overflow-y-auto space-y-4 text-left">
-              <p className="text-xs text-[#475569] bg-slate-50 p-3 rounded-xl border border-slate-200">
-                {activeDoc.summary}
-              </p>
-              {activeDoc.clauses.map((c, idx) => (
-                <div key={idx} className="space-y-1.5">
-                  <h4 className="text-xs font-extrabold text-[#0f172a]">{c.heading}</h4>
-                  <p className="text-xs text-[#334155] leading-relaxed">{c.body}</p>
-                  {c.bullets && (
-                    <ul className="space-y-1 pl-1">
-                      {c.bullets.map((b, bIdx) => (
-                        <li key={bIdx} className="flex items-start gap-1.5 text-xs text-[#1e293b]">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#1d4ed8] shrink-0 mt-0.5" />
-                          <span>{b}</span>
-                        </li>
+            <div className="p-6 overflow-y-auto space-y-4 text-[13px] text-[#bdbdbd] font-extralight leading-relaxed">
+              <p className="text-white font-medium mb-3">{activeDoc.summary}</p>
+              {activeDoc.clauses?.map((c, i) => (
+                <div key={i} className="mb-4">
+                  <h4 className="text-white text-xs font-semibold mb-1">{c.heading}</h4>
+                  <p className="text-xs text-[#9a9a9a] leading-relaxed">{c.body}</p>
+                  {c.bullets && c.bullets.length > 0 && (
+                    <ul className="mt-2 space-y-1 pl-4 list-disc text-[11px] text-[#888888]">
+                      {c.bullets.map((b, bi) => (
+                        <li key={bi}>{b}</li>
                       ))}
                     </ul>
                   )}
                 </div>
               ))}
             </div>
-            <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => {
-                  setAcceptedLegal(true);
-                  setPreviewLegalSection(null);
-                  setError('');
-                }}
-                className="px-4 py-2 rounded-xl bg-[#1d4ed8] text-white text-xs font-bold hover:bg-[#1e40af] cursor-pointer"
+            <div className="p-4 border-t border-[#ffffff]/10 flex items-center justify-between">
+              <Link
+                href={`/legal?tab=${activeDoc.id}`}
+                target="_blank"
+                className="text-xs text-[#8052ff] hover:underline"
               >
-                Aceptar y volver al Login
-              </button>
+                Abrir documento completo en /legal
+              </Link>
               <button
                 type="button"
                 onClick={() => setPreviewLegalSection(null)}
-                className="px-3 py-1.5 text-xs font-semibold text-[#475569] hover:text-[#0f172a] cursor-pointer"
+                className="px-5 py-2 rounded-full bg-white text-black text-[12px] font-semibold uppercase"
               >
-                Cerrar
+                Entendido
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#000000] text-white flex items-center justify-center text-xs">Cargando acceso seguro...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

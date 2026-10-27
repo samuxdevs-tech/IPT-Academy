@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face {
+          font-family: 'Geist';
+          src: url("../../assets/fonts/captured-caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2") format("woff2"), local("Geist"), local("Segoe UI"), sans-serif;
+          font-weight: 100 900;
+          font-style: normal;
+        }
+
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          background: #202230;
+          color: #ffffff;
+          font-family: Geist, system-ui, -apple-system, sans-serif;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 40px 80px;
+          box-sizing: border-box;
+        }
+
+        .bg-grid {
+          position: absolute;
+          inset: 0;
+          background-image: 
+            linear-gradient(to right, rgba(209, 210, 224, 0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(209, 210, 224, 0.05) 1px, transparent 1px);
+          background-size: 60px 60px;
+          pointer-events: none;
+        }
+
+        .header-section {
+          text-align: center;
+          margin-bottom: 24px;
+          z-index: 2;
+        }
+
+        .section-eyebrow {
+          color: #c0c4fc;
+          font-size: 15px;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          margin-bottom: 6px;
+          display: block;
+        }
+
+        .section-title {
+          font-size: 48px;
+          font-weight: 800;
+          margin: 0;
+          letter-spacing: -0.03em;
+        }
+
+        .phases-grid {
+          display: flex;
+          gap: 22px;
+          width: 100%;
+          max-width: 1500px;
+          margin-bottom: 24px;
+          z-index: 2;
+        }
+
+        .phase-col {
+          flex: 1;
+          background: rgba(32, 34, 48, 0.9);
+          border: 1.5px solid rgba(209, 210, 224, 0.15);
+          border-radius: 18px;
+          padding: 24px 22px;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+          backdrop-filter: blur(12px);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .phase-col.active {
+          border-color: #6d28d2;
+          box-shadow: 0 0 35px rgba(109, 40, 210, 0.35);
+        }
+
+        .phase-num {
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #c0c4fc;
+          margin-bottom: 6px;
+        }
+
+        .phase-name {
+          font-size: 24px;
+          font-weight: 700;
+          margin: 0 0 12px 0;
+          color: #ffffff;
+        }
+
+        .phase-badge {
+          align-self: flex-start;
+          padding: 5px 12px;
+          border-radius: 100px;
+          background: rgba(109, 40, 210, 0.2);
+          border: 1px solid rgba(109, 40, 210, 0.4);
+          color: #c0c4fc;
+          font-size: 12px;
+          font-weight: 600;
+          margin-bottom: 18px;
+        }
+
+        .phase-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .phase-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 15px;
+          color: #d1d2e0;
+        }
+
+        .item-icon {
+          width: 24px;
+          height: 24px;
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.06);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 13px;
+          flex-shrink: 0;
+        }
+
+        .metrics-banner {
+          width: 100%;
+          max-width: 1500px;
+          background: linear-gradient(90deg, rgba(109, 40, 210, 0.3), rgba(32, 34, 48, 0.95));
+          border: 1px solid rgba(109, 40, 210, 0.5);
+          border-radius: 14px;
+          padding: 14px 26px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          z-index: 2;
+        }
+
+        .metrics-label {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 16px;
+          font-weight: 700;
+          color: #ffffff;
+        }
+
+        .metrics-chips {
+          display: flex;
+          gap: 8px;
+        }
+
+        .chip {
+          padding: 5px 12px;
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.1);
+          font-size: 13px;
+          color: #c0c4fc;
+          font-weight: 500;
+        }
+      </style>
+
+      <div data-hf-id="hf-sp7c" id="root" data-composition-id="03-three-phases" data-width="1920" data-height="1080" data-duration="10.5">
+        <div data-hf-id="hf-yqqm" class="bg-grid"></div>
+
+        <div data-hf-id="hf-m7km" class="header-section" id="header-03">
+          <span data-hf-id="hf-e5z5" class="section-eyebrow">Metodología Pedagógica Oficial</span>
+          <h2 data-hf-id="hf-ikm1" class="section-title">El Ecosistema de Entrenamiento en 3 Fases</h2>
+        </div>
+
+        <div data-hf-id="hf-ev2t" class="phases-grid">
+          <div data-hf-id="hf-y0c8" class="phase-col" id="col-03-1">
+            <span data-hf-id="hf-1bsz" class="phase-num">Fase 1</span>
+            <h3 data-hf-id="hf-ggkf" class="phase-name">Aprendizaje Guiado</h3>
+            <span data-hf-id="hf-wa4w" class="phase-badge">Aula Virtual Activa</span>
+            <ul data-hf-id="hf-u4aq" class="phase-list">
+              <li data-hf-id="hf-z6je" class="phase-item"><span data-hf-id="hf-6850" class="item-icon">▶</span> Video Streaming Optimizado</li>
+              <li data-hf-id="hf-d7q6" class="phase-item"><span data-hf-id="hf-isf5" class="item-icon">⏱</span> Checkpoints al segundo exacto</li>
+              <li data-hf-id="hf-uu2m" class="phase-item"><span data-hf-id="hf-k8pk" class="item-icon">📝</span> Quizzes con feedback técnico</li>
+            </ul>
+          </div>
+
+          <div data-hf-id="hf-6o83" class="phase-col" id="col-03-2">
+            <span data-hf-id="hf-0xhy" class="phase-num">Fase 2</span>
+            <h3 data-hf-id="hf-9zr3" class="phase-name">Reflejo Operativo</h3>
+            <span data-hf-id="hf-zutc" class="phase-badge">Memoria Muscular</span>
+            <ul data-hf-id="hf-x7za" class="phase-list">
+              <li data-hf-id="hf-fnct" class="phase-item"><span data-hf-id="hf-4gqc" class="item-icon">🌾</span> Casos reales de campo</li>
+              <li data-hf-id="hf-rafz" class="phase-item"><span data-hf-id="hf-13t4" class="item-icon">🔍</span> Capturas HD DataGan 360</li>
+              <li data-hf-id="hf-wed8" class="phase-item"><span data-hf-id="hf-6cj5" class="item-icon">⚡</span> Decisión rápida de menús</li>
+            </ul>
+          </div>
+
+          <div data-hf-id="hf-hdwo" class="phase-col active" id="col-03-3">
+            <span data-hf-id="hf-0j6x" class="phase-num">Fase 3</span>
+            <h3 data-hf-id="hf-04ks" class="phase-name">Sandbox Interactivo</h3>
+            <span data-hf-id="hf-kkfb" class="phase-badge" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7;">Cero Riesgo</span>
+            <ul data-hf-id="hf-xmab" class="phase-list">
+              <li data-hf-id="hf-mjk4" class="phase-item"><span data-hf-id="hf-4lcj" class="item-icon" style="color:#10b981;">✓</span> Clon idéntico de TecnoGan</li>
+              <li data-hf-id="hf-4011" class="phase-item"><span data-hf-id="hf-63ro" class="item-icon" style="color:#10b981;">🛡</span> Base de datos ficticia segura</li>
+              <li data-hf-id="hf-0wwb" class="phase-item"><span data-hf-id="hf-31y7" class="item-icon" style="color:#10b981;">🎯</span> Validación instantánea de misión</li>
+            </ul>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-vdq8" class="metrics-banner" id="banner-03">
+          <div data-hf-id="hf-dwmy" class="metrics-label">
+            <span data-hf-id="hf-beo3" style="font-size: 22px;">📊</span>
+            <span data-hf-id="hf-v2co">Motor Multitemplate de 73 Métricas Zootécnicas</span>
+          </div>
+          <div data-hf-id="hf-q5e9" class="metrics-chips">
+            <span data-hf-id="hf-f49r" class="chip">Ganancia Diaria (GDP)</span>
+            <span data-hf-id="hf-1atp" class="chip">Días Abiertos</span>
+            <span data-hf-id="hf-aejn" class="chip">Protocolos IATF</span>
+            <span data-hf-id="hf-tj49" class="chip">Condición Corporal</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#header-03", { opacity: 0, y: -25 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.2);
+
+        tl.fromTo("#col-03-1", { opacity: 0, y: 30, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" }, 0.5);
+        tl.fromTo("#col-03-2", { opacity: 0, y: 30, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" }, 1.0);
+        tl.fromTo("#col-03-3", { opacity: 0, y: 30, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" }, 1.5);
+
+        tl.fromTo("#banner-03", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 2.2);
+
+        // Subtly emphasize the Sandbox
+        tl.to("#col-03-3", { scale: 1.03, duration: 0.5, ease: "power2.out" }, 3.5);
+
+        // Smooth transition out
+        tl.to(["#header-03", ".phases-grid", "#banner-03"], { opacity: 0.15, y: -15, duration: 0.8, ease: "power2.in" }, 9.2);
+
+        window.__timelines["03-three-phases"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

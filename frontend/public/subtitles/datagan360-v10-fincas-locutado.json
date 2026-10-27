@@ -1,0 +1,168 @@
+{
+  "video_key": "datagan360-v10-fincas-locutado",
+  "total_cues": 32,
+  "start_time": 4.0,
+  "end_time": 100.371,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 9.841,
+      "text": "Dentro del menú Admin entramos a Fincas,"
+    },
+    {
+      "start": 9.841,
+      "end": 12.188,
+      "text": "donde puedes administrar múltiples predios bajo una"
+    },
+    {
+      "start": 12.188,
+      "end": 14.581,
+      "text": "misma cuenta y elegir cuál es el activo o principal."
+    },
+    {
+      "start": 14.581,
+      "end": 15.685,
+      "text": "Presionamos Crear Finca."
+    },
+    {
+      "start": 16.0,
+      "end": 18.974,
+      "text": "Aquí escribirás el nombre oficial de tu hacienda o predio,"
+    },
+    {
+      "start": 18.974,
+      "end": 21.436,
+      "text": "y mira cómo en el campo Encargado ya nos aparece"
+    },
+    {
+      "start": 21.436,
+      "end": 23.897,
+      "text": "disponible el trabajador que registramos hace un"
+    },
+    {
+      "start": 23.897,
+      "end": 25.795,
+      "text": "momento en el módulo de Trabajadores."
+    },
+    {
+      "start": 32.0,
+      "end": 34.571,
+      "text": "En Área colocas el total de hectáreas de la finca"
+    },
+    {
+      "start": 34.571,
+      "end": 36.775,
+      "text": "—recuerda que este número será el tope que"
+    },
+    {
+      "start": 36.775,
+      "end": 39.398,
+      "text": "controlará la suma de tus potreros en el módulo de"
+    },
+    {
+      "start": 39.398,
+      "end": 42.022,
+      "text": "Bovinos— y seleccionas el departamento y municipio"
+    },
+    {
+      "start": 42.022,
+      "end": 43.019,
+      "text": "donde está ubicada."
+    },
+    {
+      "start": 47.0,
+      "end": 49.458,
+      "text": "Defines unas siglas o abreviatura corta para"
+    },
+    {
+      "start": 49.458,
+      "end": 50.631,
+      "text": "identificarla rápido,"
+    },
+    {
+      "start": 50.631,
+      "end": 53.2,
+      "text": "escribes las indicaciones viales de llegada en"
+    },
+    {
+      "start": 53.2,
+      "end": 55.211,
+      "text": "Dirección y una descripción general."
+    },
+    {
+      "start": 70.0,
+      "end": 72.71,
+      "text": "Abajo tienes el mapa satelital de geolocalización:"
+    },
+    {
+      "start": 72.71,
+      "end": 75.312,
+      "text": "aquí debes acercar el mapa y hacer clic sobre tu"
+    },
+    {
+      "start": 75.312,
+      "end": 77.914,
+      "text": "terreno —o presionar Usar mi ubicación actual si"
+    },
+    {
+      "start": 77.914,
+      "end": 78.944,
+      "text": "estás en la finca—;"
+    },
+    {
+      "start": 78.944,
+      "end": 81.708,
+      "text": "estas coordenadas activarán el clima y el índice de"
+    },
+    {
+      "start": 81.708,
+      "end": 83.443,
+      "text": "estrés calórico en el Dashboard."
+    },
+    {
+      "start": 87.0,
+      "end": 89.877,
+      "text": "Y si al presionar Crear olvidaste llenar algún dato"
+    },
+    {
+      "start": 89.877,
+      "end": 92.642,
+      "text": "clave —como elegir si el propósito de la finca es"
+    },
+    {
+      "start": 92.642,
+      "end": 92.924,
+      "text": "Cría,"
+    },
+    {
+      "start": 92.924,
+      "end": 94.673,
+      "text": "Leche, Ceba o Doble Propósito—,"
+    },
+    {
+      "start": 94.673,
+      "end": 97.324,
+      "text": "el sistema subirá solo y te marcará el campo en"
+    },
+    {
+      "start": 97.324,
+      "end": 99.694,
+      "text": "rojo para que tu finca quede perfectamente"
+    },
+    {
+      "start": 99.694,
+      "end": 100.371,
+      "text": "configurada."
+    }
+  ]
+}

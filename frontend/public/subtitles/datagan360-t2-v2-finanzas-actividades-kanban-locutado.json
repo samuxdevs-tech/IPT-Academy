@@ -1,0 +1,268 @@
+{
+  "video_key": "datagan360-t2-v2-finanzas-actividades-kanban-locutado",
+  "total_cues": 52,
+  "start_time": 4.0,
+  "end_time": 158.307,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.518,
+      "text": "Partiendo desde nuestro Inventario de Finanzas,"
+    },
+    {
+      "start": 10.518,
+      "end": 13.197,
+      "text": "recuerda que en Ajustar puedes cuadrar existencias"
+    },
+    {
+      "start": 13.197,
+      "end": 15.929,
+      "text": "físicas en cualquier momento y en Historial auditar"
+    },
+    {
+      "start": 15.929,
+      "end": 16.787,
+      "text": "cada movimiento."
+    },
+    {
+      "start": 20.0,
+      "end": 22.391,
+      "text": "Todo artículo que tengas con stock aquí en"
+    },
+    {
+      "start": 22.391,
+      "end": 25.238,
+      "text": "Inventario estará disponible para ser utilizado en"
+    },
+    {
+      "start": 25.238,
+      "end": 27.174,
+      "text": "las labores operativas del predio."
+    },
+    {
+      "start": 27.174,
+      "end": 30.078,
+      "text": "Regresamos a la lista y entramos en el menú lateral"
+    },
+    {
+      "start": 30.078,
+      "end": 30.875,
+      "text": "a Actividades."
+    },
+    {
+      "start": 43.0,
+      "end": 45.31,
+      "text": "En Actividades gestionas las tareas del predio"
+    },
+    {
+      "start": 45.31,
+      "end": 47.569,
+      "text": "mediante un tablero visual Kanban que mide el"
+    },
+    {
+      "start": 47.569,
+      "end": 49.276,
+      "text": "porcentaje de avance de tu equipo."
+    },
+    {
+      "start": 49.276,
+      "end": 50.682,
+      "text": "Presionamos Nueva Actividad."
+    },
+    {
+      "start": 51.0,
+      "end": 53.467,
+      "text": "Aquí pondrás el título de la labor —como"
+    },
+    {
+      "start": 53.467,
+      "end": 54.948,
+      "text": "mantenimiento de cercas,"
+    },
+    {
+      "start": 54.948,
+      "end": 57.97,
+      "text": "limpieza o poda— y en Responsable seleccionarás a"
+    },
+    {
+      "start": 57.97,
+      "end": 59.451,
+      "text": "tu trabajador encargado."
+    },
+    {
+      "start": 60.0,
+      "end": 62.751,
+      "text": "Describes qué se hará en la jornada y en Aplicar a"
+    },
+    {
+      "start": 62.751,
+      "end": 65.612,
+      "text": "defines el destino del costo: si eliges un potrero o"
+    },
+    {
+      "start": 65.612,
+      "end": 66.492,
+      "text": "lote específico,"
+    },
+    {
+      "start": 66.492,
+      "end": 69.023,
+      "text": "este gasto irá directo al Centro de Costos que"
+    },
+    {
+      "start": 69.023,
+      "end": 71.499,
+      "text": "veremos más adelante en el módulo de Cuentas."
+    },
+    {
+      "start": 77.0,
+      "end": 79.935,
+      "text": "Si para el trabajo necesitas sacar fertilizante,"
+    },
+    {
+      "start": 79.935,
+      "end": 82.076,
+      "text": "veneno o herramientas de tu bodega,"
+    },
+    {
+      "start": 82.076,
+      "end": 84.522,
+      "text": "las eliges aquí en Artículos Utilizados;"
+    },
+    {
+      "start": 84.522,
+      "end": 86.662,
+      "text": "si no vas a gastar stock de bodega,"
+    },
+    {
+      "start": 86.662,
+      "end": 88.619,
+      "text": "simplemente eliminas el renglón."
+    },
+    {
+      "start": 89.0,
+      "end": 91.957,
+      "text": "En Gastos Extras registras pagos adicionales fuera"
+    },
+    {
+      "start": 91.957,
+      "end": 94.974,
+      "text": "de bodega: escribes el concepto del gasto y digitas"
+    },
+    {
+      "start": 94.974,
+      "end": 96.275,
+      "text": "cuánto costó en pesos."
+    },
+    {
+      "start": 104.0,
+      "end": 105.442,
+      "text": "Abajo, en Mano de Obra,"
+    },
+    {
+      "start": 105.442,
+      "end": 108.577,
+      "text": "calculas el pago de jornales: eliges al trabajador"
+    },
+    {
+      "start": 108.577,
+      "end": 109.329,
+      "text": "de tu lista,"
+    },
+    {
+      "start": 109.329,
+      "end": 112.527,
+      "text": "pones cuántas horas trabajó y a cómo pagas la hora;"
+    },
+    {
+      "start": 112.527,
+      "end": 115.787,
+      "text": "el sistema multiplicará el subtotal automáticamente."
+    },
+    {
+      "start": 120.0,
+      "end": 123.049,
+      "text": "En el Resumen de Costos ves el total de egresos a pagar,"
+    },
+    {
+      "start": 123.049,
+      "end": 125.5,
+      "text": "seleccionas de qué cuenta bancaria o caja del"
+    },
+    {
+      "start": 125.5,
+      "end": 128.059,
+      "text": "módulo de Cuentas saldrá ese dinero y presionas"
+    },
+    {
+      "start": 128.059,
+      "end": 128.931,
+      "text": "Crear Actividad."
+    },
+    {
+      "start": 131.0,
+      "end": 133.964,
+      "text": "¡Listo! La tarea aparece en la columna Pendiente."
+    },
+    {
+      "start": 133.964,
+      "end": 136.021,
+      "text": "A medida que tu trabajador avance,"
+    },
+    {
+      "start": 136.021,
+      "end": 139.045,
+      "text": "solo debes arrastrar la tarjeta con el mouse hacia"
+    },
+    {
+      "start": 139.045,
+      "end": 141.889,
+      "text": "En Progreso y luego a Completada viendo cómo el"
+    },
+    {
+      "start": 141.889,
+      "end": 143.764,
+      "text": "avance sube al cien por ciento,"
+    },
+    {
+      "start": 143.764,
+      "end": 144.611,
+      "text": "o a Cancelada."
+    },
+    {
+      "start": 147.0,
+      "end": 149.744,
+      "text": "En la esquina de la tarjeta tienes tres iconos: el"
+    },
+    {
+      "start": 149.744,
+      "end": 152.324,
+      "text": "ojo para ver el resumen completo y el número de"
+    },
+    {
+      "start": 152.324,
+      "end": 154.794,
+      "text": "movimiento contable que se generó en Cuentas,"
+    },
+    {
+      "start": 154.794,
+      "end": 157.428,
+      "text": "el lápiz por si necesitas editarla y la papelera"
+    },
+    {
+      "start": 157.428,
+      "end": 158.307,
+      "text": "para eliminarla."
+    }
+  ]
+}

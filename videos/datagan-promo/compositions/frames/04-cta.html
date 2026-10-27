@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face {
+          font-family: 'Geist';
+          src: url("../../assets/fonts/captured-caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2") format("woff2"), local("Geist"), local("Segoe UI"), sans-serif;
+          font-weight: 100 900;
+          font-style: normal;
+        }
+
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          background: #202230;
+          color: #ffffff;
+          font-family: Geist, system-ui, -apple-system, sans-serif;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 80px 120px;
+          box-sizing: border-box;
+          text-align: center;
+        }
+
+        .bg-grid {
+          position: absolute;
+          inset: 0;
+          background-image: 
+            linear-gradient(to right, rgba(109, 40, 210, 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(109, 40, 210, 0.08) 1px, transparent 1px);
+          background-size: 60px 60px;
+          pointer-events: none;
+        }
+
+        .bg-glow-cta {
+          position: absolute;
+          width: 1000px;
+          height: 1000px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(109, 40, 210, 0.35) 0%, rgba(32, 34, 48, 0) 70%);
+          pointer-events: none;
+        }
+
+        .cert-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 24px;
+          border-radius: 100px;
+          background: rgba(109, 40, 210, 0.15);
+          border: 1px solid rgba(192, 196, 252, 0.35);
+          color: #c0c4fc;
+          font-size: 16px;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          margin-bottom: 28px;
+          z-index: 2;
+        }
+
+        .cta-headline {
+          font-size: 70px;
+          font-weight: 800;
+          line-height: 1.12;
+          letter-spacing: -0.04em;
+          max-width: 1250px;
+          margin: 0 0 20px 0;
+          z-index: 2;
+        }
+
+        .cta-subtext {
+          font-size: 24px;
+          font-weight: 400;
+          color: #d1d2e0;
+          max-width: 900px;
+          margin: 0 0 48px 0;
+          line-height: 1.45;
+          z-index: 2;
+        }
+
+        .cta-button-wrap {
+          position: relative;
+          z-index: 2;
+          margin-bottom: 40px;
+        }
+
+        .cta-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 16px;
+          padding: 22px 54px;
+          border-radius: 16px;
+          background: #6d28d2;
+          color: #ffffff;
+          font-size: 28px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          border: 1.5px solid rgba(255, 255, 255, 0.25);
+          box-shadow: 0 15px 45px rgba(109, 40, 210, 0.55);
+          text-decoration: none;
+        }
+
+        .cta-arrow {
+          font-size: 26px;
+          display: inline-block;
+        }
+
+        .trust-row {
+          display: flex;
+          gap: 32px;
+          z-index: 2;
+        }
+
+        .trust-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 16px;
+          color: #b7b9cd;
+          font-weight: 500;
+        }
+
+        .trust-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #10b981;
+        }
+      </style>
+
+      <div data-hf-id="hf-93k8" id="root" data-composition-id="04-cta" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-yqqm" class="bg-grid"></div>
+        <div data-hf-id="hf-ul5l" class="bg-glow-cta" id="glow-04" data-layout-allow-overflow=""></div>
+
+        <div data-hf-id="hf-kz1k" class="cert-badge" id="badge-04">
+          <span data-hf-id="hf-ojq4">🎓</span>
+          <span data-hf-id="hf-shx8">Certificación Oficial de Software Ganadero</span>
+        </div>
+
+        <h1 data-hf-id="hf-qsp3" class="cta-headline" id="headline-04">
+          Lleva tu ganadería al siguiente nivel digital
+        </h1>
+
+        <p data-hf-id="hf-e80k" class="cta-subtext" id="subtext-04">
+          Aprende a tomar decisiones rentables con datos precisos y sin miedo al software.
+        </p>
+
+        <div data-hf-id="hf-j90r" class="cta-button-wrap" id="button-04">
+          <div data-hf-id="hf-dd1v" class="cta-button">
+            <span data-hf-id="hf-qewo">datagan-course.web.app</span>
+            <span data-hf-id="hf-on11" class="cta-arrow">→</span>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-q4rc" class="trust-row" id="trust-04">
+          <div data-hf-id="hf-v6wy" class="trust-item">
+            <span data-hf-id="hf-wflv" class="trust-dot"></span>
+            <span data-hf-id="hf-1gjk">Acreditación DataGan 360</span>
+          </div>
+          <div data-hf-id="hf-55ba" class="trust-item">
+            <span data-hf-id="hf-14eb" class="trust-dot"></span>
+            <span data-hf-id="hf-um4n">Simulador TecnoGan Incluido</span>
+          </div>
+          <div data-hf-id="hf-5jmb" class="trust-item">
+            <span data-hf-id="hf-0q3a" class="trust-dot"></span>
+            <span data-hf-id="hf-eale">Acceso 100% Online</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#glow-04", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1.1, duration: 2.2, ease: "power2.out" }, 0);
+        tl.fromTo("#badge-04", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.2);
+        tl.fromTo("#headline-04", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 0.5);
+        tl.fromTo("#subtext-04", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 1.0);
+
+        tl.fromTo("#button-04", { opacity: 0, scale: 0.85, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: "back.out(1.5)" }, 1.5);
+        tl.fromTo("#trust-04", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 2.3);
+
+        // Gentle pulse on button arrow
+        tl.to(".cta-arrow", { x: 8, duration: 0.5, yoyo: true, repeat: 5, ease: "power1.inOut" }, 3.0);
+
+        window.__timelines["04-cta"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,233 @@
+{
+  "video_key": "datagan360-t2-v4-finanzas-cuentas-patrimonio-locutado",
+  "total_cues": 45,
+  "start_time": 4.0,
+  "end_time": 139.219,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 8.752,
+      "text": "Llegamos a Cuentas,"
+    },
+    {
+      "start": 8.752,
+      "end": 10.651,
+      "text": "el cerebro financiero donde se consolida todo lo"
+    },
+    {
+      "start": 10.651,
+      "end": 12.589,
+      "text": "que hemos hecho en la plataforma: aquí el sistema"
+    },
+    {
+      "start": 12.589,
+      "end": 14.647,
+      "text": "suma tu dinero líquido en cuentas más el valor de tu"
+    },
+    {
+      "start": 14.647,
+      "end": 16.427,
+      "text": "Inventario más el valor de todos tus Bovinos,"
+    },
+    {
+      "start": 16.427,
+      "end": 18.682,
+      "text": "le resta las deudas y te entrega tu Patrimonio Neto real."
+    },
+    {
+      "start": 19.0,
+      "end": 21.708,
+      "text": "Al bajar ves cada una de tus cuentas a la izquierda,"
+    },
+    {
+      "start": 21.708,
+      "end": 24.625,
+      "text": "a la derecha el historial con todas las ventas de leche,"
+    },
+    {
+      "start": 24.625,
+      "end": 27.282,
+      "text": "compras de insumos y actividades que registraste en"
+    },
+    {
+      "start": 27.282,
+      "end": 28.219,
+      "text": "los otros módulos,"
+    },
+    {
+      "start": 28.219,
+      "end": 30.719,
+      "text": "y abajo los Centros de Costo para auditar cuánto"
+    },
+    {
+      "start": 30.719,
+      "end": 32.803,
+      "text": "dinero consume cada potrero y cada lote."
+    },
+    {
+      "start": 40.0,
+      "end": 42.927,
+      "text": "Arriba tienes tres herramientas clave: con Generar"
+    },
+    {
+      "start": 42.927,
+      "end": 45.679,
+      "text": "Extracto seleccionas cualquiera de tus cuentas,"
+    },
+    {
+      "start": 45.679,
+      "end": 48.607,
+      "text": "defines un rango de fechas y descargas un extracto"
+    },
+    {
+      "start": 48.607,
+      "end": 50.539,
+      "text": "bancario completo en PDF o Excel."
+    },
+    {
+      "start": 51.0,
+      "end": 53.175,
+      "text": "Con el botón Transferencia puedes pasar saldo de"
+    },
+    {
+      "start": 53.175,
+      "end": 53.991,
+      "text": "una cuenta a otra."
+    },
+    {
+      "start": 53.991,
+      "end": 54.942,
+      "text": "Para verlo en acción,"
+    },
+    {
+      "start": 54.942,
+      "end": 57.706,
+      "text": "primero creemos una cuenta bancaria presionando Nueva cuenta."
+    },
+    {
+      "start": 57.856,
+      "end": 60.304,
+      "text": "Aquí escribirás el nombre de tu banco,"
+    },
+    {
+      "start": 60.304,
+      "end": 62.301,
+      "text": "billetera digital o caja menor,"
+    },
+    {
+      "start": 62.301,
+      "end": 64.555,
+      "text": "seleccionas su tipo —como Efectivo,"
+    },
+    {
+      "start": 64.555,
+      "end": 65.65,
+      "text": "Banco o Crédito—,"
+    },
+    {
+      "start": 65.65,
+      "end": 68.227,
+      "text": "verificas la moneda y presionas Guardar."
+    },
+    {
+      "start": 78.0,
+      "end": 80.505,
+      "text": "Al bajar a Mis Cuentas ya aparece tu nueva cuenta"
+    },
+    {
+      "start": 80.505,
+      "end": 83.113,
+      "text": "bancaria con saldo en cero y su botón Editar por si"
+    },
+    {
+      "start": 83.113,
+      "end": 85.107,
+      "text": "deseas cambiarle el nombre o el estado."
+    },
+    {
+      "start": 86.0,
+      "end": 88.75,
+      "text": "Si necesitas registrar un ingreso de capital o un"
+    },
+    {
+      "start": 88.75,
+      "end": 91.219,
+      "text": "gasto bancario directo sin pasar por bodega,"
+    },
+    {
+      "start": 91.219,
+      "end": 94.419,
+      "text": "presionas el botón Movimiento en la tarjeta de la cuenta,"
+    },
+    {
+      "start": 94.419,
+      "end": 95.765,
+      "text": "eliges Ingreso o Egreso,"
+    },
+    {
+      "start": 95.765,
+      "end": 98.123,
+      "text": "pones el monto y seleccionas la categoría."
+    },
+    {
+      "start": 105.0,
+      "end": 107.108,
+      "text": "Le pones un título y comentario para tu"
+    },
+    {
+      "start": 107.108,
+      "end": 109.756,
+      "text": "contabilidad y presionas Guardar Movimiento: mira"
+    },
+    {
+      "start": 109.756,
+      "end": 112.512,
+      "text": "cómo al instante tu cuenta recibe el saldo y arriba"
+    },
+    {
+      "start": 112.512,
+      "end": 115.323,
+      "text": "sube automáticamente el Patrimonio Neto de la finca."
+    },
+    {
+      "start": 124.0,
+      "end": 126.904,
+      "text": "Y mira qué útil es Transferencia para pagar deudas"
+    },
+    {
+      "start": 126.904,
+      "end": 129.867,
+      "text": "o fondear cajas: elegimos como origen nuestro banco"
+    },
+    {
+      "start": 129.867,
+      "end": 130.448,
+      "text": "con saldo,"
+    },
+    {
+      "start": 130.448,
+      "end": 133.817,
+      "text": "como destino la cuenta de Crédito que tenía saldo en rojo,"
+    },
+    {
+      "start": 133.817,
+      "end": 136.489,
+      "text": "digitamos el monto a transferir y confirmamos."
+    },
+    {
+      "start": 136.489,
+      "end": 139.219,
+      "text": "Así la deuda queda saldada en cero al instante."
+    }
+  ]
+}

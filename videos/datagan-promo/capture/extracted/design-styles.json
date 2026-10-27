@@ -1,0 +1,130 @@
+{
+  "typography": [
+    {
+      "role": "display",
+      "fontFamily": "system-ui",
+      "fontSize": "24px",
+      "fontWeight": "700",
+      "lineHeight": "32px",
+      "letterSpacing": "normal",
+      "color": "#2A2B3F",
+      "sampleText": "Datagan Academy"
+    },
+    {
+      "role": "link",
+      "fontFamily": "system-ui",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "letterSpacing": "normal",
+      "color": "#2A2B3F",
+      "sampleText": ""
+    },
+    {
+      "role": "body",
+      "fontFamily": "system-ui",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "letterSpacing": "normal",
+      "color": "#595C73",
+      "sampleText": "Inicia sesión para continuar con tus cursos"
+    },
+    {
+      "role": "label",
+      "fontFamily": "system-ui",
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "lineHeight": "20px",
+      "letterSpacing": "normal",
+      "color": "#2A2B3F",
+      "sampleText": "Correo Electrónico"
+    }
+  ],
+  "spacing": {
+    "observed": [
+      4,
+      6,
+      8,
+      10,
+      16,
+      32
+    ],
+    "baseUnit": 8
+  },
+  "radius": [
+    "6px",
+    "8px"
+  ],
+  "shadows": [
+    {
+      "value": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+      "count": 2
+    }
+  ],
+  "buttons": [
+    {
+      "label": "Continuar con Google",
+      "background": "#FFFFFF",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#2A2B3F",
+      "padding": "10px 0px",
+      "borderRadius": "8px",
+      "border": "1px solid rgb(209, 210, 224)",
+      "boxShadow": "none",
+      "fontSize": "16px",
+      "fontWeight": "700",
+      "height": "46px"
+    },
+    {
+      "label": "Correo",
+      "background": "#FFFFFF",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#2A2B3F",
+      "padding": "6px 0px",
+      "borderRadius": "6px",
+      "border": "0px solid rgb(42, 43, 63)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "height": "32px"
+    },
+    {
+      "label": "Teléfono SMS",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#9194AC",
+      "padding": "6px 0px",
+      "borderRadius": "6px",
+      "border": "0px solid rgb(145, 148, 172)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "height": "32px"
+    },
+    {
+      "label": "Iniciar Sesión",
+      "background": "#2A2B3F",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#FFFFFF",
+      "padding": "10px 0px",
+      "borderRadius": "8px",
+      "border": "0px solid rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "fontSize": "16px",
+      "fontWeight": "700",
+      "height": "44px"
+    }
+  ],
+  "cards": [],
+  "nav": null,
+  "chips": [],
+  "statCells": [],
+  "tabs": [],
+  "backgrounds": [],
+  "glass": []
+}

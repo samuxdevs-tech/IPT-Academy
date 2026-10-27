@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #2a2b3f;
+  --color-obsidian: #202230;
+  --color-graphite: #33364a;
+  --color-slate-token: #3d4055;
+  --color-steel: #595c73;
+  --color-fog: #9194ac;
+  --color-mist: #b7b9cd;
+  --color-chalk: #d1d2e0;
+  --color-porcelain: #e9eaf2;
+  --color-paper: #f6f7f9;
+  --color-canvas: #ffffff;
+  --color-aubergine: #6d28d2;
+  --color-lavender-haze: #c0c4fc;
+  --color-ember: #c4710d;
+
+  --font-datagan-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  /* Design Tokens - Datagan Style Reference */
+  --color-ink: #2a2b3f;
+  --color-obsidian: #202230;
+  --color-graphite: #33364a;
+  --color-slate: #3d4055;
+  --color-steel: #595c73;
+  --color-fog: #9194ac;
+  --color-mist: #b7b9cd;
+  --color-chalk: #d1d2e0;
+  --color-porcelain: #e9eaf2;
+  --color-paper: #f6f7f9;
+  --color-canvas: #ffffff;
+  --color-aubergine: #6d28d2;
+  --color-lavender-haze: #c0c4fc;
+  --color-ember: #c4710d;
+
+  --font-datagan-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background-color: var(--color-porcelain);
+  color: var(--color-ink);
+  font-family: var(--font-datagan-sans);
+  min-height: 100vh;
+}
+
+/* Custom Outlined Action - Signature Datagan control */
+.btn-outline-violet {
+  border: 1.5px solid var(--color-aubergine);
+  color: var(--color-aubergine);
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+.btn-outline-violet:hover {
+  background: rgba(109, 40, 210, 0.05);
+  box-shadow: 0 2px 8px rgba(109, 40, 210, 0.15);
+}
+
+.btn-solid-dark {
+  background-color: var(--color-obsidian);
+  color: var(--color-canvas);
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.btn-solid-dark:hover {
+  background-color: var(--color-graphite);
+}
+
+/* LED Perimeter Stroke Animation */
+@keyframes led-stroke-fill {
+  0% {
+    stroke-dashoffset: 100;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Prefers Reduced Motion - Preserves immediate state feedback without disorienting motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

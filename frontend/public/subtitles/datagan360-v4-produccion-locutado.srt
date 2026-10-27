@@ -1,0 +1,200 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:08,000 --> 00:00:09,752
+Entramos al módulo de Producción,
+
+4
+00:00:09,752 --> 00:00:12,035
+donde cada dato que ingreses alimentará las
+
+5
+00:00:12,035 --> 00:00:13,310
+gráficas de Rendimiento,
+
+6
+00:00:13,310 --> 00:00:14,690
+Tops y Analítica Avanzada.
+
+7
+00:00:14,690 --> 00:00:17,133
+En Pesaje presionamos Crear Pesaje y filtramos
+
+8
+00:00:17,133 --> 00:00:19,682
+primero el lote que estamos pasando por báscula.
+
+9
+00:00:20,000 --> 00:00:22,522
+Al elegir el animal —o escanear su chapeta con
+
+10
+00:00:22,522 --> 00:00:23,454
+Detectar Animal—,
+
+11
+00:00:23,454 --> 00:00:26,031
+mira cómo aparece una cinta recordándote cuánto
+
+12
+00:00:26,031 --> 00:00:27,073
+pesó la última vez;
+
+13
+00:00:27,073 --> 00:00:29,870
+así sabrás de inmediato al digitar el nuevo peso si
+
+14
+00:00:29,870 --> 00:00:31,679
+ganó o perdió condición corporal.
+
+15
+00:00:32,000 --> 00:00:34,739
+Aquí seleccionas con qué dieta se está alimentando
+
+16
+00:00:34,739 --> 00:00:37,588
+actualmente —dato que usará el motor de Inteligencia
+
+17
+00:00:37,588 --> 00:00:40,383
+Predictiva para cruzar nutrición versus ganancia de
+
+18
+00:00:40,383 --> 00:00:40,711
+peso—,
+
+19
+00:00:40,711 --> 00:00:43,451
+agregas cualquier observación y presionas Guardar.
+
+20
+00:00:54,000 --> 00:00:56,628
+Nota que la ventana no se cierra sola para que
+
+21
+00:00:56,628 --> 00:00:58,798
+puedas seguir pesando todo el lote sin
+
+22
+00:00:58,798 --> 00:00:59,655
+interrupciones.
+
+23
+00:00:59,655 --> 00:01:00,341
+Al cerrarla,
+
+24
+00:01:00,341 --> 00:01:03,140
+el nuevo peso ya actualiza el valor comercial del
+
+25
+00:01:03,140 --> 00:01:05,996
+animal y puedes exportar la planilla con Descargar
+
+26
+00:01:05,996 --> 00:01:06,339
+Excel.
+
+27
+00:01:13,000 --> 00:01:15,419
+Ahora vamos en el menú lateral a Leche,
+
+28
+00:01:15,419 --> 00:01:17,652
+donde dispones de ordeño individual,
+
+29
+00:01:17,652 --> 00:01:20,382
+venta de leche —que envía ingresos directo a
+
+30
+00:01:20,382 --> 00:01:21,995
+Finanzas— y ordeño masivo.
+
+31
+00:01:21,995 --> 00:01:25,531
+Entramos a Registro individual y presionamos Crear Leche.
+
+32
+00:01:26,000 --> 00:01:28,679
+Seleccionamos el lote de ordeño: observa que el
+
+33
+00:01:28,679 --> 00:01:31,472
+sistema detecta en qué potrero está ese lote para
+
+34
+00:01:31,472 --> 00:01:34,379
+calcular más adelante qué pradera produce más leche
+
+35
+00:01:34,379 --> 00:01:35,120
+por hectárea.
+
+36
+00:01:35,120 --> 00:01:38,027
+Elegimos la vaca y digitamos los litros del ordeño.
+
+37
+00:01:46,000 --> 00:01:48,340
+Indicamos la calidad y el turno de ordeño,
+
+38
+00:01:48,340 --> 00:01:50,792
+y presta atención a esta integración: si das
+
+39
+00:01:50,792 --> 00:01:52,073
+suplementación en sala,
+
+40
+00:01:52,073 --> 00:01:54,469
+aquí despliegas los concentrados que tienes
+
+41
+00:01:54,469 --> 00:01:57,144
+cargados en el Inventario de Finanzas viendo sus
+
+42
+00:01:57,144 --> 00:01:58,147
+kilos disponibles.
+
+43
+00:02:00,000 --> 00:02:03,508
+Lo mismo ocurre con las sales mineralizadas o suplementos.
+
+44
+00:02:03,508 --> 00:02:06,593
+Solo debes elegir el insumo e indicar cuántos kilos
+
+45
+00:02:06,593 --> 00:02:09,315
+exactos se comió esta vaca durante el ordeño.
+
+46
+00:02:21,000 --> 00:02:22,195
+Al presionar Guardar,
+
+47
+00:02:22,195 --> 00:02:25,097
+DataGan hace tres cosas por ti: registra los litros
+
+48
+00:02:25,097 --> 00:02:26,406
+en la curva de la vaca,
+
+49
+00:02:26,406 --> 00:02:29,308
+suma la leche al tanque y descuenta automáticamente
+
+50
+00:02:29,308 --> 00:02:32,211
+esos kilos de concentrado del Inventario de bodega.
+

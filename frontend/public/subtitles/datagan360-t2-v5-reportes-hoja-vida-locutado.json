@@ -1,0 +1,268 @@
+{
+  "video_key": "datagan360-t2-v5-reportes-hoja-vida-locutado",
+  "total_cues": 52,
+  "start_time": 4.0,
+  "end_time": 140.955,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.046,
+      "text": "En el módulo de Reportes conviertes toda la"
+    },
+    {
+      "start": 10.046,
+      "end": 12.472,
+      "text": "información que has cargado en la web en informes a"
+    },
+    {
+      "start": 12.472,
+      "end": 13.804,
+      "text": "medida listos para imprimir."
+    },
+    {
+      "start": 13.804,
+      "end": 16.087,
+      "text": "Puedes armar reportes de hembras, machos, leche,"
+    },
+    {
+      "start": 16.087,
+      "end": 18.085,
+      "text": "pesajes, inventario o abrir hojas de vida."
+    },
+    {
+      "start": 18.085,
+      "end": 18.989,
+      "text": "Entremos a Hembras."
+    },
+    {
+      "start": 19.139,
+      "end": 21.142,
+      "text": "En el Paso Dos filtras exactamente qué animales"
+    },
+    {
+      "start": 21.142,
+      "end": 22.932,
+      "text": "quieres incluir: puedes filtrar por estado"
+    },
+    {
+      "start": 22.932,
+      "end": 23.486,
+      "text": "reproductivo,"
+    },
+    {
+      "start": 23.486,
+      "end": 23.699,
+      "text": "raza,"
+    },
+    {
+      "start": 23.699,
+      "end": 25.702,
+      "text": "dieta o entrar por ejemplo a Rango de Peso para"
+    },
+    {
+      "start": 25.702,
+      "end": 27.79,
+      "text": "pedirle al sistema únicamente las hembras que hoy"
+    },
+    {
+      "start": 27.79,
+      "end": 29.623,
+      "text": "pesan entre doscientos y trescientos kilos."
+    },
+    {
+      "start": 29.623,
+      "end": 30.859,
+      "text": "Damos clic en Siguiente Paso."
+    },
+    {
+      "start": 31.009,
+      "end": 33.632,
+      "text": "En el Paso Tres tú diseñas las columnas del"
+    },
+    {
+      "start": 33.632,
+      "end": 36.56,
+      "text": "documento: marcas o desmarcas qué datos básicos,"
+    },
+    {
+      "start": 36.56,
+      "end": 37.414,
+      "text": "reproductivos,"
+    },
+    {
+      "start": 37.414,
+      "end": 40.037,
+      "text": "de pesaje o genealógicos quieres que salgan"
+    },
+    {
+      "start": 40.037,
+      "end": 42.171,
+      "text": "impresos y presionas Crear Informe."
+    },
+    {
+      "start": 45.0,
+      "end": 47.665,
+      "text": "En el Paso Cuatro tienes la vista previa con todos"
+    },
+    {
+      "start": 47.665,
+      "end": 50.33,
+      "text": "los ejemplares de tu finca que cumplen ese filtro,"
+    },
+    {
+      "start": 50.33,
+      "end": 53.475,
+      "text": "pudiendo ampliar la cantidad de filas visibles en pantalla."
+    },
+    {
+      "start": 57.0,
+      "end": 59.776,
+      "text": "Desde los botones superiores descargas el listado"
+    },
+    {
+      "start": 59.776,
+      "end": 62.609,
+      "text": "maquetado en PDF con un clic o lo exportas a Excel"
+    },
+    {
+      "start": 62.609,
+      "end": 64.875,
+      "text": "si deseas trabajar las tablas dinámicas."
+    },
+    {
+      "start": 67.0,
+      "end": 69.524,
+      "text": "Con Editar Selección puedes volver atrás para"
+    },
+    {
+      "start": 69.524,
+      "end": 72.273,
+      "text": "activar todas las columnas de golpe o limpiarlas."
+    },
+    {
+      "start": 72.273,
+      "end": 75.078,
+      "text": "Ahora regresamos al inicio del módulo para conocer"
+    },
+    {
+      "start": 75.078,
+      "end": 77.77,
+      "text": "una de las joyas de DataGan: la Hoja de Vida del"
+    },
+    {
+      "start": 77.77,
+      "end": 78.163,
+      "text": "Animal."
+    },
+    {
+      "start": 86.0,
+      "end": 88.566,
+      "text": "Aquí buscas cualquier ejemplar de tu hato y se"
+    },
+    {
+      "start": 88.566,
+      "end": 91.02,
+      "text": "despliega su expediente clínico y productivo"
+    },
+    {
+      "start": 91.02,
+      "end": 92.637,
+      "text": "completo: ves su peso actual,"
+    },
+    {
+      "start": 92.637,
+      "end": 94.979,
+      "text": "estado reproductivo, cuántos partos lleva,"
+    },
+    {
+      "start": 94.979,
+      "end": 96.708,
+      "text": "quién es su propietario actual,"
+    },
+    {
+      "start": 96.708,
+      "end": 99.107,
+      "text": "en qué lote está y en qué potrero pastorea."
+    },
+    {
+      "start": 106.0,
+      "end": 108.467,
+      "text": "En su encabezado tienes dos botones directos:"
+    },
+    {
+      "start": 108.467,
+      "end": 110.988,
+      "text": "Pesaje te lleva a la curva gráfica con toda la"
+    },
+    {
+      "start": 110.988,
+      "end": 112.797,
+      "text": "evolución de kilos de ese animal,"
+    },
+    {
+      "start": 112.797,
+      "end": 115.099,
+      "text": "y Leche abre su curva histórica de ordeño."
+    },
+    {
+      "start": 120.0,
+      "end": 122.249,
+      "text": "Y al cambiar entre las pestañas Producción,"
+    },
+    {
+      "start": 122.249,
+      "end": 124.551,
+      "text": "Salud y Movimientos consultarás cada ordeño,"
+    },
+    {
+      "start": 124.551,
+      "end": 125.387,
+      "text": "cada enfermedad,"
+    },
+    {
+      "start": 125.387,
+      "end": 127.689,
+      "text": "celo o palpación que se le haya hecho en los"
+    },
+    {
+      "start": 127.689,
+      "end": 128.683,
+      "text": "módulos sanitarios."
+    },
+    {
+      "start": 129.0,
+      "end": 131.001,
+      "text": "Cuando vayas a vender un reproductor,"
+    },
+    {
+      "start": 131.001,
+      "end": 133.219,
+      "text": "una vaca lechera o recibir una auditoría,"
+    },
+    {
+      "start": 133.219,
+      "end": 135.816,
+      "text": "presionas Exportar PDF y obtienes este documento"
+    },
+    {
+      "start": 135.816,
+      "end": 138.196,
+      "text": "oficial de dos páginas con el membrete de tu"
+    },
+    {
+      "start": 138.196,
+      "end": 140.955,
+      "text": "ganadería y todo el historial de vida del ejemplar."
+    }
+  ]
+}

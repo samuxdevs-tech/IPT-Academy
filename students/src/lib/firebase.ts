@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 
 function sanitizeEnv(val: string | undefined, fallback: string): string {
@@ -77,6 +77,7 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
 export const db = getDatabase(app, firebaseConfig.databaseURL);
 
 export default app;

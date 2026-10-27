@@ -1,0 +1,208 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:08,000 --> 00:00:10,518
+Partiendo desde nuestro Inventario de Finanzas,
+
+4
+00:00:10,518 --> 00:00:13,197
+recuerda que en Ajustar puedes cuadrar existencias
+
+5
+00:00:13,197 --> 00:00:15,929
+físicas en cualquier momento y en Historial auditar
+
+6
+00:00:15,929 --> 00:00:16,787
+cada movimiento.
+
+7
+00:00:20,000 --> 00:00:22,391
+Todo artículo que tengas con stock aquí en
+
+8
+00:00:22,391 --> 00:00:25,238
+Inventario estará disponible para ser utilizado en
+
+9
+00:00:25,238 --> 00:00:27,174
+las labores operativas del predio.
+
+10
+00:00:27,174 --> 00:00:30,078
+Regresamos a la lista y entramos en el menú lateral
+
+11
+00:00:30,078 --> 00:00:30,875
+a Actividades.
+
+12
+00:00:43,000 --> 00:00:45,310
+En Actividades gestionas las tareas del predio
+
+13
+00:00:45,310 --> 00:00:47,569
+mediante un tablero visual Kanban que mide el
+
+14
+00:00:47,569 --> 00:00:49,276
+porcentaje de avance de tu equipo.
+
+15
+00:00:49,276 --> 00:00:50,682
+Presionamos Nueva Actividad.
+
+16
+00:00:51,000 --> 00:00:53,467
+Aquí pondrás el título de la labor —como
+
+17
+00:00:53,467 --> 00:00:54,948
+mantenimiento de cercas,
+
+18
+00:00:54,948 --> 00:00:57,970
+limpieza o poda— y en Responsable seleccionarás a
+
+19
+00:00:57,970 --> 00:00:59,451
+tu trabajador encargado.
+
+20
+00:01:00,000 --> 00:01:02,751
+Describes qué se hará en la jornada y en Aplicar a
+
+21
+00:01:02,751 --> 00:01:05,612
+defines el destino del costo: si eliges un potrero o
+
+22
+00:01:05,612 --> 00:01:06,492
+lote específico,
+
+23
+00:01:06,492 --> 00:01:09,023
+este gasto irá directo al Centro de Costos que
+
+24
+00:01:09,023 --> 00:01:11,499
+veremos más adelante en el módulo de Cuentas.
+
+25
+00:01:17,000 --> 00:01:19,935
+Si para el trabajo necesitas sacar fertilizante,
+
+26
+00:01:19,935 --> 00:01:22,076
+veneno o herramientas de tu bodega,
+
+27
+00:01:22,076 --> 00:01:24,522
+las eliges aquí en Artículos Utilizados;
+
+28
+00:01:24,522 --> 00:01:26,662
+si no vas a gastar stock de bodega,
+
+29
+00:01:26,662 --> 00:01:28,619
+simplemente eliminas el renglón.
+
+30
+00:01:29,000 --> 00:01:31,957
+En Gastos Extras registras pagos adicionales fuera
+
+31
+00:01:31,957 --> 00:01:34,974
+de bodega: escribes el concepto del gasto y digitas
+
+32
+00:01:34,974 --> 00:01:36,275
+cuánto costó en pesos.
+
+33
+00:01:44,000 --> 00:01:45,442
+Abajo, en Mano de Obra,
+
+34
+00:01:45,442 --> 00:01:48,577
+calculas el pago de jornales: eliges al trabajador
+
+35
+00:01:48,577 --> 00:01:49,329
+de tu lista,
+
+36
+00:01:49,329 --> 00:01:52,527
+pones cuántas horas trabajó y a cómo pagas la hora;
+
+37
+00:01:52,527 --> 00:01:55,787
+el sistema multiplicará el subtotal automáticamente.
+
+38
+00:02:00,000 --> 00:02:03,049
+En el Resumen de Costos ves el total de egresos a pagar,
+
+39
+00:02:03,049 --> 00:02:05,500
+seleccionas de qué cuenta bancaria o caja del
+
+40
+00:02:05,500 --> 00:02:08,059
+módulo de Cuentas saldrá ese dinero y presionas
+
+41
+00:02:08,059 --> 00:02:08,931
+Crear Actividad.
+
+42
+00:02:11,000 --> 00:02:13,964
+¡Listo! La tarea aparece en la columna Pendiente.
+
+43
+00:02:13,964 --> 00:02:16,021
+A medida que tu trabajador avance,
+
+44
+00:02:16,021 --> 00:02:19,045
+solo debes arrastrar la tarjeta con el mouse hacia
+
+45
+00:02:19,045 --> 00:02:21,889
+En Progreso y luego a Completada viendo cómo el
+
+46
+00:02:21,889 --> 00:02:23,764
+avance sube al cien por ciento,
+
+47
+00:02:23,764 --> 00:02:24,611
+o a Cancelada.
+
+48
+00:02:27,000 --> 00:02:29,744
+En la esquina de la tarjeta tienes tres iconos: el
+
+49
+00:02:29,744 --> 00:02:32,324
+ojo para ver el resumen completo y el número de
+
+50
+00:02:32,324 --> 00:02:34,794
+movimiento contable que se generó en Cuentas,
+
+51
+00:02:34,794 --> 00:02:37,428
+el lápiz por si necesitas editarla y la papelera
+
+52
+00:02:37,428 --> 00:02:38,307
+para eliminarla.
+

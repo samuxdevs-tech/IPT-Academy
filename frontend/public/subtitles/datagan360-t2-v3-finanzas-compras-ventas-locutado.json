@@ -1,0 +1,258 @@
+{
+  "video_key": "datagan360-t2-v3-finanzas-compras-ventas-locutado",
+  "total_cues": 50,
+  "start_time": 4.0,
+  "end_time": 181.195,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 9.0,
+      "end": 11.061,
+      "text": "En los módulos de Compras y Ventas alimentamos el"
+    },
+    {
+      "start": 11.061,
+      "end": 13.206,
+      "text": "Inventario y movemos el dinero de nuestras Cuentas."
+    },
+    {
+      "start": 13.206,
+      "end": 14.299,
+      "text": "Al presionar Crear Compra,"
+    },
+    {
+      "start": 14.299,
+      "end": 16.108,
+      "text": "usa Seleccionar artículo existente si vas a"
+    },
+    {
+      "start": 16.108,
+      "end": 18.126,
+      "text": "reabastecer un insumo que ya tienes en bodega..."
+    },
+    {
+      "start": 18.276,
+      "end": 20.782,
+      "text": "...o haz clic en Crear nuevo artículo si estás"
+    },
+    {
+      "start": 20.782,
+      "end": 23.397,
+      "text": "comprando algo por primera vez: aquí escribes el"
+    },
+    {
+      "start": 23.397,
+      "end": 24.486,
+      "text": "nombre del producto,"
+    },
+    {
+      "start": 24.486,
+      "end": 27.591,
+      "text": "eliges a qué categoría pertenece y en qué unidad se mide."
+    },
+    {
+      "start": 33.0,
+      "end": 36.181,
+      "text": "Digitas cuántas unidades compraste y el costo por unidad;"
+    },
+    {
+      "start": 36.181,
+      "end": 38.693,
+      "text": "nota que si reabasteces un producto existente"
+    },
+    {
+      "start": 38.693,
+      "end": 41.372,
+      "text": "también puedes activar el interruptor Actualizar"
+    },
+    {
+      "start": 41.372,
+      "end": 41.763,
+      "text": "precio."
+    },
+    {
+      "start": 47.0,
+      "end": 49.476,
+      "text": "Aquí conectamos con otros dos módulos: primero"
+    },
+    {
+      "start": 49.476,
+      "end": 52.114,
+      "text": "eliges de cuál de tus Cuentas financieras sale el"
+    },
+    {
+      "start": 52.114,
+      "end": 52.491,
+      "text": "dinero,"
+    },
+    {
+      "start": 52.491,
+      "end": 55.237,
+      "text": "y en Proveedor seleccionas al almacén o empresa que"
+    },
+    {
+      "start": 55.237,
+      "end": 57.875,
+      "text": "registraste previamente en el módulo de Terceros."
+    },
+    {
+      "start": 64.0,
+      "end": 66.676,
+      "text": "Verificas la fecha de compra y abajo redactas una"
+    },
+    {
+      "start": 66.676,
+      "end": 69.517,
+      "text": "descripción de respaldo —como el número de factura o"
+    },
+    {
+      "start": 69.517,
+      "end": 70.555,
+      "text": "lote del producto—."
+    },
+    {
+      "start": 88.0,
+      "end": 90.705,
+      "text": "En Fecha de expiración colocarás el vencimiento del"
+    },
+    {
+      "start": 90.705,
+      "end": 93.304,
+      "text": "medicamento o garantía: el sistema valida que sea"
+    },
+    {
+      "start": 93.304,
+      "end": 95.797,
+      "text": "una fecha futura y la usará para avisarte en la"
+    },
+    {
+      "start": 95.797,
+      "end": 98.449,
+      "text": "campana de alertas antes de que el producto venza."
+    },
+    {
+      "start": 98.449,
+      "end": 99.882,
+      "text": "Presionamos Guardar Compra."
+    },
+    {
+      "start": 101.0,
+      "end": 103.677,
+      "text": "Al guardar ocurre una triple acción automática:"
+    },
+    {
+      "start": 103.677,
+      "end": 105.329,
+      "text": "queda el registro en Compras,"
+    },
+    {
+      "start": 105.329,
+      "end": 108.234,
+      "text": "se crea el producto con su stock en Inventario y se"
+    },
+    {
+      "start": 108.234,
+      "end": 109.943,
+      "text": "descuenta la plata en Cuentas."
+    },
+    {
+      "start": 109.943,
+      "end": 112.847,
+      "text": "Con los iconos de la derecha puedes ver su detalle,"
+    },
+    {
+      "start": 112.847,
+      "end": 113.987,
+      "text": "editarlo o borrarlo."
+    },
+    {
+      "start": 121.0,
+      "end": 123.506,
+      "text": "Ahora entramos en el menú lateral a Ventas,"
+    },
+    {
+      "start": 123.506,
+      "end": 125.137,
+      "text": "ideal cuando vendes insumos,"
+    },
+    {
+      "start": 125.137,
+      "end": 127.06,
+      "text": "equipos o subproductos de bodega."
+    },
+    {
+      "start": 127.06,
+      "end": 129.857,
+      "text": "Al abrir el buscador ves todos tus artículos con"
+    },
+    {
+      "start": 129.857,
+      "end": 132.595,
+      "text": "stock disponible —incluyendo el que acabamos de"
+    },
+    {
+      "start": 132.595,
+      "end": 134.635,
+      "text": "comprar— y eliges qué vas a vender."
+    },
+    {
+      "start": 138.0,
+      "end": 140.714,
+      "text": "Indicas cuántas unidades vas a entregar y en Precio"
+    },
+    {
+      "start": 140.714,
+      "end": 143.163,
+      "text": "por unidad colocas el valor al que se lo estás"
+    },
+    {
+      "start": 143.163,
+      "end": 144.387,
+      "text": "vendiendo a tu cliente."
+    },
+    {
+      "start": 152.0,
+      "end": 155.22,
+      "text": "Eliges a cuál de tus Cuentas de Finanzas entrará ese pago,"
+    },
+    {
+      "start": 155.22,
+      "end": 157.94,
+      "text": "seleccionas a tu comprador desde el directorio de"
+    },
+    {
+      "start": 157.94,
+      "end": 159.995,
+      "text": "Terceros y presionas Registrar Venta."
+    },
+    {
+      "start": 169.0,
+      "end": 172.305,
+      "text": "De inmediato el sistema resta esa unidad de tu Inventario,"
+    },
+    {
+      "start": 172.305,
+      "end": 175.667,
+      "text": "suma el dinero como ingreso en tu Cuenta y en el Dashboard,"
+    },
+    {
+      "start": 175.667,
+      "end": 178.972,
+      "text": "y te deja la transacción lista con sus botones de detalle,"
+    },
+    {
+      "start": 178.972,
+      "end": 181.195,
+      "text": "edición, borrado y exportación a Excel."
+    }
+  ]
+}

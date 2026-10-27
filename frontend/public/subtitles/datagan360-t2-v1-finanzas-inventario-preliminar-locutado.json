@@ -1,0 +1,248 @@
+{
+  "video_key": "datagan360-t2-v1-finanzas-inventario-preliminar-locutado",
+  "total_cues": 48,
+  "start_time": 4.0,
+  "end_time": 134.667,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.432,
+      "text": "Entramos al bloque de Finanzas empezando por Inventario,"
+    },
+    {
+      "start": 10.432,
+      "end": 12.646,
+      "text": "la bodega central donde se conectan tus compras con"
+    },
+    {
+      "start": 12.646,
+      "end": 13.558,
+      "text": "el consumo en ordeño,"
+    },
+    {
+      "start": 13.558,
+      "end": 14.513,
+      "text": "sanidad y actividades."
+    },
+    {
+      "start": 14.513,
+      "end": 16.467,
+      "text": "En la primera columna puedes buscar cualquier"
+    },
+    {
+      "start": 16.467,
+      "end": 17.553,
+      "text": "artículo por su nombre..."
+    },
+    {
+      "start": 17.703,
+      "end": 19.724,
+      "text": "...al lado puedes filtrarlos por tipo de insumo"
+    },
+    {
+      "start": 19.724,
+      "end": 20.541,
+      "text": "—como medicamentos,"
+    },
+    {
+      "start": 20.541,
+      "end": 20.885,
+      "text": "vacunas,"
+    },
+    {
+      "start": 20.885,
+      "end": 22.819,
+      "text": "concentrados o equipos— y en Cantidad filtrar"
+    },
+    {
+      "start": 22.819,
+      "end": 25.012,
+      "text": "rápidamente qué productos tienen stock disponible o"
+    },
+    {
+      "start": 25.012,
+      "end": 25.829,
+      "text": "cuáles se agotaron."
+    },
+    {
+      "start": 25.979,
+      "end": 28.655,
+      "text": "En cada fila tienes el botón Ajustar: úsalo cuando"
+    },
+    {
+      "start": 28.655,
+      "end": 31.384,
+      "text": "hagas conteo físico en bodega y necesites registrar"
+    },
+    {
+      "start": 31.384,
+      "end": 33.578,
+      "text": "una entrada o salida manual por pérdidas,"
+    },
+    {
+      "start": 33.578,
+      "end": 34.862,
+      "text": "daños o consumo interno,"
+    },
+    {
+      "start": 34.862,
+      "end": 36.682,
+      "text": "indicando el motivo y la cantidad."
+    },
+    {
+      "start": 37.0,
+      "end": 39.887,
+      "text": "Al presionar el botón Historial verás la auditoría"
+    },
+    {
+      "start": 39.887,
+      "end": 42.775,
+      "text": "completa de ese insumo: puedes filtrar por fecha o"
+    },
+    {
+      "start": 42.775,
+      "end": 43.352,
+      "text": "encargado,"
+    },
+    {
+      "start": 43.352,
+      "end": 46.066,
+      "text": "y abajo verás cada vez que entró stock desde el"
+    },
+    {
+      "start": 46.066,
+      "end": 48.896,
+      "text": "módulo de Compras o salió stock por vacunaciones,"
+    },
+    {
+      "start": 48.896,
+      "end": 51.379,
+      "text": "ordeños o actividades. Volvemos a la lista."
+    },
+    {
+      "start": 60.0,
+      "end": 62.759,
+      "text": "Justo debajo de Inventario tenemos Actividades,"
+    },
+    {
+      "start": 62.759,
+      "end": 65.576,
+      "text": "donde programas trabajos de la finca consumiendo"
+    },
+    {
+      "start": 65.576,
+      "end": 66.985,
+      "text": "artículos de esa bodega."
+    },
+    {
+      "start": 66.985,
+      "end": 70.155,
+      "text": "Presionamos Nueva Actividad para ver cómo se conectan."
+    },
+    {
+      "start": 73.0,
+      "end": 76.069,
+      "text": "Aquí escribirás el nombre del trabajo a realizar en campo,"
+    },
+    {
+      "start": 76.069,
+      "end": 78.768,
+      "text": "defines su estado inicial y en Responsable eliges a"
+    },
+    {
+      "start": 78.768,
+      "end": 81.043,
+      "text": "cuál de los trabajadores que registraste en"
+    },
+    {
+      "start": 81.043,
+      "end": 83.107,
+      "text": "Administración se le asignará la tarea."
+    },
+    {
+      "start": 90.0,
+      "end": 92.185,
+      "text": "Observa que el sistema te exige detallar la"
+    },
+    {
+      "start": 92.185,
+      "end": 94.776,
+      "text": "descripción para que el trabajador tenga claras las"
+    },
+    {
+      "start": 94.776,
+      "end": 96.555,
+      "text": "instrucciones de lo que debe hacer."
+    },
+    {
+      "start": 104.0,
+      "end": 106.353,
+      "text": "En Información Adicional eliges la fecha de"
+    },
+    {
+      "start": 106.353,
+      "end": 109.145,
+      "text": "finalización y en Aplicar a decides si el gasto irá"
+    },
+    {
+      "start": 109.145,
+      "end": 111.827,
+      "text": "a toda la finca o a un potrero o lote específico."
+    },
+    {
+      "start": 113.0,
+      "end": 115.374,
+      "text": "Mira cómo en Artículos Utilizados se despliegan los"
+    },
+    {
+      "start": 115.374,
+      "end": 117.608,
+      "text": "mismos insumos que acabamos de ver en Inventario"
+    },
+    {
+      "start": 117.608,
+      "end": 119.889,
+      "text": "para descontar las unidades que uses en la tarea,"
+    },
+    {
+      "start": 119.889,
+      "end": 122.681,
+      "text": "o puedes eliminar la fila si no usarás materiales de bodega."
+    },
+    {
+      "start": 123.0,
+      "end": 125.562,
+      "text": "Y en el bloque inferior de Gastos Extras podrás"
+    },
+    {
+      "start": 125.562,
+      "end": 127.634,
+      "text": "añadir cualquier compra de ferretería,"
+    },
+    {
+      "start": 127.634,
+      "end": 130.741,
+      "text": "combustible o servicio externo que requiera la actividad."
+    },
+    {
+      "start": 130.741,
+      "end": 133.413,
+      "text": "En el siguiente video completaremos todo el ciclo"
+    },
+    {
+      "start": 133.413,
+      "end": 134.667,
+      "text": "contable de esta tarea."
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:08,000 --> 00:00:10,685
+En el menú Admin gestionamos a nuestro equipo de
+
+4
+00:00:10,685 --> 00:00:13,314
+trabajo en dos pasos: primero creamos el Rol de
+
+5
+00:00:13,314 --> 00:00:15,720
+permisos y luego registramos al Trabajador.
+
+6
+00:00:15,720 --> 00:00:18,461
+Presionamos Crear Roles y aquí escribes el nombre
+
+7
+00:00:18,461 --> 00:00:20,195
+del cargo que vas a configurar.
+
+8
+00:00:23,000 --> 00:00:25,461
+Debajo verás todos los módulos de la web
+
+9
+00:00:25,461 --> 00:00:27,123
+organizados por categorías.
+
+10
+00:00:27,123 --> 00:00:28,600
+Al desplegar cualquiera,
+
+11
+00:00:28,600 --> 00:00:31,738
+puedes marcar su círculo principal si quieres darle
+
+12
+00:00:31,738 --> 00:00:33,154
+control total para ver,
+
+13
+00:00:33,154 --> 00:00:35,123
+agregar, modificar y eliminar...
+
+14
+00:00:36,000 --> 00:00:38,487
+...o marcar únicamente casillas específicas si
+
+15
+00:00:38,487 --> 00:00:41,244
+prefieres que ese empleado pueda meter datos nuevos
+
+16
+00:00:41,244 --> 00:00:43,299
+pero tenga prohibido borrar registros.
+
+17
+00:00:44,000 --> 00:00:47,234
+Configuras de la misma forma qué podrá hacer en Bovinos,
+
+18
+00:00:47,234 --> 00:00:48,908
+Producción, Salud o Finanzas,
+
+19
+00:00:48,908 --> 00:00:51,853
+presionas Crear Rol abajo a la derecha y ese perfil
+
+20
+00:00:51,853 --> 00:00:54,683
+ya queda disponible para asignarlo a tu personal.
+
+21
+00:01:02,000 --> 00:01:05,050
+Ahora sí pasamos en el menú lateral a Trabajadores
+
+22
+00:01:05,050 --> 00:01:07,062
+y presionamos Crear Trabajadores.
+
+23
+00:01:07,062 --> 00:01:09,685
+En este formulario ingresarás los nombres y
+
+24
+00:01:09,685 --> 00:01:11,820
+apellidos reales de tu colaborador,
+
+25
+00:01:11,820 --> 00:01:13,955
+mayordomo, ordeñador o veterinario.
+
+26
+00:01:17,000 --> 00:01:19,430
+Seleccionas su tipo de documento de identidad e
+
+27
+00:01:19,430 --> 00:01:20,930
+ingresas su número de cédula;
+
+28
+00:01:20,930 --> 00:01:23,308
+recuerda que este trabajador que crees aquí lo
+
+29
+00:01:23,308 --> 00:01:25,893
+usarás luego como encargado de fincas o en la mano
+
+30
+00:01:25,893 --> 00:01:27,083
+de obra de Actividades.
+
+31
+00:01:33,000 --> 00:01:36,054
+Eliges el departamento y municipio donde vive o
+
+32
+00:01:36,054 --> 00:01:37,419
+labora el trabajador.
+
+33
+00:01:42,000 --> 00:01:44,632
+Aquí digitas su número de celular y su correo
+
+34
+00:01:44,632 --> 00:01:45,627
+electrónico real,
+
+35
+00:01:45,627 --> 00:01:48,435
+verificando que ambos campos se pongan en verde.
+
+36
+00:02:00,000 --> 00:02:02,224
+Presta atención a esta casilla: si este empleado va
+
+37
+00:02:02,224 --> 00:02:04,099
+a entrar a la aplicación desde su celular o
+
+38
+00:02:04,099 --> 00:02:04,578
+computador,
+
+39
+00:02:04,578 --> 00:02:06,540
+marcas ¿Es trabajador con acceso al sistema?,
+
+40
+00:02:06,540 --> 00:02:07,412
+le creas su usuario,
+
+41
+00:02:07,412 --> 00:02:09,462
+le asignas el Rol que creamos hace un momento y
+
+42
+00:02:09,462 --> 00:02:10,683
+marcas qué fincas puede ver.
+
+43
+00:02:11,000 --> 00:02:11,592
+En cambio,
+
+44
+00:02:11,592 --> 00:02:14,195
+si es un trabajador de campo que no usará la
+
+45
+00:02:14,195 --> 00:02:17,271
+plataforma pero necesitas asignarle tareas y pagarle
+
+46
+00:02:17,271 --> 00:02:18,513
+jornales en Finanzas,
+
+47
+00:02:18,513 --> 00:02:19,756
+desmarcas la casilla,
+
+48
+00:02:19,756 --> 00:02:22,477
+presionas Crear trabajador y queda listo en tu
+
+49
+00:02:22,477 --> 00:02:23,483
+nómina operativa.
+

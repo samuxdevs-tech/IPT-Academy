@@ -1,0 +1,248 @@
+{
+  "video_key": "datagan360-t2-v7-salud-reproductiva-clinica-locutado",
+  "total_cues": 48,
+  "start_time": 4.0,
+  "end_time": 176.963,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.36,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.36,
+      "end": 7.12,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 7.12,
+      "end": 10.419,
+      "text": "Exploraremos el módulo reproductivo y clínico de Salud."
+    },
+    {
+      "start": 10.569,
+      "end": 13.343,
+      "text": "El ciclo reproductivo inicia en la sección Celo: al"
+    },
+    {
+      "start": 13.343,
+      "end": 16.062,
+      "text": "presionar Crear Celo seleccionas la vaca o novilla"
+    },
+    {
+      "start": 16.062,
+      "end": 18.292,
+      "text": "que entró en calor y eliges en Acción qué"
+    },
+    {
+      "start": 18.292,
+      "end": 20.196,
+      "text": "comportamiento observaste en campo."
+    },
+    {
+      "start": 28.0,
+      "end": 30.573,
+      "text": "En Observaciones anotas la hora en que fue vista"
+    },
+    {
+      "start": 30.573,
+      "end": 33.252,
+      "text": "para programar la inseminación o monta y presionas"
+    },
+    {
+      "start": 33.252,
+      "end": 33.681,
+      "text": "Guardar;"
+    },
+    {
+      "start": 33.681,
+      "end": 35.879,
+      "text": "recuerda que esto activará las alertas de"
+    },
+    {
+      "start": 35.879,
+      "end": 37.219,
+      "text": "seguimiento reproductivo."
+    },
+    {
+      "start": 44.0,
+      "end": 45.662,
+      "text": "Una vez servida la hembra,"
+    },
+    {
+      "start": 45.662,
+      "end": 48.73,
+      "text": "entras en el menú lateral a Servicio y presionas"
+    },
+    {
+      "start": 48.73,
+      "end": 49.753,
+      "text": "Crear Servicios."
+    },
+    {
+      "start": 49.753,
+      "end": 52.885,
+      "text": "Aquí eliges primero si realizaste Monta natural o"
+    },
+    {
+      "start": 52.885,
+      "end": 54.419,
+      "text": "Inseminación artificial."
+    },
+    {
+      "start": 61.0,
+      "end": 63.567,
+      "text": "En Hembra seleccionas a la vaca que acabas de"
+    },
+    {
+      "start": 63.567,
+      "end": 66.192,
+      "text": "reportar en celo y en Macho vinculas al toro o"
+    },
+    {
+      "start": 66.192,
+      "end": 67.219,
+      "text": "pajilla utilizada."
+    },
+    {
+      "start": 70.0,
+      "end": 72.355,
+      "text": "Anotas los detalles del servicio y presionas"
+    },
+    {
+      "start": 72.355,
+      "end": 75.138,
+      "text": "Guardar: automáticamente DataGan cambia el estado de"
+    },
+    {
+      "start": 75.138,
+      "end": 77.707,
+      "text": "esa hembra a Servida y empieza a contar los días"
+    },
+    {
+      "start": 77.707,
+      "end": 79.099,
+      "text": "para su chequeo de preñez."
+    },
+    {
+      "start": 88.0,
+      "end": 90.78,
+      "text": "Pasamos ahora a Veterinaria: mira cómo al buscar a"
+    },
+    {
+      "start": 90.78,
+      "end": 93.505,
+      "text": "esa misma hembra su ficha ya dice Servida y abajo"
+    },
+    {
+      "start": 93.505,
+      "end": 96.007,
+      "text": "nos resume sus últimas palpaciones o chequeos"
+    },
+    {
+      "start": 96.007,
+      "end": 96.619,
+      "text": "realizados."
+    },
+    {
+      "start": 107.0,
+      "end": 109.929,
+      "text": "Para días de chequeo reproductivo con el veterinario,"
+    },
+    {
+      "start": 109.929,
+      "end": 111.974,
+      "text": "puedes filtrar por Lote a la derecha,"
+    },
+    {
+      "start": 111.974,
+      "end": 114.793,
+      "text": "marcar una o varias hembras de la lista y presionar"
+    },
+    {
+      "start": 114.793,
+      "end": 116.507,
+      "text": "el botón Registrar Actividades."
+    },
+    {
+      "start": 124.0,
+      "end": 126.364,
+      "text": "Se abrirán cinco herramientas clínicas: en"
+    },
+    {
+      "start": 126.364,
+      "end": 129.179,
+      "text": "Palpación registras si la hembra resultó Preñada o"
+    },
+    {
+      "start": 129.179,
+      "end": 131.656,
+      "text": "Vacía —lo que alimenta la tasa de preñez del"
+    },
+    {
+      "start": 131.656,
+      "end": 134.133,
+      "text": "Dashboard— y detallas estructuras del ovario"
+    },
+    {
+      "start": 134.133,
+      "end": 135.259,
+      "text": "izquierdo y derecho."
+    },
+    {
+      "start": 143.0,
+      "end": 145.266,
+      "text": "En Procedimiento registras cirugías,"
+    },
+    {
+      "start": 145.266,
+      "end": 146.714,
+      "text": "descornes o curaciones;"
+    },
+    {
+      "start": 146.714,
+      "end": 149.798,
+      "text": "en Síntomas anotas signos clínicos generales y en"
+    },
+    {
+      "start": 149.798,
+      "end": 152.819,
+      "text": "la última pestaña reportas abortos si llegaran a"
+    },
+    {
+      "start": 152.819,
+      "end": 153.323,
+      "text": "ocurrir."
+    },
+    {
+      "start": 161.0,
+      "end": 163.597,
+      "text": "Y en la pestaña Mastitis cuentas con un diagrama"
+    },
+    {
+      "start": 163.597,
+      "end": 166.357,
+      "text": "interactivo para el test de California: en cada uno"
+    },
+    {
+      "start": 166.357,
+      "end": 169.117,
+      "text": "de los cuatro pezones eliges el grado de afectación"
+    },
+    {
+      "start": 169.117,
+      "end": 171.93,
+      "text": "viendo cómo cambia de color en el dibujo de la ubre,"
+    },
+    {
+      "start": 171.93,
+      "end": 173.662,
+      "text": "o marcas si es un pezón perdido."
+    },
+    {
+      "start": 173.662,
+      "end": 176.963,
+      "text": "Presionas Guardar y todo queda en la Hoja de Vida del animal."
+    }
+  ]
+}

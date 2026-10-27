@@ -48,7 +48,10 @@ export default function StudentPortalShell({
   }, [pathname]);
 
   const isAuthOrStandalone =
-    pathname.startsWith('/login') || pathname.startsWith('/register') || pathname === '/';
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/register') ||
+    pathname.startsWith('/legal') ||
+    pathname === '/';
 
   if (isAuthOrStandalone) {
     return <>{children}</>;

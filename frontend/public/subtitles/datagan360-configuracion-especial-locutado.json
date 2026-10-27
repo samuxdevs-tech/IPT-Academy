@@ -1,0 +1,343 @@
+{
+  "video_key": "datagan360-configuracion-especial-locutado",
+  "total_cues": 67,
+  "start_time": 0.0,
+  "end_time": 120.438,
+  "cues": [
+    {
+      "start": 0.0,
+      "end": 3.786,
+      "text": "¡Hola! Bienvenido al tour modular de DataGan 360."
+    },
+    {
+      "start": 4.0,
+      "end": 6.046,
+      "text": "Comenzamos en el ícono de engranaje superior para"
+    },
+    {
+      "start": 6.046,
+      "end": 7.507,
+      "text": "abrir la Configuración del Sistema,"
+    },
+    {
+      "start": 7.507,
+      "end": 9.637,
+      "text": "donde definirás las reglas globales que afectarán a"
+    },
+    {
+      "start": 9.637,
+      "end": 11.432,
+      "text": "todos los módulos que veremos más adelante."
+    },
+    {
+      "start": 11.432,
+      "end": 12.643,
+      "text": "Entramos primero a Mi Perfil."
+    },
+    {
+      "start": 12.793,
+      "end": 14.826,
+      "text": "En esta ficha registrarás tus datos reales de"
+    },
+    {
+      "start": 14.826,
+      "end": 16.589,
+      "text": "titular o administrador: tu fotografía,"
+    },
+    {
+      "start": 16.589,
+      "end": 18.622,
+      "text": "documento de identidad, teléfono y municipio."
+    },
+    {
+      "start": 18.622,
+      "end": 20.656,
+      "text": "Es fundamental que pongas tu correo y celular"
+    },
+    {
+      "start": 20.656,
+      "end": 22.69,
+      "text": "verdaderos porque allí llegarán los avisos de"
+    },
+    {
+      "start": 22.69,
+      "end": 23.142,
+      "text": "seguridad."
+    },
+    {
+      "start": 23.292,
+      "end": 25.056,
+      "text": "Cada vez que modifiques un dato personal,"
+    },
+    {
+      "start": 25.056,
+      "end": 27.207,
+      "text": "presionas Guardar Cambios y el sistema actualizará"
+    },
+    {
+      "start": 27.207,
+      "end": 28.111,
+      "text": "tu ficha al instante."
+    },
+    {
+      "start": 28.261,
+      "end": 30.419,
+      "text": "Observa que si por error intentas digitar números"
+    },
+    {
+      "start": 30.419,
+      "end": 31.916,
+      "text": "en campos de texto como tu nombre,"
+    },
+    {
+      "start": 31.916,
+      "end": 34.03,
+      "text": "el validador inteligente los bloqueará en tiempo"
+    },
+    {
+      "start": 34.03,
+      "end": 35.923,
+      "text": "real para mantener limpia tu base de datos."
+    },
+    {
+      "start": 35.923,
+      "end": 36.584,
+      "text": "Volvemos atrás."
+    },
+    {
+      "start": 36.734,
+      "end": 38.908,
+      "text": "En Alertas y Notificaciones encenderás los avisos"
+    },
+    {
+      "start": 38.908,
+      "end": 40.86,
+      "text": "automáticos de tu finca: cuando más adelante"
+    },
+    {
+      "start": 40.86,
+      "end": 41.659,
+      "text": "registremos celos,"
+    },
+    {
+      "start": 41.659,
+      "end": 43.079,
+      "text": "servicios, medicamentos o leche,"
+    },
+    {
+      "start": 43.079,
+      "end": 45.253,
+      "text": "estos interruptores harán que el sistema te avise"
+    },
+    {
+      "start": 45.253,
+      "end": 46.274,
+      "text": "si hay partos próximos,"
+    },
+    {
+      "start": 46.274,
+      "end": 47.649,
+      "text": "stock bajo o atrasos de ordeño."
+    },
+    {
+      "start": 47.799,
+      "end": 48.82,
+      "text": "Pasamos a Carga Masiva,"
+    },
+    {
+      "start": 48.82,
+      "end": 51.216,
+      "text": "diseñada por si deseas subir tu ganadería desde Excel."
+    },
+    {
+      "start": 51.216,
+      "end": 53.391,
+      "text": "Presta mucha atención a esta regla: siempre debes"
+    },
+    {
+      "start": 53.391,
+      "end": 55.699,
+      "text": "descargar y subir primero la plantilla del Paso Uno,"
+    },
+    {
+      "start": 55.699,
+      "end": 57.918,
+      "text": "donde irán tus datos independientes como la finca,"
+    },
+    {
+      "start": 57.918,
+      "end": 58.805,
+      "text": "terceros y potreros."
+    },
+    {
+      "start": 58.955,
+      "end": 61.184,
+      "text": "Solo cuando esa estructura exista en el sistema,"
+    },
+    {
+      "start": 61.184,
+      "end": 64.062,
+      "text": "subirás aquí abajo la plantilla del Paso Dos con tus animales,"
+    },
+    {
+      "start": 64.062,
+      "end": 65.269,
+      "text": "lotes, pesajes y finanzas;"
+    },
+    {
+      "start": 65.269,
+      "end": 67.683,
+      "text": "así cada animal encontrará su potrero sin dar error."
+    },
+    {
+      "start": 67.683,
+      "end": 69.633,
+      "text": "Arriba siempre tendrás el historial por si"
+    },
+    {
+      "start": 69.633,
+      "end": 70.979,
+      "text": "necesitas revertir un cargue."
+    },
+    {
+      "start": 70.979,
+      "end": 71.815,
+      "text": "Volvemos al panel."
+    },
+    {
+      "start": 71.965,
+      "end": 73.846,
+      "text": "En Unidades de Medida elegirás si en tu región"
+    },
+    {
+      "start": 73.846,
+      "end": 75.564,
+      "text": "trabajas la tierra en hectáreas o cuadras,"
+    },
+    {
+      "start": 75.564,
+      "end": 77.201,
+      "text": "el ganado en kilos y la leche en litros;"
+    },
+    {
+      "start": 77.201,
+      "end": 79.491,
+      "text": "todo el Dashboard convertirá las cifras automáticamente."
+    },
+    {
+      "start": 79.641,
+      "end": 81.592,
+      "text": "Abajo encontrarás un campo clave para toda la"
+    },
+    {
+      "start": 81.592,
+      "end": 83.542,
+      "text": "plataforma: el Precio de Referencia por Kilo."
+    },
+    {
+      "start": 83.542,
+      "end": 85.753,
+      "text": "Cuando más adelante registres animales sin ponerles"
+    },
+    {
+      "start": 85.753,
+      "end": 86.663,
+      "text": "un precio individual,"
+    },
+    {
+      "start": 86.663,
+      "end": 88.744,
+      "text": "el sistema multiplicará su peso por el valor que"
+    },
+    {
+      "start": 88.744,
+      "end": 89.351,
+      "text": "coloques aquí."
+    },
+    {
+      "start": 89.501,
+      "end": 91.86,
+      "text": "Aquí colocamos diez mil pesos a modo de ejemplo y guardamos;"
+    },
+    {
+      "start": 91.86,
+      "end": 93.551,
+      "text": "este número irá directo a calcular el Valor"
+    },
+    {
+      "start": 93.551,
+      "end": 95.359,
+      "text": "Patrimonial de tu Hato en el Dashboard y en el"
+    },
+    {
+      "start": 95.359,
+      "end": 96.067,
+      "text": "módulo de Cuentas."
+    },
+    {
+      "start": 96.217,
+      "end": 98.025,
+      "text": "En Mis Datos y Respaldo podrás descargar cuando"
+    },
+    {
+      "start": 98.025,
+      "end": 99.948,
+      "text": "quieras toda tu información dividida en los mismos"
+    },
+    {
+      "start": 99.948,
+      "end": 101.717,
+      "text": "archivos del Paso Uno y Paso Dos por si deseas"
+    },
+    {
+      "start": 101.717,
+      "end": 102.756,
+      "text": "migrar o auditar tus datos,"
+    },
+    {
+      "start": 102.756,
+      "end": 104.679,
+      "text": "o exportar abajo tu copia legal completa protegida"
+    },
+    {
+      "start": 104.679,
+      "end": 105.91,
+      "text": "por la Ley quince ochenta y uno."
+    },
+    {
+      "start": 106.06,
+      "end": 106.682,
+      "text": "Por último,"
+    },
+    {
+      "start": 106.682,
+      "end": 109.57,
+      "text": "en la tarjeta Eliminar Cuenta tendrás disponible el"
+    },
+    {
+      "start": 109.57,
+      "end": 112.23,
+      "text": "protocolo de baja definitiva de tu suscripción."
+    },
+    {
+      "start": 112.23,
+      "end": 113.023,
+      "text": "Por seguridad,"
+    },
+    {
+      "start": 113.023,
+      "end": 115.344,
+      "text": "el sistema te pedirá escribir la frase de"
+    },
+    {
+      "start": 115.344,
+      "end": 118.117,
+      "text": "confirmación y conservará únicamente el historial"
+    },
+    {
+      "start": 118.117,
+      "end": 120.438,
+      "text": "sanitario exigido por normativas del ICA."
+    }
+  ]
+}

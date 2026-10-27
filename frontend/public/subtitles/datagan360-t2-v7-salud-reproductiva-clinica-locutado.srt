@@ -1,0 +1,192 @@
+1
+00:00:04,000 --> 00:00:04,360
+¡Hola!
+
+2
+00:00:04,360 --> 00:00:07,120
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:07,120 --> 00:00:10,419
+Exploraremos el módulo reproductivo y clínico de Salud.
+
+4
+00:00:10,569 --> 00:00:13,343
+El ciclo reproductivo inicia en la sección Celo: al
+
+5
+00:00:13,343 --> 00:00:16,062
+presionar Crear Celo seleccionas la vaca o novilla
+
+6
+00:00:16,062 --> 00:00:18,292
+que entró en calor y eliges en Acción qué
+
+7
+00:00:18,292 --> 00:00:20,196
+comportamiento observaste en campo.
+
+8
+00:00:28,000 --> 00:00:30,573
+En Observaciones anotas la hora en que fue vista
+
+9
+00:00:30,573 --> 00:00:33,252
+para programar la inseminación o monta y presionas
+
+10
+00:00:33,252 --> 00:00:33,681
+Guardar;
+
+11
+00:00:33,681 --> 00:00:35,879
+recuerda que esto activará las alertas de
+
+12
+00:00:35,879 --> 00:00:37,219
+seguimiento reproductivo.
+
+13
+00:00:44,000 --> 00:00:45,662
+Una vez servida la hembra,
+
+14
+00:00:45,662 --> 00:00:48,730
+entras en el menú lateral a Servicio y presionas
+
+15
+00:00:48,730 --> 00:00:49,753
+Crear Servicios.
+
+16
+00:00:49,753 --> 00:00:52,885
+Aquí eliges primero si realizaste Monta natural o
+
+17
+00:00:52,885 --> 00:00:54,419
+Inseminación artificial.
+
+18
+00:01:01,000 --> 00:01:03,567
+En Hembra seleccionas a la vaca que acabas de
+
+19
+00:01:03,567 --> 00:01:06,192
+reportar en celo y en Macho vinculas al toro o
+
+20
+00:01:06,192 --> 00:01:07,219
+pajilla utilizada.
+
+21
+00:01:10,000 --> 00:01:12,355
+Anotas los detalles del servicio y presionas
+
+22
+00:01:12,355 --> 00:01:15,138
+Guardar: automáticamente DataGan cambia el estado de
+
+23
+00:01:15,138 --> 00:01:17,707
+esa hembra a Servida y empieza a contar los días
+
+24
+00:01:17,707 --> 00:01:19,099
+para su chequeo de preñez.
+
+25
+00:01:28,000 --> 00:01:30,780
+Pasamos ahora a Veterinaria: mira cómo al buscar a
+
+26
+00:01:30,780 --> 00:01:33,505
+esa misma hembra su ficha ya dice Servida y abajo
+
+27
+00:01:33,505 --> 00:01:36,007
+nos resume sus últimas palpaciones o chequeos
+
+28
+00:01:36,007 --> 00:01:36,619
+realizados.
+
+29
+00:01:47,000 --> 00:01:49,929
+Para días de chequeo reproductivo con el veterinario,
+
+30
+00:01:49,929 --> 00:01:51,974
+puedes filtrar por Lote a la derecha,
+
+31
+00:01:51,974 --> 00:01:54,793
+marcar una o varias hembras de la lista y presionar
+
+32
+00:01:54,793 --> 00:01:56,507
+el botón Registrar Actividades.
+
+33
+00:02:04,000 --> 00:02:06,364
+Se abrirán cinco herramientas clínicas: en
+
+34
+00:02:06,364 --> 00:02:09,179
+Palpación registras si la hembra resultó Preñada o
+
+35
+00:02:09,179 --> 00:02:11,656
+Vacía —lo que alimenta la tasa de preñez del
+
+36
+00:02:11,656 --> 00:02:14,133
+Dashboard— y detallas estructuras del ovario
+
+37
+00:02:14,133 --> 00:02:15,259
+izquierdo y derecho.
+
+38
+00:02:23,000 --> 00:02:25,266
+En Procedimiento registras cirugías,
+
+39
+00:02:25,266 --> 00:02:26,714
+descornes o curaciones;
+
+40
+00:02:26,714 --> 00:02:29,798
+en Síntomas anotas signos clínicos generales y en
+
+41
+00:02:29,798 --> 00:02:32,819
+la última pestaña reportas abortos si llegaran a
+
+42
+00:02:32,819 --> 00:02:33,323
+ocurrir.
+
+43
+00:02:41,000 --> 00:02:43,597
+Y en la pestaña Mastitis cuentas con un diagrama
+
+44
+00:02:43,597 --> 00:02:46,357
+interactivo para el test de California: en cada uno
+
+45
+00:02:46,357 --> 00:02:49,117
+de los cuatro pezones eliges el grado de afectación
+
+46
+00:02:49,117 --> 00:02:51,930
+viendo cómo cambia de color en el dibujo de la ubre,
+
+47
+00:02:51,930 --> 00:02:53,662
+o marcas si es un pezón perdido.
+
+48
+00:02:53,662 --> 00:02:56,963
+Presionas Guardar y todo queda en la Hoja de Vida del animal.
+

@@ -1,0 +1,196 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:08,000 --> 00:00:10,038
+Antes de crear lotes, animales o compras,
+
+4
+00:00:10,038 --> 00:00:12,523
+necesitamos registrar a los actores comerciales en
+
+5
+00:00:12,523 --> 00:00:13,517
+Gestión de Terceros.
+
+6
+00:00:13,517 --> 00:00:15,953
+Entramos a Personas y presionamos Crear Personas.
+
+7
+00:00:16,103 --> 00:00:18,510
+En este formulario ingresarás los datos reales de
+
+8
+00:00:18,510 --> 00:00:21,015
+cualquier persona natural vinculada a tu ganadería:
+
+9
+00:00:21,015 --> 00:00:22,635
+seleccionas su tipo de documento,
+
+10
+00:00:22,635 --> 00:00:24,698
+digitas su cédula y escribes sus nombres y
+
+11
+00:00:24,698 --> 00:00:25,681
+apellidos completos.
+
+12
+00:00:26,000 --> 00:00:28,718
+En Nombre Comercial puedes poner cómo se conoce su
+
+13
+00:00:28,718 --> 00:00:29,860
+negocio en la región,
+
+14
+00:00:29,860 --> 00:00:32,632
+y enseguida seleccionas el departamento y municipio
+
+15
+00:00:32,632 --> 00:00:34,861
+donde opera para tener clara su ubicación
+
+16
+00:00:34,861 --> 00:00:35,459
+geográfica.
+
+17
+00:00:40,000 --> 00:00:42,668
+Aquí colocas su dirección física de contacto y su
+
+18
+00:00:42,668 --> 00:00:43,648
+número de celular;
+
+19
+00:00:43,648 --> 00:00:46,370
+observa cómo el borde se pone en verde confirmando
+
+20
+00:00:46,370 --> 00:00:47,731
+que el formato es válido.
+
+21
+00:00:53,000 --> 00:00:55,297
+Abajo viene lo más importante: definir qué rol
+
+22
+00:00:55,297 --> 00:00:56,896
+cumple esta persona en tu finca.
+
+23
+00:00:56,896 --> 00:00:59,643
+Puedes marcar varias casillas a la vez si es comprador,
+
+24
+00:00:59,643 --> 00:01:00,142
+proveedor,
+
+25
+00:01:00,142 --> 00:01:02,290
+propietario de ganado o socio en traslados.
+
+26
+00:01:02,290 --> 00:01:03,688
+Lo guardamos como proveedor.
+
+27
+00:01:04,000 --> 00:01:06,832
+Verás que ya aparece en la lista identificado con
+
+28
+00:01:06,832 --> 00:01:07,931
+la letra de su rol,
+
+29
+00:01:07,931 --> 00:01:09,954
+listo para usarse en otros módulos.
+
+30
+00:01:09,954 --> 00:01:12,555
+Ahora volvemos por el menú Admin a Terceros y
+
+31
+00:01:12,555 --> 00:01:15,041
+entramos a Empresas para registrar personas
+
+32
+00:01:15,041 --> 00:01:15,619
+jurídicas.
+
+33
+00:01:21,000 --> 00:01:22,750
+Presionamos Crear Empresas.
+
+34
+00:01:22,750 --> 00:01:25,277
+Aquí registrarás cooperativas lecheras,
+
+35
+00:01:25,277 --> 00:01:28,582
+almacenes agropecuarios o frigoríficos: seleccionas
+
+36
+00:01:28,582 --> 00:01:31,757
+NIT e ingresas el número tributario de la empresa
+
+37
+00:01:31,757 --> 00:01:33,507
+sin dígito de verificación.
+
+38
+00:01:34,000 --> 00:01:36,569
+En Nombre Comercial colocas la marca con la que
+
+39
+00:01:36,569 --> 00:01:39,192
+tratas comercialmente y eliges el departamento y
+
+40
+00:01:39,192 --> 00:01:40,723
+ciudad de su sede principal.
+
+41
+00:01:46,000 --> 00:01:48,959
+Completas la dirección de facturación o despacho de
+
+42
+00:01:48,959 --> 00:01:51,571
+la empresa y su línea telefónica de atención.
+
+43
+00:02:02,000 --> 00:02:04,059
+A diferencia de una persona natural,
+
+44
+00:02:04,059 --> 00:02:06,690
+aquí añadirás el código de sucursal y la razón
+
+45
+00:02:06,690 --> 00:02:08,577
+social tal como figura en su RUT.
+
+46
+00:02:08,577 --> 00:02:10,236
+Marcamos su rol —por ejemplo,
+
+47
+00:02:10,236 --> 00:02:12,581
+Proveedor para usarlo más adelante cuando
+
+48
+00:02:12,581 --> 00:02:14,411
+registremos compras de insumos—,
+
+49
+00:02:14,411 --> 00:02:17,099
+guardamos y queda activo en nuestro directorio.
+

@@ -1,0 +1,200 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:09,000 --> 00:00:11,061
+En los módulos de Compras y Ventas alimentamos el
+
+4
+00:00:11,061 --> 00:00:13,206
+Inventario y movemos el dinero de nuestras Cuentas.
+
+5
+00:00:13,206 --> 00:00:14,299
+Al presionar Crear Compra,
+
+6
+00:00:14,299 --> 00:00:16,108
+usa Seleccionar artículo existente si vas a
+
+7
+00:00:16,108 --> 00:00:18,126
+reabastecer un insumo que ya tienes en bodega...
+
+8
+00:00:18,276 --> 00:00:20,782
+...o haz clic en Crear nuevo artículo si estás
+
+9
+00:00:20,782 --> 00:00:23,397
+comprando algo por primera vez: aquí escribes el
+
+10
+00:00:23,397 --> 00:00:24,486
+nombre del producto,
+
+11
+00:00:24,486 --> 00:00:27,591
+eliges a qué categoría pertenece y en qué unidad se mide.
+
+12
+00:00:33,000 --> 00:00:36,181
+Digitas cuántas unidades compraste y el costo por unidad;
+
+13
+00:00:36,181 --> 00:00:38,693
+nota que si reabasteces un producto existente
+
+14
+00:00:38,693 --> 00:00:41,372
+también puedes activar el interruptor Actualizar
+
+15
+00:00:41,372 --> 00:00:41,763
+precio.
+
+16
+00:00:47,000 --> 00:00:49,476
+Aquí conectamos con otros dos módulos: primero
+
+17
+00:00:49,476 --> 00:00:52,114
+eliges de cuál de tus Cuentas financieras sale el
+
+18
+00:00:52,114 --> 00:00:52,491
+dinero,
+
+19
+00:00:52,491 --> 00:00:55,237
+y en Proveedor seleccionas al almacén o empresa que
+
+20
+00:00:55,237 --> 00:00:57,875
+registraste previamente en el módulo de Terceros.
+
+21
+00:01:04,000 --> 00:01:06,676
+Verificas la fecha de compra y abajo redactas una
+
+22
+00:01:06,676 --> 00:01:09,517
+descripción de respaldo —como el número de factura o
+
+23
+00:01:09,517 --> 00:01:10,555
+lote del producto—.
+
+24
+00:01:28,000 --> 00:01:30,705
+En Fecha de expiración colocarás el vencimiento del
+
+25
+00:01:30,705 --> 00:01:33,304
+medicamento o garantía: el sistema valida que sea
+
+26
+00:01:33,304 --> 00:01:35,797
+una fecha futura y la usará para avisarte en la
+
+27
+00:01:35,797 --> 00:01:38,449
+campana de alertas antes de que el producto venza.
+
+28
+00:01:38,449 --> 00:01:39,882
+Presionamos Guardar Compra.
+
+29
+00:01:41,000 --> 00:01:43,677
+Al guardar ocurre una triple acción automática:
+
+30
+00:01:43,677 --> 00:01:45,329
+queda el registro en Compras,
+
+31
+00:01:45,329 --> 00:01:48,234
+se crea el producto con su stock en Inventario y se
+
+32
+00:01:48,234 --> 00:01:49,943
+descuenta la plata en Cuentas.
+
+33
+00:01:49,943 --> 00:01:52,847
+Con los iconos de la derecha puedes ver su detalle,
+
+34
+00:01:52,847 --> 00:01:53,987
+editarlo o borrarlo.
+
+35
+00:02:01,000 --> 00:02:03,506
+Ahora entramos en el menú lateral a Ventas,
+
+36
+00:02:03,506 --> 00:02:05,137
+ideal cuando vendes insumos,
+
+37
+00:02:05,137 --> 00:02:07,060
+equipos o subproductos de bodega.
+
+38
+00:02:07,060 --> 00:02:09,857
+Al abrir el buscador ves todos tus artículos con
+
+39
+00:02:09,857 --> 00:02:12,595
+stock disponible —incluyendo el que acabamos de
+
+40
+00:02:12,595 --> 00:02:14,635
+comprar— y eliges qué vas a vender.
+
+41
+00:02:18,000 --> 00:02:20,714
+Indicas cuántas unidades vas a entregar y en Precio
+
+42
+00:02:20,714 --> 00:02:23,163
+por unidad colocas el valor al que se lo estás
+
+43
+00:02:23,163 --> 00:02:24,387
+vendiendo a tu cliente.
+
+44
+00:02:32,000 --> 00:02:35,220
+Eliges a cuál de tus Cuentas de Finanzas entrará ese pago,
+
+45
+00:02:35,220 --> 00:02:37,940
+seleccionas a tu comprador desde el directorio de
+
+46
+00:02:37,940 --> 00:02:39,995
+Terceros y presionas Registrar Venta.
+
+47
+00:02:49,000 --> 00:02:52,305
+De inmediato el sistema resta esa unidad de tu Inventario,
+
+48
+00:02:52,305 --> 00:02:55,667
+suma el dinero como ingreso en tu Cuenta y en el Dashboard,
+
+49
+00:02:55,667 --> 00:02:58,972
+y te deja la transacción lista con sus botones de detalle,
+
+50
+00:02:58,972 --> 00:03:01,195
+edición, borrado y exportación a Excel.
+

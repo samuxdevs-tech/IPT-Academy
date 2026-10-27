@@ -1,0 +1,163 @@
+{
+  "video_key": "datagan360-t2-v8-salud-nacimientos-genealogia-locutado",
+  "total_cues": 31,
+  "start_time": 4.0,
+  "end_time": 89.879,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.402,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.402,
+      "end": 7.683,
+      "text": "Bienvenido al tutorial de Nacimiento y Genealogía"
+    },
+    {
+      "start": 7.683,
+      "end": 8.687,
+      "text": "en DataGan 360."
+    },
+    {
+      "start": 9.0,
+      "end": 11.165,
+      "text": "Cuando nace un ternero en la finca no tienes que ir"
+    },
+    {
+      "start": 11.165,
+      "end": 12.905,
+      "text": "a crearlo desde cero en Bovinos: entras a"
+    },
+    {
+      "start": 12.905,
+      "end": 13.372,
+      "text": "Nacimiento,"
+    },
+    {
+      "start": 13.372,
+      "end": 15.452,
+      "text": "presionas Crear Nacimiento y seleccionas quién es"
+    },
+    {
+      "start": 15.452,
+      "end": 16.683,
+      "text": "la Madre y quién es el Padre."
+    },
+    {
+      "start": 17.0,
+      "end": 18.663,
+      "text": "Indicas la fecha del parto,"
+    },
+    {
+      "start": 18.663,
+      "end": 21.064,
+      "text": "eliges si la cría nació Macho o Hembra,"
+    },
+    {
+      "start": 21.064,
+      "end": 23.897,
+      "text": "digitas cuántos kilos pesó al nacer y su valor"
+    },
+    {
+      "start": 23.897,
+      "end": 25.067,
+      "text": "comercial por kilo."
+    },
+    {
+      "start": 33.0,
+      "end": 35.855,
+      "text": "Aquí en Número de Registro le asignas la chapeta o"
+    },
+    {
+      "start": 35.855,
+      "end": 38.367,
+      "text": "código con el que quedará bautizada la cría,"
+    },
+    {
+      "start": 38.367,
+      "end": 40.936,
+      "text": "su microchip si aplica y las notas del parto."
+    },
+    {
+      "start": 40.936,
+      "end": 44.019,
+      "text": "Al presionar Guardar ocurre la magia de integración..."
+    },
+    {
+      "start": 54.0,
+      "end": 55.597,
+      "text": "...se suma el parto a la madre,"
+    },
+    {
+      "start": 55.597,
+      "end": 58.739,
+      "text": "la cría se crea automáticamente como nuevo animal en Bovinos,"
+    },
+    {
+      "start": 58.739,
+      "end": 61.366,
+      "text": "y al entrar aquí en el menú lateral a Genealogía ya"
+    },
+    {
+      "start": 61.366,
+      "end": 62.55,
+      "text": "vemos su tarjeta lista."
+    },
+    {
+      "start": 62.55,
+      "end": 63.684,
+      "text": "Presionamos Ver árbol."
+    },
+    {
+      "start": 64.0,
+      "end": 66.61,
+      "text": "Abajo se despliega el Diagrama Genealógico visual"
+    },
+    {
+      "start": 66.61,
+      "end": 69.326,
+      "text": "mostrando a tu ejemplar arriba y a su padre y madre"
+    },
+    {
+      "start": 69.326,
+      "end": 70.497,
+      "text": "conectados en la base,"
+    },
+    {
+      "start": 70.497,
+      "end": 73.107,
+      "text": "con botones para seguir navegando por el árbol de"
+    },
+    {
+      "start": 73.107,
+      "end": 75.77,
+      "text": "sus abuelos o presionar Descargar PDF para obtener"
+    },
+    {
+      "start": 75.77,
+      "end": 77.155,
+      "text": "su certificado de pedigrí."
+    },
+    {
+      "start": 82.0,
+      "end": 84.296,
+      "text": "Así cerramos todo el recorrido por DataGan 360: una"
+    },
+    {
+      "start": 84.296,
+      "end": 86.593,
+      "text": "plataforma donde cada módulo trabaja conectado para"
+    },
+    {
+      "start": 86.593,
+      "end": 88.123,
+      "text": "darte el control total productivo,"
+    },
+    {
+      "start": 88.123,
+      "end": 89.879,
+      "text": "sanitario y financiero de tu ganadería."
+    }
+  ]
+}

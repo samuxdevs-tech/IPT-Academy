@@ -1,0 +1,176 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:08,000 --> 00:00:10,041
+Una vez que has registrado potreros, animales,
+
+4
+00:00:10,041 --> 00:00:10,884
+ordeños y finanzas,
+
+5
+00:00:10,884 --> 00:00:13,103
+así cobra vida la pestaña Analítica del Dashboard:
+
+6
+00:00:13,103 --> 00:00:15,100
+arriba ves cuántos potreros tienes ocupados o
+
+7
+00:00:15,100 --> 00:00:17,052
+descansando junto a sus polígonos en el mapa
+
+8
+00:00:17,052 --> 00:00:17,496
+satelital.
+
+9
+00:00:17,646 --> 00:00:20,039
+En la barra de Filtros puedes elegir si deseas
+
+10
+00:00:20,039 --> 00:00:22,640
+analizar los últimos treinta días o abrir un rango
+
+11
+00:00:22,640 --> 00:00:25,345
+personalizado de fechas para auditar cualquier época
+
+12
+00:00:25,345 --> 00:00:25,761
+del año.
+
+13
+00:00:29,000 --> 00:00:32,095
+Al pasar el mouse por las tarjetas de Eficiencia por Hectárea,
+
+14
+00:00:32,095 --> 00:00:33,543
+el sistema cruza tus pesajes,
+
+15
+00:00:33,543 --> 00:00:35,989
+ordeños y hectáreas de potreros para mostrarte tu
+
+16
+00:00:35,989 --> 00:00:38,036
+producción de carne y leche por hectárea,
+
+17
+00:00:38,036 --> 00:00:40,283
+tu carga en Unidades Gran Ganado y tu tasa de
+
+18
+00:00:40,283 --> 00:00:41,681
+extracción frente a FEDEGÁN.
+
+19
+00:00:42,000 --> 00:00:44,643
+En el Resumen Analítico tienes doce indicadores en
+
+20
+00:00:44,643 --> 00:00:47,075
+tiempo real: cuántas vacas están en lactancia,
+
+21
+00:00:47,075 --> 00:00:49,136
+nacimientos del periodo, toros activos,
+
+22
+00:00:49,136 --> 00:00:50,775
+cuál es tu vaca más productora,
+
+23
+00:00:50,775 --> 00:00:53,683
+el peso promedio del hato y el estado general de salud.
+
+24
+00:00:54,000 --> 00:00:54,345
+Debajo,
+
+25
+00:00:54,345 --> 00:00:56,714
+la sección de Producción convierte tus registros
+
+26
+00:00:56,714 --> 00:00:59,230
+diarios en gráficas visuales: la curva de leche día
+
+27
+00:00:59,230 --> 00:00:59,624
+por día,
+
+28
+00:00:59,624 --> 00:01:01,598
+el balance de potreros en pastoreo y los
+
+29
+00:01:01,598 --> 00:01:02,683
+nacimientos por fecha.
+
+30
+00:01:03,000 --> 00:01:03,459
+Más abajo,
+
+31
+00:01:03,459 --> 00:01:05,573
+el Resumen Financiero trae automáticamente los
+
+32
+00:01:05,573 --> 00:01:07,549
+datos del módulo de Finanzas: tus ingresos,
+
+33
+00:01:07,549 --> 00:01:07,916
+egresos,
+
+34
+00:01:07,916 --> 00:01:10,259
+el valor actual de tu bodega de inventario y cuánto
+
+35
+00:01:10,259 --> 00:01:11,684
+vale hoy todo tu ganado sumado.
+
+36
+00:01:12,000 --> 00:01:14,293
+Incluso cruza tus gastos contra los litros
+
+37
+00:01:14,293 --> 00:01:16,804
+ordeñados para decirte cuántos pesos te cuesta
+
+38
+00:01:16,804 --> 00:01:18,387
+producir cada litro de leche,
+
+39
+00:01:18,387 --> 00:01:21,171
+graficando a la derecha el flujo de caja mes a mes.
+
+40
+00:01:29,000 --> 00:01:29,609
+Finalmente,
+
+41
+00:01:29,609 --> 00:01:32,379
+en la base tienes el comparativo automático frente
+
+42
+00:01:32,379 --> 00:01:35,094
+a los estándares ideales de tu tipo de ganadería,
+
+43
+00:01:35,094 --> 00:01:37,808
+indicándote en qué métricas superas el promedio y
+
+44
+00:01:37,808 --> 00:01:39,083
+cuáles debes optimizar.
+

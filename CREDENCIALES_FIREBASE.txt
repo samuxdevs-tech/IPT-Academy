@@ -1,0 +1,29 @@
+================================================================================
+   CONFIGURACIÓN DE CREDENCIALES DE FIREBASE — TECNOGAN / DATAGAN COURSE
+================================================================================
+
+INSTRUCCIONES PARA EL CLIENTE:
+1. Ve a tu Consola de Firebase (https://console.firebase.google.com/).
+2. Abre tu proyecto > Configuración del proyecto (ícono de engranaje) > Tus apps (Web).
+3. Además, asegúrate de haber creado "Realtime Database" y "Authentication" (Email/Password).
+4. Reemplaza los valores de abajo (o simplemente pega el bloque `firebaseConfig = { ... }`
+   que te da Firebase al final de este archivo).
+5. GUARDA este archivo (Ctrl + S) y CIÉRRALO para que el instalador automático continúe.
+
+--------------------------------------------------------------------------------
+OPCIÓN A: Completa cada campo después del signo "="
+--------------------------------------------------------------------------------
+
+apiKey = 
+authDomain = 
+databaseURL = 
+projectId = 
+storageBucket = 
+messagingSenderId = 
+appId = 
+
+--------------------------------------------------------------------------------
+OPCIÓN B: O pega directamente aquí abajo el bloque `const firebaseConfig = { ... }`
+copiado de la consola de Firebase:
+--------------------------------------------------------------------------------
+

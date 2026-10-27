@@ -1,0 +1,123 @@
+{
+  "video_key": "datagan360-v3-transferencia-locutado",
+  "total_cues": 23,
+  "start_time": 4.0,
+  "end_time": 56.707,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 9.705,
+      "text": "Si trabajas ganadería en compañía,"
+    },
+    {
+      "start": 9.705,
+      "end": 12.664,
+      "text": "cuentas con varios socios o compras ganado de otro titular,"
+    },
+    {
+      "start": 12.664,
+      "end": 15.072,
+      "text": "el módulo de Transferencia te permite cambiar de"
+    },
+    {
+      "start": 15.072,
+      "end": 16.727,
+      "text": "dueño a tus animales en segundos."
+    },
+    {
+      "start": 16.727,
+      "end": 18.683,
+      "text": "Primero buscamos al propietario actual."
+    },
+    {
+      "start": 19.0,
+      "end": 21.219,
+      "text": "El sistema nos lista todos sus bovinos;"
+    },
+    {
+      "start": 21.219,
+      "end": 23.268,
+      "text": "aquí marcas uno o varios ejemplares,"
+    },
+    {
+      "start": 23.268,
+      "end": 25.829,
+      "text": "seleccionas abajo a qué nuevo propietario del"
+    },
+    {
+      "start": 25.829,
+      "end": 28.675,
+      "text": "módulo de Terceros pasarán y presionas Transferir."
+    },
+    {
+      "start": 33.0,
+      "end": 34.815,
+      "text": "Si consultamos arriba al nuevo titular,"
+    },
+    {
+      "start": 34.815,
+      "end": 37.096,
+      "text": "comprobamos que el ejemplar ya figura a su nombre"
+    },
+    {
+      "start": 37.096,
+      "end": 39.238,
+      "text": "—cambio que también se reflejará en su Hoja de"
+    },
+    {
+      "start": 39.238,
+      "end": 39.517,
+      "text": "Vida—,"
+    },
+    {
+      "start": 39.517,
+      "end": 41.844,
+      "text": "contando además con el botón Seleccionar todo para"
+    },
+    {
+      "start": 41.844,
+      "end": 42.682,
+      "text": "traspasos masivos."
+    },
+    {
+      "start": 43.0,
+      "end": 45.534,
+      "text": "¿Y qué pasa con los animales que metiste por"
+    },
+    {
+      "start": 45.534,
+      "end": 48.241,
+      "text": "Registro Rápido en corral y quedaron sin dueño?"
+    },
+    {
+      "start": 48.241,
+      "end": 50.66,
+      "text": "Cambias al botón Animales sin propietario,"
+    },
+    {
+      "start": 50.66,
+      "end": 51.639,
+      "text": "presionas Cargar,"
+    },
+    {
+      "start": 51.639,
+      "end": 54.461,
+      "text": "marcas los ejemplares pendientes y les asignas su"
+    },
+    {
+      "start": 54.461,
+      "end": 56.707,
+      "text": "propietario definitivo de un solo clic."
+    }
+  ]
+}

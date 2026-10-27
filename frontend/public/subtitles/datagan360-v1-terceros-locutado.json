@@ -1,0 +1,253 @@
+{
+  "video_key": "datagan360-v1-terceros-locutado",
+  "total_cues": 49,
+  "start_time": 4.0,
+  "end_time": 137.099,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.038,
+      "text": "Antes de crear lotes, animales o compras,"
+    },
+    {
+      "start": 10.038,
+      "end": 12.523,
+      "text": "necesitamos registrar a los actores comerciales en"
+    },
+    {
+      "start": 12.523,
+      "end": 13.517,
+      "text": "Gestión de Terceros."
+    },
+    {
+      "start": 13.517,
+      "end": 15.953,
+      "text": "Entramos a Personas y presionamos Crear Personas."
+    },
+    {
+      "start": 16.103,
+      "end": 18.51,
+      "text": "En este formulario ingresarás los datos reales de"
+    },
+    {
+      "start": 18.51,
+      "end": 21.015,
+      "text": "cualquier persona natural vinculada a tu ganadería:"
+    },
+    {
+      "start": 21.015,
+      "end": 22.635,
+      "text": "seleccionas su tipo de documento,"
+    },
+    {
+      "start": 22.635,
+      "end": 24.698,
+      "text": "digitas su cédula y escribes sus nombres y"
+    },
+    {
+      "start": 24.698,
+      "end": 25.681,
+      "text": "apellidos completos."
+    },
+    {
+      "start": 26.0,
+      "end": 28.718,
+      "text": "En Nombre Comercial puedes poner cómo se conoce su"
+    },
+    {
+      "start": 28.718,
+      "end": 29.86,
+      "text": "negocio en la región,"
+    },
+    {
+      "start": 29.86,
+      "end": 32.632,
+      "text": "y enseguida seleccionas el departamento y municipio"
+    },
+    {
+      "start": 32.632,
+      "end": 34.861,
+      "text": "donde opera para tener clara su ubicación"
+    },
+    {
+      "start": 34.861,
+      "end": 35.459,
+      "text": "geográfica."
+    },
+    {
+      "start": 40.0,
+      "end": 42.668,
+      "text": "Aquí colocas su dirección física de contacto y su"
+    },
+    {
+      "start": 42.668,
+      "end": 43.648,
+      "text": "número de celular;"
+    },
+    {
+      "start": 43.648,
+      "end": 46.37,
+      "text": "observa cómo el borde se pone en verde confirmando"
+    },
+    {
+      "start": 46.37,
+      "end": 47.731,
+      "text": "que el formato es válido."
+    },
+    {
+      "start": 53.0,
+      "end": 55.297,
+      "text": "Abajo viene lo más importante: definir qué rol"
+    },
+    {
+      "start": 55.297,
+      "end": 56.896,
+      "text": "cumple esta persona en tu finca."
+    },
+    {
+      "start": 56.896,
+      "end": 59.643,
+      "text": "Puedes marcar varias casillas a la vez si es comprador,"
+    },
+    {
+      "start": 59.643,
+      "end": 60.142,
+      "text": "proveedor,"
+    },
+    {
+      "start": 60.142,
+      "end": 62.29,
+      "text": "propietario de ganado o socio en traslados."
+    },
+    {
+      "start": 62.29,
+      "end": 63.688,
+      "text": "Lo guardamos como proveedor."
+    },
+    {
+      "start": 64.0,
+      "end": 66.832,
+      "text": "Verás que ya aparece en la lista identificado con"
+    },
+    {
+      "start": 66.832,
+      "end": 67.931,
+      "text": "la letra de su rol,"
+    },
+    {
+      "start": 67.931,
+      "end": 69.954,
+      "text": "listo para usarse en otros módulos."
+    },
+    {
+      "start": 69.954,
+      "end": 72.555,
+      "text": "Ahora volvemos por el menú Admin a Terceros y"
+    },
+    {
+      "start": 72.555,
+      "end": 75.041,
+      "text": "entramos a Empresas para registrar personas"
+    },
+    {
+      "start": 75.041,
+      "end": 75.619,
+      "text": "jurídicas."
+    },
+    {
+      "start": 81.0,
+      "end": 82.75,
+      "text": "Presionamos Crear Empresas."
+    },
+    {
+      "start": 82.75,
+      "end": 85.277,
+      "text": "Aquí registrarás cooperativas lecheras,"
+    },
+    {
+      "start": 85.277,
+      "end": 88.582,
+      "text": "almacenes agropecuarios o frigoríficos: seleccionas"
+    },
+    {
+      "start": 88.582,
+      "end": 91.757,
+      "text": "NIT e ingresas el número tributario de la empresa"
+    },
+    {
+      "start": 91.757,
+      "end": 93.507,
+      "text": "sin dígito de verificación."
+    },
+    {
+      "start": 94.0,
+      "end": 96.569,
+      "text": "En Nombre Comercial colocas la marca con la que"
+    },
+    {
+      "start": 96.569,
+      "end": 99.192,
+      "text": "tratas comercialmente y eliges el departamento y"
+    },
+    {
+      "start": 99.192,
+      "end": 100.723,
+      "text": "ciudad de su sede principal."
+    },
+    {
+      "start": 106.0,
+      "end": 108.959,
+      "text": "Completas la dirección de facturación o despacho de"
+    },
+    {
+      "start": 108.959,
+      "end": 111.571,
+      "text": "la empresa y su línea telefónica de atención."
+    },
+    {
+      "start": 122.0,
+      "end": 124.059,
+      "text": "A diferencia de una persona natural,"
+    },
+    {
+      "start": 124.059,
+      "end": 126.69,
+      "text": "aquí añadirás el código de sucursal y la razón"
+    },
+    {
+      "start": 126.69,
+      "end": 128.577,
+      "text": "social tal como figura en su RUT."
+    },
+    {
+      "start": 128.577,
+      "end": 130.236,
+      "text": "Marcamos su rol —por ejemplo,"
+    },
+    {
+      "start": 130.236,
+      "end": 132.581,
+      "text": "Proveedor para usarlo más adelante cuando"
+    },
+    {
+      "start": 132.581,
+      "end": 134.411,
+      "text": "registremos compras de insumos—,"
+    },
+    {
+      "start": 134.411,
+      "end": 137.099,
+      "text": "guardamos y queda activo en nuestro directorio."
+    }
+  ]
+}

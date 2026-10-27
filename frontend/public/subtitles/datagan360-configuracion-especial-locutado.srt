@@ -1,0 +1,268 @@
+1
+00:00:00,000 --> 00:00:03,786
+¡Hola! Bienvenido al tour modular de DataGan 360.
+
+2
+00:00:04,000 --> 00:00:06,046
+Comenzamos en el ícono de engranaje superior para
+
+3
+00:00:06,046 --> 00:00:07,507
+abrir la Configuración del Sistema,
+
+4
+00:00:07,507 --> 00:00:09,637
+donde definirás las reglas globales que afectarán a
+
+5
+00:00:09,637 --> 00:00:11,432
+todos los módulos que veremos más adelante.
+
+6
+00:00:11,432 --> 00:00:12,643
+Entramos primero a Mi Perfil.
+
+7
+00:00:12,793 --> 00:00:14,826
+En esta ficha registrarás tus datos reales de
+
+8
+00:00:14,826 --> 00:00:16,589
+titular o administrador: tu fotografía,
+
+9
+00:00:16,589 --> 00:00:18,622
+documento de identidad, teléfono y municipio.
+
+10
+00:00:18,622 --> 00:00:20,656
+Es fundamental que pongas tu correo y celular
+
+11
+00:00:20,656 --> 00:00:22,690
+verdaderos porque allí llegarán los avisos de
+
+12
+00:00:22,690 --> 00:00:23,142
+seguridad.
+
+13
+00:00:23,292 --> 00:00:25,056
+Cada vez que modifiques un dato personal,
+
+14
+00:00:25,056 --> 00:00:27,207
+presionas Guardar Cambios y el sistema actualizará
+
+15
+00:00:27,207 --> 00:00:28,111
+tu ficha al instante.
+
+16
+00:00:28,261 --> 00:00:30,419
+Observa que si por error intentas digitar números
+
+17
+00:00:30,419 --> 00:00:31,916
+en campos de texto como tu nombre,
+
+18
+00:00:31,916 --> 00:00:34,030
+el validador inteligente los bloqueará en tiempo
+
+19
+00:00:34,030 --> 00:00:35,923
+real para mantener limpia tu base de datos.
+
+20
+00:00:35,923 --> 00:00:36,584
+Volvemos atrás.
+
+21
+00:00:36,734 --> 00:00:38,908
+En Alertas y Notificaciones encenderás los avisos
+
+22
+00:00:38,908 --> 00:00:40,860
+automáticos de tu finca: cuando más adelante
+
+23
+00:00:40,860 --> 00:00:41,659
+registremos celos,
+
+24
+00:00:41,659 --> 00:00:43,079
+servicios, medicamentos o leche,
+
+25
+00:00:43,079 --> 00:00:45,253
+estos interruptores harán que el sistema te avise
+
+26
+00:00:45,253 --> 00:00:46,274
+si hay partos próximos,
+
+27
+00:00:46,274 --> 00:00:47,649
+stock bajo o atrasos de ordeño.
+
+28
+00:00:47,799 --> 00:00:48,820
+Pasamos a Carga Masiva,
+
+29
+00:00:48,820 --> 00:00:51,216
+diseñada por si deseas subir tu ganadería desde Excel.
+
+30
+00:00:51,216 --> 00:00:53,391
+Presta mucha atención a esta regla: siempre debes
+
+31
+00:00:53,391 --> 00:00:55,699
+descargar y subir primero la plantilla del Paso Uno,
+
+32
+00:00:55,699 --> 00:00:57,918
+donde irán tus datos independientes como la finca,
+
+33
+00:00:57,918 --> 00:00:58,805
+terceros y potreros.
+
+34
+00:00:58,955 --> 00:01:01,184
+Solo cuando esa estructura exista en el sistema,
+
+35
+00:01:01,184 --> 00:01:04,062
+subirás aquí abajo la plantilla del Paso Dos con tus animales,
+
+36
+00:01:04,062 --> 00:01:05,269
+lotes, pesajes y finanzas;
+
+37
+00:01:05,269 --> 00:01:07,683
+así cada animal encontrará su potrero sin dar error.
+
+38
+00:01:07,683 --> 00:01:09,633
+Arriba siempre tendrás el historial por si
+
+39
+00:01:09,633 --> 00:01:10,979
+necesitas revertir un cargue.
+
+40
+00:01:10,979 --> 00:01:11,815
+Volvemos al panel.
+
+41
+00:01:11,965 --> 00:01:13,846
+En Unidades de Medida elegirás si en tu región
+
+42
+00:01:13,846 --> 00:01:15,564
+trabajas la tierra en hectáreas o cuadras,
+
+43
+00:01:15,564 --> 00:01:17,201
+el ganado en kilos y la leche en litros;
+
+44
+00:01:17,201 --> 00:01:19,491
+todo el Dashboard convertirá las cifras automáticamente.
+
+45
+00:01:19,641 --> 00:01:21,592
+Abajo encontrarás un campo clave para toda la
+
+46
+00:01:21,592 --> 00:01:23,542
+plataforma: el Precio de Referencia por Kilo.
+
+47
+00:01:23,542 --> 00:01:25,753
+Cuando más adelante registres animales sin ponerles
+
+48
+00:01:25,753 --> 00:01:26,663
+un precio individual,
+
+49
+00:01:26,663 --> 00:01:28,744
+el sistema multiplicará su peso por el valor que
+
+50
+00:01:28,744 --> 00:01:29,351
+coloques aquí.
+
+51
+00:01:29,501 --> 00:01:31,860
+Aquí colocamos diez mil pesos a modo de ejemplo y guardamos;
+
+52
+00:01:31,860 --> 00:01:33,551
+este número irá directo a calcular el Valor
+
+53
+00:01:33,551 --> 00:01:35,359
+Patrimonial de tu Hato en el Dashboard y en el
+
+54
+00:01:35,359 --> 00:01:36,067
+módulo de Cuentas.
+
+55
+00:01:36,217 --> 00:01:38,025
+En Mis Datos y Respaldo podrás descargar cuando
+
+56
+00:01:38,025 --> 00:01:39,948
+quieras toda tu información dividida en los mismos
+
+57
+00:01:39,948 --> 00:01:41,717
+archivos del Paso Uno y Paso Dos por si deseas
+
+58
+00:01:41,717 --> 00:01:42,756
+migrar o auditar tus datos,
+
+59
+00:01:42,756 --> 00:01:44,679
+o exportar abajo tu copia legal completa protegida
+
+60
+00:01:44,679 --> 00:01:45,910
+por la Ley quince ochenta y uno.
+
+61
+00:01:46,060 --> 00:01:46,682
+Por último,
+
+62
+00:01:46,682 --> 00:01:49,570
+en la tarjeta Eliminar Cuenta tendrás disponible el
+
+63
+00:01:49,570 --> 00:01:52,230
+protocolo de baja definitiva de tu suscripción.
+
+64
+00:01:52,230 --> 00:01:53,023
+Por seguridad,
+
+65
+00:01:53,023 --> 00:01:55,344
+el sistema te pedirá escribir la frase de
+
+66
+00:01:55,344 --> 00:01:58,117
+confirmación y conservará únicamente el historial
+
+67
+00:01:58,117 --> 00:02:00,438
+sanitario exigido por normativas del ICA.
+

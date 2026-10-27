@@ -145,3 +145,72 @@ CREATE INDEX IF NOT EXISTS idx_live_classes_course ON live_classes(course_slug, 
 CREATE INDEX IF NOT EXISTS idx_class_bookings_class ON class_bookings(class_id, status);
 CREATE INDEX IF NOT EXISTS idx_class_bookings_student ON class_bookings(student_uid, status);
 CREATE INDEX IF NOT EXISTS idx_quota_ledger_student ON quota_ledger(student_uid, created_at_utc);
+
+
+-- ============================================================================
+-- SISTEMA DE AUTENTICACIÓN PROPIO E INDEPENDIENTE (IPT AUTH - GRADO AA+)
+-- ============================================================================
+
+-- Tabla Maestra de Cuentas de Usuario
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,                       -- usr_... o uid migrado de Firebase
+  email TEXT UNIQUE NOT NULL,                -- Correo normalizado en minúsculas
+  display_name TEXT NOT NULL,                -- Nombre completo
+  avatar_url TEXT,                           -- Foto de perfil
+  role TEXT NOT NULL DEFAULT 'student',      -- 'student', 'instructor', 'operator', 'owner'
+  email_verified INTEGER NOT NULL DEFAULT 0, -- 0: pendiente, 1: verificado
+  is_active INTEGER NOT NULL DEFAULT 1,      -- 1: activo, 0: bloqueado
+  created_at TEXT NOT NULL,                  -- ISO 8601 UTC
+  updated_at TEXT NOT NULL
+);
+
+-- Credenciales Locales (Contraseñas Hasheadas con Bcrypt)
+CREATE TABLE IF NOT EXISTS user_credentials (
+  user_id TEXT PRIMARY KEY,
+  password_hash TEXT NOT NULL,
+  failed_attempts INTEGER NOT NULL DEFAULT 0,
+  locked_until TEXT,                         -- Timestamp ISO UTC para Rate Limiting
+  password_changed_at TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Sesiones Activas en Servidor (Control Total y Revocación Instantánea)
+CREATE TABLE IF NOT EXISTS user_sessions (
+  id TEXT PRIMARY KEY,                       -- Token seguro (256 bits)
+  user_id TEXT NOT NULL,
+  ip_address TEXT,
+  user_agent TEXT,
+  expires_at TEXT NOT NULL,                  -- 30 días renovables
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Cuentas Enlazadas por Proveedores OAuth (Google, Microsoft, SSO)
+CREATE TABLE IF NOT EXISTS oauth_accounts (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  provider TEXT NOT NULL,                    -- 'google', 'microsoft', 'corporate_sso'
+  provider_user_id TEXT NOT NULL,            -- ID devuelto por el proveedor
+  provider_email TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE(provider, provider_user_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Tokens Temporales de Recuperación de Contraseña (Vigencia 15 min)
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  token_hash TEXT NOT NULL,                  -- Hash SHA-256 del código enviado
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Índices de consulta de alta velocidad
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_oauth_accounts_user ON oauth_accounts(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_reset_user ON password_reset_tokens(user_id);

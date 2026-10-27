@@ -1,0 +1,180 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:08,000 --> 00:00:08,752
+Llegamos a Cuentas,
+
+4
+00:00:08,752 --> 00:00:10,651
+el cerebro financiero donde se consolida todo lo
+
+5
+00:00:10,651 --> 00:00:12,589
+que hemos hecho en la plataforma: aquí el sistema
+
+6
+00:00:12,589 --> 00:00:14,647
+suma tu dinero líquido en cuentas más el valor de tu
+
+7
+00:00:14,647 --> 00:00:16,427
+Inventario más el valor de todos tus Bovinos,
+
+8
+00:00:16,427 --> 00:00:18,682
+le resta las deudas y te entrega tu Patrimonio Neto real.
+
+9
+00:00:19,000 --> 00:00:21,708
+Al bajar ves cada una de tus cuentas a la izquierda,
+
+10
+00:00:21,708 --> 00:00:24,625
+a la derecha el historial con todas las ventas de leche,
+
+11
+00:00:24,625 --> 00:00:27,282
+compras de insumos y actividades que registraste en
+
+12
+00:00:27,282 --> 00:00:28,219
+los otros módulos,
+
+13
+00:00:28,219 --> 00:00:30,719
+y abajo los Centros de Costo para auditar cuánto
+
+14
+00:00:30,719 --> 00:00:32,803
+dinero consume cada potrero y cada lote.
+
+15
+00:00:40,000 --> 00:00:42,927
+Arriba tienes tres herramientas clave: con Generar
+
+16
+00:00:42,927 --> 00:00:45,679
+Extracto seleccionas cualquiera de tus cuentas,
+
+17
+00:00:45,679 --> 00:00:48,607
+defines un rango de fechas y descargas un extracto
+
+18
+00:00:48,607 --> 00:00:50,539
+bancario completo en PDF o Excel.
+
+19
+00:00:51,000 --> 00:00:53,175
+Con el botón Transferencia puedes pasar saldo de
+
+20
+00:00:53,175 --> 00:00:53,991
+una cuenta a otra.
+
+21
+00:00:53,991 --> 00:00:54,942
+Para verlo en acción,
+
+22
+00:00:54,942 --> 00:00:57,706
+primero creemos una cuenta bancaria presionando Nueva cuenta.
+
+23
+00:00:57,856 --> 00:01:00,304
+Aquí escribirás el nombre de tu banco,
+
+24
+00:01:00,304 --> 00:01:02,301
+billetera digital o caja menor,
+
+25
+00:01:02,301 --> 00:01:04,555
+seleccionas su tipo —como Efectivo,
+
+26
+00:01:04,555 --> 00:01:05,650
+Banco o Crédito—,
+
+27
+00:01:05,650 --> 00:01:08,227
+verificas la moneda y presionas Guardar.
+
+28
+00:01:18,000 --> 00:01:20,505
+Al bajar a Mis Cuentas ya aparece tu nueva cuenta
+
+29
+00:01:20,505 --> 00:01:23,113
+bancaria con saldo en cero y su botón Editar por si
+
+30
+00:01:23,113 --> 00:01:25,107
+deseas cambiarle el nombre o el estado.
+
+31
+00:01:26,000 --> 00:01:28,750
+Si necesitas registrar un ingreso de capital o un
+
+32
+00:01:28,750 --> 00:01:31,219
+gasto bancario directo sin pasar por bodega,
+
+33
+00:01:31,219 --> 00:01:34,419
+presionas el botón Movimiento en la tarjeta de la cuenta,
+
+34
+00:01:34,419 --> 00:01:35,765
+eliges Ingreso o Egreso,
+
+35
+00:01:35,765 --> 00:01:38,123
+pones el monto y seleccionas la categoría.
+
+36
+00:01:45,000 --> 00:01:47,108
+Le pones un título y comentario para tu
+
+37
+00:01:47,108 --> 00:01:49,756
+contabilidad y presionas Guardar Movimiento: mira
+
+38
+00:01:49,756 --> 00:01:52,512
+cómo al instante tu cuenta recibe el saldo y arriba
+
+39
+00:01:52,512 --> 00:01:55,323
+sube automáticamente el Patrimonio Neto de la finca.
+
+40
+00:02:04,000 --> 00:02:06,904
+Y mira qué útil es Transferencia para pagar deudas
+
+41
+00:02:06,904 --> 00:02:09,867
+o fondear cajas: elegimos como origen nuestro banco
+
+42
+00:02:09,867 --> 00:02:10,448
+con saldo,
+
+43
+00:02:10,448 --> 00:02:13,817
+como destino la cuenta de Crédito que tenía saldo en rojo,
+
+44
+00:02:13,817 --> 00:02:16,489
+digitamos el monto a transferir y confirmamos.
+
+45
+00:02:16,489 --> 00:02:19,219
+Así la deuda queda saldada en cero al instante.
+

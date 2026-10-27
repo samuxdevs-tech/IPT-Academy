@@ -1,0 +1,248 @@
+{
+  "video_key": "datagan360-t2-v6-trazabilidad-animales-locutado",
+  "total_cues": 48,
+  "start_time": 4.0,
+  "end_time": 133.843,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.959,
+      "text": "En el módulo de Trazabilidad registras las enfermedades,"
+    },
+    {
+      "start": 10.959,
+      "end": 11.646,
+      "text": "tratamientos,"
+    },
+    {
+      "start": 11.646,
+      "end": 14.077,
+      "text": "vacunas y salidas de ganado que impactan en el"
+    },
+    {
+      "start": 14.077,
+      "end": 15.61,
+      "text": "Dashboard y en el Inventario."
+    },
+    {
+      "start": 15.61,
+      "end": 18.199,
+      "text": "Arriba puedes buscar un animal individual —o leer"
+    },
+    {
+      "start": 18.199,
+      "end": 20.683,
+      "text": "su chip con Detectar Animal— para ver su ficha."
+    },
+    {
+      "start": 21.0,
+      "end": 23.152,
+      "text": "Abajo tienes cuatro formularios: en Enfermedad"
+    },
+    {
+      "start": 23.152,
+      "end": 25.492,
+      "text": "eliges la categoría de la patología y describes el"
+    },
+    {
+      "start": 25.492,
+      "end": 26.053,
+      "text": "diagnóstico;"
+    },
+    {
+      "start": 26.053,
+      "end": 28.252,
+      "text": "recuerda que lo que guardes aquí actualizará la"
+    },
+    {
+      "start": 28.252,
+      "end": 30.217,
+      "text": "Salud del Hato y el detector de brotes del"
+    },
+    {
+      "start": 30.217,
+      "end": 30.685,
+      "text": "Dashboard."
+    },
+    {
+      "start": 31.0,
+      "end": 33.074,
+      "text": "En la segunda pestaña, Tratamiento,"
+    },
+    {
+      "start": 33.074,
+      "end": 35.623,
+      "text": "describes qué le aplicarás y en Seleccionar"
+    },
+    {
+      "start": 35.623,
+      "end": 38.645,
+      "text": "Medicamento eliges el fármaco directamente desde tu"
+    },
+    {
+      "start": 38.645,
+      "end": 40.008,
+      "text": "Inventario de Finanzas;"
+    },
+    {
+      "start": 40.008,
+      "end": 41.727,
+      "text": "al poner la dosis y los días,"
+    },
+    {
+      "start": 41.727,
+      "end": 45.283,
+      "text": "el sistema descontará esos mililitros o litros de tu bodega."
+    },
+    {
+      "start": 47.0,
+      "end": 48.986,
+      "text": "En la tercera pestaña, Vacunación,"
+    },
+    {
+      "start": 48.986,
+      "end": 51.789,
+      "text": "eliges el biológico disponible en tu Inventario,"
+    },
+    {
+      "start": 51.789,
+      "end": 54.593,
+      "text": "indicas cuántas dosis aplicaste y qué enfermedad"
+    },
+    {
+      "start": 54.593,
+      "end": 57.105,
+      "text": "previene —como Fiebre Aftosa o Brucelosis—;"
+    },
+    {
+      "start": 57.105,
+      "end": 59.85,
+      "text": "esto descontará la vacuna del stock y subirá tu"
+    },
+    {
+      "start": 59.85,
+      "end": 61.427,
+      "text": "puntaje en el semáforo ICA."
+    },
+    {
+      "start": 67.0,
+      "end": 69.624,
+      "text": "Y en la pestaña Movimiento registras cuando un"
+    },
+    {
+      "start": 69.624,
+      "end": 72.306,
+      "text": "animal sale de la finca o se vende: seleccionas"
+    },
+    {
+      "start": 72.306,
+      "end": 72.705,
+      "text": "Salida,"
+    },
+    {
+      "start": 72.705,
+      "end": 74.645,
+      "text": "el motivo —como traslado o feria—,"
+    },
+    {
+      "start": 74.645,
+      "end": 77.555,
+      "text": "vinculas al socio desde el directorio de Terceros y"
+    },
+    {
+      "start": 77.555,
+      "end": 79.267,
+      "text": "escribes el predio de destino."
+    },
+    {
+      "start": 86.0,
+      "end": 88.507,
+      "text": "Colocas la fecha y hora del embarque y presionas"
+    },
+    {
+      "start": 88.507,
+      "end": 91.118,
+      "text": "Registrar Movimiento para que quede asentado en el"
+    },
+    {
+      "start": 91.118,
+      "end": 92.267,
+      "text": "expediente del animal."
+    },
+    {
+      "start": 100.0,
+      "end": 100.593,
+      "text": "Ahora bien,"
+    },
+    {
+      "start": 100.593,
+      "end": 102.534,
+      "text": "cuando haces jornada de vacunación o"
+    },
+    {
+      "start": 102.534,
+      "end": 105.338,
+      "text": "desparasitación en manga no tienes que ir animal por"
+    },
+    {
+      "start": 105.338,
+      "end": 107.71,
+      "text": "animal: filtras arriba por Lote —o presionas"
+    },
+    {
+      "start": 107.71,
+      "end": 110.082,
+      "text": "Seleccionar todos los animales de la finca—,"
+    },
+    {
+      "start": 110.082,
+      "end": 112.617,
+      "text": "marcas los ejemplares en la lista y das clic en"
+    },
+    {
+      "start": 112.617,
+      "end": 113.803,
+      "text": "Registrar Actividades."
+    },
+    {
+      "start": 121.0,
+      "end": 123.794,
+      "text": "Así un solo registro de vacuna o tratamiento se"
+    },
+    {
+      "start": 123.794,
+      "end": 125.816,
+      "text": "aplicará a todo el grupo a la vez."
+    },
+    {
+      "start": 125.816,
+      "end": 128.313,
+      "text": "Y en el menú lateral, dentro de Historial,"
+    },
+    {
+      "start": 128.313,
+      "end": 129.324,
+      "text": "podrás consultar,"
+    },
+    {
+      "start": 129.324,
+      "end": 132.0,
+      "text": "ver el detalle o descargar en Excel todos los"
+    },
+    {
+      "start": 132.0,
+      "end": 133.843,
+      "text": "eventos sanitarios registrados."
+    }
+  ]
+}

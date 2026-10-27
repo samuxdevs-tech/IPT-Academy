@@ -1,0 +1,1 @@
+import{r as n,a6 as i}from"./vendor-Bf44PGYZ.js";function c(s){const r=n(!1),t=i(s);return{...t,showErrors:r,handleSubmit:(u,o)=>t.handleSubmit(async e=>{r.value=!0;try{await u(e),r.value=!1}catch(a){throw console.error("Error en submit:",a),a}},e=>{r.value=!0,o&&o(e)})}}export{c as u};

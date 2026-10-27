@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face {
+          font-family: 'Geist';
+          src: url("../../assets/fonts/captured-caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2") format("woff2"), local("Geist"), local("Segoe UI"), sans-serif;
+          font-weight: 100 900;
+          font-style: normal;
+        }
+
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          background: #202230;
+          color: #ffffff;
+          font-family: Geist, system-ui, -apple-system, sans-serif;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 80px 120px;
+          box-sizing: border-box;
+        }
+
+        .bg-grid {
+          position: absolute;
+          inset: 0;
+          background-image: 
+            linear-gradient(to right, rgba(209, 210, 224, 0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(209, 210, 224, 0.05) 1px, transparent 1px);
+          background-size: 60px 60px;
+          pointer-events: none;
+        }
+
+        .bg-glow {
+          position: absolute;
+          width: 800px;
+          height: 800px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(109, 40, 210, 0.18) 0%, transparent 70%);
+          pointer-events: none;
+        }
+
+        .eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          background: rgba(239, 68, 68, 0.12);
+          border: 1px solid rgba(239, 68, 68, 0.35);
+          color: #f87171;
+          padding: 8px 20px;
+          border-radius: 100px;
+          font-size: 16px;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          margin-bottom: 28px;
+          z-index: 2;
+        }
+
+        .eyebrow-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #ef4444;
+        }
+
+        .headline {
+          font-size: 68px;
+          font-weight: 700;
+          line-height: 1.15;
+          text-align: center;
+          letter-spacing: -0.03em;
+          max-width: 1400px;
+          margin: 0 0 50px 0;
+          z-index: 2;
+        }
+
+        .highlight-red {
+          color: #f87171;
+        }
+
+        .cards-row {
+          display: flex;
+          gap: 28px;
+          width: 100%;
+          max-width: 1400px;
+          justify-content: center;
+          z-index: 2;
+        }
+
+        .card {
+          flex: 1;
+          background: rgba(32, 34, 48, 0.85);
+          border: 1px solid rgba(209, 210, 224, 0.12);
+          border-radius: 16px;
+          padding: 32px 28px;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          backdrop-filter: blur(10px);
+        }
+
+        .card-icon {
+          font-size: 36px;
+          line-height: 1;
+        }
+
+        .card-title {
+          font-size: 22px;
+          font-weight: 700;
+          color: #ffffff;
+          margin: 0;
+        }
+
+        .card-desc {
+          font-size: 16px;
+          line-height: 1.5;
+          color: #d1d2e0;
+          margin: 0;
+        }
+      </style>
+
+      <div data-hf-id="hf-1psx" id="root" data-composition-id="01-hook" data-width="1920" data-height="1080" data-duration="6.5">
+        <div data-hf-id="hf-yqqm" class="bg-grid"></div>
+        <div data-hf-id="hf-vyps" class="bg-glow" id="glow-01"></div>
+
+        <div data-hf-id="hf-4pm4" class="eyebrow" id="eyebrow-01">
+          <span data-hf-id="hf-pbp4" class="eyebrow-dot"></span>
+          <span data-hf-id="hf-r5cu">El Desafío en el Campo Ganadero</span>
+        </div>
+
+        <h1 data-hf-id="hf-5swj" class="headline" id="headline-01">
+          ¿Sigues manejando tu hato en <span data-hf-id="hf-ase4" class="highlight-red">cuadernos de papel</span>?
+        </h1>
+
+        <div data-hf-id="hf-62wu" class="cards-row">
+          <div data-hf-id="hf-1bps" class="card" id="card-01-1">
+            <span data-hf-id="hf-d8zb" class="card-icon">📓</span>
+            <h3 data-hf-id="hf-9b62" class="card-title">Registros en Papel</h3>
+            <p data-hf-id="hf-2m9q" class="card-desc">Tablas desarticuladas y datos que se pierden con el tiempo.</p>
+          </div>
+          <div data-hf-id="hf-c77f" class="card" id="card-01-2">
+            <span data-hf-id="hf-2vhq" class="card-icon">⚠️</span>
+            <h3 data-hf-id="hf-z973" class="card-title">Miedo al Software</h3>
+            <p data-hf-id="hf-3lnv" class="card-desc">Temor a borrar o corromper información real de la finca.</p>
+          </div>
+          <div data-hf-id="hf-61hm" class="card" id="card-01-3">
+            <span data-hf-id="hf-99x1" class="card-icon">📉</span>
+            <h3 data-hf-id="hf-cg7h" class="card-title">Pérdida de Margen</h3>
+            <p data-hf-id="hf-1ggo" class="card-desc">Sin métricas claras no se detecta la verdadera rentabilidad.</p>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+
+        tl.fromTo("#glow-01", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1.1, duration: 2, ease: "power2.out" }, 0);
+        tl.fromTo("#eyebrow-01", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.2);
+        tl.fromTo("#headline-01", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 0.5);
+
+        tl.fromTo("#card-01-1", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 1.4);
+        tl.fromTo("#card-01-2", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 1.9);
+        tl.fromTo("#card-01-3", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 2.4);
+
+        // Gentle exit animation towards frame cut
+        tl.to(["#eyebrow-01", "#headline-01", ".cards-row"], { opacity: 0.15, y: -15, duration: 0.7, ease: "power2.in" }, 5.3);
+
+        window.__timelines["01-hook"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

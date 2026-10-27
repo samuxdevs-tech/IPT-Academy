@@ -1,0 +1,383 @@
+{
+  "video_key": "datagan360-v2-bovinos-locutado",
+  "total_cues": 75,
+  "start_time": 4.0,
+  "end_time": 262.963,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 9.981,
+      "text": "Para poblar tu ganadería en orden lógico,"
+    },
+    {
+      "start": 9.981,
+      "end": 11.382,
+      "text": "primero creamos los Potreros,"
+    },
+    {
+      "start": 11.382,
+      "end": 13.411,
+      "text": "luego los Lotes y finalmente los Animales."
+    },
+    {
+      "start": 13.411,
+      "end": 14.329,
+      "text": "Entramos a Bovinos,"
+    },
+    {
+      "start": 14.329,
+      "end": 16.503,
+      "text": "abrimos Potreros y presionamos Crear Potrero."
+    },
+    {
+      "start": 16.653,
+      "end": 19.263,
+      "text": "Aquí escribirás el nombre o número con el que"
+    },
+    {
+      "start": 19.263,
+      "end": 21.816,
+      "text": "identificas esa pradera o manga en tu finca."
+    },
+    {
+      "start": 28.0,
+      "end": 30.452,
+      "text": "Al digitar las hectáreas que mide ese potrero,"
+    },
+    {
+      "start": 30.452,
+      "end": 32.638,
+      "text": "mira cómo la barra superior las descuenta"
+    },
+    {
+      "start": 32.638,
+      "end": 35.357,
+      "text": "automáticamente del área total de tu finca para que"
+    },
+    {
+      "start": 35.357,
+      "end": 37.596,
+      "text": "nunca asignes más tierra de la que tienes."
+    },
+    {
+      "start": 37.596,
+      "end": 40.315,
+      "text": "Abajo seleccionas qué pastura tienes sembrada allí."
+    },
+    {
+      "start": 41.0,
+      "end": 44.142,
+      "text": "Si despliegas Mostrar mapa y presionas Dibujar Potrero,"
+    },
+    {
+      "start": 44.142,
+      "end": 46.941,
+      "text": "podrás marcar con clics los linderos reales sobre"
+    },
+    {
+      "start": 46.941,
+      "end": 48.084,
+      "text": "la imagen satelital;"
+    },
+    {
+      "start": 48.084,
+      "end": 50.426,
+      "text": "ese polígono se verá reflejado en el mapa"
+    },
+    {
+      "start": 50.426,
+      "end": 51.911,
+      "text": "interactivo del Dashboard."
+    },
+    {
+      "start": 51.911,
+      "end": 54.71,
+      "text": "Con Limpiar Todo puedes borrar el trazo si deseas"
+    },
+    {
+      "start": 54.71,
+      "end": 55.739,
+      "text": "ajustarlo después."
+    },
+    {
+      "start": 61.0,
+      "end": 64.789,
+      "text": "Guardamos el potrero y verás que nace en estado Disponible."
+    },
+    {
+      "start": 64.789,
+      "end": 67.935,
+      "text": "Ahora vamos al menú lateral y entramos al segundo"
+    },
+    {
+      "start": 67.935,
+      "end": 68.899,
+      "text": "eslabón: Lotes."
+    },
+    {
+      "start": 70.0,
+      "end": 71.417,
+      "text": "Presionamos Crear Lote."
+    },
+    {
+      "start": 71.417,
+      "end": 74.559,
+      "text": "Aquí armarás los grupos de manejo de tu finca —como"
+    },
+    {
+      "start": 74.559,
+      "end": 75.545,
+      "text": "vacas en ordeño,"
+    },
+    {
+      "start": 75.545,
+      "end": 78.564,
+      "text": "novillas de vientre o machos de ceba— escribiendo"
+    },
+    {
+      "start": 78.564,
+      "end": 80.659,
+      "text": "su nombre y una breve descripción."
+    },
+    {
+      "start": 90.0,
+      "end": 93.029,
+      "text": "En Propietario vinculamos uno de los titulares que"
+    },
+    {
+      "start": 93.029,
+      "end": 95.755,
+      "text": "creamos en el módulo de Terceros y guardamos."
+    },
+    {
+      "start": 95.755,
+      "end": 97.936,
+      "text": "Ya teniendo potreros y lotes listos,"
+    },
+    {
+      "start": 97.936,
+      "end": 100.299,
+      "text": "entramos en el menú lateral a Animales."
+    },
+    {
+      "start": 104.0,
+      "end": 106.843,
+      "text": "Arriba tienes el bloque de Registro Rápido por si"
+    },
+    {
+      "start": 106.843,
+      "end": 109.512,
+      "text": "estás en el corral y quieres meter animales en"
+    },
+    {
+      "start": 109.512,
+      "end": 112.007,
+      "text": "segundos dejando los detalles para después."
+    },
+    {
+      "start": 112.007,
+      "end": 113.574,
+      "text": "Para ver la ficha completa,"
+    },
+    {
+      "start": 113.574,
+      "end": 115.547,
+      "text": "presionamos el botón Crear Animal."
+    },
+    {
+      "start": 117.0,
+      "end": 119.775,
+      "text": "El formulario se divide en tres pasos: en el Paso"
+    },
+    {
+      "start": 119.775,
+      "end": 122.662,
+      "text": "Uno digitarás el número de chapeta o registro único"
+    },
+    {
+      "start": 122.662,
+      "end": 123.512,
+      "text": "de tu ejemplar,"
+    },
+    {
+      "start": 123.512,
+      "end": 126.399,
+      "text": "seleccionarás su sexo y elegirás su raza dentro del"
+    },
+    {
+      "start": 126.399,
+      "end": 127.419,
+      "text": "catálogo genético."
+    },
+    {
+      "start": 144.0,
+      "end": 147.126,
+      "text": "Indicas su fecha real o aproximada de nacimiento,"
+    },
+    {
+      "start": 147.126,
+      "end": 149.487,
+      "text": "la fecha en que ingresó a la finca y,"
+    },
+    {
+      "start": 149.487,
+      "end": 151.401,
+      "text": "si usas bastón o antenas RFID,"
+    },
+    {
+      "start": 151.401,
+      "end": 154.527,
+      "text": "aquí pegas el código de su microchip electrónico."
+    },
+    {
+      "start": 154.527,
+      "end": 155.931,
+      "text": "Presionamos Siguiente."
+    },
+    {
+      "start": 160.0,
+      "end": 162.506,
+      "text": "En el Paso Dos conectamos todo lo que creamos"
+    },
+    {
+      "start": 162.506,
+      "end": 164.622,
+      "text": "antes: eliges quién es su propietario,"
+    },
+    {
+      "start": 164.622,
+      "end": 167.184,
+      "text": "lo metes en su lote correspondiente —lo que lo"
+    },
+    {
+      "start": 167.184,
+      "end": 169.578,
+      "text": "ubicará en el potrero donde esté ese lote—,"
+    },
+    {
+      "start": 169.578,
+      "end": 172.363,
+      "text": "defines su etapa o grupo de manejo y su propósito."
+    },
+    {
+      "start": 188.0,
+      "end": 190.952,
+      "text": "Si conoces a sus progenitores dentro de la finca,"
+    },
+    {
+      "start": 190.952,
+      "end": 194.145,
+      "text": "aquí seleccionas el registro de la madre y del padre;"
+    },
+    {
+      "start": 194.145,
+      "end": 197.097,
+      "text": "esto armará automáticamente su árbol en el módulo"
+    },
+    {
+      "start": 197.097,
+      "end": 197.941,
+      "text": "de Genealogía."
+    },
+    {
+      "start": 197.941,
+      "end": 200.411,
+      "text": "Añadimos notas y damos clic en Siguiente."
+    },
+    {
+      "start": 207.0,
+      "end": 209.815,
+      "text": "En el Paso Tres ingresas cuántos kilos pesó al"
+    },
+    {
+      "start": 209.815,
+      "end": 212.079,
+      "text": "entrar y su valor comercial por kilo."
+    },
+    {
+      "start": 212.079,
+      "end": 215.506,
+      "text": "Si el animal no nació en tu finca sino que lo compraste,"
+    },
+    {
+      "start": 215.506,
+      "end": 217.587,
+      "text": "marcas la casilla ¿Es una compra?."
+    },
+    {
+      "start": 223.0,
+      "end": 225.582,
+      "text": "Verás que al marcarla se abren campos clave: el"
+    },
+    {
+      "start": 225.582,
+      "end": 226.68,
+      "text": "municipio de origen,"
+    },
+    {
+      "start": 226.68,
+      "end": 229.317,
+      "text": "la cuenta de Finanzas de donde saldrá el dinero,"
+    },
+    {
+      "start": 229.317,
+      "end": 231.789,
+      "text": "el número de Guía de Transporte que te subirá"
+    },
+    {
+      "start": 231.789,
+      "end": 233.217,
+      "text": "puntos en el semáforo ICA,"
+    },
+    {
+      "start": 233.217,
+      "end": 235.195,
+      "text": "y el tercero al que se lo compraste."
+    },
+    {
+      "start": 250.0,
+      "end": 252.818,
+      "text": "Observa además que si digitas un cero de más en el"
+    },
+    {
+      "start": 252.818,
+      "end": 253.72,
+      "text": "precio por kilo,"
+    },
+    {
+      "start": 253.72,
+      "end": 256.481,
+      "text": "el sistema te alerta para evitar inflar por error"
+    },
+    {
+      "start": 256.481,
+      "end": 257.552,
+      "text": "el Patrimonio Neto."
+    },
+    {
+      "start": 257.552,
+      "end": 258.679,
+      "text": "Corregimos el valor,"
+    },
+    {
+      "start": 258.679,
+      "end": 261.441,
+      "text": "presionamos Guardar Animal y el sistema valida el"
+    },
+    {
+      "start": 261.441,
+      "end": 262.963,
+      "text": "cupo disponible en tu plan."
+    }
+  ]
+}

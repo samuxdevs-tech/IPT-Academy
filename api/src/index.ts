@@ -15,6 +15,7 @@ import {
 import { LiveClassService } from './services/liveClassService';
 import { QuotaLedgerService } from './services/quotaLedgerService';
 import { registerSubscriptionRoutes } from './services/subscriptionRoutes';
+import { registerAuthRoutes } from './services/authRoutes';
 
 export interface Env {
   DB: D1Database;
@@ -35,6 +36,11 @@ class InMemoryD1Shim {
     live_classes: [],
     live_class_bookings: [],
     quota_ledger: [],
+    users: [],
+    user_credentials: [],
+    user_sessions: [],
+    oauth_accounts: [],
+    password_reset_tokens: [],
   };
 
   prepare(sql: string) {
@@ -1387,5 +1393,6 @@ app.post('/api/live/quotas/manual-refund', async (c) => {
 });
 
 registerSubscriptionRoutes(app);
+registerAuthRoutes(app);
 
 export default app;

@@ -1,0 +1,148 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:08,000 --> 00:00:09,572
+En la segunda pestaña del Dashboard,
+
+4
+00:00:09,572 --> 00:00:10,357
+Gestión Operativa,
+
+5
+00:00:10,357 --> 00:00:12,715
+se reflejan todos los eventos de Salud y Trazabilidad.
+
+6
+00:00:12,715 --> 00:00:14,592
+Arriba ves la tasa de preñez e interpartos,
+
+7
+00:00:14,592 --> 00:00:16,775
+y debajo el monitor de Clima y Estrés Calórico que
+
+8
+00:00:16,775 --> 00:00:18,347
+mide cómo el calor afecta tu ordeño.
+
+9
+00:00:18,497 --> 00:00:19,665
+Al bajar a Salud del Hato,
+
+10
+00:00:19,665 --> 00:00:21,822
+estas cuatro tarjetas resumen lo ocurrido en los
+
+11
+00:00:21,822 --> 00:00:24,068
+últimos treinta días en el módulo de Trazabilidad:
+
+12
+00:00:24,068 --> 00:00:25,551
+cuántos animales siguen enfermos,
+
+13
+00:00:25,551 --> 00:00:26,854
+cuántos están en tratamiento,
+
+14
+00:00:26,854 --> 00:00:29,056
+vacunas aplicadas y el gráfico con las patologías
+
+15
+00:00:29,056 --> 00:00:29,685
+predominantes.
+
+16
+00:00:30,000 --> 00:00:31,998
+Mira lo que ocurre en Control Sanitario cuando
+
+17
+00:00:31,998 --> 00:00:34,082
+varios animales presentan la misma enfermedad en
+
+18
+00:00:34,082 --> 00:00:36,167
+corto tiempo: el sistema enciende esta Alerta de
+
+19
+00:00:36,167 --> 00:00:38,425
+Brote Epidemiológico indicando el nivel de severidad
+
+20
+00:00:38,425 --> 00:00:39,684
+para que actúes de inmediato.
+
+21
+00:00:40,000 --> 00:00:40,414
+Debajo,
+
+22
+00:00:40,414 --> 00:00:43,434
+el sistema calcula automáticamente tres indicadores
+
+23
+00:00:43,434 --> 00:00:46,277
+críticos con semáforo de color: la mortalidad en
+
+24
+00:00:46,277 --> 00:00:47,520
+crías recién nacidas,
+
+25
+00:00:47,520 --> 00:00:50,422
+la mortalidad general del hato y el porcentaje de
+
+26
+00:00:50,422 --> 00:00:51,547
+animales vacunados.
+
+27
+00:00:54,000 --> 00:00:56,548
+Y al final encontramos el bloque de Cumplimiento
+
+28
+00:00:56,548 --> 00:00:57,397
+Regulatorio ICA,
+
+29
+00:00:57,397 --> 00:00:59,891
+que evalúa de cero a cien qué tan lista está tu
+
+30
+00:00:59,891 --> 00:01:02,386
+finca frente a una visita o auditoría sanitaria
+
+31
+00:01:02,386 --> 00:01:02,811
+oficial.
+
+32
+00:01:06,000 --> 00:01:08,252
+A la derecha te califica tus tres pilares
+
+33
+00:01:08,252 --> 00:01:09,790
+—identificación de animales,
+
+34
+00:01:09,790 --> 00:01:11,877
+vacunas de ley y guías de transporte—,
+
+35
+00:01:11,877 --> 00:01:14,569
+y abajo en Acciones Pendientes te dice con número
+
+36
+00:01:14,569 --> 00:01:17,260
+exacto cuántos animales debes chapetear o vacunar
+
+37
+00:01:17,260 --> 00:01:18,963
+para llegar al cien por ciento.
+

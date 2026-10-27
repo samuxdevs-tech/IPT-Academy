@@ -27646,6 +27646,561 @@ function registerSubscriptionRoutes(app2) {
   });
 }
 
+// src/services/authService.ts
+var AuthService = class {
+  /**
+   * Hashea una contraseña usando Bcrypt con factor de costo 12
+   */
+  static async hashPassword(password) {
+    return bcryptjs_default.hash(password, 12);
+  }
+  /**
+   * Compara una contraseña en texto plano contra el hash almacenado
+   */
+  static async comparePassword(password, hash3) {
+    return bcryptjs_default.compare(password, hash3);
+  }
+  /**
+   * Registra un nuevo usuario en Cloudflare D1
+   */
+  static async registerUser(db, params) {
+    const email3 = params.email.trim().toLowerCase();
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const userId = params.existingUid || `usr_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+    const role = params.role || (email3.includes("samuxdevs") || email3.includes("admin") ? "owner" : "student");
+    const existing = await db.prepare("SELECT id, email FROM users WHERE email = ?").bind(email3).first();
+    if (existing) {
+      throw new Error("EMAIL_ALREADY_REGISTERED: Ya existe una cuenta asociada a este correo electr\xF3nico.");
+    }
+    await db.prepare(
+      `INSERT INTO users (
+          id, email, display_name, avatar_url, role, email_verified, is_active, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)`
+    ).bind(
+      userId,
+      email3,
+      params.displayName.trim() || "Estudiante IPT",
+      params.avatarUrl || null,
+      role,
+      params.emailVerified ? 1 : 0,
+      now,
+      now
+    ).run();
+    if (params.password) {
+      const passwordHash = await this.hashPassword(params.password);
+      await db.prepare(
+        `INSERT INTO user_credentials (
+            user_id, password_hash, failed_attempts, locked_until, password_changed_at
+          ) VALUES (?, ?, 0, NULL, ?)`
+      ).bind(userId, passwordHash, now).run();
+    }
+    return {
+      id: userId,
+      email: email3,
+      display_name: params.displayName.trim() || "Estudiante IPT",
+      avatar_url: params.avatarUrl || null,
+      role,
+      email_verified: params.emailVerified ? 1 : 0,
+      is_active: 1,
+      created_at: now,
+      updated_at: now
+    };
+  }
+  /**
+   * Autentica con email y contraseña verificando Rate Limiting y fuerza bruta
+   */
+  static async authenticateWithPassword(db, emailRaw, passwordRaw) {
+    const email3 = emailRaw.trim().toLowerCase();
+    const now = /* @__PURE__ */ new Date();
+    const nowIso = now.toISOString();
+    const user = await db.prepare("SELECT * FROM users WHERE email = ?").bind(email3).first();
+    if (!user || user.is_active === 0) {
+      await this.comparePassword("dummy_password_timing_shield", "$2a$12$e8Yh9Y6n.j2fP7q2D3O1mO8wz9yQ.fakehashshielddummy");
+      throw new Error("INVALID_CREDENTIALS: Correo electr\xF3nico o contrase\xF1a incorrectos.");
+    }
+    const creds = await db.prepare("SELECT * FROM user_credentials WHERE user_id = ?").bind(user.id).first();
+    if (!creds || !creds.password_hash) {
+      throw new Error("NO_PASSWORD_SET: Esta cuenta fue registrada con Google o SSO. Inicia sesi\xF3n con dicho proveedor o recupera tu contrase\xF1a.");
+    }
+    if (creds.locked_until) {
+      const lockedUntil = new Date(creds.locked_until);
+      if (now < lockedUntil) {
+        const remainingMinutes = Math.ceil((lockedUntil.getTime() - now.getTime()) / (60 * 1e3));
+        throw new Error(`ACCOUNT_LOCKED: Demasiados intentos fallidos. Tu cuenta est\xE1 temporalmente bloqueada por ${remainingMinutes} minutos por seguridad.`);
+      }
+    }
+    const isValid = await this.comparePassword(passwordRaw, creds.password_hash);
+    if (!isValid) {
+      const newAttempts = (creds.failed_attempts || 0) + 1;
+      let lockTimestamp = null;
+      if (newAttempts >= 5) {
+        lockTimestamp = new Date(now.getTime() + 15 * 60 * 1e3).toISOString();
+      }
+      await db.prepare("UPDATE user_credentials SET failed_attempts = ?, locked_until = ? WHERE user_id = ?").bind(newAttempts, lockTimestamp, user.id).run();
+      throw new Error("INVALID_CREDENTIALS: Correo electr\xF3nico o contrase\xF1a incorrectos.");
+    }
+    await db.prepare("UPDATE user_credentials SET failed_attempts = 0, locked_until = NULL WHERE user_id = ?").bind(user.id).run();
+    return user;
+  }
+  /**
+   * Crea una sesión persistente en Cloudflare D1
+   */
+  static async createSession(db, userId, meta3) {
+    const sessionId = `ses_${crypto.randomUUID().replace(/-/g, "")}${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+    const now = /* @__PURE__ */ new Date();
+    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1e3).toISOString();
+    const createdIso = now.toISOString();
+    await db.prepare(
+      `INSERT INTO user_sessions (
+          id, user_id, ip_address, user_agent, expires_at, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?)`
+    ).bind(
+      sessionId,
+      userId,
+      meta3?.ipAddress || null,
+      meta3?.userAgent ? meta3.userAgent.slice(0, 255) : null,
+      expiresAt,
+      createdIso
+    ).run();
+    return {
+      id: sessionId,
+      user_id: userId,
+      ip_address: meta3?.ipAddress || null,
+      user_agent: meta3?.userAgent || null,
+      expires_at: expiresAt,
+      created_at: createdIso
+    };
+  }
+  /**
+   * Valida una sesión activa en el servidor
+   */
+  static async validateSession(db, sessionId) {
+    if (!sessionId)
+      return null;
+    const session = await db.prepare("SELECT * FROM user_sessions WHERE id = ?").bind(sessionId).first();
+    if (!session)
+      return null;
+    const now = /* @__PURE__ */ new Date();
+    if (new Date(session.expires_at) <= now) {
+      await this.revokeSession(db, sessionId);
+      return null;
+    }
+    const user = await db.prepare("SELECT * FROM users WHERE id = ?").bind(session.user_id).first();
+    if (!user || user.is_active === 0) {
+      await this.revokeSession(db, sessionId);
+      return null;
+    }
+    return { user, session };
+  }
+  /**
+   * Revoca una sesión específica (Logout)
+   */
+  static async revokeSession(db, sessionId) {
+    await db.prepare("DELETE FROM user_sessions WHERE id = ?").bind(sessionId).run();
+  }
+  /**
+   * Revoca todas las sesiones de un usuario (para cierre remoto o reseteo de clave)
+   */
+  static async revokeAllUserSessions(db, userId) {
+    await db.prepare("DELETE FROM user_sessions WHERE user_id = ?").bind(userId).run();
+  }
+  /**
+   * Enlaza o autentica cuenta mediante OAuth (Google, Microsoft, SSO)
+   */
+  static async handleOAuthLogin(db, params) {
+    const email3 = params.email.trim().toLowerCase();
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const linked = await db.prepare("SELECT user_id FROM oauth_accounts WHERE provider = ? AND provider_user_id = ?").bind(params.provider, params.providerUserId).first();
+    if (linked) {
+      const user2 = await db.prepare("SELECT * FROM users WHERE id = ?").bind(linked.user_id).first();
+      if (user2 && user2.is_active === 1)
+        return user2;
+    }
+    let user = await db.prepare("SELECT * FROM users WHERE email = ?").bind(email3).first();
+    if (!user) {
+      user = await this.registerUser(db, {
+        email: email3,
+        displayName: params.displayName,
+        avatarUrl: params.avatarUrl,
+        emailVerified: true
+      });
+    }
+    const oauthId = `oat_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+    await db.prepare(
+      `INSERT OR REPLACE INTO oauth_accounts (
+          id, user_id, provider, provider_user_id, provider_email, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?)`
+    ).bind(oauthId, user.id, params.provider, params.providerUserId, email3, now).run();
+    return user;
+  }
+  /**
+   * Genera un token temporal de recuperación de contraseña (15 minutos)
+   */
+  static async createPasswordResetToken(db, emailRaw) {
+    const email3 = emailRaw.trim().toLowerCase();
+    const user = await db.prepare("SELECT * FROM users WHERE email = ?").bind(email3).first();
+    if (!user || user.is_active === 0)
+      return null;
+    const token = `rst_${crypto.randomUUID().replace(/-/g, "")}${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+    const tokenHash = await this.hashPassword(token);
+    const now = /* @__PURE__ */ new Date();
+    const expiresAt = new Date(now.getTime() + 15 * 60 * 1e3).toISOString();
+    const tokenId = `tok_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+    await db.prepare(
+      `INSERT INTO password_reset_tokens (
+          id, user_id, token_hash, expires_at, created_at
+        ) VALUES (?, ?, ?, ?, ?)`
+    ).bind(tokenId, user.id, tokenHash, expiresAt, now.toISOString()).run();
+    return { token, user };
+  }
+  /**
+   * Aplica el cambio de contraseña con el token temporal
+   */
+  static async resetPasswordWithToken(db, tokenIdOrRawToken, newPasswordRaw) {
+    const now = /* @__PURE__ */ new Date();
+    const nowIso = now.toISOString();
+    const tokens = await db.prepare("SELECT * FROM password_reset_tokens WHERE used_at IS NULL AND expires_at > ?").bind(nowIso).all();
+    let matchedTokenRecord = null;
+    for (const record2 of tokens.results || []) {
+      const match2 = await this.comparePassword(tokenIdOrRawToken, record2.token_hash);
+      if (match2) {
+        matchedTokenRecord = record2;
+        break;
+      }
+    }
+    if (!matchedTokenRecord) {
+      throw new Error("INVALID_TOKEN: El enlace de recuperaci\xF3n es inv\xE1lido o ha expirado. Solicita uno nuevo.");
+    }
+    const newHash = await this.hashPassword(newPasswordRaw);
+    await db.prepare("UPDATE user_credentials SET password_hash = ?, password_changed_at = ?, failed_attempts = 0, locked_until = NULL WHERE user_id = ?").bind(newHash, nowIso, matchedTokenRecord.user_id).run();
+    await db.prepare("UPDATE password_reset_tokens SET used_at = ? WHERE id = ?").bind(nowIso, matchedTokenRecord.id).run();
+    await this.revokeAllUserSessions(db, matchedTokenRecord.user_id);
+    return true;
+  }
+  /**
+   * Despacha el correo de recuperación mediante la API de Resend
+   */
+  static async sendPasswordResetEmail(email3, displayName, resetLink) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY || ""}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: "IPT Course <onboarding@resend.dev>",
+          to: [email3],
+          subject: "Recupera el acceso a tu cuenta | IPT Course",
+          html: `
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #000000; color: #ffffff; margin: 0; padding: 40px 20px; }
+                  .container { max-width: 560px; margin: 0 auto; background-color: #09090b; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; padding: 40px 32px; }
+                  .logo { font-size: 16px; font-weight: 600; color: #ffffff; margin-bottom: 24px; display: inline-block; }
+                  .logo span { color: #8052ff; }
+                  h1 { font-size: 24px; font-weight: 400; color: #ffffff; margin-top: 0; margin-bottom: 12px; letter-spacing: -0.02em; }
+                  p { font-size: 14px; font-weight: 300; line-height: 1.6; color: #bdbdbd; margin-bottom: 24px; }
+                  .button { display: inline-block; background-color: #8052ff; color: #ffffff !important; text-decoration: none; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; padding: 14px 28px; border-radius: 24px; margin-bottom: 28px; }
+                  .notice { font-size: 12px; color: #9a9a9a; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 20px; }
+                  .footer { font-size: 11px; color: #9a9a9a; margin-top: 24px; text-align: center; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="logo">IPT <span>Course</span></div>
+                  <h1>Recuperaci\xF3n de contrase\xF1a</h1>
+                  <p>Hola, <strong>${displayName}</strong>. Hemos recibido una solicitud para restablecer la contrase\xF1a de tu cuenta en IPT Course.</p>
+                  <p>Haz clic en el siguiente bot\xF3n para crear una nueva contrase\xF1a. Por tu seguridad, este enlace expirar\xE1 en <strong>15 minutos</strong>:</p>
+                  <a href="${resetLink}" class="button" target="_blank">Restablecer Contrase\xF1a</a>
+                  <div class="notice">
+                    Si t\xFA no realizaste esta solicitud, puedes ignorar este mensaje de forma segura. Tu contrase\xF1a actual permanecer\xE1 intacta.
+                  </div>
+                </div>
+                <div class="footer">
+                  \xA9 IPT (Ivan Perez Tech). Plataforma de formaci\xF3n y arquitectura de software.
+                </div>
+              </body>
+            </html>
+          `
+        })
+      });
+      return res.ok;
+    } catch (err) {
+      console.error("Error enviando correo con Resend:", err);
+      return false;
+    }
+  }
+};
+
+// src/services/authRoutes.ts
+function registerAuthRoutes(app2) {
+  const SESSION_COOKIE_NAME = "ipt_session_v3";
+  const getDb = (c) => c.env?.DB || c.get && c.get("DB");
+  app2.post("/api/v1/auth/register", async (c) => {
+    try {
+      const db = getDb(c);
+      const body = await c.req.json();
+      const email3 = (body.email || "").trim().toLowerCase();
+      const password = body.password || "";
+      const displayName = (body.displayName || body.fullName || "").trim();
+      if (!email3 || !email3.includes("@")) {
+        return c.json({ success: false, error: "Ingresa un correo electr\xF3nico v\xE1lido." }, 400);
+      }
+      if (!password || password.length < 6) {
+        return c.json({ success: false, error: "La contrase\xF1a debe contener al menos 6 caracteres." }, 400);
+      }
+      const user = await AuthService.registerUser(db, {
+        email: email3,
+        password,
+        displayName: displayName || "Estudiante IPT",
+        role: "student"
+      });
+      const ip = c.req.header("x-forwarded-for") || c.req.header("cf-connecting-ip");
+      const userAgent = c.req.header("user-agent");
+      const session = await AuthService.createSession(db, user.id, { ipAddress: ip, userAgent });
+      setCookie(c, SESSION_COOKIE_NAME, session.id, {
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "Lax",
+        maxAge: 30 * 24 * 60 * 60
+        // 30 días
+      });
+      return c.json({
+        success: true,
+        user: {
+          uid: user.id,
+          email: user.email,
+          displayName: user.display_name,
+          role: user.role
+        }
+      });
+    } catch (err) {
+      const message = err.message || "Error registrando la cuenta.";
+      const status = message.includes("ALREADY_REGISTERED") ? 409 : 500;
+      return c.json({ success: false, error: message }, status);
+    }
+  });
+  app2.post("/api/v1/auth/login", async (c) => {
+    try {
+      const db = getDb(c);
+      const body = await c.req.json();
+      const email3 = (body.email || "").trim().toLowerCase();
+      const password = body.password || "";
+      if (!email3 || !password) {
+        return c.json({ success: false, error: "Correo electr\xF3nico y contrase\xF1a requeridos." }, 400);
+      }
+      const user = await AuthService.authenticateWithPassword(db, email3, password);
+      const ip = c.req.header("x-forwarded-for") || c.req.header("cf-connecting-ip");
+      const userAgent = c.req.header("user-agent");
+      const session = await AuthService.createSession(db, user.id, { ipAddress: ip, userAgent });
+      setCookie(c, SESSION_COOKIE_NAME, session.id, {
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "Lax",
+        maxAge: 30 * 24 * 60 * 60
+      });
+      return c.json({
+        success: true,
+        user: {
+          uid: user.id,
+          email: user.email,
+          displayName: user.display_name,
+          role: user.role
+        }
+      });
+    } catch (err) {
+      const message = err.message || "Error iniciando sesi\xF3n.";
+      const status = message.includes("INVALID_CREDENTIALS") ? 401 : message.includes("ACCOUNT_LOCKED") ? 429 : 500;
+      return c.json({ success: false, error: message }, status);
+    }
+  });
+  app2.get("/api/v1/auth/me", async (c) => {
+    try {
+      const db = getDb(c);
+      const sessionId = getCookie(c, SESSION_COOKIE_NAME) || c.req.header("authorization")?.replace("Bearer ", "");
+      if (!sessionId) {
+        return c.json({ success: false, user: null }, 401);
+      }
+      const validated = await AuthService.validateSession(db, sessionId);
+      if (!validated) {
+        deleteCookie(c, SESSION_COOKIE_NAME, { path: "/" });
+        return c.json({ success: false, user: null }, 401);
+      }
+      return c.json({
+        success: true,
+        user: {
+          uid: validated.user.id,
+          email: validated.user.email,
+          displayName: validated.user.display_name,
+          role: validated.user.role
+        }
+      });
+    } catch (err) {
+      return c.json({ success: false, user: null, error: err.message }, 500);
+    }
+  });
+  app2.post("/api/v1/auth/logout", async (c) => {
+    try {
+      const db = getDb(c);
+      const sessionId = getCookie(c, SESSION_COOKIE_NAME);
+      if (sessionId) {
+        await AuthService.revokeSession(db, sessionId);
+      }
+      deleteCookie(c, SESSION_COOKIE_NAME, { path: "/" });
+      return c.json({ success: true, message: "Sesi\xF3n finalizada con \xE9xito." });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 500);
+    }
+  });
+  app2.post("/api/v1/auth/password/forgot", async (c) => {
+    try {
+      const db = getDb(c);
+      const body = await c.req.json();
+      const email3 = (body.email || "").trim().toLowerCase();
+      if (!email3 || !email3.includes("@")) {
+        return c.json({ success: false, error: "Ingresa un correo electr\xF3nico v\xE1lido." }, 400);
+      }
+      const resetData = await AuthService.createPasswordResetToken(db, email3);
+      if (resetData) {
+        const origin = c.req.header("origin") || "https://ipt-course-students.web.app";
+        const resetLink = `${origin}/login?token=${encodeURIComponent(resetData.token)}&view=reset`;
+        await AuthService.sendPasswordResetEmail(email3, resetData.user.display_name, resetLink);
+      }
+      return c.json({
+        success: true,
+        message: "Si la cuenta existe en nuestra plataforma, recibir\xE1s un enlace de recuperaci\xF3n en los pr\xF3ximos minutos."
+      });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 500);
+    }
+  });
+  app2.post("/api/v1/auth/password/reset", async (c) => {
+    try {
+      const db = getDb(c);
+      const body = await c.req.json();
+      const token = (body.token || "").trim();
+      const newPassword = body.newPassword || "";
+      if (!token) {
+        return c.json({ success: false, error: "El token de recuperaci\xF3n es requerido." }, 400);
+      }
+      if (!newPassword || newPassword.length < 6) {
+        return c.json({ success: false, error: "La nueva contrase\xF1a debe tener al menos 6 caracteres." }, 400);
+      }
+      await AuthService.resetPasswordWithToken(db, token, newPassword);
+      return c.json({
+        success: true,
+        message: "Tu contrase\xF1a ha sido actualizada con \xE9xito. Ya puedes iniciar sesi\xF3n."
+      });
+    } catch (err) {
+      return c.json({ success: false, error: err.message || "Error restableciendo la contrase\xF1a." }, 400);
+    }
+  });
+  app2.post("/api/v1/auth/oauth/google/verify", async (c) => {
+    try {
+      const db = getDb(c);
+      const body = await c.req.json();
+      const idToken = body.idToken || body.credential;
+      if (!idToken) {
+        return c.json({ success: false, error: "Credencial de Google no recibida." }, 400);
+      }
+      const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+      if (!googleRes.ok) {
+        return c.json({ success: false, error: "Token de Google inv\xE1lido o expirado." }, 401);
+      }
+      const googlePayload = await googleRes.json();
+      const googleEmail = (googlePayload.email || "").trim().toLowerCase();
+      const googleSub = googlePayload.sub;
+      const googleName = googlePayload.name || "Estudiante Google";
+      const googleAvatar = googlePayload.picture;
+      if (!googleEmail || !googleSub) {
+        return c.json({ success: false, error: "No se pudo verificar el correo de Google." }, 400);
+      }
+      const user = await AuthService.handleOAuthLogin(db, {
+        provider: "google",
+        providerUserId: googleSub,
+        email: googleEmail,
+        displayName: googleName,
+        avatarUrl: googleAvatar
+      });
+      const ip = c.req.header("x-forwarded-for") || c.req.header("cf-connecting-ip");
+      const userAgent = c.req.header("user-agent");
+      const session = await AuthService.createSession(db, user.id, { ipAddress: ip, userAgent });
+      setCookie(c, SESSION_COOKIE_NAME, session.id, {
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "Lax",
+        maxAge: 30 * 24 * 60 * 60
+      });
+      return c.json({
+        success: true,
+        user: {
+          uid: user.id,
+          email: user.email,
+          displayName: user.display_name,
+          role: user.role
+        }
+      });
+    } catch (err) {
+      return c.json({ success: false, error: err.message || "Error en autenticaci\xF3n con Google." }, 500);
+    }
+  });
+  app2.post("/api/v1/auth/sso/verify", async (c) => {
+    try {
+      const db = getDb(c);
+      const body = await c.req.json();
+      const ssoEmail = (body.email || "").trim().toLowerCase();
+      const corporateCode = (body.corporateCode || "").trim();
+      const displayName = (body.displayName || "").trim();
+      if (!ssoEmail || !corporateCode) {
+        return c.json({ success: false, error: "Correo institucional y c\xF3digo de organizaci\xF3n requeridos." }, 400);
+      }
+      const allowedDomains = ["@ivanperez.tech", "@ipt.com"];
+      const hasAllowedDomain = allowedDomains.some((dom) => ssoEmail.endsWith(dom));
+      const hasValidCode = corporateCode.toUpperCase().startsWith("IPT-ORG-") || corporateCode === "CORP2026";
+      if (!hasAllowedDomain && !hasValidCode) {
+        return c.json({
+          success: false,
+          error: "Organizaci\xF3n no autorizada. Contacta al administrador de tu empresa para habilitar el convenio SSO."
+        }, 403);
+      }
+      const user = await AuthService.handleOAuthLogin(db, {
+        provider: "corporate_sso",
+        providerUserId: `sso_${corporateCode}_${ssoEmail}`,
+        email: ssoEmail,
+        displayName: displayName || `Miembro Institucional (${corporateCode})`
+      });
+      const ip = c.req.header("x-forwarded-for") || c.req.header("cf-connecting-ip");
+      const userAgent = c.req.header("user-agent");
+      const session = await AuthService.createSession(db, user.id, { ipAddress: ip, userAgent });
+      setCookie(c, SESSION_COOKIE_NAME, session.id, {
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "Lax",
+        maxAge: 30 * 24 * 60 * 60
+      });
+      return c.json({
+        success: true,
+        user: {
+          uid: user.id,
+          email: user.email,
+          displayName: user.display_name,
+          role: user.role
+        }
+      });
+    } catch (err) {
+      return c.json({ success: false, error: err.message || "Error en autenticaci\xF3n corporativa SSO." }, 500);
+    }
+  });
+}
+
 // src/index.ts
 var app = new Hono3();
 var InMemoryD1Shim = class {
@@ -27657,7 +28212,12 @@ var InMemoryD1Shim = class {
     inline_annotations: [],
     live_classes: [],
     live_class_bookings: [],
-    quota_ledger: []
+    quota_ledger: [],
+    users: [],
+    user_credentials: [],
+    user_sessions: [],
+    oauth_accounts: [],
+    password_reset_tokens: []
   };
   prepare(sql) {
     const tableMatch = sql.match(/FROM\s+([a-zA-Z_]+)/i) || sql.match(/INTO\s+([a-zA-Z_]+)/i) || sql.match(/UPDATE\s+([a-zA-Z_]+)/i);
@@ -28751,6 +29311,7 @@ app.post("/api/live/quotas/manual-refund", async (c) => {
   }
 });
 registerSubscriptionRoutes(app);
+registerAuthRoutes(app);
 var src_default = app;
 
 // src/server.ts

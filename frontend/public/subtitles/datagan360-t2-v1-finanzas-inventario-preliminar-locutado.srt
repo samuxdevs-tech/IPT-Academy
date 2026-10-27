@@ -1,0 +1,192 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:08,000 --> 00:00:10,432
+Entramos al bloque de Finanzas empezando por Inventario,
+
+4
+00:00:10,432 --> 00:00:12,646
+la bodega central donde se conectan tus compras con
+
+5
+00:00:12,646 --> 00:00:13,558
+el consumo en ordeño,
+
+6
+00:00:13,558 --> 00:00:14,513
+sanidad y actividades.
+
+7
+00:00:14,513 --> 00:00:16,467
+En la primera columna puedes buscar cualquier
+
+8
+00:00:16,467 --> 00:00:17,553
+artículo por su nombre...
+
+9
+00:00:17,703 --> 00:00:19,724
+...al lado puedes filtrarlos por tipo de insumo
+
+10
+00:00:19,724 --> 00:00:20,541
+—como medicamentos,
+
+11
+00:00:20,541 --> 00:00:20,885
+vacunas,
+
+12
+00:00:20,885 --> 00:00:22,819
+concentrados o equipos— y en Cantidad filtrar
+
+13
+00:00:22,819 --> 00:00:25,012
+rápidamente qué productos tienen stock disponible o
+
+14
+00:00:25,012 --> 00:00:25,829
+cuáles se agotaron.
+
+15
+00:00:25,979 --> 00:00:28,655
+En cada fila tienes el botón Ajustar: úsalo cuando
+
+16
+00:00:28,655 --> 00:00:31,384
+hagas conteo físico en bodega y necesites registrar
+
+17
+00:00:31,384 --> 00:00:33,578
+una entrada o salida manual por pérdidas,
+
+18
+00:00:33,578 --> 00:00:34,862
+daños o consumo interno,
+
+19
+00:00:34,862 --> 00:00:36,682
+indicando el motivo y la cantidad.
+
+20
+00:00:37,000 --> 00:00:39,887
+Al presionar el botón Historial verás la auditoría
+
+21
+00:00:39,887 --> 00:00:42,775
+completa de ese insumo: puedes filtrar por fecha o
+
+22
+00:00:42,775 --> 00:00:43,352
+encargado,
+
+23
+00:00:43,352 --> 00:00:46,066
+y abajo verás cada vez que entró stock desde el
+
+24
+00:00:46,066 --> 00:00:48,896
+módulo de Compras o salió stock por vacunaciones,
+
+25
+00:00:48,896 --> 00:00:51,379
+ordeños o actividades. Volvemos a la lista.
+
+26
+00:01:00,000 --> 00:01:02,759
+Justo debajo de Inventario tenemos Actividades,
+
+27
+00:01:02,759 --> 00:01:05,576
+donde programas trabajos de la finca consumiendo
+
+28
+00:01:05,576 --> 00:01:06,985
+artículos de esa bodega.
+
+29
+00:01:06,985 --> 00:01:10,155
+Presionamos Nueva Actividad para ver cómo se conectan.
+
+30
+00:01:13,000 --> 00:01:16,069
+Aquí escribirás el nombre del trabajo a realizar en campo,
+
+31
+00:01:16,069 --> 00:01:18,768
+defines su estado inicial y en Responsable eliges a
+
+32
+00:01:18,768 --> 00:01:21,043
+cuál de los trabajadores que registraste en
+
+33
+00:01:21,043 --> 00:01:23,107
+Administración se le asignará la tarea.
+
+34
+00:01:30,000 --> 00:01:32,185
+Observa que el sistema te exige detallar la
+
+35
+00:01:32,185 --> 00:01:34,776
+descripción para que el trabajador tenga claras las
+
+36
+00:01:34,776 --> 00:01:36,555
+instrucciones de lo que debe hacer.
+
+37
+00:01:44,000 --> 00:01:46,353
+En Información Adicional eliges la fecha de
+
+38
+00:01:46,353 --> 00:01:49,145
+finalización y en Aplicar a decides si el gasto irá
+
+39
+00:01:49,145 --> 00:01:51,827
+a toda la finca o a un potrero o lote específico.
+
+40
+00:01:53,000 --> 00:01:55,374
+Mira cómo en Artículos Utilizados se despliegan los
+
+41
+00:01:55,374 --> 00:01:57,608
+mismos insumos que acabamos de ver en Inventario
+
+42
+00:01:57,608 --> 00:01:59,889
+para descontar las unidades que uses en la tarea,
+
+43
+00:01:59,889 --> 00:02:02,681
+o puedes eliminar la fila si no usarás materiales de bodega.
+
+44
+00:02:03,000 --> 00:02:05,562
+Y en el bloque inferior de Gastos Extras podrás
+
+45
+00:02:05,562 --> 00:02:07,634
+añadir cualquier compra de ferretería,
+
+46
+00:02:07,634 --> 00:02:10,741
+combustible o servicio externo que requiera la actividad.
+
+47
+00:02:10,741 --> 00:02:13,413
+En el siguiente video completaremos todo el ciclo
+
+48
+00:02:13,413 --> 00:02:14,667
+contable de esta tarea.
+

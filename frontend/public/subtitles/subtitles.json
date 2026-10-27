@@ -1,0 +1,4465 @@
+{
+  "datagan360-configuracion-especial-locutado": [
+    {
+      "start": 0.0,
+      "end": 3.786,
+      "text": "¡Hola! Bienvenido al tour modular de DataGan 360."
+    },
+    {
+      "start": 4.0,
+      "end": 6.046,
+      "text": "Comenzamos en el ícono de engranaje superior para"
+    },
+    {
+      "start": 6.046,
+      "end": 7.507,
+      "text": "abrir la Configuración del Sistema,"
+    },
+    {
+      "start": 7.507,
+      "end": 9.637,
+      "text": "donde definirás las reglas globales que afectarán a"
+    },
+    {
+      "start": 9.637,
+      "end": 11.432,
+      "text": "todos los módulos que veremos más adelante."
+    },
+    {
+      "start": 11.432,
+      "end": 12.643,
+      "text": "Entramos primero a Mi Perfil."
+    },
+    {
+      "start": 12.793,
+      "end": 14.826,
+      "text": "En esta ficha registrarás tus datos reales de"
+    },
+    {
+      "start": 14.826,
+      "end": 16.589,
+      "text": "titular o administrador: tu fotografía,"
+    },
+    {
+      "start": 16.589,
+      "end": 18.622,
+      "text": "documento de identidad, teléfono y municipio."
+    },
+    {
+      "start": 18.622,
+      "end": 20.656,
+      "text": "Es fundamental que pongas tu correo y celular"
+    },
+    {
+      "start": 20.656,
+      "end": 22.69,
+      "text": "verdaderos porque allí llegarán los avisos de"
+    },
+    {
+      "start": 22.69,
+      "end": 23.142,
+      "text": "seguridad."
+    },
+    {
+      "start": 23.292,
+      "end": 25.056,
+      "text": "Cada vez que modifiques un dato personal,"
+    },
+    {
+      "start": 25.056,
+      "end": 27.207,
+      "text": "presionas Guardar Cambios y el sistema actualizará"
+    },
+    {
+      "start": 27.207,
+      "end": 28.111,
+      "text": "tu ficha al instante."
+    },
+    {
+      "start": 28.261,
+      "end": 30.419,
+      "text": "Observa que si por error intentas digitar números"
+    },
+    {
+      "start": 30.419,
+      "end": 31.916,
+      "text": "en campos de texto como tu nombre,"
+    },
+    {
+      "start": 31.916,
+      "end": 34.03,
+      "text": "el validador inteligente los bloqueará en tiempo"
+    },
+    {
+      "start": 34.03,
+      "end": 35.923,
+      "text": "real para mantener limpia tu base de datos."
+    },
+    {
+      "start": 35.923,
+      "end": 36.584,
+      "text": "Volvemos atrás."
+    },
+    {
+      "start": 36.734,
+      "end": 38.908,
+      "text": "En Alertas y Notificaciones encenderás los avisos"
+    },
+    {
+      "start": 38.908,
+      "end": 40.86,
+      "text": "automáticos de tu finca: cuando más adelante"
+    },
+    {
+      "start": 40.86,
+      "end": 41.659,
+      "text": "registremos celos,"
+    },
+    {
+      "start": 41.659,
+      "end": 43.079,
+      "text": "servicios, medicamentos o leche,"
+    },
+    {
+      "start": 43.079,
+      "end": 45.253,
+      "text": "estos interruptores harán que el sistema te avise"
+    },
+    {
+      "start": 45.253,
+      "end": 46.274,
+      "text": "si hay partos próximos,"
+    },
+    {
+      "start": 46.274,
+      "end": 47.649,
+      "text": "stock bajo o atrasos de ordeño."
+    },
+    {
+      "start": 47.799,
+      "end": 48.82,
+      "text": "Pasamos a Carga Masiva,"
+    },
+    {
+      "start": 48.82,
+      "end": 51.216,
+      "text": "diseñada por si deseas subir tu ganadería desde Excel."
+    },
+    {
+      "start": 51.216,
+      "end": 53.391,
+      "text": "Presta mucha atención a esta regla: siempre debes"
+    },
+    {
+      "start": 53.391,
+      "end": 55.699,
+      "text": "descargar y subir primero la plantilla del Paso Uno,"
+    },
+    {
+      "start": 55.699,
+      "end": 57.918,
+      "text": "donde irán tus datos independientes como la finca,"
+    },
+    {
+      "start": 57.918,
+      "end": 58.805,
+      "text": "terceros y potreros."
+    },
+    {
+      "start": 58.955,
+      "end": 61.184,
+      "text": "Solo cuando esa estructura exista en el sistema,"
+    },
+    {
+      "start": 61.184,
+      "end": 64.062,
+      "text": "subirás aquí abajo la plantilla del Paso Dos con tus animales,"
+    },
+    {
+      "start": 64.062,
+      "end": 65.269,
+      "text": "lotes, pesajes y finanzas;"
+    },
+    {
+      "start": 65.269,
+      "end": 67.683,
+      "text": "así cada animal encontrará su potrero sin dar error."
+    },
+    {
+      "start": 67.683,
+      "end": 69.633,
+      "text": "Arriba siempre tendrás el historial por si"
+    },
+    {
+      "start": 69.633,
+      "end": 70.979,
+      "text": "necesitas revertir un cargue."
+    },
+    {
+      "start": 70.979,
+      "end": 71.815,
+      "text": "Volvemos al panel."
+    },
+    {
+      "start": 71.965,
+      "end": 73.846,
+      "text": "En Unidades de Medida elegirás si en tu región"
+    },
+    {
+      "start": 73.846,
+      "end": 75.564,
+      "text": "trabajas la tierra en hectáreas o cuadras,"
+    },
+    {
+      "start": 75.564,
+      "end": 77.201,
+      "text": "el ganado en kilos y la leche en litros;"
+    },
+    {
+      "start": 77.201,
+      "end": 79.491,
+      "text": "todo el Dashboard convertirá las cifras automáticamente."
+    },
+    {
+      "start": 79.641,
+      "end": 81.592,
+      "text": "Abajo encontrarás un campo clave para toda la"
+    },
+    {
+      "start": 81.592,
+      "end": 83.542,
+      "text": "plataforma: el Precio de Referencia por Kilo."
+    },
+    {
+      "start": 83.542,
+      "end": 85.753,
+      "text": "Cuando más adelante registres animales sin ponerles"
+    },
+    {
+      "start": 85.753,
+      "end": 86.663,
+      "text": "un precio individual,"
+    },
+    {
+      "start": 86.663,
+      "end": 88.744,
+      "text": "el sistema multiplicará su peso por el valor que"
+    },
+    {
+      "start": 88.744,
+      "end": 89.351,
+      "text": "coloques aquí."
+    },
+    {
+      "start": 89.501,
+      "end": 91.86,
+      "text": "Aquí colocamos diez mil pesos a modo de ejemplo y guardamos;"
+    },
+    {
+      "start": 91.86,
+      "end": 93.551,
+      "text": "este número irá directo a calcular el Valor"
+    },
+    {
+      "start": 93.551,
+      "end": 95.359,
+      "text": "Patrimonial de tu Hato en el Dashboard y en el"
+    },
+    {
+      "start": 95.359,
+      "end": 96.067,
+      "text": "módulo de Cuentas."
+    },
+    {
+      "start": 96.217,
+      "end": 98.025,
+      "text": "En Mis Datos y Respaldo podrás descargar cuando"
+    },
+    {
+      "start": 98.025,
+      "end": 99.948,
+      "text": "quieras toda tu información dividida en los mismos"
+    },
+    {
+      "start": 99.948,
+      "end": 101.717,
+      "text": "archivos del Paso Uno y Paso Dos por si deseas"
+    },
+    {
+      "start": 101.717,
+      "end": 102.756,
+      "text": "migrar o auditar tus datos,"
+    },
+    {
+      "start": 102.756,
+      "end": 104.679,
+      "text": "o exportar abajo tu copia legal completa protegida"
+    },
+    {
+      "start": 104.679,
+      "end": 105.91,
+      "text": "por la Ley quince ochenta y uno."
+    },
+    {
+      "start": 106.06,
+      "end": 106.682,
+      "text": "Por último,"
+    },
+    {
+      "start": 106.682,
+      "end": 109.57,
+      "text": "en la tarjeta Eliminar Cuenta tendrás disponible el"
+    },
+    {
+      "start": 109.57,
+      "end": 112.23,
+      "text": "protocolo de baja definitiva de tu suscripción."
+    },
+    {
+      "start": 112.23,
+      "end": 113.023,
+      "text": "Por seguridad,"
+    },
+    {
+      "start": 113.023,
+      "end": 115.344,
+      "text": "el sistema te pedirá escribir la frase de"
+    },
+    {
+      "start": 115.344,
+      "end": 118.117,
+      "text": "confirmación y conservará únicamente el historial"
+    },
+    {
+      "start": 118.117,
+      "end": 120.438,
+      "text": "sanitario exigido por normativas del ICA."
+    }
+  ],
+  "datagan360-v1-terceros-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.038,
+      "text": "Antes de crear lotes, animales o compras,"
+    },
+    {
+      "start": 10.038,
+      "end": 12.523,
+      "text": "necesitamos registrar a los actores comerciales en"
+    },
+    {
+      "start": 12.523,
+      "end": 13.517,
+      "text": "Gestión de Terceros."
+    },
+    {
+      "start": 13.517,
+      "end": 15.953,
+      "text": "Entramos a Personas y presionamos Crear Personas."
+    },
+    {
+      "start": 16.103,
+      "end": 18.51,
+      "text": "En este formulario ingresarás los datos reales de"
+    },
+    {
+      "start": 18.51,
+      "end": 21.015,
+      "text": "cualquier persona natural vinculada a tu ganadería:"
+    },
+    {
+      "start": 21.015,
+      "end": 22.635,
+      "text": "seleccionas su tipo de documento,"
+    },
+    {
+      "start": 22.635,
+      "end": 24.698,
+      "text": "digitas su cédula y escribes sus nombres y"
+    },
+    {
+      "start": 24.698,
+      "end": 25.681,
+      "text": "apellidos completos."
+    },
+    {
+      "start": 26.0,
+      "end": 28.718,
+      "text": "En Nombre Comercial puedes poner cómo se conoce su"
+    },
+    {
+      "start": 28.718,
+      "end": 29.86,
+      "text": "negocio en la región,"
+    },
+    {
+      "start": 29.86,
+      "end": 32.632,
+      "text": "y enseguida seleccionas el departamento y municipio"
+    },
+    {
+      "start": 32.632,
+      "end": 34.861,
+      "text": "donde opera para tener clara su ubicación"
+    },
+    {
+      "start": 34.861,
+      "end": 35.459,
+      "text": "geográfica."
+    },
+    {
+      "start": 40.0,
+      "end": 42.668,
+      "text": "Aquí colocas su dirección física de contacto y su"
+    },
+    {
+      "start": 42.668,
+      "end": 43.648,
+      "text": "número de celular;"
+    },
+    {
+      "start": 43.648,
+      "end": 46.37,
+      "text": "observa cómo el borde se pone en verde confirmando"
+    },
+    {
+      "start": 46.37,
+      "end": 47.731,
+      "text": "que el formato es válido."
+    },
+    {
+      "start": 53.0,
+      "end": 55.297,
+      "text": "Abajo viene lo más importante: definir qué rol"
+    },
+    {
+      "start": 55.297,
+      "end": 56.896,
+      "text": "cumple esta persona en tu finca."
+    },
+    {
+      "start": 56.896,
+      "end": 59.643,
+      "text": "Puedes marcar varias casillas a la vez si es comprador,"
+    },
+    {
+      "start": 59.643,
+      "end": 60.142,
+      "text": "proveedor,"
+    },
+    {
+      "start": 60.142,
+      "end": 62.29,
+      "text": "propietario de ganado o socio en traslados."
+    },
+    {
+      "start": 62.29,
+      "end": 63.688,
+      "text": "Lo guardamos como proveedor."
+    },
+    {
+      "start": 64.0,
+      "end": 66.832,
+      "text": "Verás que ya aparece en la lista identificado con"
+    },
+    {
+      "start": 66.832,
+      "end": 67.931,
+      "text": "la letra de su rol,"
+    },
+    {
+      "start": 67.931,
+      "end": 69.954,
+      "text": "listo para usarse en otros módulos."
+    },
+    {
+      "start": 69.954,
+      "end": 72.555,
+      "text": "Ahora volvemos por el menú Admin a Terceros y"
+    },
+    {
+      "start": 72.555,
+      "end": 75.041,
+      "text": "entramos a Empresas para registrar personas"
+    },
+    {
+      "start": 75.041,
+      "end": 75.619,
+      "text": "jurídicas."
+    },
+    {
+      "start": 81.0,
+      "end": 82.75,
+      "text": "Presionamos Crear Empresas."
+    },
+    {
+      "start": 82.75,
+      "end": 85.277,
+      "text": "Aquí registrarás cooperativas lecheras,"
+    },
+    {
+      "start": 85.277,
+      "end": 88.582,
+      "text": "almacenes agropecuarios o frigoríficos: seleccionas"
+    },
+    {
+      "start": 88.582,
+      "end": 91.757,
+      "text": "NIT e ingresas el número tributario de la empresa"
+    },
+    {
+      "start": 91.757,
+      "end": 93.507,
+      "text": "sin dígito de verificación."
+    },
+    {
+      "start": 94.0,
+      "end": 96.569,
+      "text": "En Nombre Comercial colocas la marca con la que"
+    },
+    {
+      "start": 96.569,
+      "end": 99.192,
+      "text": "tratas comercialmente y eliges el departamento y"
+    },
+    {
+      "start": 99.192,
+      "end": 100.723,
+      "text": "ciudad de su sede principal."
+    },
+    {
+      "start": 106.0,
+      "end": 108.959,
+      "text": "Completas la dirección de facturación o despacho de"
+    },
+    {
+      "start": 108.959,
+      "end": 111.571,
+      "text": "la empresa y su línea telefónica de atención."
+    },
+    {
+      "start": 122.0,
+      "end": 124.059,
+      "text": "A diferencia de una persona natural,"
+    },
+    {
+      "start": 124.059,
+      "end": 126.69,
+      "text": "aquí añadirás el código de sucursal y la razón"
+    },
+    {
+      "start": 126.69,
+      "end": 128.577,
+      "text": "social tal como figura en su RUT."
+    },
+    {
+      "start": 128.577,
+      "end": 130.236,
+      "text": "Marcamos su rol —por ejemplo,"
+    },
+    {
+      "start": 130.236,
+      "end": 132.581,
+      "text": "Proveedor para usarlo más adelante cuando"
+    },
+    {
+      "start": 132.581,
+      "end": 134.411,
+      "text": "registremos compras de insumos—,"
+    },
+    {
+      "start": 134.411,
+      "end": 137.099,
+      "text": "guardamos y queda activo en nuestro directorio."
+    }
+  ],
+  "datagan360-v2-bovinos-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 9.981,
+      "text": "Para poblar tu ganadería en orden lógico,"
+    },
+    {
+      "start": 9.981,
+      "end": 11.382,
+      "text": "primero creamos los Potreros,"
+    },
+    {
+      "start": 11.382,
+      "end": 13.411,
+      "text": "luego los Lotes y finalmente los Animales."
+    },
+    {
+      "start": 13.411,
+      "end": 14.329,
+      "text": "Entramos a Bovinos,"
+    },
+    {
+      "start": 14.329,
+      "end": 16.503,
+      "text": "abrimos Potreros y presionamos Crear Potrero."
+    },
+    {
+      "start": 16.653,
+      "end": 19.263,
+      "text": "Aquí escribirás el nombre o número con el que"
+    },
+    {
+      "start": 19.263,
+      "end": 21.816,
+      "text": "identificas esa pradera o manga en tu finca."
+    },
+    {
+      "start": 28.0,
+      "end": 30.452,
+      "text": "Al digitar las hectáreas que mide ese potrero,"
+    },
+    {
+      "start": 30.452,
+      "end": 32.638,
+      "text": "mira cómo la barra superior las descuenta"
+    },
+    {
+      "start": 32.638,
+      "end": 35.357,
+      "text": "automáticamente del área total de tu finca para que"
+    },
+    {
+      "start": 35.357,
+      "end": 37.596,
+      "text": "nunca asignes más tierra de la que tienes."
+    },
+    {
+      "start": 37.596,
+      "end": 40.315,
+      "text": "Abajo seleccionas qué pastura tienes sembrada allí."
+    },
+    {
+      "start": 41.0,
+      "end": 44.142,
+      "text": "Si despliegas Mostrar mapa y presionas Dibujar Potrero,"
+    },
+    {
+      "start": 44.142,
+      "end": 46.941,
+      "text": "podrás marcar con clics los linderos reales sobre"
+    },
+    {
+      "start": 46.941,
+      "end": 48.084,
+      "text": "la imagen satelital;"
+    },
+    {
+      "start": 48.084,
+      "end": 50.426,
+      "text": "ese polígono se verá reflejado en el mapa"
+    },
+    {
+      "start": 50.426,
+      "end": 51.911,
+      "text": "interactivo del Dashboard."
+    },
+    {
+      "start": 51.911,
+      "end": 54.71,
+      "text": "Con Limpiar Todo puedes borrar el trazo si deseas"
+    },
+    {
+      "start": 54.71,
+      "end": 55.739,
+      "text": "ajustarlo después."
+    },
+    {
+      "start": 61.0,
+      "end": 64.789,
+      "text": "Guardamos el potrero y verás que nace en estado Disponible."
+    },
+    {
+      "start": 64.789,
+      "end": 67.935,
+      "text": "Ahora vamos al menú lateral y entramos al segundo"
+    },
+    {
+      "start": 67.935,
+      "end": 68.899,
+      "text": "eslabón: Lotes."
+    },
+    {
+      "start": 70.0,
+      "end": 71.417,
+      "text": "Presionamos Crear Lote."
+    },
+    {
+      "start": 71.417,
+      "end": 74.559,
+      "text": "Aquí armarás los grupos de manejo de tu finca —como"
+    },
+    {
+      "start": 74.559,
+      "end": 75.545,
+      "text": "vacas en ordeño,"
+    },
+    {
+      "start": 75.545,
+      "end": 78.564,
+      "text": "novillas de vientre o machos de ceba— escribiendo"
+    },
+    {
+      "start": 78.564,
+      "end": 80.659,
+      "text": "su nombre y una breve descripción."
+    },
+    {
+      "start": 90.0,
+      "end": 93.029,
+      "text": "En Propietario vinculamos uno de los titulares que"
+    },
+    {
+      "start": 93.029,
+      "end": 95.755,
+      "text": "creamos en el módulo de Terceros y guardamos."
+    },
+    {
+      "start": 95.755,
+      "end": 97.936,
+      "text": "Ya teniendo potreros y lotes listos,"
+    },
+    {
+      "start": 97.936,
+      "end": 100.299,
+      "text": "entramos en el menú lateral a Animales."
+    },
+    {
+      "start": 104.0,
+      "end": 106.843,
+      "text": "Arriba tienes el bloque de Registro Rápido por si"
+    },
+    {
+      "start": 106.843,
+      "end": 109.512,
+      "text": "estás en el corral y quieres meter animales en"
+    },
+    {
+      "start": 109.512,
+      "end": 112.007,
+      "text": "segundos dejando los detalles para después."
+    },
+    {
+      "start": 112.007,
+      "end": 113.574,
+      "text": "Para ver la ficha completa,"
+    },
+    {
+      "start": 113.574,
+      "end": 115.547,
+      "text": "presionamos el botón Crear Animal."
+    },
+    {
+      "start": 117.0,
+      "end": 119.775,
+      "text": "El formulario se divide en tres pasos: en el Paso"
+    },
+    {
+      "start": 119.775,
+      "end": 122.662,
+      "text": "Uno digitarás el número de chapeta o registro único"
+    },
+    {
+      "start": 122.662,
+      "end": 123.512,
+      "text": "de tu ejemplar,"
+    },
+    {
+      "start": 123.512,
+      "end": 126.399,
+      "text": "seleccionarás su sexo y elegirás su raza dentro del"
+    },
+    {
+      "start": 126.399,
+      "end": 127.419,
+      "text": "catálogo genético."
+    },
+    {
+      "start": 144.0,
+      "end": 147.126,
+      "text": "Indicas su fecha real o aproximada de nacimiento,"
+    },
+    {
+      "start": 147.126,
+      "end": 149.487,
+      "text": "la fecha en que ingresó a la finca y,"
+    },
+    {
+      "start": 149.487,
+      "end": 151.401,
+      "text": "si usas bastón o antenas RFID,"
+    },
+    {
+      "start": 151.401,
+      "end": 154.527,
+      "text": "aquí pegas el código de su microchip electrónico."
+    },
+    {
+      "start": 154.527,
+      "end": 155.931,
+      "text": "Presionamos Siguiente."
+    },
+    {
+      "start": 160.0,
+      "end": 162.506,
+      "text": "En el Paso Dos conectamos todo lo que creamos"
+    },
+    {
+      "start": 162.506,
+      "end": 164.622,
+      "text": "antes: eliges quién es su propietario,"
+    },
+    {
+      "start": 164.622,
+      "end": 167.184,
+      "text": "lo metes en su lote correspondiente —lo que lo"
+    },
+    {
+      "start": 167.184,
+      "end": 169.578,
+      "text": "ubicará en el potrero donde esté ese lote—,"
+    },
+    {
+      "start": 169.578,
+      "end": 172.363,
+      "text": "defines su etapa o grupo de manejo y su propósito."
+    },
+    {
+      "start": 188.0,
+      "end": 190.952,
+      "text": "Si conoces a sus progenitores dentro de la finca,"
+    },
+    {
+      "start": 190.952,
+      "end": 194.145,
+      "text": "aquí seleccionas el registro de la madre y del padre;"
+    },
+    {
+      "start": 194.145,
+      "end": 197.097,
+      "text": "esto armará automáticamente su árbol en el módulo"
+    },
+    {
+      "start": 197.097,
+      "end": 197.941,
+      "text": "de Genealogía."
+    },
+    {
+      "start": 197.941,
+      "end": 200.411,
+      "text": "Añadimos notas y damos clic en Siguiente."
+    },
+    {
+      "start": 207.0,
+      "end": 209.815,
+      "text": "En el Paso Tres ingresas cuántos kilos pesó al"
+    },
+    {
+      "start": 209.815,
+      "end": 212.079,
+      "text": "entrar y su valor comercial por kilo."
+    },
+    {
+      "start": 212.079,
+      "end": 215.506,
+      "text": "Si el animal no nació en tu finca sino que lo compraste,"
+    },
+    {
+      "start": 215.506,
+      "end": 217.587,
+      "text": "marcas la casilla ¿Es una compra?."
+    },
+    {
+      "start": 223.0,
+      "end": 225.582,
+      "text": "Verás que al marcarla se abren campos clave: el"
+    },
+    {
+      "start": 225.582,
+      "end": 226.68,
+      "text": "municipio de origen,"
+    },
+    {
+      "start": 226.68,
+      "end": 229.317,
+      "text": "la cuenta de Finanzas de donde saldrá el dinero,"
+    },
+    {
+      "start": 229.317,
+      "end": 231.789,
+      "text": "el número de Guía de Transporte que te subirá"
+    },
+    {
+      "start": 231.789,
+      "end": 233.217,
+      "text": "puntos en el semáforo ICA,"
+    },
+    {
+      "start": 233.217,
+      "end": 235.195,
+      "text": "y el tercero al que se lo compraste."
+    },
+    {
+      "start": 250.0,
+      "end": 252.818,
+      "text": "Observa además que si digitas un cero de más en el"
+    },
+    {
+      "start": 252.818,
+      "end": 253.72,
+      "text": "precio por kilo,"
+    },
+    {
+      "start": 253.72,
+      "end": 256.481,
+      "text": "el sistema te alerta para evitar inflar por error"
+    },
+    {
+      "start": 256.481,
+      "end": 257.552,
+      "text": "el Patrimonio Neto."
+    },
+    {
+      "start": 257.552,
+      "end": 258.679,
+      "text": "Corregimos el valor,"
+    },
+    {
+      "start": 258.679,
+      "end": 261.441,
+      "text": "presionamos Guardar Animal y el sistema valida el"
+    },
+    {
+      "start": 261.441,
+      "end": 262.963,
+      "text": "cupo disponible en tu plan."
+    }
+  ],
+  "datagan360-v3-transferencia-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 9.705,
+      "text": "Si trabajas ganadería en compañía,"
+    },
+    {
+      "start": 9.705,
+      "end": 12.664,
+      "text": "cuentas con varios socios o compras ganado de otro titular,"
+    },
+    {
+      "start": 12.664,
+      "end": 15.072,
+      "text": "el módulo de Transferencia te permite cambiar de"
+    },
+    {
+      "start": 15.072,
+      "end": 16.727,
+      "text": "dueño a tus animales en segundos."
+    },
+    {
+      "start": 16.727,
+      "end": 18.683,
+      "text": "Primero buscamos al propietario actual."
+    },
+    {
+      "start": 19.0,
+      "end": 21.219,
+      "text": "El sistema nos lista todos sus bovinos;"
+    },
+    {
+      "start": 21.219,
+      "end": 23.268,
+      "text": "aquí marcas uno o varios ejemplares,"
+    },
+    {
+      "start": 23.268,
+      "end": 25.829,
+      "text": "seleccionas abajo a qué nuevo propietario del"
+    },
+    {
+      "start": 25.829,
+      "end": 28.675,
+      "text": "módulo de Terceros pasarán y presionas Transferir."
+    },
+    {
+      "start": 33.0,
+      "end": 34.815,
+      "text": "Si consultamos arriba al nuevo titular,"
+    },
+    {
+      "start": 34.815,
+      "end": 37.096,
+      "text": "comprobamos que el ejemplar ya figura a su nombre"
+    },
+    {
+      "start": 37.096,
+      "end": 39.238,
+      "text": "—cambio que también se reflejará en su Hoja de"
+    },
+    {
+      "start": 39.238,
+      "end": 39.517,
+      "text": "Vida—,"
+    },
+    {
+      "start": 39.517,
+      "end": 41.844,
+      "text": "contando además con el botón Seleccionar todo para"
+    },
+    {
+      "start": 41.844,
+      "end": 42.682,
+      "text": "traspasos masivos."
+    },
+    {
+      "start": 43.0,
+      "end": 45.534,
+      "text": "¿Y qué pasa con los animales que metiste por"
+    },
+    {
+      "start": 45.534,
+      "end": 48.241,
+      "text": "Registro Rápido en corral y quedaron sin dueño?"
+    },
+    {
+      "start": 48.241,
+      "end": 50.66,
+      "text": "Cambias al botón Animales sin propietario,"
+    },
+    {
+      "start": 50.66,
+      "end": 51.639,
+      "text": "presionas Cargar,"
+    },
+    {
+      "start": 51.639,
+      "end": 54.461,
+      "text": "marcas los ejemplares pendientes y les asignas su"
+    },
+    {
+      "start": 54.461,
+      "end": 56.707,
+      "text": "propietario definitivo de un solo clic."
+    }
+  ],
+  "datagan360-v4-produccion-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 9.752,
+      "text": "Entramos al módulo de Producción,"
+    },
+    {
+      "start": 9.752,
+      "end": 12.035,
+      "text": "donde cada dato que ingreses alimentará las"
+    },
+    {
+      "start": 12.035,
+      "end": 13.31,
+      "text": "gráficas de Rendimiento,"
+    },
+    {
+      "start": 13.31,
+      "end": 14.69,
+      "text": "Tops y Analítica Avanzada."
+    },
+    {
+      "start": 14.69,
+      "end": 17.133,
+      "text": "En Pesaje presionamos Crear Pesaje y filtramos"
+    },
+    {
+      "start": 17.133,
+      "end": 19.682,
+      "text": "primero el lote que estamos pasando por báscula."
+    },
+    {
+      "start": 20.0,
+      "end": 22.522,
+      "text": "Al elegir el animal —o escanear su chapeta con"
+    },
+    {
+      "start": 22.522,
+      "end": 23.454,
+      "text": "Detectar Animal—,"
+    },
+    {
+      "start": 23.454,
+      "end": 26.031,
+      "text": "mira cómo aparece una cinta recordándote cuánto"
+    },
+    {
+      "start": 26.031,
+      "end": 27.073,
+      "text": "pesó la última vez;"
+    },
+    {
+      "start": 27.073,
+      "end": 29.87,
+      "text": "así sabrás de inmediato al digitar el nuevo peso si"
+    },
+    {
+      "start": 29.87,
+      "end": 31.679,
+      "text": "ganó o perdió condición corporal."
+    },
+    {
+      "start": 32.0,
+      "end": 34.739,
+      "text": "Aquí seleccionas con qué dieta se está alimentando"
+    },
+    {
+      "start": 34.739,
+      "end": 37.588,
+      "text": "actualmente —dato que usará el motor de Inteligencia"
+    },
+    {
+      "start": 37.588,
+      "end": 40.383,
+      "text": "Predictiva para cruzar nutrición versus ganancia de"
+    },
+    {
+      "start": 40.383,
+      "end": 40.711,
+      "text": "peso—,"
+    },
+    {
+      "start": 40.711,
+      "end": 43.451,
+      "text": "agregas cualquier observación y presionas Guardar."
+    },
+    {
+      "start": 54.0,
+      "end": 56.628,
+      "text": "Nota que la ventana no se cierra sola para que"
+    },
+    {
+      "start": 56.628,
+      "end": 58.798,
+      "text": "puedas seguir pesando todo el lote sin"
+    },
+    {
+      "start": 58.798,
+      "end": 59.655,
+      "text": "interrupciones."
+    },
+    {
+      "start": 59.655,
+      "end": 60.341,
+      "text": "Al cerrarla,"
+    },
+    {
+      "start": 60.341,
+      "end": 63.14,
+      "text": "el nuevo peso ya actualiza el valor comercial del"
+    },
+    {
+      "start": 63.14,
+      "end": 65.996,
+      "text": "animal y puedes exportar la planilla con Descargar"
+    },
+    {
+      "start": 65.996,
+      "end": 66.339,
+      "text": "Excel."
+    },
+    {
+      "start": 73.0,
+      "end": 75.419,
+      "text": "Ahora vamos en el menú lateral a Leche,"
+    },
+    {
+      "start": 75.419,
+      "end": 77.652,
+      "text": "donde dispones de ordeño individual,"
+    },
+    {
+      "start": 77.652,
+      "end": 80.382,
+      "text": "venta de leche —que envía ingresos directo a"
+    },
+    {
+      "start": 80.382,
+      "end": 81.995,
+      "text": "Finanzas— y ordeño masivo."
+    },
+    {
+      "start": 81.995,
+      "end": 85.531,
+      "text": "Entramos a Registro individual y presionamos Crear Leche."
+    },
+    {
+      "start": 86.0,
+      "end": 88.679,
+      "text": "Seleccionamos el lote de ordeño: observa que el"
+    },
+    {
+      "start": 88.679,
+      "end": 91.472,
+      "text": "sistema detecta en qué potrero está ese lote para"
+    },
+    {
+      "start": 91.472,
+      "end": 94.379,
+      "text": "calcular más adelante qué pradera produce más leche"
+    },
+    {
+      "start": 94.379,
+      "end": 95.12,
+      "text": "por hectárea."
+    },
+    {
+      "start": 95.12,
+      "end": 98.027,
+      "text": "Elegimos la vaca y digitamos los litros del ordeño."
+    },
+    {
+      "start": 106.0,
+      "end": 108.34,
+      "text": "Indicamos la calidad y el turno de ordeño,"
+    },
+    {
+      "start": 108.34,
+      "end": 110.792,
+      "text": "y presta atención a esta integración: si das"
+    },
+    {
+      "start": 110.792,
+      "end": 112.073,
+      "text": "suplementación en sala,"
+    },
+    {
+      "start": 112.073,
+      "end": 114.469,
+      "text": "aquí despliegas los concentrados que tienes"
+    },
+    {
+      "start": 114.469,
+      "end": 117.144,
+      "text": "cargados en el Inventario de Finanzas viendo sus"
+    },
+    {
+      "start": 117.144,
+      "end": 118.147,
+      "text": "kilos disponibles."
+    },
+    {
+      "start": 120.0,
+      "end": 123.508,
+      "text": "Lo mismo ocurre con las sales mineralizadas o suplementos."
+    },
+    {
+      "start": 123.508,
+      "end": 126.593,
+      "text": "Solo debes elegir el insumo e indicar cuántos kilos"
+    },
+    {
+      "start": 126.593,
+      "end": 129.315,
+      "text": "exactos se comió esta vaca durante el ordeño."
+    },
+    {
+      "start": 141.0,
+      "end": 142.195,
+      "text": "Al presionar Guardar,"
+    },
+    {
+      "start": 142.195,
+      "end": 145.097,
+      "text": "DataGan hace tres cosas por ti: registra los litros"
+    },
+    {
+      "start": 145.097,
+      "end": 146.406,
+      "text": "en la curva de la vaca,"
+    },
+    {
+      "start": 146.406,
+      "end": 149.308,
+      "text": "suma la leche al tanque y descuenta automáticamente"
+    },
+    {
+      "start": 149.308,
+      "end": 152.211,
+      "text": "esos kilos de concentrado del Inventario de bodega."
+    }
+  ],
+  "datagan360-v5-configuracion-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.19,
+      "text": "Junto a tu nombre de usuario en la esquina superior"
+    },
+    {
+      "start": 10.19,
+      "end": 11.907,
+      "text": "izquierda encontrarás el acceso rápido a"
+    },
+    {
+      "start": 11.907,
+      "end": 13.023,
+      "text": "Configuración del Sistema."
+    },
+    {
+      "start": 13.023,
+      "end": 15.084,
+      "text": "Vamos a recorrer sus seis herramientas empezando"
+    },
+    {
+      "start": 15.084,
+      "end": 15.685,
+      "text": "por Mi Perfil."
+    },
+    {
+      "start": 16.0,
+      "end": 18.823,
+      "text": "En estos campos colocarás tu información real de"
+    },
+    {
+      "start": 18.823,
+      "end": 20.176,
+      "text": "administrador: nombres,"
+    },
+    {
+      "start": 20.176,
+      "end": 21.235,
+      "text": "usuario de acceso,"
+    },
+    {
+      "start": 21.235,
+      "end": 23.999,
+      "text": "correo electrónico y tu documento de identidad,"
+    },
+    {
+      "start": 23.999,
+      "end": 26.881,
+      "text": "además de poder cambiar tu foto o cerrar sesiones"
+    },
+    {
+      "start": 26.881,
+      "end": 28.411,
+      "text": "abiertas en otros equipos."
+    },
+    {
+      "start": 32.0,
+      "end": 34.533,
+      "text": "Abajo registrarás tu número celular y el"
+    },
+    {
+      "start": 34.533,
+      "end": 37.509,
+      "text": "departamento y municipio donde resides antes de"
+    },
+    {
+      "start": 37.509,
+      "end": 38.776,
+      "text": "guardar los cambios."
+    },
+    {
+      "start": 38.776,
+      "end": 40.739,
+      "text": "Regresamos con el botón Volver."
+    },
+    {
+      "start": 46.0,
+      "end": 48.465,
+      "text": "En Alertas y Notificaciones decidirás qué avisos"
+    },
+    {
+      "start": 48.465,
+      "end": 51.084,
+      "text": "quieres que te envíe el sistema: desde repeticiones"
+    },
+    {
+      "start": 51.084,
+      "end": 51.495,
+      "text": "de celo,"
+    },
+    {
+      "start": 51.495,
+      "end": 53.6,
+      "text": "chequeos de palpación y partos probables,"
+    },
+    {
+      "start": 53.6,
+      "end": 56.681,
+      "text": "hasta alertas cuando se esté acabando un insumo en Finanzas."
+    },
+    {
+      "start": 57.0,
+      "end": 59.772,
+      "text": "En Unidades de Medida defines tus unidades de área,"
+    },
+    {
+      "start": 59.772,
+      "end": 60.587,
+      "text": "peso y volumen,"
+    },
+    {
+      "start": 60.587,
+      "end": 63.087,
+      "text": "y ajustas el Precio de Referencia por Kilo: el"
+    },
+    {
+      "start": 63.087,
+      "end": 65.696,
+      "text": "valor que pongas aquí valorará automáticamente a"
+    },
+    {
+      "start": 65.696,
+      "end": 67.925,
+      "text": "todos tus bovinos que no tengan un precio"
+    },
+    {
+      "start": 67.925,
+      "end": 68.523,
+      "text": "individual."
+    },
+    {
+      "start": 72.0,
+      "end": 75.121,
+      "text": "Como ves en el recuadro inferior de Configuración Actual,"
+    },
+    {
+      "start": 75.121,
+      "end": 77.859,
+      "text": "la tarifa queda fijada de inmediato para alimentar"
+    },
+    {
+      "start": 77.859,
+      "end": 79.995,
+      "text": "las tarjetas financieras del Dashboard."
+    },
+    {
+      "start": 82.0,
+      "end": 84.476,
+      "text": "En Mis Datos y Respaldo podrás exportar toda la"
+    },
+    {
+      "start": 84.476,
+      "end": 87.215,
+      "text": "información que llevas registrada en el software: ya"
+    },
+    {
+      "start": 87.215,
+      "end": 89.744,
+      "text": "sea dividida en los dos archivos de estructura y"
+    },
+    {
+      "start": 89.744,
+      "end": 90.271,
+      "text": "operación,"
+    },
+    {
+      "start": 90.271,
+      "end": 92.905,
+      "text": "o abajo en un único Excel legal bajo la Ley quince"
+    },
+    {
+      "start": 92.905,
+      "end": 93.643,
+      "text": "ochenta y uno."
+    },
+    {
+      "start": 98.0,
+      "end": 100.797,
+      "text": "El botón Ir a Carga Masiva nos conecta directo con"
+    },
+    {
+      "start": 100.797,
+      "end": 103.594,
+      "text": "el importador de Excel: recuerda que siempre debes"
+    },
+    {
+      "start": 103.594,
+      "end": 106.335,
+      "text": "subir primero el archivo del Paso Uno con fincas,"
+    },
+    {
+      "start": 106.335,
+      "end": 107.454,
+      "text": "terceros y potreros,"
+    },
+    {
+      "start": 107.454,
+      "end": 110.195,
+      "text": "y luego el del Paso Dos con animales y registros."
+    },
+    {
+      "start": 116.0,
+      "end": 116.626,
+      "text": "Por último,"
+    },
+    {
+      "start": 116.626,
+      "end": 119.301,
+      "text": "en Eliminar Cuenta encontrarás el formulario de"
+    },
+    {
+      "start": 119.301,
+      "end": 121.179,
+      "text": "baja permanente de la plataforma,"
+    },
+    {
+      "start": 121.179,
+      "end": 123.74,
+      "text": "protegido mediante frase de confirmación para"
+    },
+    {
+      "start": 123.74,
+      "end": 125.903,
+      "text": "resguardar la integridad de tus datos."
+    }
+  ],
+  "datagan360-v6-dashboard-analitica-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.041,
+      "text": "Una vez que has registrado potreros, animales,"
+    },
+    {
+      "start": 10.041,
+      "end": 10.884,
+      "text": "ordeños y finanzas,"
+    },
+    {
+      "start": 10.884,
+      "end": 13.103,
+      "text": "así cobra vida la pestaña Analítica del Dashboard:"
+    },
+    {
+      "start": 13.103,
+      "end": 15.1,
+      "text": "arriba ves cuántos potreros tienes ocupados o"
+    },
+    {
+      "start": 15.1,
+      "end": 17.052,
+      "text": "descansando junto a sus polígonos en el mapa"
+    },
+    {
+      "start": 17.052,
+      "end": 17.496,
+      "text": "satelital."
+    },
+    {
+      "start": 17.646,
+      "end": 20.039,
+      "text": "En la barra de Filtros puedes elegir si deseas"
+    },
+    {
+      "start": 20.039,
+      "end": 22.64,
+      "text": "analizar los últimos treinta días o abrir un rango"
+    },
+    {
+      "start": 22.64,
+      "end": 25.345,
+      "text": "personalizado de fechas para auditar cualquier época"
+    },
+    {
+      "start": 25.345,
+      "end": 25.761,
+      "text": "del año."
+    },
+    {
+      "start": 29.0,
+      "end": 32.095,
+      "text": "Al pasar el mouse por las tarjetas de Eficiencia por Hectárea,"
+    },
+    {
+      "start": 32.095,
+      "end": 33.543,
+      "text": "el sistema cruza tus pesajes,"
+    },
+    {
+      "start": 33.543,
+      "end": 35.989,
+      "text": "ordeños y hectáreas de potreros para mostrarte tu"
+    },
+    {
+      "start": 35.989,
+      "end": 38.036,
+      "text": "producción de carne y leche por hectárea,"
+    },
+    {
+      "start": 38.036,
+      "end": 40.283,
+      "text": "tu carga en Unidades Gran Ganado y tu tasa de"
+    },
+    {
+      "start": 40.283,
+      "end": 41.681,
+      "text": "extracción frente a FEDEGÁN."
+    },
+    {
+      "start": 42.0,
+      "end": 44.643,
+      "text": "En el Resumen Analítico tienes doce indicadores en"
+    },
+    {
+      "start": 44.643,
+      "end": 47.075,
+      "text": "tiempo real: cuántas vacas están en lactancia,"
+    },
+    {
+      "start": 47.075,
+      "end": 49.136,
+      "text": "nacimientos del periodo, toros activos,"
+    },
+    {
+      "start": 49.136,
+      "end": 50.775,
+      "text": "cuál es tu vaca más productora,"
+    },
+    {
+      "start": 50.775,
+      "end": 53.683,
+      "text": "el peso promedio del hato y el estado general de salud."
+    },
+    {
+      "start": 54.0,
+      "end": 54.345,
+      "text": "Debajo,"
+    },
+    {
+      "start": 54.345,
+      "end": 56.714,
+      "text": "la sección de Producción convierte tus registros"
+    },
+    {
+      "start": 56.714,
+      "end": 59.23,
+      "text": "diarios en gráficas visuales: la curva de leche día"
+    },
+    {
+      "start": 59.23,
+      "end": 59.624,
+      "text": "por día,"
+    },
+    {
+      "start": 59.624,
+      "end": 61.598,
+      "text": "el balance de potreros en pastoreo y los"
+    },
+    {
+      "start": 61.598,
+      "end": 62.683,
+      "text": "nacimientos por fecha."
+    },
+    {
+      "start": 63.0,
+      "end": 63.459,
+      "text": "Más abajo,"
+    },
+    {
+      "start": 63.459,
+      "end": 65.573,
+      "text": "el Resumen Financiero trae automáticamente los"
+    },
+    {
+      "start": 65.573,
+      "end": 67.549,
+      "text": "datos del módulo de Finanzas: tus ingresos,"
+    },
+    {
+      "start": 67.549,
+      "end": 67.916,
+      "text": "egresos,"
+    },
+    {
+      "start": 67.916,
+      "end": 70.259,
+      "text": "el valor actual de tu bodega de inventario y cuánto"
+    },
+    {
+      "start": 70.259,
+      "end": 71.684,
+      "text": "vale hoy todo tu ganado sumado."
+    },
+    {
+      "start": 72.0,
+      "end": 74.293,
+      "text": "Incluso cruza tus gastos contra los litros"
+    },
+    {
+      "start": 74.293,
+      "end": 76.804,
+      "text": "ordeñados para decirte cuántos pesos te cuesta"
+    },
+    {
+      "start": 76.804,
+      "end": 78.387,
+      "text": "producir cada litro de leche,"
+    },
+    {
+      "start": 78.387,
+      "end": 81.171,
+      "text": "graficando a la derecha el flujo de caja mes a mes."
+    },
+    {
+      "start": 89.0,
+      "end": 89.609,
+      "text": "Finalmente,"
+    },
+    {
+      "start": 89.609,
+      "end": 92.379,
+      "text": "en la base tienes el comparativo automático frente"
+    },
+    {
+      "start": 92.379,
+      "end": 95.094,
+      "text": "a los estándares ideales de tu tipo de ganadería,"
+    },
+    {
+      "start": 95.094,
+      "end": 97.808,
+      "text": "indicándote en qué métricas superas el promedio y"
+    },
+    {
+      "start": 97.808,
+      "end": 99.083,
+      "text": "cuáles debes optimizar."
+    }
+  ],
+  "datagan360-v7-dashboard-gestion-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 9.572,
+      "text": "En la segunda pestaña del Dashboard,"
+    },
+    {
+      "start": 9.572,
+      "end": 10.357,
+      "text": "Gestión Operativa,"
+    },
+    {
+      "start": 10.357,
+      "end": 12.715,
+      "text": "se reflejan todos los eventos de Salud y Trazabilidad."
+    },
+    {
+      "start": 12.715,
+      "end": 14.592,
+      "text": "Arriba ves la tasa de preñez e interpartos,"
+    },
+    {
+      "start": 14.592,
+      "end": 16.775,
+      "text": "y debajo el monitor de Clima y Estrés Calórico que"
+    },
+    {
+      "start": 16.775,
+      "end": 18.347,
+      "text": "mide cómo el calor afecta tu ordeño."
+    },
+    {
+      "start": 18.497,
+      "end": 19.665,
+      "text": "Al bajar a Salud del Hato,"
+    },
+    {
+      "start": 19.665,
+      "end": 21.822,
+      "text": "estas cuatro tarjetas resumen lo ocurrido en los"
+    },
+    {
+      "start": 21.822,
+      "end": 24.068,
+      "text": "últimos treinta días en el módulo de Trazabilidad:"
+    },
+    {
+      "start": 24.068,
+      "end": 25.551,
+      "text": "cuántos animales siguen enfermos,"
+    },
+    {
+      "start": 25.551,
+      "end": 26.854,
+      "text": "cuántos están en tratamiento,"
+    },
+    {
+      "start": 26.854,
+      "end": 29.056,
+      "text": "vacunas aplicadas y el gráfico con las patologías"
+    },
+    {
+      "start": 29.056,
+      "end": 29.685,
+      "text": "predominantes."
+    },
+    {
+      "start": 30.0,
+      "end": 31.998,
+      "text": "Mira lo que ocurre en Control Sanitario cuando"
+    },
+    {
+      "start": 31.998,
+      "end": 34.082,
+      "text": "varios animales presentan la misma enfermedad en"
+    },
+    {
+      "start": 34.082,
+      "end": 36.167,
+      "text": "corto tiempo: el sistema enciende esta Alerta de"
+    },
+    {
+      "start": 36.167,
+      "end": 38.425,
+      "text": "Brote Epidemiológico indicando el nivel de severidad"
+    },
+    {
+      "start": 38.425,
+      "end": 39.684,
+      "text": "para que actúes de inmediato."
+    },
+    {
+      "start": 40.0,
+      "end": 40.414,
+      "text": "Debajo,"
+    },
+    {
+      "start": 40.414,
+      "end": 43.434,
+      "text": "el sistema calcula automáticamente tres indicadores"
+    },
+    {
+      "start": 43.434,
+      "end": 46.277,
+      "text": "críticos con semáforo de color: la mortalidad en"
+    },
+    {
+      "start": 46.277,
+      "end": 47.52,
+      "text": "crías recién nacidas,"
+    },
+    {
+      "start": 47.52,
+      "end": 50.422,
+      "text": "la mortalidad general del hato y el porcentaje de"
+    },
+    {
+      "start": 50.422,
+      "end": 51.547,
+      "text": "animales vacunados."
+    },
+    {
+      "start": 54.0,
+      "end": 56.548,
+      "text": "Y al final encontramos el bloque de Cumplimiento"
+    },
+    {
+      "start": 56.548,
+      "end": 57.397,
+      "text": "Regulatorio ICA,"
+    },
+    {
+      "start": 57.397,
+      "end": 59.891,
+      "text": "que evalúa de cero a cien qué tan lista está tu"
+    },
+    {
+      "start": 59.891,
+      "end": 62.386,
+      "text": "finca frente a una visita o auditoría sanitaria"
+    },
+    {
+      "start": 62.386,
+      "end": 62.811,
+      "text": "oficial."
+    },
+    {
+      "start": 66.0,
+      "end": 68.252,
+      "text": "A la derecha te califica tus tres pilares"
+    },
+    {
+      "start": 68.252,
+      "end": 69.79,
+      "text": "—identificación de animales,"
+    },
+    {
+      "start": 69.79,
+      "end": 71.877,
+      "text": "vacunas de ley y guías de transporte—,"
+    },
+    {
+      "start": 71.877,
+      "end": 74.569,
+      "text": "y abajo en Acciones Pendientes te dice con número"
+    },
+    {
+      "start": 74.569,
+      "end": 77.26,
+      "text": "exacto cuántos animales debes chapetear o vacunar"
+    },
+    {
+      "start": 77.26,
+      "end": 78.963,
+      "text": "para llegar al cien por ciento."
+    }
+  ],
+  "datagan360-v8-dashboard-rendimiento-tops-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.105,
+      "text": "En las pestañas Rendimiento y Tops identificamos a"
+    },
+    {
+      "start": 10.105,
+      "end": 12.295,
+      "text": "los mejores y peores ejemplares del hato a partir de"
+    },
+    {
+      "start": 12.295,
+      "end": 13.221,
+      "text": "los pesajes y ordeños."
+    },
+    {
+      "start": 13.221,
+      "end": 15.2,
+      "text": "En esta primera tabla ves cuántos kilos diarios"
+    },
+    {
+      "start": 15.2,
+      "end": 16.716,
+      "text": "está ganando cada animal en báscula."
+    },
+    {
+      "start": 16.866,
+      "end": 18.736,
+      "text": "Debajo, en Rendimiento de Leche Individual,"
+    },
+    {
+      "start": 18.736,
+      "end": 20.953,
+      "text": "el sistema compara cada ordeño con el anterior y te"
+    },
+    {
+      "start": 20.953,
+      "end": 23.127,
+      "text": "marca en rojo si una vaca tuvo una caída brusca de"
+    },
+    {
+      "start": 23.127,
+      "end": 23.605,
+      "text": "producción."
+    },
+    {
+      "start": 23.755,
+      "end": 25.731,
+      "text": "Y en las dos tablas inferiores agrupa esos mismos"
+    },
+    {
+      "start": 25.731,
+      "end": 26.982,
+      "text": "resultados por lotes completos,"
+    },
+    {
+      "start": 26.982,
+      "end": 28.957,
+      "text": "para que evalúes qué lote está convirtiendo mejor"
+    },
+    {
+      "start": 28.957,
+      "end": 30.691,
+      "text": "el pasto o el concentrado en carne y leche."
+    },
+    {
+      "start": 31.0,
+      "end": 32.822,
+      "text": "Si quieres revisar un animal puntual,"
+    },
+    {
+      "start": 32.822,
+      "end": 35.186,
+      "text": "lo seleccionas aquí arriba en Buscar Animal y el"
+    },
+    {
+      "start": 35.186,
+      "end": 37.107,
+      "text": "sistema aislará únicamente sus pesajes,"
+    },
+    {
+      "start": 37.107,
+      "end": 38.683,
+      "text": "ordeños y curvas individuales..."
+    },
+    {
+      "start": 39.0,
+      "end": 41.666,
+      "text": "...o usas el buscador de la derecha para filtrar en"
+    },
+    {
+      "start": 41.666,
+      "end": 44.228,
+      "text": "todas las tablas únicamente los animales del lote"
+    },
+    {
+      "start": 44.228,
+      "end": 45.483,
+      "text": "que te interese auditar."
+    },
+    {
+      "start": 49.0,
+      "end": 50.551,
+      "text": "Al pasar a la cuarta pestaña, Tops,"
+    },
+    {
+      "start": 50.551,
+      "end": 52.767,
+      "text": "DataGan arma automáticamente los rankings de honor"
+    },
+    {
+      "start": 52.767,
+      "end": 54.761,
+      "text": "de tu finca: arriba tienes las diez vacas más"
+    },
+    {
+      "start": 54.761,
+      "end": 55.16,
+      "text": "lecheras,"
+    },
+    {
+      "start": 55.16,
+      "end": 57.287,
+      "text": "los diez líderes en ganancia de peso y los lotes"
+    },
+    {
+      "start": 57.287,
+      "end": 57.996,
+      "text": "más productivos."
+    },
+    {
+      "start": 58.146,
+      "end": 59.902,
+      "text": "En el bloque central de Pastos te grafica qué"
+    },
+    {
+      "start": 59.902,
+      "end": 61.854,
+      "text": "potrero da más leche por hectárea y vigila cuántos"
+    },
+    {
+      "start": 61.854,
+      "end": 63.649,
+      "text": "días lleva ocupado cada potrero para evitar el"
+    },
+    {
+      "start": 63.649,
+      "end": 64.195,
+      "text": "sobrepastoreo."
+    },
+    {
+      "start": 64.345,
+      "end": 64.96,
+      "text": "Finalmente,"
+    },
+    {
+      "start": 64.96,
+      "end": 67.528,
+      "text": "abajo te resume las cinco enfermedades que más"
+    },
+    {
+      "start": 67.528,
+      "end": 68.869,
+      "text": "están golpeando al hato,"
+    },
+    {
+      "start": 68.869,
+      "end": 71.382,
+      "text": "los rubros de Finanzas donde más dinero estás"
+    },
+    {
+      "start": 71.382,
+      "end": 73.951,
+      "text": "gastando y el ranking de tus diez animales más"
+    },
+    {
+      "start": 73.951,
+      "end": 74.956,
+      "text": "valiosos en pesos."
+    }
+  ],
+  "datagan360-v9-roles-trabajadores-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.685,
+      "text": "En el menú Admin gestionamos a nuestro equipo de"
+    },
+    {
+      "start": 10.685,
+      "end": 13.314,
+      "text": "trabajo en dos pasos: primero creamos el Rol de"
+    },
+    {
+      "start": 13.314,
+      "end": 15.72,
+      "text": "permisos y luego registramos al Trabajador."
+    },
+    {
+      "start": 15.72,
+      "end": 18.461,
+      "text": "Presionamos Crear Roles y aquí escribes el nombre"
+    },
+    {
+      "start": 18.461,
+      "end": 20.195,
+      "text": "del cargo que vas a configurar."
+    },
+    {
+      "start": 23.0,
+      "end": 25.461,
+      "text": "Debajo verás todos los módulos de la web"
+    },
+    {
+      "start": 25.461,
+      "end": 27.123,
+      "text": "organizados por categorías."
+    },
+    {
+      "start": 27.123,
+      "end": 28.6,
+      "text": "Al desplegar cualquiera,"
+    },
+    {
+      "start": 28.6,
+      "end": 31.738,
+      "text": "puedes marcar su círculo principal si quieres darle"
+    },
+    {
+      "start": 31.738,
+      "end": 33.154,
+      "text": "control total para ver,"
+    },
+    {
+      "start": 33.154,
+      "end": 35.123,
+      "text": "agregar, modificar y eliminar..."
+    },
+    {
+      "start": 36.0,
+      "end": 38.487,
+      "text": "...o marcar únicamente casillas específicas si"
+    },
+    {
+      "start": 38.487,
+      "end": 41.244,
+      "text": "prefieres que ese empleado pueda meter datos nuevos"
+    },
+    {
+      "start": 41.244,
+      "end": 43.299,
+      "text": "pero tenga prohibido borrar registros."
+    },
+    {
+      "start": 44.0,
+      "end": 47.234,
+      "text": "Configuras de la misma forma qué podrá hacer en Bovinos,"
+    },
+    {
+      "start": 47.234,
+      "end": 48.908,
+      "text": "Producción, Salud o Finanzas,"
+    },
+    {
+      "start": 48.908,
+      "end": 51.853,
+      "text": "presionas Crear Rol abajo a la derecha y ese perfil"
+    },
+    {
+      "start": 51.853,
+      "end": 54.683,
+      "text": "ya queda disponible para asignarlo a tu personal."
+    },
+    {
+      "start": 62.0,
+      "end": 65.05,
+      "text": "Ahora sí pasamos en el menú lateral a Trabajadores"
+    },
+    {
+      "start": 65.05,
+      "end": 67.062,
+      "text": "y presionamos Crear Trabajadores."
+    },
+    {
+      "start": 67.062,
+      "end": 69.685,
+      "text": "En este formulario ingresarás los nombres y"
+    },
+    {
+      "start": 69.685,
+      "end": 71.82,
+      "text": "apellidos reales de tu colaborador,"
+    },
+    {
+      "start": 71.82,
+      "end": 73.955,
+      "text": "mayordomo, ordeñador o veterinario."
+    },
+    {
+      "start": 77.0,
+      "end": 79.43,
+      "text": "Seleccionas su tipo de documento de identidad e"
+    },
+    {
+      "start": 79.43,
+      "end": 80.93,
+      "text": "ingresas su número de cédula;"
+    },
+    {
+      "start": 80.93,
+      "end": 83.308,
+      "text": "recuerda que este trabajador que crees aquí lo"
+    },
+    {
+      "start": 83.308,
+      "end": 85.893,
+      "text": "usarás luego como encargado de fincas o en la mano"
+    },
+    {
+      "start": 85.893,
+      "end": 87.083,
+      "text": "de obra de Actividades."
+    },
+    {
+      "start": 93.0,
+      "end": 96.054,
+      "text": "Eliges el departamento y municipio donde vive o"
+    },
+    {
+      "start": 96.054,
+      "end": 97.419,
+      "text": "labora el trabajador."
+    },
+    {
+      "start": 102.0,
+      "end": 104.632,
+      "text": "Aquí digitas su número de celular y su correo"
+    },
+    {
+      "start": 104.632,
+      "end": 105.627,
+      "text": "electrónico real,"
+    },
+    {
+      "start": 105.627,
+      "end": 108.435,
+      "text": "verificando que ambos campos se pongan en verde."
+    },
+    {
+      "start": 120.0,
+      "end": 122.224,
+      "text": "Presta atención a esta casilla: si este empleado va"
+    },
+    {
+      "start": 122.224,
+      "end": 124.099,
+      "text": "a entrar a la aplicación desde su celular o"
+    },
+    {
+      "start": 124.099,
+      "end": 124.578,
+      "text": "computador,"
+    },
+    {
+      "start": 124.578,
+      "end": 126.54,
+      "text": "marcas ¿Es trabajador con acceso al sistema?,"
+    },
+    {
+      "start": 126.54,
+      "end": 127.412,
+      "text": "le creas su usuario,"
+    },
+    {
+      "start": 127.412,
+      "end": 129.462,
+      "text": "le asignas el Rol que creamos hace un momento y"
+    },
+    {
+      "start": 129.462,
+      "end": 130.683,
+      "text": "marcas qué fincas puede ver."
+    },
+    {
+      "start": 131.0,
+      "end": 131.592,
+      "text": "En cambio,"
+    },
+    {
+      "start": 131.592,
+      "end": 134.195,
+      "text": "si es un trabajador de campo que no usará la"
+    },
+    {
+      "start": 134.195,
+      "end": 137.271,
+      "text": "plataforma pero necesitas asignarle tareas y pagarle"
+    },
+    {
+      "start": 137.271,
+      "end": 138.513,
+      "text": "jornales en Finanzas,"
+    },
+    {
+      "start": 138.513,
+      "end": 139.756,
+      "text": "desmarcas la casilla,"
+    },
+    {
+      "start": 139.756,
+      "end": 142.477,
+      "text": "presionas Crear trabajador y queda listo en tu"
+    },
+    {
+      "start": 142.477,
+      "end": 143.483,
+      "text": "nómina operativa."
+    }
+  ],
+  "datagan360-v10-fincas-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 9.841,
+      "text": "Dentro del menú Admin entramos a Fincas,"
+    },
+    {
+      "start": 9.841,
+      "end": 12.188,
+      "text": "donde puedes administrar múltiples predios bajo una"
+    },
+    {
+      "start": 12.188,
+      "end": 14.581,
+      "text": "misma cuenta y elegir cuál es el activo o principal."
+    },
+    {
+      "start": 14.581,
+      "end": 15.685,
+      "text": "Presionamos Crear Finca."
+    },
+    {
+      "start": 16.0,
+      "end": 18.974,
+      "text": "Aquí escribirás el nombre oficial de tu hacienda o predio,"
+    },
+    {
+      "start": 18.974,
+      "end": 21.436,
+      "text": "y mira cómo en el campo Encargado ya nos aparece"
+    },
+    {
+      "start": 21.436,
+      "end": 23.897,
+      "text": "disponible el trabajador que registramos hace un"
+    },
+    {
+      "start": 23.897,
+      "end": 25.795,
+      "text": "momento en el módulo de Trabajadores."
+    },
+    {
+      "start": 32.0,
+      "end": 34.571,
+      "text": "En Área colocas el total de hectáreas de la finca"
+    },
+    {
+      "start": 34.571,
+      "end": 36.775,
+      "text": "—recuerda que este número será el tope que"
+    },
+    {
+      "start": 36.775,
+      "end": 39.398,
+      "text": "controlará la suma de tus potreros en el módulo de"
+    },
+    {
+      "start": 39.398,
+      "end": 42.022,
+      "text": "Bovinos— y seleccionas el departamento y municipio"
+    },
+    {
+      "start": 42.022,
+      "end": 43.019,
+      "text": "donde está ubicada."
+    },
+    {
+      "start": 47.0,
+      "end": 49.458,
+      "text": "Defines unas siglas o abreviatura corta para"
+    },
+    {
+      "start": 49.458,
+      "end": 50.631,
+      "text": "identificarla rápido,"
+    },
+    {
+      "start": 50.631,
+      "end": 53.2,
+      "text": "escribes las indicaciones viales de llegada en"
+    },
+    {
+      "start": 53.2,
+      "end": 55.211,
+      "text": "Dirección y una descripción general."
+    },
+    {
+      "start": 70.0,
+      "end": 72.71,
+      "text": "Abajo tienes el mapa satelital de geolocalización:"
+    },
+    {
+      "start": 72.71,
+      "end": 75.312,
+      "text": "aquí debes acercar el mapa y hacer clic sobre tu"
+    },
+    {
+      "start": 75.312,
+      "end": 77.914,
+      "text": "terreno —o presionar Usar mi ubicación actual si"
+    },
+    {
+      "start": 77.914,
+      "end": 78.944,
+      "text": "estás en la finca—;"
+    },
+    {
+      "start": 78.944,
+      "end": 81.708,
+      "text": "estas coordenadas activarán el clima y el índice de"
+    },
+    {
+      "start": 81.708,
+      "end": 83.443,
+      "text": "estrés calórico en el Dashboard."
+    },
+    {
+      "start": 87.0,
+      "end": 89.877,
+      "text": "Y si al presionar Crear olvidaste llenar algún dato"
+    },
+    {
+      "start": 89.877,
+      "end": 92.642,
+      "text": "clave —como elegir si el propósito de la finca es"
+    },
+    {
+      "start": 92.642,
+      "end": 92.924,
+      "text": "Cría,"
+    },
+    {
+      "start": 92.924,
+      "end": 94.673,
+      "text": "Leche, Ceba o Doble Propósito—,"
+    },
+    {
+      "start": 94.673,
+      "end": 97.324,
+      "text": "el sistema subirá solo y te marcará el campo en"
+    },
+    {
+      "start": 97.324,
+      "end": 99.694,
+      "text": "rojo para que tu finca quede perfectamente"
+    },
+    {
+      "start": 99.694,
+      "end": 100.371,
+      "text": "configurada."
+    }
+  ],
+  "datagan360-t2-v1-finanzas-inventario-preliminar-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.432,
+      "text": "Entramos al bloque de Finanzas empezando por Inventario,"
+    },
+    {
+      "start": 10.432,
+      "end": 12.646,
+      "text": "la bodega central donde se conectan tus compras con"
+    },
+    {
+      "start": 12.646,
+      "end": 13.558,
+      "text": "el consumo en ordeño,"
+    },
+    {
+      "start": 13.558,
+      "end": 14.513,
+      "text": "sanidad y actividades."
+    },
+    {
+      "start": 14.513,
+      "end": 16.467,
+      "text": "En la primera columna puedes buscar cualquier"
+    },
+    {
+      "start": 16.467,
+      "end": 17.553,
+      "text": "artículo por su nombre..."
+    },
+    {
+      "start": 17.703,
+      "end": 19.724,
+      "text": "...al lado puedes filtrarlos por tipo de insumo"
+    },
+    {
+      "start": 19.724,
+      "end": 20.541,
+      "text": "—como medicamentos,"
+    },
+    {
+      "start": 20.541,
+      "end": 20.885,
+      "text": "vacunas,"
+    },
+    {
+      "start": 20.885,
+      "end": 22.819,
+      "text": "concentrados o equipos— y en Cantidad filtrar"
+    },
+    {
+      "start": 22.819,
+      "end": 25.012,
+      "text": "rápidamente qué productos tienen stock disponible o"
+    },
+    {
+      "start": 25.012,
+      "end": 25.829,
+      "text": "cuáles se agotaron."
+    },
+    {
+      "start": 25.979,
+      "end": 28.655,
+      "text": "En cada fila tienes el botón Ajustar: úsalo cuando"
+    },
+    {
+      "start": 28.655,
+      "end": 31.384,
+      "text": "hagas conteo físico en bodega y necesites registrar"
+    },
+    {
+      "start": 31.384,
+      "end": 33.578,
+      "text": "una entrada o salida manual por pérdidas,"
+    },
+    {
+      "start": 33.578,
+      "end": 34.862,
+      "text": "daños o consumo interno,"
+    },
+    {
+      "start": 34.862,
+      "end": 36.682,
+      "text": "indicando el motivo y la cantidad."
+    },
+    {
+      "start": 37.0,
+      "end": 39.887,
+      "text": "Al presionar el botón Historial verás la auditoría"
+    },
+    {
+      "start": 39.887,
+      "end": 42.775,
+      "text": "completa de ese insumo: puedes filtrar por fecha o"
+    },
+    {
+      "start": 42.775,
+      "end": 43.352,
+      "text": "encargado,"
+    },
+    {
+      "start": 43.352,
+      "end": 46.066,
+      "text": "y abajo verás cada vez que entró stock desde el"
+    },
+    {
+      "start": 46.066,
+      "end": 48.896,
+      "text": "módulo de Compras o salió stock por vacunaciones,"
+    },
+    {
+      "start": 48.896,
+      "end": 51.379,
+      "text": "ordeños o actividades. Volvemos a la lista."
+    },
+    {
+      "start": 60.0,
+      "end": 62.759,
+      "text": "Justo debajo de Inventario tenemos Actividades,"
+    },
+    {
+      "start": 62.759,
+      "end": 65.576,
+      "text": "donde programas trabajos de la finca consumiendo"
+    },
+    {
+      "start": 65.576,
+      "end": 66.985,
+      "text": "artículos de esa bodega."
+    },
+    {
+      "start": 66.985,
+      "end": 70.155,
+      "text": "Presionamos Nueva Actividad para ver cómo se conectan."
+    },
+    {
+      "start": 73.0,
+      "end": 76.069,
+      "text": "Aquí escribirás el nombre del trabajo a realizar en campo,"
+    },
+    {
+      "start": 76.069,
+      "end": 78.768,
+      "text": "defines su estado inicial y en Responsable eliges a"
+    },
+    {
+      "start": 78.768,
+      "end": 81.043,
+      "text": "cuál de los trabajadores que registraste en"
+    },
+    {
+      "start": 81.043,
+      "end": 83.107,
+      "text": "Administración se le asignará la tarea."
+    },
+    {
+      "start": 90.0,
+      "end": 92.185,
+      "text": "Observa que el sistema te exige detallar la"
+    },
+    {
+      "start": 92.185,
+      "end": 94.776,
+      "text": "descripción para que el trabajador tenga claras las"
+    },
+    {
+      "start": 94.776,
+      "end": 96.555,
+      "text": "instrucciones de lo que debe hacer."
+    },
+    {
+      "start": 104.0,
+      "end": 106.353,
+      "text": "En Información Adicional eliges la fecha de"
+    },
+    {
+      "start": 106.353,
+      "end": 109.145,
+      "text": "finalización y en Aplicar a decides si el gasto irá"
+    },
+    {
+      "start": 109.145,
+      "end": 111.827,
+      "text": "a toda la finca o a un potrero o lote específico."
+    },
+    {
+      "start": 113.0,
+      "end": 115.374,
+      "text": "Mira cómo en Artículos Utilizados se despliegan los"
+    },
+    {
+      "start": 115.374,
+      "end": 117.608,
+      "text": "mismos insumos que acabamos de ver en Inventario"
+    },
+    {
+      "start": 117.608,
+      "end": 119.889,
+      "text": "para descontar las unidades que uses en la tarea,"
+    },
+    {
+      "start": 119.889,
+      "end": 122.681,
+      "text": "o puedes eliminar la fila si no usarás materiales de bodega."
+    },
+    {
+      "start": 123.0,
+      "end": 125.562,
+      "text": "Y en el bloque inferior de Gastos Extras podrás"
+    },
+    {
+      "start": 125.562,
+      "end": 127.634,
+      "text": "añadir cualquier compra de ferretería,"
+    },
+    {
+      "start": 127.634,
+      "end": 130.741,
+      "text": "combustible o servicio externo que requiera la actividad."
+    },
+    {
+      "start": 130.741,
+      "end": 133.413,
+      "text": "En el siguiente video completaremos todo el ciclo"
+    },
+    {
+      "start": 133.413,
+      "end": 134.667,
+      "text": "contable de esta tarea."
+    }
+  ],
+  "datagan360-t2-v2-finanzas-actividades-kanban-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.518,
+      "text": "Partiendo desde nuestro Inventario de Finanzas,"
+    },
+    {
+      "start": 10.518,
+      "end": 13.197,
+      "text": "recuerda que en Ajustar puedes cuadrar existencias"
+    },
+    {
+      "start": 13.197,
+      "end": 15.929,
+      "text": "físicas en cualquier momento y en Historial auditar"
+    },
+    {
+      "start": 15.929,
+      "end": 16.787,
+      "text": "cada movimiento."
+    },
+    {
+      "start": 20.0,
+      "end": 22.391,
+      "text": "Todo artículo que tengas con stock aquí en"
+    },
+    {
+      "start": 22.391,
+      "end": 25.238,
+      "text": "Inventario estará disponible para ser utilizado en"
+    },
+    {
+      "start": 25.238,
+      "end": 27.174,
+      "text": "las labores operativas del predio."
+    },
+    {
+      "start": 27.174,
+      "end": 30.078,
+      "text": "Regresamos a la lista y entramos en el menú lateral"
+    },
+    {
+      "start": 30.078,
+      "end": 30.875,
+      "text": "a Actividades."
+    },
+    {
+      "start": 43.0,
+      "end": 45.31,
+      "text": "En Actividades gestionas las tareas del predio"
+    },
+    {
+      "start": 45.31,
+      "end": 47.569,
+      "text": "mediante un tablero visual Kanban que mide el"
+    },
+    {
+      "start": 47.569,
+      "end": 49.276,
+      "text": "porcentaje de avance de tu equipo."
+    },
+    {
+      "start": 49.276,
+      "end": 50.682,
+      "text": "Presionamos Nueva Actividad."
+    },
+    {
+      "start": 51.0,
+      "end": 53.467,
+      "text": "Aquí pondrás el título de la labor —como"
+    },
+    {
+      "start": 53.467,
+      "end": 54.948,
+      "text": "mantenimiento de cercas,"
+    },
+    {
+      "start": 54.948,
+      "end": 57.97,
+      "text": "limpieza o poda— y en Responsable seleccionarás a"
+    },
+    {
+      "start": 57.97,
+      "end": 59.451,
+      "text": "tu trabajador encargado."
+    },
+    {
+      "start": 60.0,
+      "end": 62.751,
+      "text": "Describes qué se hará en la jornada y en Aplicar a"
+    },
+    {
+      "start": 62.751,
+      "end": 65.612,
+      "text": "defines el destino del costo: si eliges un potrero o"
+    },
+    {
+      "start": 65.612,
+      "end": 66.492,
+      "text": "lote específico,"
+    },
+    {
+      "start": 66.492,
+      "end": 69.023,
+      "text": "este gasto irá directo al Centro de Costos que"
+    },
+    {
+      "start": 69.023,
+      "end": 71.499,
+      "text": "veremos más adelante en el módulo de Cuentas."
+    },
+    {
+      "start": 77.0,
+      "end": 79.935,
+      "text": "Si para el trabajo necesitas sacar fertilizante,"
+    },
+    {
+      "start": 79.935,
+      "end": 82.076,
+      "text": "veneno o herramientas de tu bodega,"
+    },
+    {
+      "start": 82.076,
+      "end": 84.522,
+      "text": "las eliges aquí en Artículos Utilizados;"
+    },
+    {
+      "start": 84.522,
+      "end": 86.662,
+      "text": "si no vas a gastar stock de bodega,"
+    },
+    {
+      "start": 86.662,
+      "end": 88.619,
+      "text": "simplemente eliminas el renglón."
+    },
+    {
+      "start": 89.0,
+      "end": 91.957,
+      "text": "En Gastos Extras registras pagos adicionales fuera"
+    },
+    {
+      "start": 91.957,
+      "end": 94.974,
+      "text": "de bodega: escribes el concepto del gasto y digitas"
+    },
+    {
+      "start": 94.974,
+      "end": 96.275,
+      "text": "cuánto costó en pesos."
+    },
+    {
+      "start": 104.0,
+      "end": 105.442,
+      "text": "Abajo, en Mano de Obra,"
+    },
+    {
+      "start": 105.442,
+      "end": 108.577,
+      "text": "calculas el pago de jornales: eliges al trabajador"
+    },
+    {
+      "start": 108.577,
+      "end": 109.329,
+      "text": "de tu lista,"
+    },
+    {
+      "start": 109.329,
+      "end": 112.527,
+      "text": "pones cuántas horas trabajó y a cómo pagas la hora;"
+    },
+    {
+      "start": 112.527,
+      "end": 115.787,
+      "text": "el sistema multiplicará el subtotal automáticamente."
+    },
+    {
+      "start": 120.0,
+      "end": 123.049,
+      "text": "En el Resumen de Costos ves el total de egresos a pagar,"
+    },
+    {
+      "start": 123.049,
+      "end": 125.5,
+      "text": "seleccionas de qué cuenta bancaria o caja del"
+    },
+    {
+      "start": 125.5,
+      "end": 128.059,
+      "text": "módulo de Cuentas saldrá ese dinero y presionas"
+    },
+    {
+      "start": 128.059,
+      "end": 128.931,
+      "text": "Crear Actividad."
+    },
+    {
+      "start": 131.0,
+      "end": 133.964,
+      "text": "¡Listo! La tarea aparece en la columna Pendiente."
+    },
+    {
+      "start": 133.964,
+      "end": 136.021,
+      "text": "A medida que tu trabajador avance,"
+    },
+    {
+      "start": 136.021,
+      "end": 139.045,
+      "text": "solo debes arrastrar la tarjeta con el mouse hacia"
+    },
+    {
+      "start": 139.045,
+      "end": 141.889,
+      "text": "En Progreso y luego a Completada viendo cómo el"
+    },
+    {
+      "start": 141.889,
+      "end": 143.764,
+      "text": "avance sube al cien por ciento,"
+    },
+    {
+      "start": 143.764,
+      "end": 144.611,
+      "text": "o a Cancelada."
+    },
+    {
+      "start": 147.0,
+      "end": 149.744,
+      "text": "En la esquina de la tarjeta tienes tres iconos: el"
+    },
+    {
+      "start": 149.744,
+      "end": 152.324,
+      "text": "ojo para ver el resumen completo y el número de"
+    },
+    {
+      "start": 152.324,
+      "end": 154.794,
+      "text": "movimiento contable que se generó en Cuentas,"
+    },
+    {
+      "start": 154.794,
+      "end": 157.428,
+      "text": "el lápiz por si necesitas editarla y la papelera"
+    },
+    {
+      "start": 157.428,
+      "end": 158.307,
+      "text": "para eliminarla."
+    }
+  ],
+  "datagan360-t2-v3-finanzas-compras-ventas-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 9.0,
+      "end": 11.061,
+      "text": "En los módulos de Compras y Ventas alimentamos el"
+    },
+    {
+      "start": 11.061,
+      "end": 13.206,
+      "text": "Inventario y movemos el dinero de nuestras Cuentas."
+    },
+    {
+      "start": 13.206,
+      "end": 14.299,
+      "text": "Al presionar Crear Compra,"
+    },
+    {
+      "start": 14.299,
+      "end": 16.108,
+      "text": "usa Seleccionar artículo existente si vas a"
+    },
+    {
+      "start": 16.108,
+      "end": 18.126,
+      "text": "reabastecer un insumo que ya tienes en bodega..."
+    },
+    {
+      "start": 18.276,
+      "end": 20.782,
+      "text": "...o haz clic en Crear nuevo artículo si estás"
+    },
+    {
+      "start": 20.782,
+      "end": 23.397,
+      "text": "comprando algo por primera vez: aquí escribes el"
+    },
+    {
+      "start": 23.397,
+      "end": 24.486,
+      "text": "nombre del producto,"
+    },
+    {
+      "start": 24.486,
+      "end": 27.591,
+      "text": "eliges a qué categoría pertenece y en qué unidad se mide."
+    },
+    {
+      "start": 33.0,
+      "end": 36.181,
+      "text": "Digitas cuántas unidades compraste y el costo por unidad;"
+    },
+    {
+      "start": 36.181,
+      "end": 38.693,
+      "text": "nota que si reabasteces un producto existente"
+    },
+    {
+      "start": 38.693,
+      "end": 41.372,
+      "text": "también puedes activar el interruptor Actualizar"
+    },
+    {
+      "start": 41.372,
+      "end": 41.763,
+      "text": "precio."
+    },
+    {
+      "start": 47.0,
+      "end": 49.476,
+      "text": "Aquí conectamos con otros dos módulos: primero"
+    },
+    {
+      "start": 49.476,
+      "end": 52.114,
+      "text": "eliges de cuál de tus Cuentas financieras sale el"
+    },
+    {
+      "start": 52.114,
+      "end": 52.491,
+      "text": "dinero,"
+    },
+    {
+      "start": 52.491,
+      "end": 55.237,
+      "text": "y en Proveedor seleccionas al almacén o empresa que"
+    },
+    {
+      "start": 55.237,
+      "end": 57.875,
+      "text": "registraste previamente en el módulo de Terceros."
+    },
+    {
+      "start": 64.0,
+      "end": 66.676,
+      "text": "Verificas la fecha de compra y abajo redactas una"
+    },
+    {
+      "start": 66.676,
+      "end": 69.517,
+      "text": "descripción de respaldo —como el número de factura o"
+    },
+    {
+      "start": 69.517,
+      "end": 70.555,
+      "text": "lote del producto—."
+    },
+    {
+      "start": 88.0,
+      "end": 90.705,
+      "text": "En Fecha de expiración colocarás el vencimiento del"
+    },
+    {
+      "start": 90.705,
+      "end": 93.304,
+      "text": "medicamento o garantía: el sistema valida que sea"
+    },
+    {
+      "start": 93.304,
+      "end": 95.797,
+      "text": "una fecha futura y la usará para avisarte en la"
+    },
+    {
+      "start": 95.797,
+      "end": 98.449,
+      "text": "campana de alertas antes de que el producto venza."
+    },
+    {
+      "start": 98.449,
+      "end": 99.882,
+      "text": "Presionamos Guardar Compra."
+    },
+    {
+      "start": 101.0,
+      "end": 103.677,
+      "text": "Al guardar ocurre una triple acción automática:"
+    },
+    {
+      "start": 103.677,
+      "end": 105.329,
+      "text": "queda el registro en Compras,"
+    },
+    {
+      "start": 105.329,
+      "end": 108.234,
+      "text": "se crea el producto con su stock en Inventario y se"
+    },
+    {
+      "start": 108.234,
+      "end": 109.943,
+      "text": "descuenta la plata en Cuentas."
+    },
+    {
+      "start": 109.943,
+      "end": 112.847,
+      "text": "Con los iconos de la derecha puedes ver su detalle,"
+    },
+    {
+      "start": 112.847,
+      "end": 113.987,
+      "text": "editarlo o borrarlo."
+    },
+    {
+      "start": 121.0,
+      "end": 123.506,
+      "text": "Ahora entramos en el menú lateral a Ventas,"
+    },
+    {
+      "start": 123.506,
+      "end": 125.137,
+      "text": "ideal cuando vendes insumos,"
+    },
+    {
+      "start": 125.137,
+      "end": 127.06,
+      "text": "equipos o subproductos de bodega."
+    },
+    {
+      "start": 127.06,
+      "end": 129.857,
+      "text": "Al abrir el buscador ves todos tus artículos con"
+    },
+    {
+      "start": 129.857,
+      "end": 132.595,
+      "text": "stock disponible —incluyendo el que acabamos de"
+    },
+    {
+      "start": 132.595,
+      "end": 134.635,
+      "text": "comprar— y eliges qué vas a vender."
+    },
+    {
+      "start": 138.0,
+      "end": 140.714,
+      "text": "Indicas cuántas unidades vas a entregar y en Precio"
+    },
+    {
+      "start": 140.714,
+      "end": 143.163,
+      "text": "por unidad colocas el valor al que se lo estás"
+    },
+    {
+      "start": 143.163,
+      "end": 144.387,
+      "text": "vendiendo a tu cliente."
+    },
+    {
+      "start": 152.0,
+      "end": 155.22,
+      "text": "Eliges a cuál de tus Cuentas de Finanzas entrará ese pago,"
+    },
+    {
+      "start": 155.22,
+      "end": 157.94,
+      "text": "seleccionas a tu comprador desde el directorio de"
+    },
+    {
+      "start": 157.94,
+      "end": 159.995,
+      "text": "Terceros y presionas Registrar Venta."
+    },
+    {
+      "start": 169.0,
+      "end": 172.305,
+      "text": "De inmediato el sistema resta esa unidad de tu Inventario,"
+    },
+    {
+      "start": 172.305,
+      "end": 175.667,
+      "text": "suma el dinero como ingreso en tu Cuenta y en el Dashboard,"
+    },
+    {
+      "start": 175.667,
+      "end": 178.972,
+      "text": "y te deja la transacción lista con sus botones de detalle,"
+    },
+    {
+      "start": 178.972,
+      "end": 181.195,
+      "text": "edición, borrado y exportación a Excel."
+    }
+  ],
+  "datagan360-t2-v4-finanzas-cuentas-patrimonio-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 8.752,
+      "text": "Llegamos a Cuentas,"
+    },
+    {
+      "start": 8.752,
+      "end": 10.651,
+      "text": "el cerebro financiero donde se consolida todo lo"
+    },
+    {
+      "start": 10.651,
+      "end": 12.589,
+      "text": "que hemos hecho en la plataforma: aquí el sistema"
+    },
+    {
+      "start": 12.589,
+      "end": 14.647,
+      "text": "suma tu dinero líquido en cuentas más el valor de tu"
+    },
+    {
+      "start": 14.647,
+      "end": 16.427,
+      "text": "Inventario más el valor de todos tus Bovinos,"
+    },
+    {
+      "start": 16.427,
+      "end": 18.682,
+      "text": "le resta las deudas y te entrega tu Patrimonio Neto real."
+    },
+    {
+      "start": 19.0,
+      "end": 21.708,
+      "text": "Al bajar ves cada una de tus cuentas a la izquierda,"
+    },
+    {
+      "start": 21.708,
+      "end": 24.625,
+      "text": "a la derecha el historial con todas las ventas de leche,"
+    },
+    {
+      "start": 24.625,
+      "end": 27.282,
+      "text": "compras de insumos y actividades que registraste en"
+    },
+    {
+      "start": 27.282,
+      "end": 28.219,
+      "text": "los otros módulos,"
+    },
+    {
+      "start": 28.219,
+      "end": 30.719,
+      "text": "y abajo los Centros de Costo para auditar cuánto"
+    },
+    {
+      "start": 30.719,
+      "end": 32.803,
+      "text": "dinero consume cada potrero y cada lote."
+    },
+    {
+      "start": 40.0,
+      "end": 42.927,
+      "text": "Arriba tienes tres herramientas clave: con Generar"
+    },
+    {
+      "start": 42.927,
+      "end": 45.679,
+      "text": "Extracto seleccionas cualquiera de tus cuentas,"
+    },
+    {
+      "start": 45.679,
+      "end": 48.607,
+      "text": "defines un rango de fechas y descargas un extracto"
+    },
+    {
+      "start": 48.607,
+      "end": 50.539,
+      "text": "bancario completo en PDF o Excel."
+    },
+    {
+      "start": 51.0,
+      "end": 53.175,
+      "text": "Con el botón Transferencia puedes pasar saldo de"
+    },
+    {
+      "start": 53.175,
+      "end": 53.991,
+      "text": "una cuenta a otra."
+    },
+    {
+      "start": 53.991,
+      "end": 54.942,
+      "text": "Para verlo en acción,"
+    },
+    {
+      "start": 54.942,
+      "end": 57.706,
+      "text": "primero creemos una cuenta bancaria presionando Nueva cuenta."
+    },
+    {
+      "start": 57.856,
+      "end": 60.304,
+      "text": "Aquí escribirás el nombre de tu banco,"
+    },
+    {
+      "start": 60.304,
+      "end": 62.301,
+      "text": "billetera digital o caja menor,"
+    },
+    {
+      "start": 62.301,
+      "end": 64.555,
+      "text": "seleccionas su tipo —como Efectivo,"
+    },
+    {
+      "start": 64.555,
+      "end": 65.65,
+      "text": "Banco o Crédito—,"
+    },
+    {
+      "start": 65.65,
+      "end": 68.227,
+      "text": "verificas la moneda y presionas Guardar."
+    },
+    {
+      "start": 78.0,
+      "end": 80.505,
+      "text": "Al bajar a Mis Cuentas ya aparece tu nueva cuenta"
+    },
+    {
+      "start": 80.505,
+      "end": 83.113,
+      "text": "bancaria con saldo en cero y su botón Editar por si"
+    },
+    {
+      "start": 83.113,
+      "end": 85.107,
+      "text": "deseas cambiarle el nombre o el estado."
+    },
+    {
+      "start": 86.0,
+      "end": 88.75,
+      "text": "Si necesitas registrar un ingreso de capital o un"
+    },
+    {
+      "start": 88.75,
+      "end": 91.219,
+      "text": "gasto bancario directo sin pasar por bodega,"
+    },
+    {
+      "start": 91.219,
+      "end": 94.419,
+      "text": "presionas el botón Movimiento en la tarjeta de la cuenta,"
+    },
+    {
+      "start": 94.419,
+      "end": 95.765,
+      "text": "eliges Ingreso o Egreso,"
+    },
+    {
+      "start": 95.765,
+      "end": 98.123,
+      "text": "pones el monto y seleccionas la categoría."
+    },
+    {
+      "start": 105.0,
+      "end": 107.108,
+      "text": "Le pones un título y comentario para tu"
+    },
+    {
+      "start": 107.108,
+      "end": 109.756,
+      "text": "contabilidad y presionas Guardar Movimiento: mira"
+    },
+    {
+      "start": 109.756,
+      "end": 112.512,
+      "text": "cómo al instante tu cuenta recibe el saldo y arriba"
+    },
+    {
+      "start": 112.512,
+      "end": 115.323,
+      "text": "sube automáticamente el Patrimonio Neto de la finca."
+    },
+    {
+      "start": 124.0,
+      "end": 126.904,
+      "text": "Y mira qué útil es Transferencia para pagar deudas"
+    },
+    {
+      "start": 126.904,
+      "end": 129.867,
+      "text": "o fondear cajas: elegimos como origen nuestro banco"
+    },
+    {
+      "start": 129.867,
+      "end": 130.448,
+      "text": "con saldo,"
+    },
+    {
+      "start": 130.448,
+      "end": 133.817,
+      "text": "como destino la cuenta de Crédito que tenía saldo en rojo,"
+    },
+    {
+      "start": 133.817,
+      "end": 136.489,
+      "text": "digitamos el monto a transferir y confirmamos."
+    },
+    {
+      "start": 136.489,
+      "end": 139.219,
+      "text": "Así la deuda queda saldada en cero al instante."
+    }
+  ],
+  "datagan360-t2-v5-reportes-hoja-vida-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.046,
+      "text": "En el módulo de Reportes conviertes toda la"
+    },
+    {
+      "start": 10.046,
+      "end": 12.472,
+      "text": "información que has cargado en la web en informes a"
+    },
+    {
+      "start": 12.472,
+      "end": 13.804,
+      "text": "medida listos para imprimir."
+    },
+    {
+      "start": 13.804,
+      "end": 16.087,
+      "text": "Puedes armar reportes de hembras, machos, leche,"
+    },
+    {
+      "start": 16.087,
+      "end": 18.085,
+      "text": "pesajes, inventario o abrir hojas de vida."
+    },
+    {
+      "start": 18.085,
+      "end": 18.989,
+      "text": "Entremos a Hembras."
+    },
+    {
+      "start": 19.139,
+      "end": 21.142,
+      "text": "En el Paso Dos filtras exactamente qué animales"
+    },
+    {
+      "start": 21.142,
+      "end": 22.932,
+      "text": "quieres incluir: puedes filtrar por estado"
+    },
+    {
+      "start": 22.932,
+      "end": 23.486,
+      "text": "reproductivo,"
+    },
+    {
+      "start": 23.486,
+      "end": 23.699,
+      "text": "raza,"
+    },
+    {
+      "start": 23.699,
+      "end": 25.702,
+      "text": "dieta o entrar por ejemplo a Rango de Peso para"
+    },
+    {
+      "start": 25.702,
+      "end": 27.79,
+      "text": "pedirle al sistema únicamente las hembras que hoy"
+    },
+    {
+      "start": 27.79,
+      "end": 29.623,
+      "text": "pesan entre doscientos y trescientos kilos."
+    },
+    {
+      "start": 29.623,
+      "end": 30.859,
+      "text": "Damos clic en Siguiente Paso."
+    },
+    {
+      "start": 31.009,
+      "end": 33.632,
+      "text": "En el Paso Tres tú diseñas las columnas del"
+    },
+    {
+      "start": 33.632,
+      "end": 36.56,
+      "text": "documento: marcas o desmarcas qué datos básicos,"
+    },
+    {
+      "start": 36.56,
+      "end": 37.414,
+      "text": "reproductivos,"
+    },
+    {
+      "start": 37.414,
+      "end": 40.037,
+      "text": "de pesaje o genealógicos quieres que salgan"
+    },
+    {
+      "start": 40.037,
+      "end": 42.171,
+      "text": "impresos y presionas Crear Informe."
+    },
+    {
+      "start": 45.0,
+      "end": 47.665,
+      "text": "En el Paso Cuatro tienes la vista previa con todos"
+    },
+    {
+      "start": 47.665,
+      "end": 50.33,
+      "text": "los ejemplares de tu finca que cumplen ese filtro,"
+    },
+    {
+      "start": 50.33,
+      "end": 53.475,
+      "text": "pudiendo ampliar la cantidad de filas visibles en pantalla."
+    },
+    {
+      "start": 57.0,
+      "end": 59.776,
+      "text": "Desde los botones superiores descargas el listado"
+    },
+    {
+      "start": 59.776,
+      "end": 62.609,
+      "text": "maquetado en PDF con un clic o lo exportas a Excel"
+    },
+    {
+      "start": 62.609,
+      "end": 64.875,
+      "text": "si deseas trabajar las tablas dinámicas."
+    },
+    {
+      "start": 67.0,
+      "end": 69.524,
+      "text": "Con Editar Selección puedes volver atrás para"
+    },
+    {
+      "start": 69.524,
+      "end": 72.273,
+      "text": "activar todas las columnas de golpe o limpiarlas."
+    },
+    {
+      "start": 72.273,
+      "end": 75.078,
+      "text": "Ahora regresamos al inicio del módulo para conocer"
+    },
+    {
+      "start": 75.078,
+      "end": 77.77,
+      "text": "una de las joyas de DataGan: la Hoja de Vida del"
+    },
+    {
+      "start": 77.77,
+      "end": 78.163,
+      "text": "Animal."
+    },
+    {
+      "start": 86.0,
+      "end": 88.566,
+      "text": "Aquí buscas cualquier ejemplar de tu hato y se"
+    },
+    {
+      "start": 88.566,
+      "end": 91.02,
+      "text": "despliega su expediente clínico y productivo"
+    },
+    {
+      "start": 91.02,
+      "end": 92.637,
+      "text": "completo: ves su peso actual,"
+    },
+    {
+      "start": 92.637,
+      "end": 94.979,
+      "text": "estado reproductivo, cuántos partos lleva,"
+    },
+    {
+      "start": 94.979,
+      "end": 96.708,
+      "text": "quién es su propietario actual,"
+    },
+    {
+      "start": 96.708,
+      "end": 99.107,
+      "text": "en qué lote está y en qué potrero pastorea."
+    },
+    {
+      "start": 106.0,
+      "end": 108.467,
+      "text": "En su encabezado tienes dos botones directos:"
+    },
+    {
+      "start": 108.467,
+      "end": 110.988,
+      "text": "Pesaje te lleva a la curva gráfica con toda la"
+    },
+    {
+      "start": 110.988,
+      "end": 112.797,
+      "text": "evolución de kilos de ese animal,"
+    },
+    {
+      "start": 112.797,
+      "end": 115.099,
+      "text": "y Leche abre su curva histórica de ordeño."
+    },
+    {
+      "start": 120.0,
+      "end": 122.249,
+      "text": "Y al cambiar entre las pestañas Producción,"
+    },
+    {
+      "start": 122.249,
+      "end": 124.551,
+      "text": "Salud y Movimientos consultarás cada ordeño,"
+    },
+    {
+      "start": 124.551,
+      "end": 125.387,
+      "text": "cada enfermedad,"
+    },
+    {
+      "start": 125.387,
+      "end": 127.689,
+      "text": "celo o palpación que se le haya hecho en los"
+    },
+    {
+      "start": 127.689,
+      "end": 128.683,
+      "text": "módulos sanitarios."
+    },
+    {
+      "start": 129.0,
+      "end": 131.001,
+      "text": "Cuando vayas a vender un reproductor,"
+    },
+    {
+      "start": 131.001,
+      "end": 133.219,
+      "text": "una vaca lechera o recibir una auditoría,"
+    },
+    {
+      "start": 133.219,
+      "end": 135.816,
+      "text": "presionas Exportar PDF y obtienes este documento"
+    },
+    {
+      "start": 135.816,
+      "end": 138.196,
+      "text": "oficial de dos páginas con el membrete de tu"
+    },
+    {
+      "start": 138.196,
+      "end": 140.955,
+      "text": "ganadería y todo el historial de vida del ejemplar."
+    }
+  ],
+  "datagan360-t2-v6-trazabilidad-animales-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 10.959,
+      "text": "En el módulo de Trazabilidad registras las enfermedades,"
+    },
+    {
+      "start": 10.959,
+      "end": 11.646,
+      "text": "tratamientos,"
+    },
+    {
+      "start": 11.646,
+      "end": 14.077,
+      "text": "vacunas y salidas de ganado que impactan en el"
+    },
+    {
+      "start": 14.077,
+      "end": 15.61,
+      "text": "Dashboard y en el Inventario."
+    },
+    {
+      "start": 15.61,
+      "end": 18.199,
+      "text": "Arriba puedes buscar un animal individual —o leer"
+    },
+    {
+      "start": 18.199,
+      "end": 20.683,
+      "text": "su chip con Detectar Animal— para ver su ficha."
+    },
+    {
+      "start": 21.0,
+      "end": 23.152,
+      "text": "Abajo tienes cuatro formularios: en Enfermedad"
+    },
+    {
+      "start": 23.152,
+      "end": 25.492,
+      "text": "eliges la categoría de la patología y describes el"
+    },
+    {
+      "start": 25.492,
+      "end": 26.053,
+      "text": "diagnóstico;"
+    },
+    {
+      "start": 26.053,
+      "end": 28.252,
+      "text": "recuerda que lo que guardes aquí actualizará la"
+    },
+    {
+      "start": 28.252,
+      "end": 30.217,
+      "text": "Salud del Hato y el detector de brotes del"
+    },
+    {
+      "start": 30.217,
+      "end": 30.685,
+      "text": "Dashboard."
+    },
+    {
+      "start": 31.0,
+      "end": 33.074,
+      "text": "En la segunda pestaña, Tratamiento,"
+    },
+    {
+      "start": 33.074,
+      "end": 35.623,
+      "text": "describes qué le aplicarás y en Seleccionar"
+    },
+    {
+      "start": 35.623,
+      "end": 38.645,
+      "text": "Medicamento eliges el fármaco directamente desde tu"
+    },
+    {
+      "start": 38.645,
+      "end": 40.008,
+      "text": "Inventario de Finanzas;"
+    },
+    {
+      "start": 40.008,
+      "end": 41.727,
+      "text": "al poner la dosis y los días,"
+    },
+    {
+      "start": 41.727,
+      "end": 45.283,
+      "text": "el sistema descontará esos mililitros o litros de tu bodega."
+    },
+    {
+      "start": 47.0,
+      "end": 48.986,
+      "text": "En la tercera pestaña, Vacunación,"
+    },
+    {
+      "start": 48.986,
+      "end": 51.789,
+      "text": "eliges el biológico disponible en tu Inventario,"
+    },
+    {
+      "start": 51.789,
+      "end": 54.593,
+      "text": "indicas cuántas dosis aplicaste y qué enfermedad"
+    },
+    {
+      "start": 54.593,
+      "end": 57.105,
+      "text": "previene —como Fiebre Aftosa o Brucelosis—;"
+    },
+    {
+      "start": 57.105,
+      "end": 59.85,
+      "text": "esto descontará la vacuna del stock y subirá tu"
+    },
+    {
+      "start": 59.85,
+      "end": 61.427,
+      "text": "puntaje en el semáforo ICA."
+    },
+    {
+      "start": 67.0,
+      "end": 69.624,
+      "text": "Y en la pestaña Movimiento registras cuando un"
+    },
+    {
+      "start": 69.624,
+      "end": 72.306,
+      "text": "animal sale de la finca o se vende: seleccionas"
+    },
+    {
+      "start": 72.306,
+      "end": 72.705,
+      "text": "Salida,"
+    },
+    {
+      "start": 72.705,
+      "end": 74.645,
+      "text": "el motivo —como traslado o feria—,"
+    },
+    {
+      "start": 74.645,
+      "end": 77.555,
+      "text": "vinculas al socio desde el directorio de Terceros y"
+    },
+    {
+      "start": 77.555,
+      "end": 79.267,
+      "text": "escribes el predio de destino."
+    },
+    {
+      "start": 86.0,
+      "end": 88.507,
+      "text": "Colocas la fecha y hora del embarque y presionas"
+    },
+    {
+      "start": 88.507,
+      "end": 91.118,
+      "text": "Registrar Movimiento para que quede asentado en el"
+    },
+    {
+      "start": 91.118,
+      "end": 92.267,
+      "text": "expediente del animal."
+    },
+    {
+      "start": 100.0,
+      "end": 100.593,
+      "text": "Ahora bien,"
+    },
+    {
+      "start": 100.593,
+      "end": 102.534,
+      "text": "cuando haces jornada de vacunación o"
+    },
+    {
+      "start": 102.534,
+      "end": 105.338,
+      "text": "desparasitación en manga no tienes que ir animal por"
+    },
+    {
+      "start": 105.338,
+      "end": 107.71,
+      "text": "animal: filtras arriba por Lote —o presionas"
+    },
+    {
+      "start": 107.71,
+      "end": 110.082,
+      "text": "Seleccionar todos los animales de la finca—,"
+    },
+    {
+      "start": 110.082,
+      "end": 112.617,
+      "text": "marcas los ejemplares en la lista y das clic en"
+    },
+    {
+      "start": 112.617,
+      "end": 113.803,
+      "text": "Registrar Actividades."
+    },
+    {
+      "start": 121.0,
+      "end": 123.794,
+      "text": "Así un solo registro de vacuna o tratamiento se"
+    },
+    {
+      "start": 123.794,
+      "end": 125.816,
+      "text": "aplicará a todo el grupo a la vez."
+    },
+    {
+      "start": 125.816,
+      "end": 128.313,
+      "text": "Y en el menú lateral, dentro de Historial,"
+    },
+    {
+      "start": 128.313,
+      "end": 129.324,
+      "text": "podrás consultar,"
+    },
+    {
+      "start": 129.324,
+      "end": 132.0,
+      "text": "ver el detalle o descargar en Excel todos los"
+    },
+    {
+      "start": 132.0,
+      "end": 133.843,
+      "text": "eventos sanitarios registrados."
+    }
+  ],
+  "datagan360-t2-v7-salud-reproductiva-clinica-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.36,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.36,
+      "end": 7.12,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 7.12,
+      "end": 10.419,
+      "text": "Exploraremos el módulo reproductivo y clínico de Salud."
+    },
+    {
+      "start": 10.569,
+      "end": 13.343,
+      "text": "El ciclo reproductivo inicia en la sección Celo: al"
+    },
+    {
+      "start": 13.343,
+      "end": 16.062,
+      "text": "presionar Crear Celo seleccionas la vaca o novilla"
+    },
+    {
+      "start": 16.062,
+      "end": 18.292,
+      "text": "que entró en calor y eliges en Acción qué"
+    },
+    {
+      "start": 18.292,
+      "end": 20.196,
+      "text": "comportamiento observaste en campo."
+    },
+    {
+      "start": 28.0,
+      "end": 30.573,
+      "text": "En Observaciones anotas la hora en que fue vista"
+    },
+    {
+      "start": 30.573,
+      "end": 33.252,
+      "text": "para programar la inseminación o monta y presionas"
+    },
+    {
+      "start": 33.252,
+      "end": 33.681,
+      "text": "Guardar;"
+    },
+    {
+      "start": 33.681,
+      "end": 35.879,
+      "text": "recuerda que esto activará las alertas de"
+    },
+    {
+      "start": 35.879,
+      "end": 37.219,
+      "text": "seguimiento reproductivo."
+    },
+    {
+      "start": 44.0,
+      "end": 45.662,
+      "text": "Una vez servida la hembra,"
+    },
+    {
+      "start": 45.662,
+      "end": 48.73,
+      "text": "entras en el menú lateral a Servicio y presionas"
+    },
+    {
+      "start": 48.73,
+      "end": 49.753,
+      "text": "Crear Servicios."
+    },
+    {
+      "start": 49.753,
+      "end": 52.885,
+      "text": "Aquí eliges primero si realizaste Monta natural o"
+    },
+    {
+      "start": 52.885,
+      "end": 54.419,
+      "text": "Inseminación artificial."
+    },
+    {
+      "start": 61.0,
+      "end": 63.567,
+      "text": "En Hembra seleccionas a la vaca que acabas de"
+    },
+    {
+      "start": 63.567,
+      "end": 66.192,
+      "text": "reportar en celo y en Macho vinculas al toro o"
+    },
+    {
+      "start": 66.192,
+      "end": 67.219,
+      "text": "pajilla utilizada."
+    },
+    {
+      "start": 70.0,
+      "end": 72.355,
+      "text": "Anotas los detalles del servicio y presionas"
+    },
+    {
+      "start": 72.355,
+      "end": 75.138,
+      "text": "Guardar: automáticamente DataGan cambia el estado de"
+    },
+    {
+      "start": 75.138,
+      "end": 77.707,
+      "text": "esa hembra a Servida y empieza a contar los días"
+    },
+    {
+      "start": 77.707,
+      "end": 79.099,
+      "text": "para su chequeo de preñez."
+    },
+    {
+      "start": 88.0,
+      "end": 90.78,
+      "text": "Pasamos ahora a Veterinaria: mira cómo al buscar a"
+    },
+    {
+      "start": 90.78,
+      "end": 93.505,
+      "text": "esa misma hembra su ficha ya dice Servida y abajo"
+    },
+    {
+      "start": 93.505,
+      "end": 96.007,
+      "text": "nos resume sus últimas palpaciones o chequeos"
+    },
+    {
+      "start": 96.007,
+      "end": 96.619,
+      "text": "realizados."
+    },
+    {
+      "start": 107.0,
+      "end": 109.929,
+      "text": "Para días de chequeo reproductivo con el veterinario,"
+    },
+    {
+      "start": 109.929,
+      "end": 111.974,
+      "text": "puedes filtrar por Lote a la derecha,"
+    },
+    {
+      "start": 111.974,
+      "end": 114.793,
+      "text": "marcar una o varias hembras de la lista y presionar"
+    },
+    {
+      "start": 114.793,
+      "end": 116.507,
+      "text": "el botón Registrar Actividades."
+    },
+    {
+      "start": 124.0,
+      "end": 126.364,
+      "text": "Se abrirán cinco herramientas clínicas: en"
+    },
+    {
+      "start": 126.364,
+      "end": 129.179,
+      "text": "Palpación registras si la hembra resultó Preñada o"
+    },
+    {
+      "start": 129.179,
+      "end": 131.656,
+      "text": "Vacía —lo que alimenta la tasa de preñez del"
+    },
+    {
+      "start": 131.656,
+      "end": 134.133,
+      "text": "Dashboard— y detallas estructuras del ovario"
+    },
+    {
+      "start": 134.133,
+      "end": 135.259,
+      "text": "izquierdo y derecho."
+    },
+    {
+      "start": 143.0,
+      "end": 145.266,
+      "text": "En Procedimiento registras cirugías,"
+    },
+    {
+      "start": 145.266,
+      "end": 146.714,
+      "text": "descornes o curaciones;"
+    },
+    {
+      "start": 146.714,
+      "end": 149.798,
+      "text": "en Síntomas anotas signos clínicos generales y en"
+    },
+    {
+      "start": 149.798,
+      "end": 152.819,
+      "text": "la última pestaña reportas abortos si llegaran a"
+    },
+    {
+      "start": 152.819,
+      "end": 153.323,
+      "text": "ocurrir."
+    },
+    {
+      "start": 161.0,
+      "end": 163.597,
+      "text": "Y en la pestaña Mastitis cuentas con un diagrama"
+    },
+    {
+      "start": 163.597,
+      "end": 166.357,
+      "text": "interactivo para el test de California: en cada uno"
+    },
+    {
+      "start": 166.357,
+      "end": 169.117,
+      "text": "de los cuatro pezones eliges el grado de afectación"
+    },
+    {
+      "start": 169.117,
+      "end": 171.93,
+      "text": "viendo cómo cambia de color en el dibujo de la ubre,"
+    },
+    {
+      "start": 171.93,
+      "end": 173.662,
+      "text": "o marcas si es un pezón perdido."
+    },
+    {
+      "start": 173.662,
+      "end": 176.963,
+      "text": "Presionas Guardar y todo queda en la Hoja de Vida del animal."
+    }
+  ],
+  "datagan360-t2-v8-salud-nacimientos-genealogia-locutado": [
+    {
+      "start": 4.0,
+      "end": 4.402,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.402,
+      "end": 7.683,
+      "text": "Bienvenido al tutorial de Nacimiento y Genealogía"
+    },
+    {
+      "start": 7.683,
+      "end": 8.687,
+      "text": "en DataGan 360."
+    },
+    {
+      "start": 9.0,
+      "end": 11.165,
+      "text": "Cuando nace un ternero en la finca no tienes que ir"
+    },
+    {
+      "start": 11.165,
+      "end": 12.905,
+      "text": "a crearlo desde cero en Bovinos: entras a"
+    },
+    {
+      "start": 12.905,
+      "end": 13.372,
+      "text": "Nacimiento,"
+    },
+    {
+      "start": 13.372,
+      "end": 15.452,
+      "text": "presionas Crear Nacimiento y seleccionas quién es"
+    },
+    {
+      "start": 15.452,
+      "end": 16.683,
+      "text": "la Madre y quién es el Padre."
+    },
+    {
+      "start": 17.0,
+      "end": 18.663,
+      "text": "Indicas la fecha del parto,"
+    },
+    {
+      "start": 18.663,
+      "end": 21.064,
+      "text": "eliges si la cría nació Macho o Hembra,"
+    },
+    {
+      "start": 21.064,
+      "end": 23.897,
+      "text": "digitas cuántos kilos pesó al nacer y su valor"
+    },
+    {
+      "start": 23.897,
+      "end": 25.067,
+      "text": "comercial por kilo."
+    },
+    {
+      "start": 33.0,
+      "end": 35.855,
+      "text": "Aquí en Número de Registro le asignas la chapeta o"
+    },
+    {
+      "start": 35.855,
+      "end": 38.367,
+      "text": "código con el que quedará bautizada la cría,"
+    },
+    {
+      "start": 38.367,
+      "end": 40.936,
+      "text": "su microchip si aplica y las notas del parto."
+    },
+    {
+      "start": 40.936,
+      "end": 44.019,
+      "text": "Al presionar Guardar ocurre la magia de integración..."
+    },
+    {
+      "start": 54.0,
+      "end": 55.597,
+      "text": "...se suma el parto a la madre,"
+    },
+    {
+      "start": 55.597,
+      "end": 58.739,
+      "text": "la cría se crea automáticamente como nuevo animal en Bovinos,"
+    },
+    {
+      "start": 58.739,
+      "end": 61.366,
+      "text": "y al entrar aquí en el menú lateral a Genealogía ya"
+    },
+    {
+      "start": 61.366,
+      "end": 62.55,
+      "text": "vemos su tarjeta lista."
+    },
+    {
+      "start": 62.55,
+      "end": 63.684,
+      "text": "Presionamos Ver árbol."
+    },
+    {
+      "start": 64.0,
+      "end": 66.61,
+      "text": "Abajo se despliega el Diagrama Genealógico visual"
+    },
+    {
+      "start": 66.61,
+      "end": 69.326,
+      "text": "mostrando a tu ejemplar arriba y a su padre y madre"
+    },
+    {
+      "start": 69.326,
+      "end": 70.497,
+      "text": "conectados en la base,"
+    },
+    {
+      "start": 70.497,
+      "end": 73.107,
+      "text": "con botones para seguir navegando por el árbol de"
+    },
+    {
+      "start": 73.107,
+      "end": 75.77,
+      "text": "sus abuelos o presionar Descargar PDF para obtener"
+    },
+    {
+      "start": 75.77,
+      "end": 77.155,
+      "text": "su certificado de pedigrí."
+    },
+    {
+      "start": 82.0,
+      "end": 84.296,
+      "text": "Así cerramos todo el recorrido por DataGan 360: una"
+    },
+    {
+      "start": 84.296,
+      "end": 86.593,
+      "text": "plataforma donde cada módulo trabaja conectado para"
+    },
+    {
+      "start": 86.593,
+      "end": 88.123,
+      "text": "darte el control total productivo,"
+    },
+    {
+      "start": 88.123,
+      "end": 89.879,
+      "text": "sanitario y financiero de tu ganadería."
+    }
+  ]
+}

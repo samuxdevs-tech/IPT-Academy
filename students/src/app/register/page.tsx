@@ -1,408 +1,384 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
-import { auth, db } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { ref, set } from 'firebase/database';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Scale, ShieldCheck, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from 'firebase/auth';
+import { ref, set } from 'firebase/database';
+import { auth, db, googleProvider } from '@/lib/firebase';
+import { IptAuthService } from '@/services/iptAuthService';
 import {
-  LEGAL_DOCUMENTS,
-  LegalSectionId,
-  IPT_OWNER_INFO,
   recordUserLegalAcceptance,
+  LEGAL_DOCUMENTS,
+  LegalSectionId
 } from '@/lib/legalData';
+import { AlertCircle, Scale, X } from 'lucide-react';
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [acceptedLegal, setAcceptedLegal] = useState(false);
-  const [previewLegalTab, setPreviewLegalTab] = useState<LegalSectionId | null>(null);
+
+  // Separación estricta de consentimiento legal
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const [previewLegalSection, setPreviewLegalSection] = useState<LegalSectionId | null>(null);
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+
+  const validateLegalCheckboxes = () => {
+    if (!acceptedTerms || !acceptedPrivacy) {
+      setError('Debes marcar ambas casillas: aceptar el Aviso Legal / Términos y la Política de Privacidad.');
+      return false;
+    }
+    return true;
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!acceptedLegal) {
-      setError(
-        'Debes aceptar la Política de Tratamiento de Datos (Habeas Data), los Términos y Condiciones y las Condiciones Legales antes de crear tu cuenta.'
-      );
+    if (!validateLegalCheckboxes()) return;
+
+    const trimmedFirst = firstName.trim();
+    const trimmedLast = lastName.trim();
+
+    if (!trimmedFirst || !trimmedLast) {
+      setError('Ingresa tu nombre y apellido completos.');
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setError('La contraseña debe tener mínimo 6 caracteres.');
       return;
     }
 
     setLoading(true);
-
-    const trimmedFirstName = firstName.trim();
-    const trimmedLastName = lastName.trim();
-
-    if (!trimmedFirstName || !trimmedLastName) {
-      setError('Por favor ingresa tu nombre y apellido.');
-      setLoading(false);
-      return;
-    }
-
-    const fullName = `${trimmedFirstName} ${trimmedLastName}`;
+    const fullName = `${trimmedFirst} ${trimmedLast}`;
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      // 1. Registrar en el motor propio IPT Auth (Cloudflare D1)
+      const res = await IptAuthService.register(email, password, fullName);
 
-      await updateProfile(user, { displayName: fullName });
+      if (!res.success) {
+        setError(res.error || 'No se pudo registrar la cuenta.');
+        setLoading(false);
+        return;
+      }
 
-      await set(ref(db, `users/${user.uid}/profile`), {
-        firstName: trimmedFirstName,
-        lastName: trimmedLastName,
-        displayName: fullName,
-        email: user.email,
-        updatedAt: Date.now()
-      });
+      // 2. Conectar perfil en Firebase para compatibilidad en tiempo real
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCred.user;
+        await updateProfile(user, { displayName: fullName });
 
-      await set(ref(db, `users/${user.uid}/info`), {
-        username: fullName,
-        email: user.email,
-        createdAt: Date.now()
-      });
+        await set(ref(db, `users/${user.uid}/profile`), {
+          firstName: trimmedFirst,
+          lastName: trimmedLast,
+          displayName: fullName,
+          email: user.email,
+          updatedAt: Date.now(),
+        });
 
-      await recordUserLegalAcceptance(user, 'email_register');
+        await recordUserLegalAcceptance(user, 'email_register');
+      } catch {}
 
       router.push('/');
     } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('Este correo electrónico ya está registrado. Inicia sesión.');
-      } else if (err.code === 'auth/weak-password') {
-        setError('La contraseña debe tener al menos 6 caracteres.');
-      } else {
-        setError(err.message || 'Ocurrió un error al registrar la cuenta.');
-      }
+      setError(err.message || 'Error inesperado durante el registro.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleAuth = async () => {
+  const handleGoogleRegister = async () => {
     setError('');
 
-    if (!acceptedLegal) {
-      setError(
-        'Por favor marca la casilla de autorización de Tratamiento de Datos Personales (Habeas Data) y Términos Legales antes de registrarte con Google.'
-      );
-      return;
-    }
+    if (!validateLegalCheckboxes()) return;
 
     setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
 
-      const displayName = user.displayName || '';
-      const nameParts = displayName.trim().split(' ');
-      const parsedFirst = nameParts[0] || (user.email ? user.email.split('@')[0] : 'Usuario');
-      const parsedLast = nameParts.slice(1).join(' ') || '';
-
-      await set(ref(db, `users/${user.uid}/profile`), {
-        firstName: parsedFirst,
-        lastName: parsedLast,
-        displayName: displayName || parsedFirst,
-        photoURL: user.photoURL || '',
-        email: user.email,
-        updatedAt: Date.now()
-      });
-
-      await set(ref(db, `users/${user.uid}/info`), {
-        username: displayName || parsedFirst,
-        email: user.email,
-        createdAt: Date.now()
-      });
-
-      await recordUserLegalAcceptance(user, 'google_register');
-
+      await IptAuthService.verifyGoogleOAuth(idToken);
+      await recordUserLegalAcceptance(result.user, 'google_register');
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'No se pudo registrar con Google.');
+    } catch {
+      setError('No se pudo completar el registro con Google. Intenta nuevamente.');
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedDoc = previewLegalTab
-    ? LEGAL_DOCUMENTS.find((d) => d.id === previewLegalTab) || LEGAL_DOCUMENTS[0]
+  const activeDoc = previewLegalSection
+    ? LEGAL_DOCUMENTS.find((d) => d.id === previewLegalSection) || LEGAL_DOCUMENTS[0]
     : null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f9f9f9] p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-[#e5e5e5] p-8">
-        <div className="text-center mb-6">
-          <Link href="/" className="inline-block mb-3">
-            <img
-              src="/logo.webp"
-              alt="IPT Course"
-              width={180}
-              height={58}
-              className="h-14 w-auto mx-auto object-contain"
-            />
+    <div className="min-h-screen bg-[#000000] text-white flex items-center justify-center p-4 py-12 relative selection:bg-[#8052ff] selection:text-white">
+      {/* Resplandor atmosférico Dala */}
+      <div className="absolute inset-0 bg-radial from-[#8052ff]/10 via-transparent to-transparent pointer-events-none opacity-40 blur-3xl" />
+
+      <div className="relative z-10 max-w-[480px] w-full bg-[#09090b] border border-[#ffffff]/15 rounded-[28px] p-8 sm:p-10 shadow-2xl">
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
+            <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 transform group-hover:scale-105 transition-transform">
+              <polygon points="12,2 22,20 2,20" fill="#8052ff" stroke="#ffffff" strokeWidth="0.8" />
+            </svg>
+            <span className="text-white text-[18px] font-semibold tracking-[-0.02em]">
+              IPT <span className="font-light text-[#bdbdbd]">Course</span>
+            </span>
           </Link>
-          <h1 className="text-2xl font-bold text-[#0f0f0f] mb-1">Crear Cuenta</h1>
-          <p className="text-[#606060] text-sm">Regístrate en IPT Course</p>
+          <h1 className="text-[26px] font-normal text-white tracking-[-0.03em] mb-2">
+            Crear Cuenta de Estudiante
+          </h1>
+          <p className="text-[13px] font-extralight text-[#9a9a9a]">
+            Comienza tu formación práctica operando sistemas reales
+          </p>
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-700 border border-red-200 p-3 rounded-xl text-xs font-medium mb-5" role="alert">
-            {error}
+          <div className="mb-6 p-4 rounded-2xl bg-[#f43f5e]/10 border border-[#f43f5e]/30 flex items-start gap-3 text-[12px] text-white">
+            <AlertCircle className="w-4 h-4 text-[#f43f5e] shrink-0 mt-0.5" />
+            <span className="leading-relaxed font-light">{error}</span>
           </div>
         )}
 
-        {/* Casilla de autorización previa, expresa e informada (Ley 1581 de 2012) */}
-        <div
-          className={`mb-5 p-3.5 rounded-xl border transition-colors ${
-            acceptedLegal
-              ? 'bg-emerald-50/60 border-emerald-200'
-              : 'bg-[#f8f9fa] border-[#dcdcdc]'
-          }`}
-        >
-          <label className="flex items-start gap-2.5 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={acceptedLegal}
-              onChange={(e) => {
-                setAcceptedLegal(e.target.checked);
-                if (e.target.checked && error) setError('');
-              }}
-              className="mt-0.5 w-4 h-4 accent-[#0f0f0f] rounded cursor-pointer shrink-0"
-            />
-            <span className="text-[11px] text-[#303030] leading-relaxed">
-              Autorizo de manera previa, expresa e informada el tratamiento de mis datos personales conforme a la{' '}
-              <button
-                type="button"
-                onClick={() => setPreviewLegalTab('privacidad')}
-                className="font-bold text-[#0f0f0f] underline hover:text-blue-700"
-              >
-                Política de Privacidad (Ley 1581 de 2012)
-              </button>
-              , y acepto el{' '}
-              <button
-                type="button"
-                onClick={() => setPreviewLegalTab('aviso_legal')}
-                className="font-bold text-[#0f0f0f] underline hover:text-blue-700"
-              >
-                Aviso Legal
-              </button>
-              , los{' '}
-              <button
-                type="button"
-                onClick={() => setPreviewLegalTab('terminos')}
-                className="font-bold text-[#0f0f0f] underline hover:text-blue-700"
-              >
-                Términos y Condiciones
-              </button>
-              , las{' '}
-              <button
-                type="button"
-                onClick={() => setPreviewLegalTab('retracto_pagos')}
-                className="font-bold text-[#0f0f0f] underline hover:text-blue-700"
-              >
-                Condiciones de Compra y Retracto
-              </button>{' '}
-              y la{' '}
-              <button
-                type="button"
-                onClick={() => setPreviewLegalTab('cookies')}
-                className="font-bold text-[#0f0f0f] underline hover:text-blue-700"
-              >
-                Política de Cookies
-              </button>
-              .
-            </span>
-          </label>
-        </div>
-
+        {/* Botón Google OAuth */}
         <button
-          onClick={handleGoogleAuth}
+          type="button"
+          onClick={handleGoogleRegister}
           disabled={loading}
-          className="w-full bg-white border border-[#d1d2e0] text-[#0f0f0f] rounded-xl py-2.5 text-sm font-bold hover:bg-[#f6f7f9] disabled:opacity-50 flex items-center justify-center gap-2 mb-5 cursor-pointer transition-colors"
+          className="w-full py-3 rounded-[24px] bg-[#000000] border border-[#ffffff]/20 hover:border-[#8052ff] text-white text-[13px] font-semibold flex items-center justify-center gap-3 transition-colors disabled:opacity-50 mb-6"
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+          <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <path
+              fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+            />
           </svg>
-          Registrarse con Google
+          <span>Registrarse con Google</span>
         </button>
 
-        <div className="relative flex items-center py-2 mb-5">
-          <div className="flex-grow border-t border-[#e5e5e5]"></div>
-          <span className="flex-shrink-0 mx-4 text-[#606060] text-xs font-medium uppercase tracking-wider">O usa tu correo</span>
-          <div className="flex-grow border-t border-[#e5e5e5]"></div>
+        <div className="relative flex items-center justify-center my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-[#ffffff]/10" />
+          </div>
+          <span className="relative px-4 bg-[#09090b] text-[11px] font-mono uppercase text-[#9a9a9a]">
+            O con correo
+          </span>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="register-firstname" className="block text-sm font-medium text-[#0f0f0f] mb-1">Nombre</label>
+              <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a] mb-1.5">
+                Nombre
+              </label>
               <input
-                id="register-firstname"
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full border border-[#d1d2e0] rounded-xl px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-[#0f0f0f] focus-visible:outline-hidden"
-                placeholder="Carlos"
+                placeholder="Juan"
+                className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                 required
               />
             </div>
             <div>
-              <label htmlFor="register-lastname" className="block text-sm font-medium text-[#0f0f0f] mb-1">Apellido</label>
+              <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a] mb-1.5">
+                Apellido
+              </label>
               <input
-                id="register-lastname"
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full border border-[#d1d2e0] rounded-xl px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-[#0f0f0f] focus-visible:outline-hidden"
                 placeholder="Pérez"
+                className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="register-email" className="block text-sm font-medium text-[#0f0f0f] mb-1">Correo Electrónico</label>
+            <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a] mb-1.5">
+              Correo Electrónico
+            </label>
             <input
-              id="register-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-[#d1d2e0] rounded-xl px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-[#0f0f0f] focus-visible:outline-hidden"
-              placeholder="usuario@ejemplo.com"
+              placeholder="estudiante@ejemplo.com"
+              className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="register-password" className="block text-sm font-medium text-[#0f0f0f] mb-1">Contraseña</label>
+            <label className="block text-[12px] uppercase tracking-[0.05em] font-semibold text-[#9a9a9a] mb-1.5">
+              Contraseña
+            </label>
             <input
-              id="register-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-[#d1d2e0] rounded-xl px-3.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-[#0f0f0f] focus-visible:outline-hidden"
               placeholder="Mínimo 6 caracteres"
+              className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
               required
-              minLength={6}
             />
+          </div>
+
+          {/* Doble Casilla Legal Independiente */}
+          <div className="space-y-2 pt-1">
+            {/* Check 1: Aviso Legal y Términos */}
+            <div className="p-3 rounded-2xl bg-[#000000] border border-[#ffffff]/10">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => {
+                    setAcceptedTerms(e.target.checked);
+                    if (e.target.checked && acceptedPrivacy) setError('');
+                  }}
+                  className="w-4 h-4 mt-0.5 accent-[#8052ff] shrink-0 cursor-pointer"
+                />
+                <span className="text-[11px] text-[#bdbdbd] font-extralight leading-relaxed">
+                  Acepto el{' '}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewLegalSection('aviso_legal')}
+                    className="text-[#8052ff] font-medium hover:underline"
+                  >
+                    Aviso Legal
+                  </button>
+                  , los{' '}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewLegalSection('terminos')}
+                    className="text-[#8052ff] font-medium hover:underline"
+                  >
+                    Términos de Servicio
+                  </button>{' '}
+                  y las cláusulas de{' '}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewLegalSection('litigios')}
+                    className="text-[#8052ff] font-medium hover:underline"
+                  >
+                    Litigios y Arbitraje
+                  </button>
+                  .
+                </span>
+              </label>
+            </div>
+
+            {/* Check 2: Política de Privacidad y Habeas Data */}
+            <div className="p-3 rounded-2xl bg-[#000000] border border-[#ffffff]/10">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptedPrivacy}
+                  onChange={(e) => {
+                    setAcceptedPrivacy(e.target.checked);
+                    if (e.target.checked && acceptedTerms) setError('');
+                  }}
+                  className="w-4 h-4 mt-0.5 accent-[#8052ff] shrink-0 cursor-pointer"
+                />
+                <span className="text-[11px] text-[#bdbdbd] font-extralight leading-relaxed">
+                  Acepto la{' '}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewLegalSection('privacidad')}
+                    className="text-[#8052ff] font-medium hover:underline"
+                  >
+                    Política de Privacidad
+                  </button>{' '}
+                  y autorizo el tratamiento de mis datos personales (Habeas Data - Ley 1581 de 2012).
+                </span>
+              </label>
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#0f0f0f] text-white rounded-xl py-2.5 text-sm font-bold hover:bg-[#272727] disabled:opacity-50 mt-2 transition-all shadow-xs cursor-pointer"
+            className="w-full py-3.5 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] disabled:opacity-50 text-white text-[13px] font-semibold uppercase tracking-[0.025em] transition-all shadow-[0_0_20px_rgba(128,82,255,0.4)] mt-2"
           >
-            {loading ? 'Creando cuenta...' : 'Aceptar y Crear Cuenta'}
+            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-[#606060] mt-6">
-          ¿Ya tienes cuenta?{' '}
-          <Link href="/login" className="text-[#0f0f0f] font-bold hover:underline">
-            Inicia Sesión
-          </Link>
-        </p>
-
-        <div className="mt-6 pt-4 border-t border-[#f0f0f0] text-center">
-          <Link
-            href="/legal"
-            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#606060] hover:text-[#0f0f0f]"
-          >
-            <Scale className="w-3.5 h-3.5" />
-            <span>Consultar Centro Legal y Normativo de {IPT_OWNER_INFO.commercialName}</span>
+        <div className="mt-8 pt-6 border-t border-[#ffffff]/10 text-center text-[13px] text-[#9a9a9a] font-light">
+          ¿Ya tienes una cuenta?{' '}
+          <Link href="/login" className="text-white font-medium hover:text-[#8052ff] transition-colors">
+            Inicia sesión aquí
           </Link>
         </div>
       </div>
 
-      {/* Modal rápido para consultar cualquiera de los 5 documentos legales sin salir del registro */}
-      {selectedDoc && (
-        <div
-          className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
-          onClick={() => setPreviewLegalTab(null)}
-        >
-          <div
-            className="bg-white border border-[#e5e5e5] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="px-5 py-4 border-b border-[#e5e5e5] flex items-center justify-between bg-[#fafafa]">
+      {/* Modal de Lectura Legal In-Situ */}
+      {previewLegalSection && activeDoc && (
+        <div className="fixed inset-0 z-50 bg-[#000000]/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#09090b] border border-[#ffffff]/15 rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
+            <div className="p-6 border-b border-[#ffffff]/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Scale className="w-4 h-4 text-[#0f0f0f]" />
-                <h2 className="text-sm font-bold text-[#0f0f0f]">{selectedDoc.title}</h2>
+                <Scale className="w-5 h-5 text-[#8052ff]" />
+                <h3 className="text-[16px] font-semibold text-white">{activeDoc.title}</h3>
               </div>
               <button
                 type="button"
-                onClick={() => setPreviewLegalTab(null)}
-                className="p-1.5 rounded-full hover:bg-[#ececec] text-[#606060] cursor-pointer"
+                onClick={() => setPreviewLegalSection(null)}
+                className="text-[#9a9a9a] hover:text-white"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
-
-            <div className="px-5 py-2.5 bg-[#f4f4f4] border-b border-[#e5e5e5] flex items-center gap-1.5 overflow-x-auto">
-              {LEGAL_DOCUMENTS.map((doc) => (
-                <button
-                  key={doc.id}
-                  type="button"
-                  onClick={() => setPreviewLegalTab(doc.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-                    selectedDoc.id === doc.id
-                      ? 'bg-[#0f0f0f] text-white'
-                      : 'bg-white text-[#303030] border border-[#dcdcdc]'
-                  }`}
-                >
-                  {doc.shortTitle}
-                </button>
-              ))}
-            </div>
-
-            <div className="p-5 overflow-y-auto space-y-3 text-xs text-[#303030]">
-              <p className="text-[11px] font-semibold text-[#606060]">{selectedDoc.lawReference}</p>
-              <p className="leading-relaxed bg-[#f8f9fa] p-3 rounded-xl border border-[#ececec]">
-                {selectedDoc.summary}
-              </p>
-              {selectedDoc.clauses.map((clause, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl border border-[#eaeaea]">
-                  <h3 className="font-bold text-[#0f0f0f] mb-1">{clause.heading}</h3>
-                  <p className="leading-relaxed text-[#454545]">{clause.body}</p>
-                  {clause.bullets && clause.bullets.length > 0 && (
-                    <ul className="mt-2 space-y-1 list-disc list-inside text-[#454545]">
-                      {clause.bullets.map((b, bIdx) => (
-                        <li key={bIdx}>{b}</li>
+            <div className="p-6 overflow-y-auto space-y-4 text-[13px] text-[#bdbdbd] font-extralight leading-relaxed">
+              <p className="text-white font-medium mb-3">{activeDoc.summary}</p>
+              {activeDoc.clauses?.map((c, i) => (
+                <div key={i} className="mb-4">
+                  <h4 className="text-white text-xs font-semibold mb-1">{c.heading}</h4>
+                  <p className="text-xs text-[#9a9a9a] leading-relaxed">{c.body}</p>
+                  {c.bullets && c.bullets.length > 0 && (
+                    <ul className="mt-2 space-y-1 pl-4 list-disc text-[11px] text-[#888888]">
+                      {c.bullets.map((b, bi) => (
+                        <li key={bi}>{b}</li>
                       ))}
                     </ul>
                   )}
                 </div>
               ))}
             </div>
-
-            <div className="px-5 py-3.5 border-t border-[#e5e5e5] bg-[#fafafa] flex items-center justify-between gap-3">
+            <div className="p-4 border-t border-[#ffffff]/10 flex items-center justify-between">
+              <Link
+                href={`/legal?tab=${activeDoc.id}`}
+                target="_blank"
+                className="text-xs text-[#8052ff] hover:underline"
+              >
+                Abrir documento completo en /legal
+              </Link>
               <button
                 type="button"
-                onClick={() => {
-                  setAcceptedLegal(true);
-                  setPreviewLegalTab(null);
-                }}
-                className="px-4 py-2 rounded-full bg-[#0f0f0f] hover:bg-[#272727] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                onClick={() => setPreviewLegalSection(null)}
+                className="px-5 py-2 rounded-full bg-white text-black text-[12px] font-semibold uppercase"
               >
-                <ShieldCheck className="w-4 h-4" />
-                <span>He leído y acepto las condiciones legales</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewLegalTab(null)}
-                className="px-4 py-2 rounded-full border border-[#d0d0d0] text-xs font-semibold text-[#303030] hover:bg-[#f2f2f2] cursor-pointer"
-              >
-                Cerrar
+                Entendido
               </button>
             </div>
           </div>

@@ -1,0 +1,92 @@
+1
+00:00:04,000 --> 00:00:04,441
+¡Hola!
+
+2
+00:00:04,441 --> 00:00:07,826
+Bienvenido a un nuevo tutorial de DataGan 360.
+
+3
+00:00:08,000 --> 00:00:09,705
+Si trabajas ganadería en compañía,
+
+4
+00:00:09,705 --> 00:00:12,664
+cuentas con varios socios o compras ganado de otro titular,
+
+5
+00:00:12,664 --> 00:00:15,072
+el módulo de Transferencia te permite cambiar de
+
+6
+00:00:15,072 --> 00:00:16,727
+dueño a tus animales en segundos.
+
+7
+00:00:16,727 --> 00:00:18,683
+Primero buscamos al propietario actual.
+
+8
+00:00:19,000 --> 00:00:21,219
+El sistema nos lista todos sus bovinos;
+
+9
+00:00:21,219 --> 00:00:23,268
+aquí marcas uno o varios ejemplares,
+
+10
+00:00:23,268 --> 00:00:25,829
+seleccionas abajo a qué nuevo propietario del
+
+11
+00:00:25,829 --> 00:00:28,675
+módulo de Terceros pasarán y presionas Transferir.
+
+12
+00:00:33,000 --> 00:00:34,815
+Si consultamos arriba al nuevo titular,
+
+13
+00:00:34,815 --> 00:00:37,096
+comprobamos que el ejemplar ya figura a su nombre
+
+14
+00:00:37,096 --> 00:00:39,238
+—cambio que también se reflejará en su Hoja de
+
+15
+00:00:39,238 --> 00:00:39,517
+Vida—,
+
+16
+00:00:39,517 --> 00:00:41,844
+contando además con el botón Seleccionar todo para
+
+17
+00:00:41,844 --> 00:00:42,682
+traspasos masivos.
+
+18
+00:00:43,000 --> 00:00:45,534
+¿Y qué pasa con los animales que metiste por
+
+19
+00:00:45,534 --> 00:00:48,241
+Registro Rápido en corral y quedaron sin dueño?
+
+20
+00:00:48,241 --> 00:00:50,660
+Cambias al botón Animales sin propietario,
+
+21
+00:00:50,660 --> 00:00:51,639
+presionas Cargar,
+
+22
+00:00:51,639 --> 00:00:54,461
+marcas los ejemplares pendientes y les asignas su
+
+23
+00:00:54,461 --> 00:00:56,707
+propietario definitivo de un solo clic.
+

@@ -1,0 +1,1 @@
+/* empty css                                                               */import{_ as o}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{o as e,l as r}from"./vendor-Bf44PGYZ.js";const c={},s={class:"loader"};function t(a,_){return e(),r("span",s)}const p=o(c,[["render",t],["__scopeId","data-v-646f6d4f"]]);export{p as L};

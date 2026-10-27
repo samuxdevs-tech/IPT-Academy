@@ -1,0 +1,258 @@
+{
+  "video_key": "datagan360-v4-produccion-locutado",
+  "total_cues": 50,
+  "start_time": 4.0,
+  "end_time": 152.211,
+  "cues": [
+    {
+      "start": 4.0,
+      "end": 4.441,
+      "text": "¡Hola!"
+    },
+    {
+      "start": 4.441,
+      "end": 7.826,
+      "text": "Bienvenido a un nuevo tutorial de DataGan 360."
+    },
+    {
+      "start": 8.0,
+      "end": 9.752,
+      "text": "Entramos al módulo de Producción,"
+    },
+    {
+      "start": 9.752,
+      "end": 12.035,
+      "text": "donde cada dato que ingreses alimentará las"
+    },
+    {
+      "start": 12.035,
+      "end": 13.31,
+      "text": "gráficas de Rendimiento,"
+    },
+    {
+      "start": 13.31,
+      "end": 14.69,
+      "text": "Tops y Analítica Avanzada."
+    },
+    {
+      "start": 14.69,
+      "end": 17.133,
+      "text": "En Pesaje presionamos Crear Pesaje y filtramos"
+    },
+    {
+      "start": 17.133,
+      "end": 19.682,
+      "text": "primero el lote que estamos pasando por báscula."
+    },
+    {
+      "start": 20.0,
+      "end": 22.522,
+      "text": "Al elegir el animal —o escanear su chapeta con"
+    },
+    {
+      "start": 22.522,
+      "end": 23.454,
+      "text": "Detectar Animal—,"
+    },
+    {
+      "start": 23.454,
+      "end": 26.031,
+      "text": "mira cómo aparece una cinta recordándote cuánto"
+    },
+    {
+      "start": 26.031,
+      "end": 27.073,
+      "text": "pesó la última vez;"
+    },
+    {
+      "start": 27.073,
+      "end": 29.87,
+      "text": "así sabrás de inmediato al digitar el nuevo peso si"
+    },
+    {
+      "start": 29.87,
+      "end": 31.679,
+      "text": "ganó o perdió condición corporal."
+    },
+    {
+      "start": 32.0,
+      "end": 34.739,
+      "text": "Aquí seleccionas con qué dieta se está alimentando"
+    },
+    {
+      "start": 34.739,
+      "end": 37.588,
+      "text": "actualmente —dato que usará el motor de Inteligencia"
+    },
+    {
+      "start": 37.588,
+      "end": 40.383,
+      "text": "Predictiva para cruzar nutrición versus ganancia de"
+    },
+    {
+      "start": 40.383,
+      "end": 40.711,
+      "text": "peso—,"
+    },
+    {
+      "start": 40.711,
+      "end": 43.451,
+      "text": "agregas cualquier observación y presionas Guardar."
+    },
+    {
+      "start": 54.0,
+      "end": 56.628,
+      "text": "Nota que la ventana no se cierra sola para que"
+    },
+    {
+      "start": 56.628,
+      "end": 58.798,
+      "text": "puedas seguir pesando todo el lote sin"
+    },
+    {
+      "start": 58.798,
+      "end": 59.655,
+      "text": "interrupciones."
+    },
+    {
+      "start": 59.655,
+      "end": 60.341,
+      "text": "Al cerrarla,"
+    },
+    {
+      "start": 60.341,
+      "end": 63.14,
+      "text": "el nuevo peso ya actualiza el valor comercial del"
+    },
+    {
+      "start": 63.14,
+      "end": 65.996,
+      "text": "animal y puedes exportar la planilla con Descargar"
+    },
+    {
+      "start": 65.996,
+      "end": 66.339,
+      "text": "Excel."
+    },
+    {
+      "start": 73.0,
+      "end": 75.419,
+      "text": "Ahora vamos en el menú lateral a Leche,"
+    },
+    {
+      "start": 75.419,
+      "end": 77.652,
+      "text": "donde dispones de ordeño individual,"
+    },
+    {
+      "start": 77.652,
+      "end": 80.382,
+      "text": "venta de leche —que envía ingresos directo a"
+    },
+    {
+      "start": 80.382,
+      "end": 81.995,
+      "text": "Finanzas— y ordeño masivo."
+    },
+    {
+      "start": 81.995,
+      "end": 85.531,
+      "text": "Entramos a Registro individual y presionamos Crear Leche."
+    },
+    {
+      "start": 86.0,
+      "end": 88.679,
+      "text": "Seleccionamos el lote de ordeño: observa que el"
+    },
+    {
+      "start": 88.679,
+      "end": 91.472,
+      "text": "sistema detecta en qué potrero está ese lote para"
+    },
+    {
+      "start": 91.472,
+      "end": 94.379,
+      "text": "calcular más adelante qué pradera produce más leche"
+    },
+    {
+      "start": 94.379,
+      "end": 95.12,
+      "text": "por hectárea."
+    },
+    {
+      "start": 95.12,
+      "end": 98.027,
+      "text": "Elegimos la vaca y digitamos los litros del ordeño."
+    },
+    {
+      "start": 106.0,
+      "end": 108.34,
+      "text": "Indicamos la calidad y el turno de ordeño,"
+    },
+    {
+      "start": 108.34,
+      "end": 110.792,
+      "text": "y presta atención a esta integración: si das"
+    },
+    {
+      "start": 110.792,
+      "end": 112.073,
+      "text": "suplementación en sala,"
+    },
+    {
+      "start": 112.073,
+      "end": 114.469,
+      "text": "aquí despliegas los concentrados que tienes"
+    },
+    {
+      "start": 114.469,
+      "end": 117.144,
+      "text": "cargados en el Inventario de Finanzas viendo sus"
+    },
+    {
+      "start": 117.144,
+      "end": 118.147,
+      "text": "kilos disponibles."
+    },
+    {
+      "start": 120.0,
+      "end": 123.508,
+      "text": "Lo mismo ocurre con las sales mineralizadas o suplementos."
+    },
+    {
+      "start": 123.508,
+      "end": 126.593,
+      "text": "Solo debes elegir el insumo e indicar cuántos kilos"
+    },
+    {
+      "start": 126.593,
+      "end": 129.315,
+      "text": "exactos se comió esta vaca durante el ordeño."
+    },
+    {
+      "start": 141.0,
+      "end": 142.195,
+      "text": "Al presionar Guardar,"
+    },
+    {
+      "start": 142.195,
+      "end": 145.097,
+      "text": "DataGan hace tres cosas por ti: registra los litros"
+    },
+    {
+      "start": 145.097,
+      "end": 146.406,
+      "text": "en la curva de la vaca,"
+    },
+    {
+      "start": 146.406,
+      "end": 149.308,
+      "text": "suma la leche al tanque y descuenta automáticamente"
+    },
+    {
+      "start": 149.308,
+      "end": 152.211,
+      "text": "esos kilos de concentrado del Inventario de bodega."
+    }
+  ]
+}
