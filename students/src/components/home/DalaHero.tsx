@@ -75,7 +75,7 @@ export default function DalaHero({ freeCourse }: DalaHeroProps) {
                 className="px-5 py-3.5 rounded-[24px] bg-[#ffffff]/10 hover:bg-[#ffffff]/15 text-white text-[13px] font-semibold flex items-center justify-center gap-2 transition-all border border-[#ffffff]/15 hover:border-[#ffffff]/30 cursor-pointer"
               >
                 <BookOpen className="w-4 h-4 text-[#8052ff]" />
-                <span>Entrar al Campus (/home)</span>
+                <span>Entrar al Campus</span>
               </Link>
             </div>
           </div>

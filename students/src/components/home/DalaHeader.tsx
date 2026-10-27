@@ -47,7 +47,7 @@ export default function DalaHeader() {
             className="text-[13px] uppercase tracking-[0.03em] font-semibold text-[#8052ff] hover:text-white transition-colors flex items-center gap-1.5"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Campus (/home)</span>
+            <span>Campus</span>
           </Link>
           <a
             href="#mision-vision"
@@ -115,7 +115,7 @@ export default function DalaHeader() {
                   href="/home"
                   className="inline-flex items-center justify-center px-5 py-2 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] text-white text-[13px] font-semibold uppercase tracking-[0.03em] transition-all shadow-[0_0_15px_rgba(128,82,255,0.4)]"
                 >
-                  Panel de Estudio (/home)
+                  Panel de Estudio
                 </Link>
               )}
 

@@ -46,7 +46,7 @@ export default function DalaFooter() {
               <ul className="space-y-2 text-[12px] text-[#9a9a9a] font-light">
                 <li>
                   <Link href="/home" className="hover:text-white transition-colors">
-                    Campus Estudiantil (/home)
+                    Campus Estudiantil
                   </Link>
                 </li>
                 <li>
