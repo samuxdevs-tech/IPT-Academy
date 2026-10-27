@@ -17,7 +17,7 @@ export default function DalaMissionVision() {
             Misión y Visión
           </h2>
           <p className="text-[16px] sm:text-[18px] font-extralight text-[#bdbdbd] leading-relaxed">
-            Los fundamentos institucionales que rigen la formación técnica y operativa de Ivan Perez Tech (IPT).
+            El propósito transformador que define el rumbo formativo y tecnológico de Ivan Perez Tech (IPT).
           </p>
         </div>
 
@@ -43,18 +43,18 @@ export default function DalaMissionVision() {
                   Nuestra Misión
                 </h3>
                 <p className="text-[15px] sm:text-[16px] font-extralight text-[#d1d5db] leading-[1.7]">
-                  Capacitar a ingenieros y desarrolladores en la concepción, despliegue y operación de arquitecturas de software de escala de producción real, eliminando la brecha entre la teoría tradicional y el rigor operativo de la industria a través de entornos simulados y plataformas activas.
+                  Romper el paradigma de los sistemas de educación convencional y poder transmitir información, formación y conocimiento a través de la web al 100%.
                 </p>
               </div>
 
               <div className="pt-4 border-t border-[#ffffff]/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-[#9a9a9a]">
                 <div className="flex items-center gap-2">
                   <Cpu className="w-4 h-4 text-[#8052ff] shrink-0" />
-                  <span>Sistemas en producción real</span>
+                  <span>Ruptura del paradigma tradicional</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-[#15846e] shrink-0" />
-                  <span>Rigor de ingeniería probado</span>
+                  <span>Transmisión 100% a través de la web</span>
                 </div>
               </div>
             </div>
