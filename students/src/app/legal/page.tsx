@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { IptLogoIcon } from '@/components/IptLogoIcon';
 import { useSearchParams } from 'next/navigation';
 import {
   LEGAL_DOCUMENTS,
@@ -72,9 +73,7 @@ function LegalCenterContent() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="inline-flex items-center gap-2.5 group">
-              <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 transform group-hover:scale-105 transition-transform">
-                <polygon points="12,2 22,20 2,20" fill="#8052ff" stroke="#ffffff" strokeWidth="0.8" />
-              </svg>
+              <IptLogoIcon className="w-7 h-7 transform group-hover:scale-105 transition-transform" />
               <span className="text-[16px] font-semibold tracking-[-0.02em] text-white">
                 IPT <span className="font-light text-[#bdbdbd]">Course</span>
               </span>

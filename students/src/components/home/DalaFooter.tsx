@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { IptLogoIcon } from '@/components/IptLogoIcon';
 import Link from 'next/link';
 
 export default function DalaFooter() {
@@ -12,14 +13,7 @@ export default function DalaFooter() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b border-[#ffffff]/10">
           <div className="md:col-span-5">
             <div className="flex items-center gap-3 mb-4">
-              <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-                <polygon
-                  points="12,2 22,20 2,20"
-                  fill="#8052ff"
-                  stroke="#ffffff"
-                  strokeWidth="0.8"
-                />
-              </svg>
+              <IptLogoIcon className="w-7 h-7 shrink-0" />
               <span className="text-white text-[15px] font-semibold tracking-[-0.02em]">
                 IPT <span className="font-light text-[#bdbdbd]">Course</span>
               </span>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { IptLogoIcon } from '@/components/IptLogoIcon';
 import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from 'firebase/auth';
 import { ref, set } from 'firebase/database';
@@ -127,9 +128,7 @@ export default function RegisterPage() {
       <div className="relative z-10 max-w-[480px] w-full bg-[#09090b] border border-[#ffffff]/15 rounded-[28px] p-8 sm:p-10 shadow-2xl">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
-            <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 transform group-hover:scale-105 transition-transform">
-              <polygon points="12,2 22,20 2,20" fill="#8052ff" stroke="#ffffff" strokeWidth="0.8" />
-            </svg>
+            <IptLogoIcon className="w-9 h-9 transform group-hover:scale-105 transition-transform" />
             <span className="text-white text-[18px] font-semibold tracking-[-0.02em]">
               IPT <span className="font-light text-[#bdbdbd]">Course</span>
             </span>

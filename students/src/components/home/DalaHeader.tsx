@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { IptLogoIcon } from '@/components/IptLogoIcon';
 import { useAuth } from '@/context/AuthContext';
 import { LogOut, User, Sparkles, ExternalLink, ShieldCheck } from 'lucide-react';
 
@@ -31,26 +32,8 @@ export default function DalaHeader() {
       <div className="max-w-[1280px] mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo Lockup */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-7 h-7 flex items-center justify-center">
-            {/* Dala angular triangular mark with Iris-Verdant gradient */}
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="w-7 h-7 transform group-hover:scale-105 transition-transform"
-            >
-              <defs>
-                <linearGradient id="dalaLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#8052ff" />
-                  <stop offset="100%" stopColor="#15846e" />
-                </linearGradient>
-              </defs>
-              <polygon
-                points="12,2 22,20 2,20"
-                fill="url(#dalaLogoGrad)"
-                stroke="#ffffff"
-                strokeWidth="0.8"
-              />
-            </svg>
+          <div className="relative w-8 h-8 flex items-center justify-center transform group-hover:scale-105 transition-transform">
+            <IptLogoIcon className="w-8 h-8" />
           </div>
           <span className="text-white text-[15px] font-semibold tracking-[-0.02em]">
             IPT <span className="font-light text-[#bdbdbd]">Course</span>
