@@ -278,7 +278,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await signOut(auth);
     } catch {}
-    router.push('/login');
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('ipt_session_token');
+        sessionStorage.clear();
+      } catch {}
+      window.location.reload();
+    }
   };
 
   const effectiveIsAdmin =

@@ -10,13 +10,11 @@ import { db } from '@/lib/firebase';
 import {
   LEGAL_DOCUMENTS,
   IPT_OWNER_INFO,
-  CURRENT_LEGAL_VERSION,
   LegalSectionId,
   recordUserLegalAcceptance
 } from '@/lib/legalData';
 import {
   Scale,
-  ShieldCheck,
   Cookie,
   X,
   CheckCircle2,
@@ -39,11 +37,6 @@ export default function LegalComplianceSystem() {
   // Modal de lectura rápida de cualquiera de las 5 secciones legales
   const [modalSection, setModalSection] = useState<LegalSectionId | null>(null);
 
-  // Modal de aceptación obligatoria para sesiones activas que aún no tengan registro en Firebase
-  const [needsSessionConsent, setNeedsSessionConsent] = useState(false);
-  const [sessionCheckbox, setSessionCheckbox] = useState(false);
-  const [savingConsent, setSavingConsent] = useState(false);
-
   // 1. Verificar preferencia de Cookies al cargar
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -55,43 +48,7 @@ export default function LegalComplianceSystem() {
     }
   }, []);
 
-  // 2. Verificar que todo usuario autenticado tenga su registro de aceptación legal en Firebase RTDB
-  useEffect(() => {
-    if (!user || user.uid.startsWith('local-')) {
-      setNeedsSessionConsent(false);
-      return;
-    }
-
-    const checkUserLegalConsent = async () => {
-      try {
-        // Primero revisar caché local inmediata escrita durante login/registro
-        if (typeof window !== 'undefined') {
-          const cached = localStorage.getItem(`ipt_legal_accepted_${user.uid}`);
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            if (parsed?.policyVersion === CURRENT_LEGAL_VERSION && parsed?.accepted) {
-              setNeedsSessionConsent(false);
-              return;
-            }
-          }
-        }
-
-        const snap = await get(ref(db, `users/${user.uid}/legalConsent`));
-        if (snap.exists() && snap.val()?.policyVersion === CURRENT_LEGAL_VERSION && snap.val()?.accepted) {
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(`ipt_legal_accepted_${user.uid}`, JSON.stringify(snap.val()));
-          }
-          setNeedsSessionConsent(false);
-        } else {
-          setNeedsSessionConsent(true);
-        }
-      } catch {
-        setNeedsSessionConsent(false);
-      }
-    };
-
-    checkUserLegalConsent();
-  }, [user]);
+  
 
   const handleSaveCookieChoice = (choice: 'all' | 'essential_only') => {
     if (typeof window !== 'undefined') {
@@ -102,17 +59,7 @@ export default function LegalComplianceSystem() {
     setShowCookieConfig(false);
   };
 
-  const handleConfirmSessionLegalConsent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !sessionCheckbox) return;
-    setSavingConsent(true);
-    try {
-      await recordUserLegalAcceptance(user, 'session_gate');
-      setNeedsSessionConsent(false);
-    } finally {
-      setSavingConsent(false);
-    }
-  };
+  
 
   const activeDoc = modalSection
     ? LEGAL_DOCUMENTS.find((d) => d.id === modalSection) || LEGAL_DOCUMENTS[0]
@@ -253,7 +200,7 @@ export default function LegalComplianceSystem() {
 
       {/* BANNER Y CONFIGURADOR DE COOKIES (Punto 5 Legal) */}
       {showCookieBanner && (
-        <div className="fixed bottom-20 md:bottom-4 right-4 left-4 md:left-auto md:max-w-lg z-[85] bg-[#0f172a] text-white rounded-2xl border border-slate-700 shadow-2xl p-5 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="fixed bottom-4 left-4 right-4 sm:left-6 sm:right-auto sm:max-w-md z-[85] bg-[#0f172a] text-white rounded-2xl border border-slate-700 shadow-2xl p-5 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/30 text-amber-300 flex items-center justify-center shrink-0">
@@ -279,7 +226,7 @@ export default function LegalComplianceSystem() {
           </div>
 
           <p className="text-xs text-slate-300 leading-relaxed">
-            Utilizamos almacenamiento técnico indispensable para iniciar sesión, recordar tu progreso académico y ejecutar el TutorIA local en tu navegador, así como cookies opcionales de análisis para mejorar las clases.{' '}
+            Utilizamos almacenamiento técnico indispensable para iniciar sesión, recordar tu progreso académico y guardar tu progreso académico y preferencias, además de cookies analíticas opcionales para optimizar la experiencia de estudio.{' '}
             <button
               type="button"
               onClick={() => setModalSection('cookies')}
@@ -447,70 +394,6 @@ export default function LegalComplianceSystem() {
         </div>
       )}
 
-      {/* REGISTRO DE ACEPTACIÓN OBLIGATORIA PARA SESIONES PREVIAS SIN CONSTANCIA */}
-      {needsSessionConsent && user && pathname !== '/login' && pathname !== '/register' && !pathname?.startsWith('/legal') && (
-        <div className="fixed inset-0 z-[125] bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full border border-[#cbd5e1] shadow-2xl overflow-hidden p-6 space-y-5">
-            <div className="flex items-start gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-200 text-[#1d4ed8] flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#1d4ed8] bg-blue-50 px-2 py-0.5 rounded">
-                  Requisito Legal Obligatorio ({CURRENT_LEGAL_VERSION})
-                </span>
-                <h3 className="text-lg font-extrabold text-[#0f172a] mt-1">
-                  Actualización y Registro de Aceptación Legal
-                </h3>
-                <p className="text-xs text-[#475569] mt-1 leading-relaxed">
-                  En cumplimiento de la Ley 1581 de 2012 (Habeas Data) y la Ley 1480 de 2011 de Colombia, requerimos registrar la constancia expresa de aceptación para tu cuenta (<strong>{user.email}</strong>).
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3.5 space-y-2 text-xs">
-              <p className="font-bold text-[#0f172a]">Documentos incluidos en tu aceptación:</p>
-              <div className="flex flex-wrap gap-1.5">
-                {LEGAL_DOCUMENTS.map((doc) => (
-                  <button
-                    key={doc.id}
-                    type="button"
-                    onClick={() => setModalSection(doc.id)}
-                    className="px-2.5 py-1 rounded-lg bg-white border border-[#cbd5e1] hover:border-[#1d4ed8] text-[#1d4ed8] font-semibold text-[11px] transition-colors cursor-pointer"
-                  >
-                    {doc.number}. {doc.shortTitle}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <form onSubmit={handleConfirmSessionLegalConsent} className="space-y-4">
-              <label className="flex items-start gap-3 p-3 rounded-xl border border-[#cbd5e1] bg-white cursor-pointer hover:border-[#1d4ed8]">
-                <input
-                  type="checkbox"
-                  checked={sessionCheckbox}
-                  onChange={(e) => setSessionCheckbox(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 accent-[#1d4ed8] shrink-0 cursor-pointer"
-                  required
-                />
-                <span className="text-xs text-[#1e293b] leading-relaxed">
-                  Autorizo de manera previa, expresa e informada el tratamiento de mis datos personales conforme a la <strong>Política de Privacidad (Habeas Data - Ley 1581 de 2012)</strong> y acepto el <strong>Aviso Legal</strong>, los <strong>Términos y Condiciones</strong>, las <strong>Condiciones de Compra, Retracto y Reversión de Pago</strong> y la <strong>Política de Cookies</strong> de IPT Course.
-                </span>
-              </label>
-
-              <button
-                type="submit"
-                disabled={!sessionCheckbox || savingConsent}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 text-white text-xs font-extrabold transition-all cursor-pointer"
-              >
-                {savingConsent
-                  ? 'Registrando aceptación legal...'
-                  : 'Confirmar y Guardar Aceptación Legal'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
+      </>
   );
 }

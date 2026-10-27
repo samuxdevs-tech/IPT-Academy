@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { ref, get } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { Lightbulb, Check } from 'lucide-react';
@@ -20,6 +20,8 @@ const MIN_DISPLAY_MS = 2000; // Tiempo mínimo para lectura cómoda y transició
 
 export default function MinimalistPreloader() {
   const router = useRouter();
+  const pathname = usePathname();
+  const isStudyPanel = pathname?.startsWith('/course');
   const [mounted, setMounted] = useState(false);
   const [progress, setProgress] = useState(15);
   const [isFading, setIsFading] = useState(false);
@@ -28,6 +30,9 @@ export default function MinimalistPreloader() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    // La pantalla de carga solo debe existir para el panel de estudio (/course)
+    if (!isStudyPanel) return;
+
     // Si ya se cargó en esta sesión/pestaña, no interrumpir la navegación interna
     if (typeof window !== 'undefined' && sessionStorage.getItem(SESSION_KEY) === 'true') {
       return;
@@ -117,9 +122,9 @@ export default function MinimalistPreloader() {
       clearInterval(progressTimer);
       clearInterval(tipInterval);
     };
-  }, [router]);
+  }, [router, isStudyPanel]);
 
-  if (!mounted) return null;
+  if (!isStudyPanel || !mounted) return null;
 
   return (
     <div
