@@ -1,6 +1,6 @@
 # Hoja de Ruta — IPT Course
 
-Ruta de evolución de **Datagan Course** hacia **IPT Course**, pasando de un reproductor de un solo curso a un portal completo de clases, calendario, tareas y calificaciones.
+Ruta de evolución de **IPT Course Course** hacia **IPT Course**, pasando de un reproductor de un solo curso a un portal completo de clases, calendario, tareas y calificaciones.
 
 ---
 

@@ -4,6 +4,52 @@
       ".read": true,
       ".write": true
     },
+    "lms_plan_configs": {
+      ".read": true,
+      ".write": true
+    },
+    "lms_subscriptions": {
+      ".read": true,
+      ".write": true
+    },
+    "lms_organizations": {
+      ".read": true,
+      ".write": true
+    },
+    "lms_organization_members": {
+      ".read": true,
+      ".write": true
+    },
+    "lms_your_plan_requests": {
+      ".read": true,
+      ".write": true
+    },
+    "lms_live_bookings": {
+      ".read": true,
+      ".write": true
+    },
+    "lms_payment_attempts": {
+      ".read": true,
+      ".write": true
+    },
+    "lms_invoices": {
+      ".read": true,
+      ".write": true
+    },
+    "lms_notifications": {
+      ".read": true,
+      ".write": true
+    },
+    "teacher_hr_configs": {
+      ".read": true,
+      ".write": true
+    },
+    "fraud_card_fingerprints": {
+      ".read": true,
+      "$fingerprint": {
+        ".write": "!data.exists() || (newData.exists() && newData.child('firstUsedByUid').val() === data.child('firstUsedByUid').val())"
+      }
+    },
     "lms_assignments": {
       ".read": true,
       ".write": true
@@ -13,6 +59,42 @@
       ".write": true
     },
     "lms_live_sessions": {
+      ".read": true,
+      ".write": true
+    },
+    "liveSessions": {
+      ".read": true,
+      ".write": true
+    },
+    "active_live_quiz": {
+      ".read": true,
+      ".write": true
+    },
+    "student_groups": {
+      ".read": true,
+      ".write": true
+    },
+    "question_bank": {
+      ".read": true,
+      ".write": true
+    },
+    "submissions": {
+      ".read": true,
+      ".write": true
+    },
+    "tutoria_directives": {
+      ".read": true,
+      ".write": true
+    },
+    "audit_logs": {
+      ".read": true,
+      ".write": true
+    },
+    "security_roles": {
+      ".read": true,
+      ".write": true
+    },
+    "system_config": {
       ".read": true,
       ".write": true
     },
@@ -34,7 +116,12 @@
     },
     "users": {
       ".read": true,
-      ".write": true
+      "$uid": {
+        ".write": true,
+        "hasUsedTrial": {
+          ".validate": "!data.exists() || data.val() !== true || newData.val() === true"
+        }
+      }
     },
     "roles": {
       ".read": true,

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Scale, Download, Printer, ShieldCheck, Search, Filter, RefreshCw, FileText } from "lucide-react";
+import { Scale, Download, Printer, Search, RefreshCw } from "lucide-react";
 import { exportToCsv, exportToPrintablePdf } from "@/lib/exportUtils";
 import { rtdb } from "@/lib/firebase";
 import { ref, onValue } from "firebase/database";
@@ -10,6 +10,7 @@ interface LegalConsentLog {
   id: string;
   studentUid: string;
   studentName: string;
+  studentEmail?: string;
   documentType: string;
   documentVersion: string;
   signedAtUtc: string;
@@ -23,46 +24,117 @@ export function LegalComplianceAdmin() {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  // Cargar registros legales reales desde Firebase RTDB
+  // Cargar registros legales reales desde Firebase RTDB (legal_consents + users/{uid}/legalConsent)
   useEffect(() => {
     const legalRef = ref(rtdb, "legal_consents");
-    const unsubscribe = onValue(
+    const usersRef = ref(rtdb, "users");
+
+    let legalData: Record<string, any> = {};
+    let usersData: Record<string, any> = {};
+
+    const recompute = () => {
+      const mergedMap = new Map<string, LegalConsentLog>();
+
+      Object.entries(legalData).forEach(([id, item]: [string, any]) => {
+        if (!item || typeof item !== "object") return;
+        const uid = item.studentUid || item.uid || id;
+        const u = usersData[uid] || {};
+        const email =
+          item.email ||
+          u.profile?.email ||
+          u.email ||
+          u.legalConsent?.email ||
+          "";
+        const name =
+          item.studentName ||
+          item.displayName ||
+          item.name ||
+          u.profile?.displayName ||
+          u.displayName ||
+          email ||
+          "Estudiante IPT";
+        mergedMap.set(uid, {
+          id,
+          studentUid: uid,
+          studentName: name,
+          studentEmail: email,
+          documentType:
+            item.documentType ||
+            "Términos del Servicio, Protección de Datos y Cláusula Arbitral",
+          documentVersion: item.documentVersion || item.termsVersion || "v2026.1",
+          signedAtUtc:
+            item.signedAtUtc ||
+            item.acceptedAtIso ||
+            item.timestamp ||
+            new Date().toISOString(),
+          ipAddress: item.ipAddress || "Sesión Autenticada Firebase",
+          userAgent: item.userAgent || "Web Client",
+          verificationHash: item.verificationHash || `sha256-${uid.slice(0, 16)}`,
+        });
+      });
+
+      Object.entries(usersData).forEach(([uid, u]: [string, any]) => {
+        if (!u || typeof u !== "object" || !u.legalConsent) return;
+        if (mergedMap.has(uid)) return;
+        const lc = u.legalConsent;
+        const email = lc.email || u.profile?.email || u.email || "";
+        const name =
+          lc.displayName ||
+          u.profile?.displayName ||
+          u.displayName ||
+          email ||
+          "Estudiante IPT";
+        mergedMap.set(uid, {
+          id: `lc-${uid.slice(0, 8)}`,
+          studentUid: uid,
+          studentName: name,
+          studentEmail: email,
+          documentType:
+            "Términos del Servicio, Protección de Datos y Cláusula Arbitral",
+          documentVersion: lc.termsVersion || "v2026.1",
+          signedAtUtc: lc.acceptedAtIso || new Date().toISOString(),
+          ipAddress: "Sesión Autenticada Firebase",
+          userAgent: lc.userAgent || "Web Client",
+          verificationHash: `sha256-${uid.slice(0, 16)}`,
+        });
+      });
+
+      setLogs(Array.from(mergedMap.values()));
+      setLoading(false);
+    };
+
+    const unsubLegal = onValue(
       legalRef,
       (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const list: LegalConsentLog[] = [];
-          Object.entries(data).forEach(([id, item]: [string, any]) => {
-            list.push({
-              id,
-              studentUid: item.studentUid || item.uid || "anon-student",
-              studentName: item.studentName || item.name || "Estudiante IPT",
-              documentType: item.documentType || "Términos del Servicio, Protección de Datos y Cláusula Arbitral",
-              documentVersion: item.documentVersion || "v2.1",
-              signedAtUtc: item.signedAtUtc || item.timestamp || new Date().toISOString(),
-              ipAddress: item.ipAddress || "190.158.42.11",
-              userAgent: item.userAgent || "Web Client",
-              verificationHash: item.verificationHash || `sha256-${id.slice(0, 16)}`
-            });
-          });
-          setLogs(list);
-        } else {
-          setLogs([]);
-        }
-        setLoading(false);
+        legalData = snapshot.exists() ? snapshot.val() : {};
+        recompute();
       },
       () => {
-        setLogs([]);
         setLoading(false);
       }
     );
 
-    return () => unsubscribe();
+    const unsubUsers = onValue(
+      usersRef,
+      (snapshot) => {
+        usersData = snapshot.exists() ? snapshot.val() : {};
+        recompute();
+      },
+      () => {
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      unsubLegal();
+      unsubUsers();
+    };
   }, []);
 
   const filteredLogs = logs.filter(
     (l) =>
       l.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (l.studentEmail || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       l.studentUid.toLowerCase().includes(searchTerm.toLowerCase()) ||
       l.ipAddress.includes(searchTerm)
   );
@@ -77,22 +149,24 @@ export function LegalComplianceAdmin() {
       "ID Registro",
       "UID Estudiante",
       "Nombre Completo",
+      "Correo",
       "Documento Aceptado",
       "Versión",
       "Fecha Firma (UTC)",
-      "Dirección IP",
-      "Firma Criptográfica SHA-256"
+      "Origen / IP",
+      "Firma Criptográfica SHA-256",
     ];
 
     const rows = logs.map((l) => [
       l.id,
       l.studentUid,
       l.studentName,
+      l.studentEmail || "",
       l.documentType,
       l.documentVersion,
       l.signedAtUtc,
       l.ipAddress,
-      l.verificationHash
+      l.verificationHash,
     ]);
 
     exportToCsv("ipt_course_logs_aceptacion_litigios.csv", headers, rows);
@@ -104,14 +178,14 @@ export function LegalComplianceAdmin() {
       alert("No hay registros de consentimiento para exportar en PDF.");
       return;
     }
-    const headers = ["UID", "Estudiante", "Documento", "Fecha UTC", "IP", "Hash"];
+    const headers = ["UID", "Estudiante", "Documento", "Fecha UTC", "Origen", "Hash"];
     const rows = logs.map((l) => [
       l.studentUid,
-      l.studentName,
+      `${l.studentName} ${l.studentEmail ? `(${l.studentEmail})` : ""}`,
       `${l.documentType} (${l.documentVersion})`,
       l.signedAtUtc,
       l.ipAddress,
-      l.verificationHash.slice(0, 18) + "..."
+      l.verificationHash.slice(0, 18) + "...",
     ]);
 
     exportToPrintablePdf(
@@ -139,7 +213,7 @@ export function LegalComplianceAdmin() {
             Logs de Aceptación de Términos y Litigios
           </h2>
           <p className="text-xs text-zinc-400 mt-1 max-w-xl">
-            Trazabilidad probatoria de consentimientos informados, aceptación de cláusulas de arbitraje y políticas de datos firmadas por cada estudiante.
+            Trazabilidad probatoria de consentimientos informados, aceptación de cláusulas de arbitraje y políticas de datos firmadas por cada estudiante en ipt-course.
           </p>
         </div>
 
@@ -168,7 +242,7 @@ export function LegalComplianceAdmin() {
           <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Buscar por estudiante, UID o IP..."
+            placeholder="Buscar por estudiante, correo o UID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-[#121217] border border-white/10 rounded-full text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500"
@@ -207,7 +281,7 @@ export function LegalComplianceAdmin() {
                   <th className="px-6 py-3.5">Estudiante & UID</th>
                   <th className="px-6 py-3.5">Instrumento Aceptado</th>
                   <th className="px-6 py-3.5">Fecha UTC</th>
-                  <th className="px-6 py-3.5">IP de Conexión</th>
+                  <th className="px-6 py-3.5">Origen</th>
                   <th className="px-6 py-3.5 text-right">Firma SHA-256</th>
                 </tr>
               </thead>
@@ -216,7 +290,10 @@ export function LegalComplianceAdmin() {
                   <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4">
                       <div className="font-bold text-white">{log.studentName}</div>
-                      <div className="text-[11px] text-zinc-400 font-mono mt-0.5">{log.studentUid}</div>
+                      {log.studentEmail && (
+                        <div className="text-[11px] text-zinc-300 font-mono mt-0.5">{log.studentEmail}</div>
+                      )}
+                      <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{log.studentUid}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-white">{log.documentType}</div>

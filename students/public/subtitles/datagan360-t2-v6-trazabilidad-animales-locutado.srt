@@ -1,0 +1,283 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,024
+[...]
+
+4
+00:00:05,024 --> 00:00:07,167
+bienvenido a un nuevo tutorial de DataGan 360.
+
+5
+00:00:07,167 --> 00:00:08,188
+[...]
+
+6
+00:00:08,188 --> 00:00:10,480
+En el módulo de trazabilidad registras las enfermedades,
+
+7
+00:00:10,480 --> 00:00:10,786
+[...]
+
+8
+00:00:10,786 --> 00:00:11,452
+tratamientos,
+
+9
+00:00:11,452 --> 00:00:11,707
+[...]
+
+10
+00:00:11,707 --> 00:00:14,810
+vacunas y salidas de ganado que impactan en el dashboard y en el inventario.
+
+11
+00:00:14,810 --> 00:00:15,721
+[...]
+
+12
+00:00:15,721 --> 00:00:19,884
+Arriba puedes buscar un animal individual o leer su chip con detectar animal para ver su ficha.
+
+13
+00:00:19,884 --> 00:00:21,187
+[...]
+
+14
+00:00:21,187 --> 00:00:22,516
+Abajo tienes cuatro formularios.
+
+15
+00:00:22,516 --> 00:00:22,786
+[...]
+
+16
+00:00:22,786 --> 00:00:25,839
+En enfermedad eliges la categoría de la patología y describes el diagnóstico.
+
+17
+00:00:25,839 --> 00:00:26,153
+[...]
+
+18
+00:00:26,153 --> 00:00:29,894
+Recuerda que lo que guardes aquí actualizará la salud del hato y el detector de brote del dashboard.
+
+19
+00:00:29,894 --> 00:00:31,208
+[...]
+
+20
+00:00:31,208 --> 00:00:32,372
+En la segunda pestaña,
+
+21
+00:00:32,372 --> 00:00:32,678
+[...]
+
+22
+00:00:32,678 --> 00:00:33,333
+tratamiento,
+
+23
+00:00:33,333 --> 00:00:33,663
+[...]
+
+24
+00:00:33,663 --> 00:00:39,324
+describes qué le aplicarás y en Seleccionar medicamento eliges el fármaco directamente desde tu inventario de finanzas.
+
+25
+00:00:39,324 --> 00:00:39,657
+[...]
+
+26
+00:00:39,657 --> 00:00:41,255
+Al poner la dosis y los días,
+
+27
+00:00:41,255 --> 00:00:41,597
+[...]
+
+28
+00:00:41,597 --> 00:00:44,386
+el sistema descontará esos mililitros o litros de tu bodega.
+
+29
+00:00:44,386 --> 00:00:47,209
+[...]
+
+30
+00:00:47,209 --> 00:00:48,396
+En la tercera pestaña,
+
+31
+00:00:48,396 --> 00:00:48,680
+[...]
+
+32
+00:00:48,680 --> 00:00:49,352
+vacunación,
+
+33
+00:00:49,352 --> 00:00:49,694
+[...]
+
+34
+00:00:49,694 --> 00:00:51,809
+eliges el biológico disponible en tu inventario.
+
+35
+00:00:51,809 --> 00:00:52,146
+[...]
+
+36
+00:00:52,146 --> 00:00:54,745
+Indicas cuántas dosis aplicaste que enfermedad previene,
+
+37
+00:00:54,745 --> 00:00:55,022
+[...]
+
+38
+00:00:55,022 --> 00:00:56,688
+como fiebre aptosa o brucellosis.
+
+39
+00:00:56,688 --> 00:00:56,954
+[...]
+
+40
+00:00:56,954 --> 00:01:00,520
+Esto descontará la vacuna del stock y subirá tu puntaje en el semáforo ICA.
+
+41
+00:01:00,520 --> 00:01:07,205
+[...]
+
+42
+00:01:07,205 --> 00:01:10,873
+Y en la pestaña movimiento registras cuando un animal sale de la finca o se vende.
+
+43
+00:01:10,873 --> 00:01:11,200
+[...]
+
+44
+00:01:11,200 --> 00:01:12,106
+Selecciona salida,
+
+45
+00:01:12,106 --> 00:01:12,432
+[...]
+
+46
+00:01:12,432 --> 00:01:12,970
+el motivo,
+
+47
+00:01:12,970 --> 00:01:13,270
+[...]
+
+48
+00:01:13,270 --> 00:01:14,377
+como traslado o feria,
+
+49
+00:01:14,377 --> 00:01:14,715
+[...]
+
+50
+00:01:14,715 --> 00:01:18,335
+vinculas al socio desde el directorio de terceros y escribes el predio destino.
+
+51
+00:01:18,335 --> 00:01:26,192
+[...]
+
+52
+00:01:26,192 --> 00:01:31,335
+Colocas la fecha y hora del embarque y presiona registrar movimiento para que quede asentado en el expediente del animal.
+
+53
+00:01:31,335 --> 00:01:40,204
+[...]
+
+54
+00:01:40,204 --> 00:01:40,716
+Ahora bien,
+
+55
+00:01:40,716 --> 00:01:41,062
+[...]
+
+56
+00:01:41,062 --> 00:01:45,218
+cuando haces jornada de vacunación o desparasitación en manga no tienes que ir animal por animal.
+
+57
+00:01:45,218 --> 00:01:45,585
+[...]
+
+58
+00:01:45,585 --> 00:01:49,284
+Filtras arriba por lote o presiona seleccionar todos los animales de la finca,
+
+59
+00:01:49,284 --> 00:01:49,566
+[...]
+
+60
+00:01:49,566 --> 00:01:52,912
+marca los ejemplares en la lista y das clic en registrar actividades.
+
+61
+00:01:52,912 --> 00:02:01,207
+[...]
+
+62
+00:02:01,207 --> 00:02:04,744
+Así un solo registro de vacuna o tratamiento se aplicará a todo el grupo a la vez.
+
+63
+00:02:04,744 --> 00:02:05,759
+[...]
+
+64
+00:02:05,759 --> 00:02:06,804
+Y en el menú lateral,
+
+65
+00:02:06,804 --> 00:02:07,028
+[...]
+
+66
+00:02:07,028 --> 00:02:07,858
+dentro de historial,
+
+67
+00:02:07,858 --> 00:02:08,230
+[...]
+
+68
+00:02:08,230 --> 00:02:09,086
+podrás consultar,
+
+69
+00:02:09,086 --> 00:02:09,428
+[...]
+
+70
+00:02:09,428 --> 00:02:12,807
+ver el detalle o descargar en Excel todos los eventos sanitarios registrados.
+
+71
+00:02:12,807 --> 00:02:20,760
+[...]

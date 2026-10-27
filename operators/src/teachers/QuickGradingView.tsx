@@ -143,7 +143,7 @@ export function QuickGradingView() {
 
     // 3. Sincronizar en progress/${student_uid} para el libro de notas del estudiante
     try {
-      await set(ref(rtdb, `progress/${currentSub.student_uid}/datagan-360-certificacion-maestra/corte1Grade`), finalGrade);
+      await set(ref(rtdb, `progress/${currentSub.student_uid}/ipt-master-fullstack/corte1Grade`), finalGrade);
     } catch {}
 
     // 4. Respaldar en API si está disponible

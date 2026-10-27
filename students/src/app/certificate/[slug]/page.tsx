@@ -4,8 +4,8 @@ import path from 'path';
 import CertificateClientView from '@/components/CertificateClientView';
 
 const DEFAULT_SLUGS = [
-  'datagan-master-pro',
-  'datagan-360-certificacion-maestra',
+  'ipt-master-fullstack',
+  'arquitectura-cloud-ipt',
   'arquitectura-software-ia-ipt',
   'general',
   'ingenieria-software-ipt',

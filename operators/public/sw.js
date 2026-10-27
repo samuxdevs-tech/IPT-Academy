@@ -1,11 +1,10 @@
-const CACHE_NAME = 'datagan-academy-v1';
+const CACHE_NAME = 'ipt-course-lms-v1';
 const STATIC_ASSETS = [
   '/',
   '/course',
-  '/scenarios',
+  '/assignments',
   '/certificate',
   '/verify',
-  '/logo.webp',
   '/manifest.json'
 ];
 
@@ -33,7 +32,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Estrategia Network-First: siempre prioriza datos frescos si hay señal, y recurre a caché en potrero/sin conexión
+// Estrategia Network-First: siempre prioriza datos frescos si hay señal, y recurre a caché sin conexión
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
@@ -50,10 +49,6 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => {
-        return caches.match(event.request).then((cached) => {
-          return cached || caches.match('/');
-        });
-      })
+      .catch(() => caches.match(event.request))
   );
 });

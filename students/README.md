@@ -1,6 +1,6 @@
-# TecnoGan Academy — Frontend Web
+# IPT Tech Academy — Frontend Web
 
-Módulo cliente y panel administrativo de TecnoGan Academy, construido sobre **Next.js 16**, **React 19**, **Tailwind CSS** y **Firebase Realtime Database**.
+Módulo cliente y panel administrativo de IPT Tech Academy, construido sobre **Next.js 16**, **React 19**, **Tailwind CSS** y **Firebase Realtime Database**.
 
 ---
 
@@ -20,7 +20,7 @@ En el directorio `frontend/`:
 - `/`: Portal público con catálogo de cursos, barras de progreso y accesos a Fases 1, 2, 3 y Certificado.
 - `/course`: Aula virtual de reproducción de video interactivo, bloqueo secuencial, notas con timecode, Q&A y recursos descargables / pop quizes.
 - `/scenarios`: Fase 2 - Reflejo Operativo con simulación visual de casos zootécnicos.
-- `/sandbox`: Fase 3 - Práctica operativa en la finca ficticia DataGan 360.
+- `/sandbox`: Fase 3 - Práctica operativa en la finca ficticia IPT Course 360.
 - `/certificate`: Emisión y visualización de acreditaciones oficiales verificadas.
 - `/admin`: Studio de control curricular, reordenamiento de temarios por arrastre, subida de portadas a R2 y control de visibilidad de fases.
 - `/admin/analytics`: Monitoreo de telemetría de estudiantes y reconstrucción de certificados.

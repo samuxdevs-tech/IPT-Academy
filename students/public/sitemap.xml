@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://datagan-course.iptapps.com/</loc>
+    <loc>https://ipt-course-students.web.app/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://datagan-course.iptapps.com/scenarios</loc>
+    <loc>https://ipt-course-students.web.app/course</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://datagan-course.iptapps.com/certificate</loc>
+    <loc>https://ipt-course-students.web.app/assignments</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://datagan-course.iptapps.com/certificate/datagan-master-pro</loc>
+    <loc>https://ipt-course-students.web.app/certificate</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://datagan-course.iptapps.com/verify</loc>
+    <loc>https://ipt-course-students.web.app/verify</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

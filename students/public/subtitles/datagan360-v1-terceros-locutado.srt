@@ -1,0 +1,267 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,032
+[...]
+
+4
+00:00:05,032 --> 00:00:07,167
+bienvenido a un nuevo tutorial de DataGan 360.
+
+5
+00:00:07,167 --> 00:00:08,158
+[...]
+
+6
+00:00:08,158 --> 00:00:09,031
+Antes de crear lotes,
+
+7
+00:00:09,031 --> 00:00:09,252
+[...]
+
+8
+00:00:09,252 --> 00:00:10,052
+animales o compras,
+
+9
+00:00:10,052 --> 00:00:10,275
+[...]
+
+10
+00:00:10,275 --> 00:00:12,711
+necesitamos registrar a los actores comerciales en gestión de terceros.
+
+11
+00:00:12,711 --> 00:00:13,475
+[...]
+
+12
+00:00:13,475 --> 00:00:15,304
+Entramos a personas y presionamos crear personas.
+
+13
+00:00:15,304 --> 00:00:16,287
+[...]
+
+14
+00:00:16,287 --> 00:00:20,188
+En este formulario ingresarás los datos reales de cualquier persona natural vinculada a tu ganadería.
+
+15
+00:00:20,188 --> 00:00:20,495
+[...]
+
+16
+00:00:20,495 --> 00:00:21,899
+Selecciona su tipo de documento,
+
+17
+00:00:21,899 --> 00:00:22,186
+[...]
+
+18
+00:00:22,186 --> 00:00:24,899
+digita su cédula y escribe sus nombres y apellidos completos.
+
+19
+00:00:24,899 --> 00:00:26,207
+[...]
+
+20
+00:00:26,207 --> 00:00:34,552
+En nombre comercial puedes poner cómo se conoce su negocio en la región y enseguida seleccionas el departamento y municipio donde opera para tener clara su ubicación geográfica.
+
+21
+00:00:34,552 --> 00:00:40,208
+[...]
+
+22
+00:00:40,208 --> 00:00:43,352
+Aquí coloca su dirección física de contacto y su número de celular.
+
+23
+00:00:43,352 --> 00:00:43,689
+[...]
+
+24
+00:00:43,689 --> 00:00:46,789
+Observa cómo el borde se pone en verde confirmando que el formato es válido.
+
+25
+00:00:46,789 --> 00:00:53,167
+[...]
+
+26
+00:00:53,167 --> 00:00:54,258
+Abajo viene lo más importante,
+
+27
+00:00:54,258 --> 00:00:54,516
+[...]
+
+28
+00:00:54,516 --> 00:00:56,225
+definir qué rol cumple esta persona en tu finca.
+
+29
+00:00:56,225 --> 00:00:57,028
+[...]
+
+30
+00:00:57,028 --> 00:00:58,866
+Puedes marcar varias casillas a la vez si es comprador,
+
+31
+00:00:58,866 --> 00:00:59,165
+[...]
+
+32
+00:00:59,165 --> 00:00:59,490
+proveedor,
+
+33
+00:00:59,490 --> 00:00:59,762
+[...]
+
+34
+00:00:59,762 --> 00:01:01,152
+propietario de ganado o socio en traslados.
+
+35
+00:01:01,152 --> 00:01:02,058
+[...]
+
+36
+00:01:02,058 --> 00:01:02,958
+Lo guardamos como proveedor.
+
+37
+00:01:02,958 --> 00:01:04,210
+[...]
+
+38
+00:01:04,210 --> 00:01:07,132
+Verás que ya aparece en la lista identificado con la letra de su rol.
+
+39
+00:01:07,132 --> 00:01:07,531
+[...]
+
+40
+00:01:07,531 --> 00:01:09,119
+Listo para usarse en otros módulos.
+
+41
+00:01:09,119 --> 00:01:10,137
+[...]
+
+42
+00:01:10,137 --> 00:01:14,551
+Ahora volvemos por el menú Admin a Terceros y entramos a empresas para registrar personas jurídicas.
+
+43
+00:01:14,551 --> 00:01:21,203
+[...]
+
+44
+00:01:21,203 --> 00:01:22,594
+Presionamos crear empresas.
+
+45
+00:01:22,594 --> 00:01:23,594
+[...]
+
+46
+00:01:23,594 --> 00:01:25,688
+Aquí registrarás cooperativas lecheras,
+
+47
+00:01:25,688 --> 00:01:26,020
+[...]
+
+48
+00:01:26,020 --> 00:01:28,094
+almacenes agropecuarios o frigoríficos.
+
+49
+00:01:28,094 --> 00:01:28,426
+[...]
+
+50
+00:01:28,426 --> 00:01:32,598
+Seleccionas NIT e ingresas el número tributario de la empresa sin dígito de verificación.
+
+51
+00:01:32,598 --> 00:01:34,209
+[...]
+
+52
+00:01:34,209 --> 00:01:39,798
+En nombre comercial colocas la marca con la que tratas comercialmente y eliges el departamento y ciudad de su sede principal.
+
+53
+00:01:39,798 --> 00:01:46,203
+[...]
+
+54
+00:01:46,203 --> 00:01:50,671
+Completa la dirección de facturación o despacho de la empresa y su línea telefónica de atención.
+
+55
+00:01:50,671 --> 00:02:02,213
+[...]
+
+56
+00:02:02,213 --> 00:02:03,842
+A diferencia de una persona natural,
+
+57
+00:02:03,842 --> 00:02:04,154
+[...]
+
+58
+00:02:04,154 --> 00:02:07,973
+aquí añadirás el código de sucursal y la razón social tal como figura en su RUT.
+
+59
+00:02:07,973 --> 00:02:09,092
+[...]
+
+60
+00:02:09,092 --> 00:02:09,955
+Marcamos su rol,
+
+61
+00:02:09,955 --> 00:02:10,202
+[...]
+
+62
+00:02:10,202 --> 00:02:10,646
+por ejemplo,
+
+63
+00:02:10,646 --> 00:02:10,947
+[...]
+
+64
+00:02:10,947 --> 00:02:14,046
+proveedor para usarlo más adelante cuando registremos compras de insumos.
+
+65
+00:02:14,046 --> 00:02:14,346
+[...]
+
+66
+00:02:14,346 --> 00:02:16,113
+Guardamos y queda activo en nuestro directorio.
+
+67
+00:02:16,113 --> 00:02:27,090
+[...]

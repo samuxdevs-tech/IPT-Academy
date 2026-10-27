@@ -1,164 +1,172 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Users, Award, Activity, Search, Download, CheckCircle2, AlertCircle, Clock, RefreshCw, FileText } from "lucide-react";
+import {
+  Users,
+  Award,
+  Activity,
+  Search,
+  Download,
+  CheckCircle2,
+  Clock,
+  RefreshCw,
+  BookOpen,
+  Layers,
+  Video,
+  CreditCard,
+} from "lucide-react";
 import { exportToCsv } from "@/lib/exportUtils";
-import { rtdb } from "@/lib/firebase";
+import { rtdb, parseStudentRecordFromRtdb, ParsedIptStudent } from "@/lib/firebase";
 import { ref, onValue } from "firebase/database";
-
-interface ActiveStudent {
-  uid: string;
-  name: string;
-  email: string;
-  progressPercent: number;
-  completedLessonsCount: number;
-  lastHeartbeatUtc: string;
-  hasDiploma: boolean;
-  diplomaFolio?: string;
-  diplomaDateUtc?: string;
-}
 
 export function StudentsAnalyticsView() {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"students" | "diplomas">("students");
-  const [students, setStudents] = useState<ActiveStudent[]>([]);
+  const [activeTab, setActiveTab] = useState<"students" | "modules" | "diplomas">("students");
+  const [students, setStudents] = useState<ParsedIptStudent[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Consultar usuarios, progreso y certificados reales en RTDB
+  // Consultar usuarios, progreso, suscripciones, cursos y certificados reales en RTDB
   useEffect(() => {
     const usersRef = ref(rtdb, "users");
     const progressRef = ref(rtdb, "progress");
+    const subsRef = ref(rtdb, "lms_subscriptions");
     const certsRef = ref(rtdb, "certificates");
-
-    let unsubUsers: (() => void) | null = null;
-    let unsubProg: (() => void) | null = null;
-    let unsubCerts: (() => void) | null = null;
+    const coursesRef = ref(rtdb, "courses");
 
     let usersMap: Record<string, any> = {};
     let progMap: Record<string, any> = {};
+    let subsMap: Record<string, any> = {};
     let certsMap: Record<string, any> = {};
+    let coursesList: any[] = [];
 
     const recompute = () => {
-      const activeList: ActiveStudent[] = [];
+      const list: ParsedIptStudent[] = Object.keys(usersMap)
+        .map((uid) =>
+          parseStudentRecordFromRtdb(
+            uid,
+            usersMap[uid],
+            progMap,
+            subsMap,
+            certsMap,
+            coursesList
+          )
+        )
+        .filter((s) => s.email.toLowerCase() !== "administrator@ivanperez.tech");
 
-      Object.entries(usersMap).forEach(([uid, u]) => {
-        // Excluir roles administrativos
-        const role = (u.role || u.profile?.role || "").toLowerCase();
-        if (role === "admin" || role === "owner" || role === "teacher" || role === "operator") {
-          return;
-        }
-
-        // Progreso real
-        const studentProg = progMap[uid] || {};
-        const completedCount = studentProg.completedLessons
-          ? (Array.isArray(studentProg.completedLessons) ? studentProg.completedLessons.length : Object.keys(studentProg.completedLessons).length)
-          : 0;
-        const progressPct = studentProg.progressPercent || Math.min(100, Math.round((completedCount / 16) * 100)) || 0;
-
-        // Latido de vida
-        const heartbeat = u.lastHeartbeat || u.lastActiveAt || u.updatedAt || studentProg.lastUpdatedAt || null;
-
-        // FILTRO ESTRICTO: Descartar estudiantes sin ningún latido de vida
-        if (progressPct === 0 && !heartbeat && completedCount === 0) {
-          return;
-        }
-
-        // Formato amigable de latido
-        let heartbeatText = "Actividad registrada";
-        if (heartbeat) {
-          const d = new Date(heartbeat);
-          if (!isNaN(d.getTime())) {
-            const diffMin = Math.round((Date.now() - d.getTime()) / 60000);
-            if (diffMin < 60) {
-              heartbeatText = `Hace ${Math.max(1, diffMin)} min`;
-            } else if (diffMin < 1440) {
-              heartbeatText = `Hace ${Math.round(diffMin / 60)} h`;
-            } else {
-              heartbeatText = d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
-            }
-          }
-        }
-
-        // Certificado / Diploma oficial
-        const cert = certsMap[uid];
-        const hasDiploma = !!cert || progressPct >= 100;
-        const diplomaFolio = cert?.folio || (hasDiploma ? `IPT-DG-${uid.slice(0, 6).toUpperCase()}` : undefined);
-        const diplomaDateUtc = cert?.issueDate || cert?.issuedAt || (hasDiploma ? new Date().toISOString().split("T")[0] : undefined);
-
-        activeList.push({
-          uid,
-          name: u.displayName || u.profile?.displayName || u.name || "Estudiante IPT",
-          email: u.email || u.profile?.email || "estudiante@ipt.com",
-          progressPercent: progressPct,
-          completedLessonsCount: completedCount,
-          lastHeartbeatUtc: heartbeatText,
-          hasDiploma,
-          diplomaFolio,
-          diplomaDateUtc
-        });
-      });
-
-      setStudents(activeList);
+      setStudents(list);
+      setCourses(coursesList);
       setLoading(false);
     };
 
-    unsubUsers = onValue(usersRef, (snap) => {
+    const unsubUsers = onValue(usersRef, (snap) => {
       usersMap = snap.val() || {};
       recompute();
     });
 
-    unsubProg = onValue(progressRef, (snap) => {
+    const unsubProg = onValue(progressRef, (snap) => {
       progMap = snap.val() || {};
       recompute();
     });
 
-    unsubCerts = onValue(certsRef, (snap) => {
+    const unsubSubs = onValue(subsRef, (snap) => {
+      subsMap = snap.val() || {};
+      recompute();
+    });
+
+    const unsubCerts = onValue(certsRef, (snap) => {
       certsMap = snap.val() || {};
       recompute();
     });
 
+    const unsubCourses = onValue(coursesRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        coursesList = Array.isArray(val) ? val.filter(Boolean) : Object.values(val);
+      } else {
+        coursesList = [];
+      }
+      recompute();
+    });
+
     return () => {
-      if (unsubUsers) unsubUsers();
-      if (unsubProg) unsubProg();
-      if (unsubCerts) unsubCerts();
+      unsubUsers();
+      unsubProg();
+      unsubSubs();
+      unsubCerts();
+      unsubCourses();
     };
   }, []);
 
-  const filteredStudents = students.filter(
-    (s) =>
-      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = students.filter((s) => {
+    const q = searchTerm.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      s.name.toLowerCase().includes(q) ||
+      s.email.toLowerCase().includes(q) ||
+      s.uid.toLowerCase().includes(q) ||
+      s.planId.toLowerCase().includes(q) ||
+      s.subStatus.toLowerCase().includes(q)
+    );
+  });
+
+  const filteredCourses = courses.filter((c: any) => {
+    const q = searchTerm.toLowerCase().trim();
+    if (!q) return true;
+    const mods = Array.isArray(c?.modules)
+      ? c.modules.filter(Boolean)
+      : c?.modules && typeof c.modules === "object"
+      ? Object.values(c.modules)
+      : [];
+    return (
+      (c.title || "").toLowerCase().includes(q) ||
+      (c.slug || "").toLowerCase().includes(q) ||
+      mods.some((m: any) => (m?.title || "").toLowerCase().includes(q))
+    );
+  });
 
   const studentsWithDiplomas = students.filter((s) => s.hasDiploma);
+
+  const totalModulesCount = courses.reduce((acc, c: any) => {
+    const mods = Array.isArray(c?.modules)
+      ? c.modules.filter(Boolean)
+      : c?.modules && typeof c.modules === "object"
+      ? Object.values(c.modules)
+      : [];
+    return acc + mods.length;
+  }, 0);
 
   // Exportar padrón de estudiantes a CSV
   const handleExportStudents = () => {
     if (students.length === 0) {
-      alert("No hay registros de estudiantes activos para exportar.");
+      alert("No hay registros de estudiantes para exportar.");
       return;
     }
     const headers = [
-      "Identificador",
+      "UID",
       "Nombre Completo",
       "Correo Electrónico",
+      "Plan Activo",
+      "Estado Membresía",
       "Progreso (%)",
       "Lecciones Completadas",
-      "Último Latido",
-      "Estado de Diploma"
+      "Último Registro",
+      "Estado de Diploma",
     ];
 
     const rows = students.map((s) => [
       s.uid,
       s.name,
       s.email,
+      s.planId,
+      s.subStatus,
       `${s.progressPercent}%`,
       s.completedLessonsCount,
-      s.lastHeartbeatUtc,
-      s.hasDiploma ? `Expedido (${s.diplomaFolio})` : "En Progreso"
+      s.lastActiveIso || "Registrado",
+      s.hasDiploma ? `Expedido (${s.diplomaFolio})` : "En Progreso",
     ]);
 
-    exportToCsv("padron_estudiantes_activos_ipt.csv", headers, rows);
+    exportToCsv("padron_estudiantes_ipt_course.csv", headers, rows);
   };
 
   // Exportar registro de diplomas a CSV
@@ -172,7 +180,7 @@ export function StudentsAnalyticsView() {
       "Nombre del Graduado",
       "Correo Electrónico",
       "Fecha de Emisión",
-      "UID de Verificación"
+      "UID de Verificación",
     ];
 
     const rows = studentsWithDiplomas.map((s) => [
@@ -180,7 +188,7 @@ export function StudentsAnalyticsView() {
       s.name,
       s.email,
       s.diplomaDateUtc || "2026",
-      s.uid
+      s.uid,
     ]);
 
     exportToCsv("registro_diplomas_expedidos_ipt.csv", headers, rows);
@@ -192,18 +200,18 @@ export function StudentsAnalyticsView() {
       <div className="bg-[#121217] rounded-2xl p-5 border border-white/10 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-400">
-            Analítica de Aprendizaje
+            Base de Datos en Vivo · ipt-course-students-default-rtdb
           </span>
           <h2 className="text-base font-bold text-white tracking-tight mt-0.5">
-            Monitor de Estudiantes y Diplomas Oficiales
+            Monitor de Estudiantes, Módulos de Cursos y Diplomas Oficiales
           </h2>
           <p className="text-xs text-zinc-400 mt-1 max-w-xl">
-            Padrón en vivo filtrado exclusivamente para estudiantes con actividad demostrada. Roles administrativos y cuentas inactivas son excluidas.
+            Consulta en tiempo real todos los estudiantes registrados en ipt-course, su suscripción activa, lecciones completadas por curso/módulo y los módulos publicados.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          {activeTab === "students" ? (
+          {activeTab === "students" && (
             <button
               onClick={handleExportStudents}
               className="inline-flex items-center gap-2 px-4 py-2 bg-[#181820] hover:bg-[#20202c] border border-white/10 text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.97]"
@@ -211,7 +219,8 @@ export function StudentsAnalyticsView() {
               <Download className="w-4 h-4 text-violet-400" />
               <span>Exportar Padrón CSV</span>
             </button>
-          ) : (
+          )}
+          {activeTab === "diplomas" && (
             <button
               onClick={handleExportDiplomas}
               className="inline-flex items-center gap-2 px-4 py-2 bg-[#181820] hover:bg-[#20202c] border border-white/10 text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.97]"
@@ -228,18 +237,36 @@ export function StudentsAnalyticsView() {
         <div className="bg-[#121217] rounded-2xl p-5 border border-white/10 shadow-md flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-              Estudiantes con Latido Activo
+              Estudiantes en Base de Datos
             </span>
             <div className="text-2xl font-bold text-white tracking-tight mt-1">
               {students.length}
             </div>
             <span className="text-[11px] text-emerald-400 font-medium flex items-center gap-1.5 mt-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Verificados en tiempo real
+              Sincronizados en vivo (/users)
             </span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 flex items-center justify-center">
             <Activity className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="bg-[#121217] rounded-2xl p-5 border border-white/10 shadow-md flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+              Cursos & Módulos Activos
+            </span>
+            <div className="text-2xl font-bold text-white tracking-tight mt-1">
+              {courses.length} cursos · {totalModulesCount} mód.
+            </div>
+            <span className="text-[11px] text-cyan-400 font-medium flex items-center gap-1.5 mt-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              Estructura leída de /courses
+            </span>
+          </div>
+          <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
+            <Layers className="w-5 h-5" />
           </div>
         </div>
 
@@ -253,37 +280,18 @@ export function StudentsAnalyticsView() {
             </div>
             <span className="text-[11px] text-violet-400 font-medium flex items-center gap-1.5 mt-1">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-              Graduados con folio
+              Graduados con folio oficial
             </span>
           </div>
           <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
             <Award className="w-5 h-5" />
           </div>
         </div>
-
-        <div className="bg-[#121217] rounded-2xl p-5 border border-white/10 shadow-md flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-              Promedio de Finalización
-            </span>
-            <div className="text-2xl font-bold text-white tracking-tight mt-1">
-              {students.length > 0
-                ? `${Math.round(students.reduce((acc, s) => acc + s.progressPercent, 0) / students.length)}%`
-                : "0%"}
-            </div>
-            <span className="text-[11px] text-zinc-400 mt-1 block">
-              En plataforma Datagan 360
-            </span>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-[#181820] text-zinc-300 flex items-center justify-center">
-            <Users className="w-5 h-5" />
-          </div>
-        </div>
       </div>
 
       {/* Control Segmentado & Búsqueda */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="bg-[#121217] p-1.5 rounded-full border border-white/10 inline-flex self-start">
+        <div className="bg-[#121217] p-1.5 rounded-full border border-white/10 inline-flex flex-wrap self-start gap-1">
           <button
             onClick={() => setActiveTab("students")}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
@@ -292,7 +300,17 @@ export function StudentsAnalyticsView() {
                 : "text-zinc-400 hover:text-white"
             }`}
           >
-            Monitor Activo ({students.length})
+            Estudiantes en RTDB ({students.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("modules")}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              activeTab === "modules"
+                ? "bg-violet-600 text-white shadow-sm"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            Cursos & Módulos ({courses.length})
           </button>
           <button
             onClick={() => setActiveTab("diplomas")}
@@ -306,11 +324,11 @@ export function StudentsAnalyticsView() {
           </button>
         </div>
 
-        <div className="relative w-full sm:w-72">
+        <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Buscar por nombre o correo..."
+            placeholder="Buscar estudiante, correo, UID, curso o módulo..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-[#121217] border border-white/10 rounded-full text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500"
@@ -323,7 +341,7 @@ export function StudentsAnalyticsView() {
         {loading ? (
           <div className="p-16 text-center text-zinc-400">
             <RefreshCw className="w-6 h-6 mx-auto animate-spin mb-2 text-violet-500" />
-            <p className="text-xs font-medium">Sincronizando estudiantes y latidos en vivo...</p>
+            <p className="text-xs font-medium">Sincronizando estudiantes y módulos en vivo...</p>
           </div>
         ) : activeTab === "students" ? (
           filteredStudents.length === 0 ? (
@@ -331,11 +349,11 @@ export function StudentsAnalyticsView() {
               <div className="w-12 h-12 rounded-2xl bg-[#181820] flex items-center justify-center mx-auto mb-3 text-zinc-500">
                 <Users className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-white">No se encontraron estudiantes activos</h3>
+              <h3 className="text-sm font-bold text-white">No se encontraron estudiantes</h3>
               <p className="text-xs text-zinc-400 max-w-sm mx-auto mt-1">
                 {searchTerm
                   ? "No hay coincidencias para el criterio de búsqueda ingresado."
-                  : "Los estudiantes registrados aparecerán aquí automáticamente una vez registren su primer latido o avance en el curso."}
+                  : "Los estudiantes registrados en ipt-course aparecerán aquí automáticamente."}
               </p>
             </div>
           ) : (
@@ -343,10 +361,10 @@ export function StudentsAnalyticsView() {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="bg-[#181820] text-zinc-400 font-bold uppercase tracking-wider text-[10px] border-b border-white/10">
-                    <th className="px-6 py-3.5">Estudiante</th>
-                    <th className="px-6 py-3.5">Progreso Académico</th>
-                    <th className="px-6 py-3.5">Lecciones</th>
-                    <th className="px-6 py-3.5">Último Latido</th>
+                    <th className="px-6 py-3.5">Estudiante & UID</th>
+                    <th className="px-6 py-3.5">Membresía Activa</th>
+                    <th className="px-6 py-3.5">Progreso & Cursos</th>
+                    <th className="px-6 py-3.5">Lecciones & Notas</th>
                     <th className="px-6 py-3.5 text-right">Certificación</th>
                   </tr>
                 </thead>
@@ -355,12 +373,25 @@ export function StudentsAnalyticsView() {
                     <tr key={s.uid} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-bold text-white">{s.name}</div>
-                        <div className="text-[11px] text-zinc-400 font-mono mt-0.5">{s.email}</div>
+                        <div className="text-[11px] text-zinc-300 font-mono mt-0.5">{s.email}</div>
+                        <div className="text-[10px] text-zinc-500 font-mono mt-0.5">UID: {s.uid}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="w-36">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-violet-500/15 text-violet-300 border border-violet-500/30">
+                          <CreditCard className="w-3 h-3" />
+                          {s.planId} · {s.subStatus}
+                        </span>
+                        <div className="text-[10px] text-zinc-400 font-mono mt-1">
+                          Créditos en vivo: {s.remainingLiveCredits}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="w-40">
                           <div className="flex items-center justify-between text-[11px] mb-1">
                             <span className="font-bold text-white font-mono">{s.progressPercent}%</span>
+                            <span className="text-[10px] text-zinc-400">
+                              {s.completedLessonsCount}/{s.totalLessonsCount} lecc.
+                            </span>
                           </div>
                           <div className="w-full h-1.5 bg-[#181820] rounded-full overflow-hidden">
                             <div
@@ -370,14 +401,15 @@ export function StudentsAnalyticsView() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-zinc-300 font-medium">
-                        {s.completedLessonsCount} completadas
-                      </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-                          <Clock className="w-3 h-3" />
-                          {s.lastHeartbeatUtc}
-                        </span>
+                        <div className="space-y-1">
+                          {s.coursesProgress.map((cp) => (
+                            <div key={cp.courseSlug} className="text-[11px] text-zinc-300 font-mono">
+                              <span className="text-emerald-400 font-bold">{cp.courseSlug}:</span>{" "}
+                              {cp.completedCount} completadas · C1:{cp.corte1Grade} C2:{cp.corte2Grade} C3:{cp.corte3Grade}
+                            </div>
+                          ))}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-right">
                         {s.hasDiploma ? (
@@ -386,7 +418,10 @@ export function StudentsAnalyticsView() {
                             {s.diplomaFolio}
                           </span>
                         ) : (
-                          <span className="text-[11px] text-zinc-500">Cursando</span>
+                          <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
+                            <Clock className="w-3 h-3" />
+                            Cursando
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -395,6 +430,96 @@ export function StudentsAnalyticsView() {
               </table>
             </div>
           )
+        ) : activeTab === "modules" ? (
+          /* Pestaña de Cursos y Módulos en Vivo */
+          <div className="p-6 space-y-4">
+            {filteredCourses.length === 0 ? (
+              <div className="p-12 text-center text-zinc-400 text-xs">
+                No se encontraron cursos o módulos con ese filtro.
+              </div>
+            ) : (
+              filteredCourses.map((c: any, idx: number) => {
+                const mods = Array.isArray(c?.modules)
+                  ? c.modules.filter(Boolean)
+                  : c?.modules && typeof c.modules === "object"
+                  ? Object.values(c.modules)
+                  : [];
+                return (
+                  <div
+                    key={c.slug || idx}
+                    className="rounded-2xl bg-[#181822] border border-white/10 p-5 space-y-4"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-violet-400" />
+                          <h3 className="text-sm font-bold text-white">{c.title || c.slug}</h3>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-violet-500/15 text-violet-300 border border-violet-500/30">
+                            {c.courseType || c.courseModality || "dynamic"}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-400 font-mono mt-0.5">
+                          Slug: {c.slug} · Licencia: {c.licenseHash || "N/A"} · Progresión: {c.progressionMode || "free"}
+                        </p>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-emerald-400">
+                        {mods.length} Módulos Activos
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {mods.map((m: any, mIdx: number) => {
+                        const lessons = Array.isArray(m?.lessons)
+                          ? m.lessons.filter(Boolean)
+                          : m?.lessons && typeof m.lessons === "object"
+                          ? Object.values(m.lessons)
+                          : [];
+                        const resources = Array.isArray(m?.resources)
+                          ? m.resources.filter(Boolean)
+                          : m?.resources && typeof m.resources === "object"
+                          ? Object.values(m.resources)
+                          : [];
+                        return (
+                          <div
+                            key={m.id || mIdx}
+                            className="p-3.5 rounded-xl bg-[#121217] border border-white/5 space-y-2"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-bold text-white">
+                                {m.title || `Módulo ${mIdx + 1}`}
+                              </span>
+                              <span className="text-[10px] font-mono text-violet-300 bg-violet-500/10 px-2 py-0.5 rounded">
+                                {lessons.length} lecc. · {resources.length} rec.
+                              </span>
+                            </div>
+                            {m.description && (
+                              <p className="text-[11px] text-zinc-400">{m.description}</p>
+                            )}
+                            <div className="space-y-1 pt-1 border-t border-white/5">
+                              {lessons.map((l: any, lIdx: number) => (
+                                <div
+                                  key={l.id || lIdx}
+                                  className="flex items-center justify-between text-[11px] text-zinc-300"
+                                >
+                                  <span className="truncate flex items-center gap-1.5">
+                                    <Video className="w-3 h-3 text-emerald-400 shrink-0" />
+                                    {l.title || `Lección ${lIdx + 1}`}
+                                  </span>
+                                  <span className="text-[10px] font-mono text-zinc-500 shrink-0">
+                                    {l.duration || "10:00"}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         ) : (
           /* Pestaña de Diplomas */
           studentsWithDiplomas.length === 0 ? (

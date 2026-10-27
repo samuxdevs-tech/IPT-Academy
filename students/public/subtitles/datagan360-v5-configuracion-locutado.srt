@@ -1,0 +1,251 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,025
+[...]
+
+4
+00:00:05,025 --> 00:00:07,162
+bienvenido a un nuevo tutorial de DataGan 360.
+
+5
+00:00:07,162 --> 00:00:08,187
+[...]
+
+6
+00:00:08,187 --> 00:00:12,009
+Junto a tu nombre de usuario en la esquina superior izquierda encontrarás el acceso rápido a configuración del sistema.
+
+7
+00:00:12,009 --> 00:00:12,813
+[...]
+
+8
+00:00:12,813 --> 00:00:14,981
+Vamos a recorrer sus seis herramientas empezando por mi perfil.
+
+9
+00:00:14,981 --> 00:00:16,207
+[...]
+
+10
+00:00:16,207 --> 00:00:19,116
+En estos campos colocarás tu información real de administrador.
+
+11
+00:00:19,116 --> 00:00:19,575
+[...]
+
+12
+00:00:19,575 --> 00:00:20,034
+Nombres,
+
+13
+00:00:20,034 --> 00:00:20,338
+[...]
+
+14
+00:00:20,338 --> 00:00:21,187
+usuario de acceso,
+
+15
+00:00:21,187 --> 00:00:21,502
+[...]
+
+16
+00:00:21,502 --> 00:00:23,496
+correo electrónico y tu documento de identidad,
+
+17
+00:00:23,496 --> 00:00:23,909
+[...]
+
+18
+00:00:23,909 --> 00:00:27,507
+además de poder cambiar tu foto o cerrar sesiones abiertas en otros equipos.
+
+19
+00:00:27,507 --> 00:00:32,207
+[...]
+
+20
+00:00:32,207 --> 00:00:37,146
+Abajo registrarás tu número celular y el departamento y municipio donde resides antes de guardar los cambios.
+
+21
+00:00:37,146 --> 00:00:38,336
+[...]
+
+22
+00:00:38,336 --> 00:00:39,796
+Regresamos con el botón volver. En
+
+23
+00:00:39,796 --> 00:00:46,186
+[...]
+
+24
+00:00:46,186 --> 00:00:49,518
+alertas y notificaciones decidirás qué avisos quieres que te envíe el sistema,
+
+25
+00:00:49,518 --> 00:00:49,871
+[...]
+
+26
+00:00:49,871 --> 00:00:51,080
+desde repeticiones de celo,
+
+27
+00:00:51,080 --> 00:00:51,379
+[...]
+
+28
+00:00:51,379 --> 00:00:53,250
+chequeo de palpación y partos probables,
+
+29
+00:00:53,250 --> 00:00:53,528
+[...]
+
+30
+00:00:53,528 --> 00:00:55,889
+hasta alertas cuando se esté acabando un insumo en finanzas.
+
+31
+00:00:55,889 --> 00:00:57,209
+[...]
+
+32
+00:00:57,209 --> 00:00:59,499
+En Unidades de medida defines tus unidades de área,
+
+33
+00:00:59,499 --> 00:00:59,815
+[...]
+
+34
+00:00:59,815 --> 00:01:00,519
+peso y volumen,
+
+35
+00:01:00,519 --> 00:01:00,743
+[...]
+
+36
+00:01:00,743 --> 00:01:02,679
+y ajustas el precio de referencia por kilo,
+
+37
+00:01:02,679 --> 00:01:03,030
+[...]
+
+38
+00:01:03,030 --> 00:01:07,579
+el valor que pongas aquí valorará automáticamente a todos tus bovinos que no tengan un precio individual.
+
+39
+00:01:07,579 --> 00:01:12,204
+[...]
+
+40
+00:01:12,204 --> 00:01:14,802
+Como ves en el recuadro inferior de configuración actual,
+
+41
+00:01:14,802 --> 00:01:15,154
+[...]
+
+42
+00:01:15,154 --> 00:01:19,028
+la tarifa queda fijada de inmediato para alimentar las tarjetas financieras del dashboard. En
+
+43
+00:01:19,028 --> 00:01:22,207
+[...]
+
+44
+00:01:22,207 --> 00:01:26,565
+mis datos y respaldo podrás exportar toda la información que llevas registrada en el software.
+
+45
+00:01:26,565 --> 00:01:26,959
+[...]
+
+46
+00:01:26,959 --> 00:01:29,791
+Ya sea dividida en los dos archivos de estructura y operación,
+
+47
+00:01:29,791 --> 00:01:29,994
+[...]
+
+48
+00:01:29,994 --> 00:01:32,686
+o abajo en un único excel legal bajo la ley 1581.
+
+49
+00:01:32,686 --> 00:01:38,207
+[...]
+
+50
+00:01:38,207 --> 00:01:41,625
+El botón Ir a carga masiva nos conecta directo con el importador de excel.
+
+51
+00:01:41,625 --> 00:01:42,038
+[...]
+
+52
+00:01:42,038 --> 00:01:45,250
+Recuerda que siempre debes subir primero el archivo del paso 1 con fincas,
+
+53
+00:01:45,250 --> 00:01:45,569
+[...]
+
+54
+00:01:45,569 --> 00:01:46,607
+terceros y potreros,
+
+55
+00:01:46,607 --> 00:01:46,867
+[...]
+
+56
+00:01:46,867 --> 00:01:49,180
+y luego el del paso 2 con animales y registros.
+
+57
+00:01:49,180 --> 00:01:56,220
+[...]
+
+58
+00:01:56,220 --> 00:01:56,776
+Por último,
+
+59
+00:01:56,776 --> 00:01:57,117
+[...]
+
+60
+00:01:57,117 --> 00:02:00,747
+en eliminar cuenta encontrarás el formulario de baja permanente de la plataforma,
+
+61
+00:02:00,747 --> 00:02:01,092
+[...]
+
+62
+00:02:01,092 --> 00:02:04,830
+protegido mediante frase de confirmación para resguardar la integridad de tus datos.
+
+63
+00:02:04,830 --> 00:02:09,410
+[...]

@@ -1,0 +1,139 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,024
+[...]
+
+4
+00:00:05,024 --> 00:00:07,167
+bienvenido a un nuevo tutorial de DataGan 360.
+
+5
+00:00:07,167 --> 00:00:08,204
+[...]
+
+6
+00:00:08,204 --> 00:00:09,618
+Si trabajas ganadería en compañía,
+
+7
+00:00:09,618 --> 00:00:09,855
+[...]
+
+8
+00:00:09,855 --> 00:00:12,085
+cuentas con varios socios o compras ganado de otro titular,
+
+9
+00:00:12,085 --> 00:00:12,408
+[...]
+
+10
+00:00:12,408 --> 00:00:15,422
+el módulo de transferencia te permite cambiar de dueño a tus animales en segundos.
+
+11
+00:00:15,422 --> 00:00:16,423
+[...]
+
+12
+00:00:16,423 --> 00:00:17,900
+Primero buscamos al propietario actual.
+
+13
+00:00:17,900 --> 00:00:19,205
+[...]
+
+14
+00:00:19,205 --> 00:00:21,115
+El sistema nos lista todos sus bovinos,
+
+15
+00:00:21,115 --> 00:00:21,445
+[...]
+
+16
+00:00:21,445 --> 00:00:23,295
+aquí marcas uno o varios ejemplares,
+
+17
+00:00:23,295 --> 00:00:23,598
+[...]
+
+18
+00:00:23,598 --> 00:00:27,724
+seleccionas abajo a qué nuevo propietario del módulo de terceros pasarán y presionas transferir.
+
+19
+00:00:27,724 --> 00:00:33,192
+[...]
+
+20
+00:00:33,192 --> 00:00:34,765
+Si consultamos arriba al nuevo titular,
+
+21
+00:00:34,765 --> 00:00:35,090
+[...]
+
+22
+00:00:35,090 --> 00:00:36,873
+comprobamos que el ejemplar ya figura a su nombre,
+
+23
+00:00:36,873 --> 00:00:37,138
+[...]
+
+24
+00:00:37,138 --> 00:00:38,873
+cambio que también se reflejará en su hoja de vida,
+
+25
+00:00:38,873 --> 00:00:39,115
+[...]
+
+26
+00:00:39,115 --> 00:00:41,890
+contando además con el botón seleccionar todo para traspasos masivos.
+
+27
+00:00:41,890 --> 00:00:43,206
+[...]
+
+28
+00:00:43,206 --> 00:00:47,216
+Y ¿Qué pasa con los animales que metiste por registro rápido en corral y quedaron sin dueño?
+
+29
+00:00:47,216 --> 00:00:48,247
+[...]
+
+30
+00:00:48,247 --> 00:00:50,184
+Cambias al botón Animales sin propietario,
+
+31
+00:00:50,184 --> 00:00:50,552
+[...]
+
+32
+00:00:50,552 --> 00:00:51,353
+presionas cargar,
+
+33
+00:00:51,353 --> 00:00:51,728
+[...]
+
+34
+00:00:51,728 --> 00:00:55,701
+marcas los ejemplares pendientes y les asignas su propietario definitivo de un solo clic.
+
+35
+00:00:55,701 --> 00:01:03,090
+[...]

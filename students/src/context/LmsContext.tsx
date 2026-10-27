@@ -85,7 +85,8 @@ function parseRtdbList<T>(val: unknown): T[] {
 }
 
 export function LmsProvider({ children }: { children: React.ReactNode }) {
-  const { user, effectiveIsAdmin } = useAuth();
+  const { user, effectiveIsAdmin, userLicenses } = useAuth();
+  const [studentGroups, setStudentGroups] = useState<any[]>([]);
   const [courses, setCourses] = useState<Course[]>(() => getLocalDatabase().courses);
   const [assignments, setAssignments] = useState<AssignmentItem[]>(() => getLocalDatabase().assignments);
   const [calendarEvents, setCalendarEvents] = useState<InstitutionalCalendarEvent[]>(() => getLocalDatabase().calendar);
@@ -204,6 +205,20 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
             }
           },
           () => setLiveSessions([])
+        )
+      );
+
+      unsubs.push(
+        onValue(
+          ref(db, 'student_groups'),
+          (snap) => {
+            if (snap.exists()) {
+              setStudentGroups(parseRtdbList(snap.val()));
+            } else {
+              setStudentGroups([]);
+            }
+          },
+          () => setStudentGroups([])
         )
       );
     } catch {}
@@ -613,10 +628,44 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const visibleAssignments = useMemo(() => {
+    if (effectiveIsAdmin || activeRole === 'instructor') {
+      return assignments;
+    }
+    if (!user?.uid) return assignments;
+
+    const userLicenseKeys = Object.keys(userLicenses || {});
+    const userLicenseValues = Object.values(userLicenses || {});
+    const allStudentLicenses = new Set([
+      ...userLicenseKeys,
+      ...userLicenseValues.filter((v) => typeof v === 'string'),
+    ]);
+
+    const studentGroupIds = new Set(
+      studentGroups
+        .filter((g) => (g.studentUids || []).includes(user.uid))
+        .map((g) => g.id)
+    );
+
+    return assignments.filter((a) => {
+      if (a.assignmentTarget === 'individual') {
+        return a.targetStudentUid === user.uid;
+      }
+      if (a.assignmentTarget === 'batch') {
+        return a.targetGroupId ? studentGroupIds.has(a.targetGroupId) : false;
+      }
+      if (a.assignmentTarget === 'course' && a.targetLicenseHash) {
+        return allStudentLicenses.has(a.targetLicenseHash);
+      }
+      return true;
+    });
+  }, [assignments, effectiveIsAdmin, activeRole, user?.uid, userLicenses, studentGroups]);
+
   const contextValue = useMemo<LmsContextValue>(
     () => ({
+      assignments: visibleAssignments,
       courses,
-      assignments,
+      visibleAssignments,
       calendarEvents,
       liveSessions,
       studentAnalytics,
@@ -650,7 +699,7 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       courses,
-      assignments,
+      visibleAssignments,
       calendarEvents,
       liveSessions,
       studentAnalytics,

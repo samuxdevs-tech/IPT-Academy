@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { HelpCircle, Download, Upload, Plus, Trash2, CheckCircle2, FileJson, FileSpreadsheet, Sparkles, Inbox } from "lucide-react";
+import { Upload, Plus, Trash2, CheckCircle2, FileJson, FileSpreadsheet, Inbox, Layers } from "lucide-react";
 import { exportToCsv } from "@/lib/exportUtils";
 import { rtdb } from "@/lib/firebase";
-import { ref, get, set, remove } from "firebase/database";
+import { ref, onValue, set, remove } from "firebase/database";
 
 export interface QuestionBankItem {
   id: string;
+  courseSlug?: string;
   moduleId: string;
   moduleName: string;
   prompt: string;
@@ -16,8 +17,17 @@ export interface QuestionBankItem {
   explanation: string;
 }
 
+interface RealModuleOption {
+  courseSlug: string;
+  courseTitle: string;
+  moduleId: string;
+  moduleTitle: string;
+}
+
 export function QuestionBankView() {
   const [questions, setQuestions] = useState<QuestionBankItem[]>([]);
+  const [realModules, setRealModules] = useState<RealModuleOption[]>([]);
+  const [selectedModuleKey, setSelectedModuleKey] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [filterModule, setFilterModule] = useState<string>("all");
   const [newPrompt, setNewPrompt] = useState<string>("");
@@ -26,37 +36,72 @@ export function QuestionBankView() {
   const [correctIdx, setCorrectIdx] = useState<number>(0);
   const [isAdding, setIsAdding] = useState<boolean>(false);
 
-  // Cargar preguntas REALES de Firebase Realtime Database
+  // Cargar preguntas y módulos REALES de Firebase Realtime Database
   useEffect(() => {
-    async function fetchRealQuestions() {
-      setLoading(true);
-      try {
-        const bankSnap = await get(ref(rtdb, "question_bank"));
-        if (bankSnap.exists()) {
-          const val = bankSnap.val();
-          const items: QuestionBankItem[] = Object.keys(val).map(key => ({
+    const bankRef = ref(rtdb, "question_bank");
+    const coursesRef = ref(rtdb, "courses");
+
+    const unsubBank = onValue(
+      bankRef,
+      (snap) => {
+        if (snap.exists()) {
+          const val = snap.val();
+          const items: QuestionBankItem[] = Object.keys(val).map((key) => ({
             id: key,
-            ...val[key]
+            ...val[key],
           }));
           setQuestions(items);
         } else {
           setQuestions([]);
         }
-      } catch (err) {
-        console.warn("No se pudo leer question_bank en RTDB:", err);
+        setLoading(false);
+      },
+      () => {
         setQuestions([]);
-      } finally {
         setLoading(false);
       }
-    }
+    );
 
-    fetchRealQuestions();
+    const unsubCourses = onValue(coursesRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        const rawCourses = Array.isArray(val) ? val.filter(Boolean) : Object.values(val);
+        const modOptions: RealModuleOption[] = [];
+        rawCourses.forEach((c: any) => {
+          const cSlug = c.slug || "ipt-master-fullstack";
+          const cTitle = c.title || cSlug;
+          const mods = Array.isArray(c?.modules)
+            ? c.modules.filter(Boolean)
+            : c?.modules && typeof c.modules === "object"
+            ? Object.values(c.modules)
+            : [];
+          mods.forEach((m: any, i: number) => {
+            modOptions.push({
+              courseSlug: cSlug,
+              courseTitle: cTitle,
+              moduleId: m?.id || `mod-${i + 1}`,
+              moduleTitle: m?.title || `Módulo ${i + 1}`,
+            });
+          });
+        });
+        setRealModules(modOptions);
+        if (modOptions.length > 0 && !selectedModuleKey) {
+          setSelectedModuleKey(`${modOptions[0].courseSlug}::${modOptions[0].moduleId}`);
+        }
+      }
+    });
+
+    return () => {
+      unsubBank();
+      unsubCourses();
+    };
   }, []);
 
   // Exportar preguntas a CSV
   const handleExportCsv = () => {
     const headers = [
       "Identificador",
+      "Curso",
       "Modulo",
       "Pregunta",
       "Opcion 1",
@@ -64,11 +109,12 @@ export function QuestionBankView() {
       "Opcion 3",
       "Opcion 4",
       "Indice Correcto (0-3)",
-      "Explicacion Pedagogica"
+      "Explicacion Pedagogica",
     ];
 
-    const rows = questions.map(q => [
+    const rows = questions.map((q) => [
       q.id,
+      q.courseSlug || "ipt-master-fullstack",
       q.moduleName,
       q.prompt,
       q.options?.[0] || "",
@@ -76,7 +122,7 @@ export function QuestionBankView() {
       q.options?.[2] || "",
       q.options?.[3] || "",
       q.correctIndex,
-      q.explanation
+      q.explanation,
     ]);
 
     exportToCsv("Banco_Preguntas_IPT_Course", headers, rows);
@@ -84,7 +130,8 @@ export function QuestionBankView() {
 
   // Exportar preguntas a JSON
   const handleExportJson = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(questions, null, 2));
+    const dataStr =
+      "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(questions, null, 2));
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", "banco_preguntas_ipt_course.json");
@@ -104,41 +151,44 @@ export function QuestionBankView() {
         const imported = JSON.parse(event.target?.result as string);
         if (Array.isArray(imported)) {
           const updated = [...questions, ...imported];
-          setQuestions(updated);
           const bankObj: Record<string, any> = {};
-          updated.forEach(item => {
-            bankObj[item.id] = item;
+          updated.forEach((item) => {
+            bankObj[item.id || `q-${Date.now()}`] = item;
           });
           await set(ref(rtdb, "question_bank"), bankObj);
           alert(`Se importaron y guardaron ${imported.length} preguntas en el banco oficial.`);
         }
-      } catch (err) {
+      } catch {
         alert("El archivo no contiene un formato JSON válido.");
       }
     };
     reader.readAsText(file);
   };
 
-  // Guardar nueva pregunta en RTDB
+  // Guardar nueva pregunta en RTDB vinculada al módulo real
   const handleSaveQuestion = async () => {
-    if (!newPrompt.trim() || newOptions.some(o => !o.trim())) {
+    if (!newPrompt.trim() || newOptions.some((o) => !o.trim())) {
       alert("Por favor completa el enunciado y las opciones de respuesta.");
       return;
     }
 
+    const matchedMod = realModules.find(
+      (m) => `${m.courseSlug}::${m.moduleId}` === selectedModuleKey
+    );
+
     const newId = `q-${Date.now()}`;
     const created: QuestionBankItem = {
       id: newId,
-      moduleId: "modulo-1-introduccion",
-      moduleName: "Módulo 1 · Cimientos Operativos",
+      courseSlug: matchedMod?.courseSlug || "ipt-master-fullstack",
+      moduleId: matchedMod?.moduleId || "mod-01",
+      moduleName: matchedMod
+        ? `${matchedMod.courseTitle} · ${matchedMod.moduleTitle}`
+        : "Módulo 1 · Fundamentos",
       prompt: newPrompt,
       options: [...newOptions],
       correctIndex: correctIdx,
-      explanation: newExplanation || "Explicación formativa añadida por el docente."
+      explanation: newExplanation || "Explicación formativa añadida por el docente.",
     };
-
-    const updated = [...questions, created];
-    setQuestions(updated);
 
     try {
       await set(ref(rtdb, `question_bank/${newId}`), created);
@@ -154,15 +204,15 @@ export function QuestionBankView() {
 
   const handleDeleteQuestion = async (id: string) => {
     if (!confirm("¿Deseas eliminar esta pregunta del banco?")) return;
-    setQuestions(questions.filter(q => q.id !== id));
     try {
       await remove(ref(rtdb, `question_bank/${id}`));
     } catch {}
   };
 
-  const filteredQuestions = filterModule === "all"
-    ? questions
-    : questions.filter(q => q.moduleId === filterModule);
+  const filteredQuestions =
+    filterModule === "all"
+      ? questions
+      : questions.filter((q) => q.moduleId === filterModule);
 
   return (
     <div className="space-y-6">
@@ -170,17 +220,34 @@ export function QuestionBankView() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#121217] border border-white/10 shadow-lg">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-white tracking-tight">Banco de Preguntas Oficial</h2>
+            <h2 className="text-sm font-bold text-white tracking-tight">
+              Banco de Preguntas Oficial por Módulo
+            </h2>
             <span className="text-[10px] font-mono font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20 px-2 py-0.5 rounded-full">
-              RTDB Sincronizado
+              Conectado a /courses y /question_bank
             </span>
           </div>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Preguntas persistidas en tiempo real. Importables y exportables para quizzes, checkpoints y exámenes.
+            Preguntas sincronizadas en tiempo real con los módulos existentes en ipt-course.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {realModules.length > 0 && (
+            <select
+              value={filterModule}
+              onChange={(e) => setFilterModule(e.target.value)}
+              className="px-3 py-1.5 rounded-xl bg-[#181820] border border-white/10 text-xs text-white"
+            >
+              <option value="all">Todos los Módulos ({questions.length})</option>
+              {realModules.map((m) => (
+                <option key={`${m.courseSlug}::${m.moduleId}`} value={m.moduleId}>
+                  {m.moduleTitle} ({m.courseSlug})
+                </option>
+              ))}
+            </select>
+          )}
+
           <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#181820] hover:bg-[#20202c] border border-white/10 text-zinc-300 hover:text-white text-xs font-semibold cursor-pointer transition-all active:scale-[0.97]">
             <Upload className="w-3.5 h-3.5 text-zinc-400" />
             <span>Importar JSON</span>
@@ -227,13 +294,35 @@ export function QuestionBankView() {
             </button>
           </div>
 
+          {realModules.length > 0 && (
+            <div>
+              <label className="text-[10px] font-bold uppercase text-zinc-400 block mb-1.5">
+                Curso y Módulo de la Base de Datos
+              </label>
+              <select
+                value={selectedModuleKey}
+                onChange={(e) => setSelectedModuleKey(e.target.value)}
+                className="w-full text-xs text-white bg-[#181820] border border-white/10 rounded-xl p-2.5 focus:outline-none focus:border-violet-500"
+              >
+                {realModules.map((m) => (
+                  <option
+                    key={`${m.courseSlug}::${m.moduleId}`}
+                    value={`${m.courseSlug}::${m.moduleId}`}
+                  >
+                    {m.courseTitle} — {m.moduleTitle} ({m.moduleId})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div>
             <label className="text-[10px] font-bold uppercase text-zinc-400 block mb-1.5">Enunciado</label>
             <textarea
               rows={2}
               value={newPrompt}
               onChange={(e) => setNewPrompt(e.target.value)}
-              placeholder="Planteamiento técnico o zootécnico de la pregunta..."
+              placeholder="Planteamiento técnico de la pregunta..."
               className="w-full text-xs text-white bg-[#181820] border border-white/10 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500"
             />
           </div>
@@ -276,7 +365,7 @@ export function QuestionBankView() {
               rows={2}
               value={newExplanation}
               onChange={(e) => setNewExplanation(e.target.value)}
-              placeholder="Justificación pedagógica según normatividad técnica..."
+              placeholder="Justificación pedagógica de la respuesta..."
               className="w-full text-xs text-white bg-[#181820] border border-white/10 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500"
             />
           </div>
@@ -309,7 +398,7 @@ export function QuestionBankView() {
           <div>
             <h3 className="text-sm font-bold text-white">No hay preguntas registradas</h3>
             <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto">
-              El banco de preguntas en Firebase RTDB está vacío. Haz clic en "Nueva Pregunta" o importa un archivo JSON para nutrir el repositorio.
+              Haz clic en "Nueva Pregunta" o importa un archivo JSON para vincular evaluaciones a los módulos de ipt-course.
             </p>
           </div>
         </div>
@@ -325,7 +414,8 @@ export function QuestionBankView() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1.5">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                    <Layers className="w-3 h-3" />
                     {q.moduleName}
                   </span>
                   <p className="text-sm font-bold text-white tracking-tight">{q.prompt}</p>
@@ -341,7 +431,7 @@ export function QuestionBankView() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                {q.options.map((opt, optIdx) => (
+                {(q.options || []).map((opt, optIdx) => (
                   <div
                     key={optIdx}
                     className={`p-3 rounded-xl border flex items-center gap-2.5 ${

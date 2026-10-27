@@ -1,0 +1,171 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,025
+[...]
+
+4
+00:00:05,025 --> 00:00:07,162
+bienvenido a un nuevo tutorial de DataGan 360.
+
+5
+00:00:07,162 --> 00:00:08,166
+[...]
+
+6
+00:00:08,166 --> 00:00:09,632
+Dentro del menú Admin entramos a fincas,
+
+7
+00:00:09,632 --> 00:00:09,878
+[...]
+
+8
+00:00:09,878 --> 00:00:13,342
+donde puedes administrar múltiples predios bajo una misma cuenta y elegir cuál es el activo principal.
+
+9
+00:00:13,342 --> 00:00:14,113
+[...]
+
+10
+00:00:14,113 --> 00:00:15,006
+Presionamos crear finca.
+
+11
+00:00:15,006 --> 00:00:16,206
+[...]
+
+12
+00:00:16,206 --> 00:00:18,781
+Aquí escribirás el nombre oficial de tu hacienda o predio.
+
+13
+00:00:18,781 --> 00:00:19,168
+[...]
+
+14
+00:00:19,168 --> 00:00:24,797
+Y mira cómo en el campo encargado ya nos aparece disponible el trabajador que registramos hace un momento en el módulo de trabajadores.
+
+15
+00:00:24,797 --> 00:00:32,207
+[...]
+
+16
+00:00:32,207 --> 00:00:34,508
+En área colocas el total de hectáreas de la finca.
+
+17
+00:00:34,508 --> 00:00:34,853
+[...]
+
+18
+00:00:34,853 --> 00:00:39,186
+Recuerda que este número será el tope que controlará la suma de tus potreros en el módulo de bovinos
+
+19
+00:00:39,186 --> 00:00:39,430
+[...]
+
+20
+00:00:39,430 --> 00:00:42,105
+y seleccionas el departamento y municipio donde está ubicada.
+
+21
+00:00:42,105 --> 00:00:47,194
+[...]
+
+22
+00:00:47,194 --> 00:00:50,418
+Defines una sigla o abreviatura corta para identificarla rápido.
+
+23
+00:00:50,418 --> 00:00:50,763
+[...]
+
+24
+00:00:50,763 --> 00:00:54,269
+Escribe las indicaciones viales de llegada en dirección y una descripción general.
+
+25
+00:00:54,269 --> 00:01:10,205
+[...]
+
+26
+00:01:10,205 --> 00:01:12,671
+Abajo tienes el mapa satelital de geolocalización.
+
+27
+00:01:12,671 --> 00:01:13,042
+[...]
+
+28
+00:01:13,042 --> 00:01:15,667
+Aquí debes acercar el mapa y hacer clic sobre tu terreno
+
+29
+00:01:15,667 --> 00:01:15,925
+[...]
+
+30
+00:01:15,925 --> 00:01:18,497
+o presionar Usar mi ubicación actual si estás en la finca.
+
+31
+00:01:18,497 --> 00:01:18,773
+[...]
+
+32
+00:01:18,773 --> 00:01:22,503
+Estas coordenadas activarán el clima y el índice de estrés calórico en el dashboard.
+
+33
+00:01:22,503 --> 00:01:27,207
+[...]
+
+34
+00:01:27,207 --> 00:01:29,744
+Y si al presionar crear olvíaste llenar algún dato clave,
+
+35
+00:01:29,744 --> 00:01:30,046
+[...]
+
+36
+00:01:30,046 --> 00:01:32,062
+como elegirse el propósito de la finca. Escria,
+
+37
+00:01:32,062 --> 00:01:32,451
+[...]
+
+38
+00:01:32,451 --> 00:01:32,777
+leche,
+
+39
+00:01:32,777 --> 00:01:33,016
+[...]
+
+40
+00:01:33,016 --> 00:01:34,353
+seba o doble propósito.
+
+41
+00:01:34,353 --> 00:01:34,726
+[...]
+
+42
+00:01:34,726 --> 00:01:39,448
+El sistema subirá solo y te marcará el campo en rojo para que tu finca quede perfectamente configurada.
+
+43
+00:01:39,448 --> 00:01:47,890
+[...]

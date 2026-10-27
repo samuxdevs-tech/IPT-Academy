@@ -1,0 +1,163 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,298
+Hola,
+
+3
+00:00:04,298 --> 00:00:05,050
+[...]
+
+4
+00:00:05,050 --> 00:00:07,999
+bienvenido al tutorial de nacimiento y genealogía en DataGan 360.
+
+5
+00:00:07,999 --> 00:00:09,171
+[...]
+
+6
+00:00:09,171 --> 00:00:12,015
+Cuando nace un ternero en la finca no tienes que ir a crearlo desde cero en bovinos.
+
+7
+00:00:12,015 --> 00:00:12,288
+[...]
+
+8
+00:00:12,288 --> 00:00:13,073
+Entras a nacimiento,
+
+9
+00:00:13,073 --> 00:00:13,329
+[...]
+
+10
+00:00:13,329 --> 00:00:15,937
+presionas crear nacimiento y seleccionas quién es la madre y quién es el padre.
+
+11
+00:00:15,937 --> 00:00:17,203
+[...]
+
+12
+00:00:17,203 --> 00:00:18,490
+Indicas la fecha del parto,
+
+13
+00:00:18,490 --> 00:00:18,829
+[...]
+
+14
+00:00:18,829 --> 00:00:20,652
+eliges si la cría nació macho o hembra,
+
+15
+00:00:20,652 --> 00:00:21,005
+[...]
+
+16
+00:00:21,005 --> 00:00:24,119
+digitas cuántos kilos pesó al nacer y su valor comercial por kilo.
+
+17
+00:00:24,119 --> 00:00:33,204
+[...]
+
+18
+00:00:33,204 --> 00:00:37,300
+Aquí en Número de registro le asignas la chapeta o código con el que quedará bautizada la cría.
+
+19
+00:00:37,300 --> 00:00:37,678
+[...]
+
+20
+00:00:37,678 --> 00:00:39,779
+Su microchip si aplica y las notas del parto.
+
+21
+00:00:39,779 --> 00:00:40,814
+[...]
+
+22
+00:00:40,814 --> 00:00:43,119
+Al presionar guardar ocurre la magia de integración.
+
+23
+00:00:43,119 --> 00:00:54,189
+[...]
+
+24
+00:00:54,189 --> 00:00:55,207
+Se suma el parto a la madre,
+
+25
+00:00:55,207 --> 00:00:55,533
+[...]
+
+26
+00:00:55,533 --> 00:00:58,021
+la cría se crea automáticamente como nuevo animal en bovinos
+
+27
+00:00:58,021 --> 00:00:58,283
+[...]
+
+28
+00:00:58,283 --> 00:01:01,152
+y al entrar aquí en el menú lateral a Genealogía ya vemos su tarjeta lista.
+
+29
+00:01:01,152 --> 00:01:02,042
+[...]
+
+30
+00:01:02,042 --> 00:01:02,903
+Presionamos ver árbol.
+
+31
+00:01:02,903 --> 00:01:04,212
+[...]
+
+32
+00:01:04,212 --> 00:01:09,843
+Abajo se despliega el diagrama genealógico visual mostrando a tu ejemplar arriba y a su padre y madre conectados en la base,
+
+33
+00:01:09,843 --> 00:01:10,165
+[...]
+
+34
+00:01:10,165 --> 00:01:16,223
+con botones para seguir navegando por el árbol de sus abuelos o presionar descargar pdf para obtener su certificado de pedigree.
+
+35
+00:01:16,223 --> 00:01:22,162
+[...]
+
+36
+00:01:22,162 --> 00:01:24,362
+Así cerramos todo el recorrido por DataGan 360,
+
+37
+00:01:24,362 --> 00:01:24,610
+[...]
+
+38
+00:01:24,610 --> 00:01:27,687
+una plataforma donde cada módulo trabaja conectado para darte el control total productivo,
+
+39
+00:01:27,687 --> 00:01:27,962
+[...]
+
+40
+00:01:27,962 --> 00:01:29,098
+sanitario y financiero de tu ganadería.
+
+41
+00:01:29,098 --> 00:01:33,360
+[...]

@@ -37,8 +37,8 @@ function StudentPreviewInner() {
 
   // Cargar módulos y condicionales reales desde RTDB
   useEffect(() => {
-    const modulesRef = ref(rtdb, "courses/datagan-360-certificacion-maestra/modules");
-    const condRef = ref(rtdb, "courses/datagan-360-certificacion-maestra/conditionals");
+    const modulesRef = ref(rtdb, "courses/ipt-master-fullstack/modules");
+    const condRef = ref(rtdb, "courses/ipt-master-fullstack/conditionals");
 
     let unsubMods: (() => void) | null = null;
     let unsubConds: (() => void) | null = null;
@@ -263,7 +263,7 @@ function StudentPreviewInner() {
               <h4 className="text-xs font-semibold text-white uppercase tracking-wide">
                 Plan de Estudios
               </h4>
-              <p className="text-[11px] text-[#a1a1aa]">Datagan 360 · Certificación Maestra</p>
+              <p className="text-[11px] text-[#a1a1aa]">IPT Master: Arquitectura de Software e IA</p>
             </div>
             <span className="text-[11px] font-mono font-bold text-violet-400">
               {progress.progressPercent}%

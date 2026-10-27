@@ -1,0 +1,4269 @@
+{
+  "file": "datagan360-v7-dashboard-gestion-locutado.mp3",
+  "duration_ms": 82520,
+  "duration_srt": "00:01:22,520",
+  "language": "es",
+  "total_segments": 45,
+  "speech_segments": 22,
+  "silence_segments": 23,
+  "total_words": 222,
+  "full_text": "Hola, bienvenido a un nuevo tutorial de DataGan 360. En la segunda pestaña del Dashboard, gestión operativa, se reflejan todos los eventos de salud y trazabilidad. Arriba ves la tasa de preñez e interpartos y debajo el monitor de clima y estrés calórico que mide cómo el calor afecta tu ordeño. Al bajar a salud del hato, estas cuatro tarjetas resumen lo ocurrido en los últimos 30 días en el módulo de trazabilidad. ¿Cuántos animales siguen enfermos? ¿Cuántos están en tratamiento? ¿Vacunas aplicadas y el gráfico con las patologías predominantes? Mira lo que ocurre en control sanitario cuando varios animales presentan la misma enfermedad en corto tiempo. El sistema enciende esta alerta de brote epidemiológico indicando el nivel de severidad para que actúes de inmediato. Debajo, el sistema calcula automáticamente tres indicadores críticos con semáforo de color. La mortalidad en crías recién nacidas, la mortalidad general del hato y el porcentaje de animales vacunados. Y al final encontramos el bloque de cumplimiento regulatorio ICA, que evalúa de cero a cien que tan lista está tu finca frente a una visita o auditoría sanitaria oficial. A la derecha te califica tus tres pilares, identificación de animales, vacunas de ley y guías de transporte y abajo en acciones pendientes te dice con número exacto cuántos animales debes chapetear o vacunar para llegar al 100%.",
+  "full_text_with_silences": "[...] Hola, [...] bienvenido a un nuevo tutorial de DataGan 360. [...] En la segunda pestaña del Dashboard, [...] gestión operativa, [...] se reflejan todos los eventos de salud y trazabilidad. [...] Arriba ves la tasa de preñez e interpartos y debajo el monitor de clima y estrés calórico que mide cómo el calor afecta tu ordeño. [...] Al bajar a salud del hato, [...] estas cuatro tarjetas resumen lo ocurrido en los últimos 30 días en el módulo de trazabilidad. [...] ¿Cuántos animales siguen enfermos? [...] ¿Cuántos están en tratamiento? [...] ¿Vacunas aplicadas y el gráfico con las patologías predominantes? [...] Mira lo que ocurre en control sanitario cuando varios animales presentan la misma enfermedad en corto tiempo. El sistema enciende esta alerta de brote epidemiológico indicando el nivel de severidad para que actúes de inmediato. [...] Debajo, [...] el sistema calcula automáticamente tres indicadores críticos con semáforo de color. [...] La mortalidad en crías recién nacidas, [...] la mortalidad general del hato y el porcentaje de animales vacunados. [...] Y al final encontramos el bloque de cumplimiento regulatorio ICA, [...] que evalúa de cero a cien que tan lista está tu finca frente a una visita o auditoría sanitaria oficial. [...] A la derecha te califica tus tres pilares, [...] identificación de animales, [...] vacunas de ley y guías de transporte [...] y abajo en acciones pendientes te dice con número exacto cuántos animales debes chapetear o vacunar para llegar al 100%. [...]",
+  "acoustic_silences_ms": [
+    {
+      "start_ms": 0,
+      "end_ms": 1005,
+      "duration_ms": 1005,
+      "start_srt": "00:00:00,000",
+      "end_srt": "00:00:01,005"
+    },
+    {
+      "start_ms": 4297,
+      "end_ms": 5025,
+      "duration_ms": 728,
+      "start_srt": "00:00:04,297",
+      "end_srt": "00:00:05,025"
+    },
+    {
+      "start_ms": 7162,
+      "end_ms": 8151,
+      "duration_ms": 989,
+      "start_srt": "00:00:07,162",
+      "end_srt": "00:00:08,151"
+    },
+    {
+      "start_ms": 9350,
+      "end_ms": 9656,
+      "duration_ms": 306,
+      "start_srt": "00:00:09,350",
+      "end_srt": "00:00:09,656"
+    },
+    {
+      "start_ms": 10316,
+      "end_ms": 10557,
+      "duration_ms": 241,
+      "start_srt": "00:00:10,316",
+      "end_srt": "00:00:10,557"
+    },
+    {
+      "start_ms": 12379,
+      "end_ms": 13118,
+      "duration_ms": 739,
+      "start_srt": "00:00:12,379",
+      "end_srt": "00:00:13,118"
+    },
+    {
+      "start_ms": 14682,
+      "end_ms": 14901,
+      "duration_ms": 219,
+      "start_srt": "00:00:14,682",
+      "end_srt": "00:00:14,901"
+    },
+    {
+      "start_ms": 17638,
+      "end_ms": 18662,
+      "duration_ms": 1024,
+      "start_srt": "00:00:17,638",
+      "end_srt": "00:00:18,662"
+    },
+    {
+      "start_ms": 19616,
+      "end_ms": 19911,
+      "duration_ms": 295,
+      "start_srt": "00:00:19,616",
+      "end_srt": "00:00:19,911"
+    },
+    {
+      "start_ms": 23295,
+      "end_ms": 23542,
+      "duration_ms": 247,
+      "start_srt": "00:00:23,295",
+      "end_srt": "00:00:23,542"
+    },
+    {
+      "start_ms": 24800,
+      "end_ms": 25055,
+      "duration_ms": 255,
+      "start_srt": "00:00:24,800",
+      "end_srt": "00:00:25,055"
+    },
+    {
+      "start_ms": 26102,
+      "end_ms": 26345,
+      "duration_ms": 243,
+      "start_srt": "00:00:26,102",
+      "end_srt": "00:00:26,345"
+    },
+    {
+      "start_ms": 28992,
+      "end_ms": 30174,
+      "duration_ms": 1182,
+      "start_srt": "00:00:28,992",
+      "end_srt": "00:00:30,174"
+    },
+    {
+      "start_ms": 34267,
+      "end_ms": 34596,
+      "duration_ms": 329,
+      "start_srt": "00:00:34,267",
+      "end_srt": "00:00:34,596"
+    },
+    {
+      "start_ms": 38909,
+      "end_ms": 40213,
+      "duration_ms": 1304,
+      "start_srt": "00:00:38,909",
+      "end_srt": "00:00:40,213"
+    },
+    {
+      "start_ms": 40686,
+      "end_ms": 40977,
+      "duration_ms": 291,
+      "start_srt": "00:00:40,686",
+      "end_srt": "00:00:40,977"
+    },
+    {
+      "start_ms": 44912,
+      "end_ms": 45346,
+      "duration_ms": 434,
+      "start_srt": "00:00:44,912",
+      "end_srt": "00:00:45,346"
+    },
+    {
+      "start_ms": 47135,
+      "end_ms": 47505,
+      "duration_ms": 370,
+      "start_srt": "00:00:47,135",
+      "end_srt": "00:00:47,505"
+    },
+    {
+      "start_ms": 50499,
+      "end_ms": 54193,
+      "duration_ms": 3694,
+      "start_srt": "00:00:50,499",
+      "end_srt": "00:00:54,193"
+    },
+    {
+      "start_ms": 56976,
+      "end_ms": 57306,
+      "duration_ms": 330,
+      "start_srt": "00:00:56,976",
+      "end_srt": "00:00:57,306"
+    },
+    {
+      "start_ms": 61885,
+      "end_ms": 66191,
+      "duration_ms": 4306,
+      "start_srt": "00:01:01,885",
+      "end_srt": "00:01:06,191"
+    },
+    {
+      "start_ms": 68273,
+      "end_ms": 68515,
+      "duration_ms": 242,
+      "start_srt": "00:01:08,273",
+      "end_srt": "00:01:08,515"
+    },
+    {
+      "start_ms": 69898,
+      "end_ms": 70236,
+      "duration_ms": 338,
+      "start_srt": "00:01:09,898",
+      "end_srt": "00:01:10,236"
+    },
+    {
+      "start_ms": 71945,
+      "end_ms": 72161,
+      "duration_ms": 216,
+      "start_srt": "00:01:11,945",
+      "end_srt": "00:01:12,161"
+    },
+    {
+      "start_ms": 78050,
+      "end_ms": 79125,
+      "duration_ms": 1075,
+      "start_srt": "00:01:18,050",
+      "end_srt": "00:01:19,125"
+    },
+    {
+      "start_ms": 81660,
+      "end_ms": 82523,
+      "duration_ms": 863,
+      "start_srt": "00:01:21,660",
+      "end_srt": "00:01:22,523"
+    }
+  ],
+  "timeline": [
+    {
+      "index": 1,
+      "type": "silence",
+      "start_ms": 0,
+      "end_ms": 4030,
+      "duration_ms": 4030,
+      "start_srt": "00:00:00,000",
+      "end_srt": "00:00:04,030",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 2,
+      "type": "speech",
+      "start_ms": 4030,
+      "end_ms": 4297,
+      "duration_ms": 267,
+      "start_srt": "00:00:04,030",
+      "end_srt": "00:00:04,297",
+      "text": "Hola,",
+      "words": [
+        {
+          "word": "Hola,",
+          "start_ms": 4030,
+          "end_ms": 4297,
+          "start_srt": "00:00:04,030",
+          "end_srt": "00:00:04,297",
+          "probability": 0.7255
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "type": "silence",
+      "start_ms": 4297,
+      "end_ms": 5025,
+      "duration_ms": 728,
+      "start_srt": "00:00:04,297",
+      "end_srt": "00:00:05,025",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 4,
+      "type": "speech",
+      "start_ms": 5025,
+      "end_ms": 7162,
+      "duration_ms": 2137,
+      "start_srt": "00:00:05,025",
+      "end_srt": "00:00:07,162",
+      "text": "bienvenido a un nuevo tutorial de DataGan 360.",
+      "words": [
+        {
+          "word": "bienvenido",
+          "start_ms": 5025,
+          "end_ms": 5410,
+          "start_srt": "00:00:05,025",
+          "end_srt": "00:00:05,410",
+          "probability": 0.9444
+        },
+        {
+          "word": "a",
+          "start_ms": 5410,
+          "end_ms": 5510,
+          "start_srt": "00:00:05,410",
+          "end_srt": "00:00:05,510",
+          "probability": 0.9471
+        },
+        {
+          "word": "un",
+          "start_ms": 5510,
+          "end_ms": 5530,
+          "start_srt": "00:00:05,510",
+          "end_srt": "00:00:05,530",
+          "probability": 0.9745
+        },
+        {
+          "word": "nuevo",
+          "start_ms": 5530,
+          "end_ms": 5630,
+          "start_srt": "00:00:05,530",
+          "end_srt": "00:00:05,630",
+          "probability": 0.9967
+        },
+        {
+          "word": "tutorial",
+          "start_ms": 5630,
+          "end_ms": 5910,
+          "start_srt": "00:00:05,630",
+          "end_srt": "00:00:05,910",
+          "probability": 0.985
+        },
+        {
+          "word": "de",
+          "start_ms": 5910,
+          "end_ms": 6090,
+          "start_srt": "00:00:05,910",
+          "end_srt": "00:00:06,090",
+          "probability": 0.9944
+        },
+        {
+          "word": "Datagan",
+          "start_ms": 6090,
+          "end_ms": 6350,
+          "start_srt": "00:00:06,090",
+          "end_srt": "00:00:06,350",
+          "probability": 0.3061
+        },
+        {
+          "word": "360.",
+          "start_ms": 6350,
+          "end_ms": 7162,
+          "start_srt": "00:00:06,350",
+          "end_srt": "00:00:07,162",
+          "probability": 0.8165
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "type": "silence",
+      "start_ms": 7162,
+      "end_ms": 8151,
+      "duration_ms": 989,
+      "start_srt": "00:00:07,162",
+      "end_srt": "00:00:08,151",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 6,
+      "type": "speech",
+      "start_ms": 8151,
+      "end_ms": 9350,
+      "duration_ms": 1199,
+      "start_srt": "00:00:08,151",
+      "end_srt": "00:00:09,350",
+      "text": "En la segunda pestaña del Dashboard,",
+      "words": [
+        {
+          "word": "En",
+          "start_ms": 8151,
+          "end_ms": 8230,
+          "start_srt": "00:00:08,151",
+          "end_srt": "00:00:08,230",
+          "probability": 0.9584
+        },
+        {
+          "word": "la",
+          "start_ms": 8230,
+          "end_ms": 8310,
+          "start_srt": "00:00:08,230",
+          "end_srt": "00:00:08,310",
+          "probability": 0.9925
+        },
+        {
+          "word": "segunda",
+          "start_ms": 8310,
+          "end_ms": 8510,
+          "start_srt": "00:00:08,310",
+          "end_srt": "00:00:08,510",
+          "probability": 0.9663
+        },
+        {
+          "word": "pestaña",
+          "start_ms": 8510,
+          "end_ms": 8910,
+          "start_srt": "00:00:08,510",
+          "end_srt": "00:00:08,910",
+          "probability": 0.9838
+        },
+        {
+          "word": "del",
+          "start_ms": 8910,
+          "end_ms": 9010,
+          "start_srt": "00:00:08,910",
+          "end_srt": "00:00:09,010",
+          "probability": 0.7857
+        },
+        {
+          "word": "Dashboard,",
+          "start_ms": 9010,
+          "end_ms": 9350,
+          "start_srt": "00:00:09,010",
+          "end_srt": "00:00:09,350",
+          "probability": 0.6068
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "type": "silence",
+      "start_ms": 9350,
+      "end_ms": 9656,
+      "duration_ms": 306,
+      "start_srt": "00:00:09,350",
+      "end_srt": "00:00:09,656",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 8,
+      "type": "speech",
+      "start_ms": 9656,
+      "end_ms": 10316,
+      "duration_ms": 660,
+      "start_srt": "00:00:09,656",
+      "end_srt": "00:00:10,316",
+      "text": "gestión operativa,",
+      "words": [
+        {
+          "word": "gestión",
+          "start_ms": 9656,
+          "end_ms": 9870,
+          "start_srt": "00:00:09,656",
+          "end_srt": "00:00:09,870",
+          "probability": 0.7982
+        },
+        {
+          "word": "operativa,",
+          "start_ms": 9870,
+          "end_ms": 10316,
+          "start_srt": "00:00:09,870",
+          "end_srt": "00:00:10,316",
+          "probability": 0.9944
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "type": "silence",
+      "start_ms": 10316,
+      "end_ms": 10557,
+      "duration_ms": 241,
+      "start_srt": "00:00:10,316",
+      "end_srt": "00:00:10,557",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 10,
+      "type": "speech",
+      "start_ms": 10557,
+      "end_ms": 12379,
+      "duration_ms": 1822,
+      "start_srt": "00:00:10,557",
+      "end_srt": "00:00:12,379",
+      "text": "se reflejan todos los eventos de salud y trazabilidad.",
+      "words": [
+        {
+          "word": "se",
+          "start_ms": 10557,
+          "end_ms": 10650,
+          "start_srt": "00:00:10,557",
+          "end_srt": "00:00:10,650",
+          "probability": 0.9928
+        },
+        {
+          "word": "reflejan",
+          "start_ms": 10650,
+          "end_ms": 10937,
+          "start_srt": "00:00:10,650",
+          "end_srt": "00:00:10,937",
+          "probability": 0.9935
+        },
+        {
+          "word": "todos",
+          "start_ms": 10937,
+          "end_ms": 11090,
+          "start_srt": "00:00:10,937",
+          "end_srt": "00:00:11,090",
+          "probability": 0.9913
+        },
+        {
+          "word": "los",
+          "start_ms": 11090,
+          "end_ms": 11250,
+          "start_srt": "00:00:11,090",
+          "end_srt": "00:00:11,250",
+          "probability": 0.9979
+        },
+        {
+          "word": "eventos",
+          "start_ms": 11250,
+          "end_ms": 11512,
+          "start_srt": "00:00:11,250",
+          "end_srt": "00:00:11,512",
+          "probability": 0.9956
+        },
+        {
+          "word": "de",
+          "start_ms": 11512,
+          "end_ms": 11590,
+          "start_srt": "00:00:11,512",
+          "end_srt": "00:00:11,590",
+          "probability": 0.9986
+        },
+        {
+          "word": "salud",
+          "start_ms": 11590,
+          "end_ms": 11790,
+          "start_srt": "00:00:11,590",
+          "end_srt": "00:00:11,790",
+          "probability": 0.9793
+        },
+        {
+          "word": "y",
+          "start_ms": 11790,
+          "end_ms": 11930,
+          "start_srt": "00:00:11,790",
+          "end_srt": "00:00:11,930",
+          "probability": 0.9947
+        },
+        {
+          "word": "trazabilidad.",
+          "start_ms": 11930,
+          "end_ms": 12379,
+          "start_srt": "00:00:11,930",
+          "end_srt": "00:00:12,379",
+          "probability": 0.9252
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "type": "silence",
+      "start_ms": 12379,
+      "end_ms": 13118,
+      "duration_ms": 739,
+      "start_srt": "00:00:12,379",
+      "end_srt": "00:00:13,118",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 12,
+      "type": "speech",
+      "start_ms": 13118,
+      "end_ms": 17638,
+      "duration_ms": 4520,
+      "start_srt": "00:00:13,118",
+      "end_srt": "00:00:17,638",
+      "text": "Arriba ves la tasa de preñez e interpartos y debajo el monitor de clima y estrés calórico que mide cómo el calor afecta tu ordeño.",
+      "words": [
+        {
+          "word": "Arriba",
+          "start_ms": 13118,
+          "end_ms": 13360,
+          "start_srt": "00:00:13,118",
+          "end_srt": "00:00:13,360",
+          "probability": 0.9432
+        },
+        {
+          "word": "ves",
+          "start_ms": 13360,
+          "end_ms": 13500,
+          "start_srt": "00:00:13,360",
+          "end_srt": "00:00:13,500",
+          "probability": 0.7213
+        },
+        {
+          "word": "la",
+          "start_ms": 13500,
+          "end_ms": 13620,
+          "start_srt": "00:00:13,500",
+          "end_srt": "00:00:13,620",
+          "probability": 0.7277
+        },
+        {
+          "word": "tasa",
+          "start_ms": 13620,
+          "end_ms": 13814,
+          "start_srt": "00:00:13,620",
+          "end_srt": "00:00:13,814",
+          "probability": 0.9551
+        },
+        {
+          "word": "de",
+          "start_ms": 13814,
+          "end_ms": 13934,
+          "start_srt": "00:00:13,814",
+          "end_srt": "00:00:13,934",
+          "probability": 0.9927
+        },
+        {
+          "word": "preñes",
+          "start_ms": 13934,
+          "end_ms": 14100,
+          "start_srt": "00:00:13,934",
+          "end_srt": "00:00:14,100",
+          "probability": 0.8419
+        },
+        {
+          "word": "e",
+          "start_ms": 14100,
+          "end_ms": 14199,
+          "start_srt": "00:00:14,100",
+          "end_srt": "00:00:14,199",
+          "probability": 0.4425
+        },
+        {
+          "word": "interpartos",
+          "start_ms": 14199,
+          "end_ms": 14647,
+          "start_srt": "00:00:14,199",
+          "end_srt": "00:00:14,647",
+          "probability": 0.7943
+        },
+        {
+          "word": "y",
+          "start_ms": 14647,
+          "end_ms": 14980,
+          "start_srt": "00:00:14,647",
+          "end_srt": "00:00:14,980",
+          "probability": 0.3371
+        },
+        {
+          "word": "debajo",
+          "start_ms": 14980,
+          "end_ms": 15160,
+          "start_srt": "00:00:14,980",
+          "end_srt": "00:00:15,160",
+          "probability": 0.975
+        },
+        {
+          "word": "el",
+          "start_ms": 15160,
+          "end_ms": 15240,
+          "start_srt": "00:00:15,160",
+          "end_srt": "00:00:15,240",
+          "probability": 0.9617
+        },
+        {
+          "word": "monitor",
+          "start_ms": 15240,
+          "end_ms": 15464,
+          "start_srt": "00:00:15,240",
+          "end_srt": "00:00:15,464",
+          "probability": 0.9871
+        },
+        {
+          "word": "de",
+          "start_ms": 15464,
+          "end_ms": 15562,
+          "start_srt": "00:00:15,464",
+          "end_srt": "00:00:15,562",
+          "probability": 0.9863
+        },
+        {
+          "word": "clima",
+          "start_ms": 15562,
+          "end_ms": 15820,
+          "start_srt": "00:00:15,562",
+          "end_srt": "00:00:15,820",
+          "probability": 0.9876
+        },
+        {
+          "word": "y",
+          "start_ms": 15820,
+          "end_ms": 15860,
+          "start_srt": "00:00:15,820",
+          "end_srt": "00:00:15,860",
+          "probability": 0.7296
+        },
+        {
+          "word": "estrés",
+          "start_ms": 15860,
+          "end_ms": 16033,
+          "start_srt": "00:00:15,860",
+          "end_srt": "00:00:16,033",
+          "probability": 0.9807
+        },
+        {
+          "word": "calórico",
+          "start_ms": 16033,
+          "end_ms": 16370,
+          "start_srt": "00:00:16,033",
+          "end_srt": "00:00:16,370",
+          "probability": 0.9342
+        },
+        {
+          "word": "que",
+          "start_ms": 16370,
+          "end_ms": 16521,
+          "start_srt": "00:00:16,370",
+          "end_srt": "00:00:16,521",
+          "probability": 0.9341
+        },
+        {
+          "word": "mide",
+          "start_ms": 16521,
+          "end_ms": 16593,
+          "start_srt": "00:00:16,521",
+          "end_srt": "00:00:16,593",
+          "probability": 0.9624
+        },
+        {
+          "word": "como",
+          "start_ms": 16593,
+          "end_ms": 16759,
+          "start_srt": "00:00:16,593",
+          "end_srt": "00:00:16,759",
+          "probability": 0.8779
+        },
+        {
+          "word": "el",
+          "start_ms": 16759,
+          "end_ms": 16905,
+          "start_srt": "00:00:16,759",
+          "end_srt": "00:00:16,905",
+          "probability": 0.9923
+        },
+        {
+          "word": "calor",
+          "start_ms": 16905,
+          "end_ms": 16978,
+          "start_srt": "00:00:16,905",
+          "end_srt": "00:00:16,978",
+          "probability": 0.9954
+        },
+        {
+          "word": "afecta",
+          "start_ms": 16978,
+          "end_ms": 17310,
+          "start_srt": "00:00:16,978",
+          "end_srt": "00:00:17,310",
+          "probability": 0.9967
+        },
+        {
+          "word": "tu",
+          "start_ms": 17310,
+          "end_ms": 17447,
+          "start_srt": "00:00:17,310",
+          "end_srt": "00:00:17,447",
+          "probability": 0.6574
+        },
+        {
+          "word": "ordeño.",
+          "start_ms": 17447,
+          "end_ms": 17638,
+          "start_srt": "00:00:17,447",
+          "end_srt": "00:00:17,638",
+          "probability": 0.937
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "type": "silence",
+      "start_ms": 17638,
+      "end_ms": 18662,
+      "duration_ms": 1024,
+      "start_srt": "00:00:17,638",
+      "end_srt": "00:00:18,662",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 14,
+      "type": "speech",
+      "start_ms": 18662,
+      "end_ms": 19616,
+      "duration_ms": 954,
+      "start_srt": "00:00:18,662",
+      "end_srt": "00:00:19,616",
+      "text": "Al bajar a salud del hato,",
+      "words": [
+        {
+          "word": "Al",
+          "start_ms": 18662,
+          "end_ms": 18770,
+          "start_srt": "00:00:18,662",
+          "end_srt": "00:00:18,770",
+          "probability": 0.9839
+        },
+        {
+          "word": "bajar",
+          "start_ms": 18770,
+          "end_ms": 18970,
+          "start_srt": "00:00:18,770",
+          "end_srt": "00:00:18,970",
+          "probability": 0.995
+        },
+        {
+          "word": "a",
+          "start_ms": 18970,
+          "end_ms": 19050,
+          "start_srt": "00:00:18,970",
+          "end_srt": "00:00:19,050",
+          "probability": 0.7671
+        },
+        {
+          "word": "salud",
+          "start_ms": 19050,
+          "end_ms": 19210,
+          "start_srt": "00:00:19,050",
+          "end_srt": "00:00:19,210",
+          "probability": 0.9926
+        },
+        {
+          "word": "de",
+          "start_ms": 19210,
+          "end_ms": 19370,
+          "start_srt": "00:00:19,210",
+          "end_srt": "00:00:19,370",
+          "probability": 0.6601
+        },
+        {
+          "word": "lato,",
+          "start_ms": 19370,
+          "end_ms": 19616,
+          "start_srt": "00:00:19,370",
+          "end_srt": "00:00:19,616",
+          "probability": 0.9175
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "type": "silence",
+      "start_ms": 19616,
+      "end_ms": 19911,
+      "duration_ms": 295,
+      "start_srt": "00:00:19,616",
+      "end_srt": "00:00:19,911",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 16,
+      "type": "speech",
+      "start_ms": 19911,
+      "end_ms": 23295,
+      "duration_ms": 3384,
+      "start_srt": "00:00:19,911",
+      "end_srt": "00:00:23,295",
+      "text": "estas cuatro tarjetas resumen lo ocurrido en los últimos 30 días en el módulo de trazabilidad.",
+      "words": [
+        {
+          "word": "estas",
+          "start_ms": 19911,
+          "end_ms": 20061,
+          "start_srt": "00:00:19,911",
+          "end_srt": "00:00:20,061",
+          "probability": 0.9746
+        },
+        {
+          "word": "cuatro",
+          "start_ms": 20061,
+          "end_ms": 20250,
+          "start_srt": "00:00:20,061",
+          "end_srt": "00:00:20,250",
+          "probability": 0.8597
+        },
+        {
+          "word": "tarjetas",
+          "start_ms": 20250,
+          "end_ms": 20658,
+          "start_srt": "00:00:20,250",
+          "end_srt": "00:00:20,658",
+          "probability": 0.9324
+        },
+        {
+          "word": "resumen",
+          "start_ms": 20658,
+          "end_ms": 20910,
+          "start_srt": "00:00:20,658",
+          "end_srt": "00:00:20,910",
+          "probability": 0.9579
+        },
+        {
+          "word": "lo",
+          "start_ms": 20910,
+          "end_ms": 21065,
+          "start_srt": "00:00:20,910",
+          "end_srt": "00:00:21,065",
+          "probability": 0.9946
+        },
+        {
+          "word": "ocurrido",
+          "start_ms": 21065,
+          "end_ms": 21310,
+          "start_srt": "00:00:21,065",
+          "end_srt": "00:00:21,310",
+          "probability": 0.9755
+        },
+        {
+          "word": "en",
+          "start_ms": 21310,
+          "end_ms": 21428,
+          "start_srt": "00:00:21,310",
+          "end_srt": "00:00:21,428",
+          "probability": 0.9929
+        },
+        {
+          "word": "los",
+          "start_ms": 21428,
+          "end_ms": 21490,
+          "start_srt": "00:00:21,428",
+          "end_srt": "00:00:21,490",
+          "probability": 0.9976
+        },
+        {
+          "word": "últimos",
+          "start_ms": 21490,
+          "end_ms": 21710,
+          "start_srt": "00:00:21,490",
+          "end_srt": "00:00:21,710",
+          "probability": 0.9971
+        },
+        {
+          "word": "30",
+          "start_ms": 21710,
+          "end_ms": 21942,
+          "start_srt": "00:00:21,710",
+          "end_srt": "00:00:21,942",
+          "probability": 0.7904
+        },
+        {
+          "word": "días",
+          "start_ms": 21942,
+          "end_ms": 22250,
+          "start_srt": "00:00:21,942",
+          "end_srt": "00:00:22,250",
+          "probability": 0.9981
+        },
+        {
+          "word": "en",
+          "start_ms": 22250,
+          "end_ms": 22410,
+          "start_srt": "00:00:22,250",
+          "end_srt": "00:00:22,410",
+          "probability": 0.9639
+        },
+        {
+          "word": "el",
+          "start_ms": 22410,
+          "end_ms": 22490,
+          "start_srt": "00:00:22,410",
+          "end_srt": "00:00:22,490",
+          "probability": 0.9978
+        },
+        {
+          "word": "módulo",
+          "start_ms": 22490,
+          "end_ms": 22690,
+          "start_srt": "00:00:22,490",
+          "end_srt": "00:00:22,690",
+          "probability": 0.9797
+        },
+        {
+          "word": "de",
+          "start_ms": 22690,
+          "end_ms": 22790,
+          "start_srt": "00:00:22,690",
+          "end_srt": "00:00:22,790",
+          "probability": 0.9987
+        },
+        {
+          "word": "trazabilidad.",
+          "start_ms": 22790,
+          "end_ms": 23295,
+          "start_srt": "00:00:22,790",
+          "end_srt": "00:00:23,295",
+          "probability": 0.9512
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "type": "silence",
+      "start_ms": 23295,
+      "end_ms": 23542,
+      "duration_ms": 247,
+      "start_srt": "00:00:23,295",
+      "end_srt": "00:00:23,542",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 18,
+      "type": "speech",
+      "start_ms": 23542,
+      "end_ms": 24800,
+      "duration_ms": 1258,
+      "start_srt": "00:00:23,542",
+      "end_srt": "00:00:24,800",
+      "text": "¿Cuántos animales siguen enfermos?",
+      "words": [
+        {
+          "word": "¿Cuántos",
+          "start_ms": 23542,
+          "end_ms": 23750,
+          "start_srt": "00:00:23,542",
+          "end_srt": "00:00:23,750",
+          "probability": 0.8799
+        },
+        {
+          "word": "animales",
+          "start_ms": 23750,
+          "end_ms": 23950,
+          "start_srt": "00:00:23,750",
+          "end_srt": "00:00:23,950",
+          "probability": 0.9975
+        },
+        {
+          "word": "siguen",
+          "start_ms": 23950,
+          "end_ms": 24310,
+          "start_srt": "00:00:23,950",
+          "end_srt": "00:00:24,310",
+          "probability": 0.989
+        },
+        {
+          "word": "enfermos?",
+          "start_ms": 24310,
+          "end_ms": 24800,
+          "start_srt": "00:00:24,310",
+          "end_srt": "00:00:24,800",
+          "probability": 0.9502
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "type": "silence",
+      "start_ms": 24800,
+      "end_ms": 25055,
+      "duration_ms": 255,
+      "start_srt": "00:00:24,800",
+      "end_srt": "00:00:25,055",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 20,
+      "type": "speech",
+      "start_ms": 25055,
+      "end_ms": 26102,
+      "duration_ms": 1047,
+      "start_srt": "00:00:25,055",
+      "end_srt": "00:00:26,102",
+      "text": "¿Cuántos están en tratamiento?",
+      "words": [
+        {
+          "word": "¿Cuántos",
+          "start_ms": 25055,
+          "end_ms": 25250,
+          "start_srt": "00:00:25,055",
+          "end_srt": "00:00:25,250",
+          "probability": 0.9699
+        },
+        {
+          "word": "están",
+          "start_ms": 25250,
+          "end_ms": 25470,
+          "start_srt": "00:00:25,250",
+          "end_srt": "00:00:25,470",
+          "probability": 0.9909
+        },
+        {
+          "word": "en",
+          "start_ms": 25470,
+          "end_ms": 25590,
+          "start_srt": "00:00:25,470",
+          "end_srt": "00:00:25,590",
+          "probability": 0.999
+        },
+        {
+          "word": "tratamiento?",
+          "start_ms": 25590,
+          "end_ms": 26102,
+          "start_srt": "00:00:25,590",
+          "end_srt": "00:00:26,102",
+          "probability": 0.9982
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "type": "silence",
+      "start_ms": 26102,
+      "end_ms": 26345,
+      "duration_ms": 243,
+      "start_srt": "00:00:26,102",
+      "end_srt": "00:00:26,345",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 22,
+      "type": "speech",
+      "start_ms": 26345,
+      "end_ms": 28992,
+      "duration_ms": 2647,
+      "start_srt": "00:00:26,345",
+      "end_srt": "00:00:28,992",
+      "text": "¿Vacunas aplicadas y el gráfico con las patologías predominantes?",
+      "words": [
+        {
+          "word": "¿Vacunas",
+          "start_ms": 26345,
+          "end_ms": 26670,
+          "start_srt": "00:00:26,345",
+          "end_srt": "00:00:26,670",
+          "probability": 0.8094
+        },
+        {
+          "word": "aplicadas",
+          "start_ms": 26670,
+          "end_ms": 27050,
+          "start_srt": "00:00:26,670",
+          "end_srt": "00:00:27,050",
+          "probability": 0.9966
+        },
+        {
+          "word": "y",
+          "start_ms": 27050,
+          "end_ms": 27241,
+          "start_srt": "00:00:27,050",
+          "end_srt": "00:00:27,241",
+          "probability": 0.8754
+        },
+        {
+          "word": "el",
+          "start_ms": 27241,
+          "end_ms": 27330,
+          "start_srt": "00:00:27,241",
+          "end_srt": "00:00:27,330",
+          "probability": 0.988
+        },
+        {
+          "word": "gráfico",
+          "start_ms": 27330,
+          "end_ms": 27625,
+          "start_srt": "00:00:27,330",
+          "end_srt": "00:00:27,625",
+          "probability": 0.9968
+        },
+        {
+          "word": "con",
+          "start_ms": 27625,
+          "end_ms": 27771,
+          "start_srt": "00:00:27,625",
+          "end_srt": "00:00:27,771",
+          "probability": 0.991
+        },
+        {
+          "word": "las",
+          "start_ms": 27771,
+          "end_ms": 27860,
+          "start_srt": "00:00:27,771",
+          "end_srt": "00:00:27,860",
+          "probability": 0.9936
+        },
+        {
+          "word": "patologías",
+          "start_ms": 27860,
+          "end_ms": 28310,
+          "start_srt": "00:00:27,860",
+          "end_srt": "00:00:28,310",
+          "probability": 0.9972
+        },
+        {
+          "word": "predominantes?",
+          "start_ms": 28310,
+          "end_ms": 28992,
+          "start_srt": "00:00:28,310",
+          "end_srt": "00:00:28,992",
+          "probability": 0.9932
+        }
+      ]
+    },
+    {
+      "index": 23,
+      "type": "silence",
+      "start_ms": 28992,
+      "end_ms": 30174,
+      "duration_ms": 1182,
+      "start_srt": "00:00:28,992",
+      "end_srt": "00:00:30,174",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 24,
+      "type": "speech",
+      "start_ms": 30174,
+      "end_ms": 38909,
+      "duration_ms": 8735,
+      "start_srt": "00:00:30,174",
+      "end_srt": "00:00:38,909",
+      "text": "Mira lo que ocurre en control sanitario cuando varios animales presentan la misma enfermedad en corto tiempo. El sistema enciende esta alerta de brote epidemiológico indicando el nivel de severidad para que actúes de inmediato.",
+      "words": [
+        {
+          "word": "Mira",
+          "start_ms": 30174,
+          "end_ms": 30330,
+          "start_srt": "00:00:30,174",
+          "end_srt": "00:00:30,330",
+          "probability": 0.8388
+        },
+        {
+          "word": "lo",
+          "start_ms": 30330,
+          "end_ms": 30470,
+          "start_srt": "00:00:30,330",
+          "end_srt": "00:00:30,470",
+          "probability": 0.9982
+        },
+        {
+          "word": "que",
+          "start_ms": 30470,
+          "end_ms": 30551,
+          "start_srt": "00:00:30,470",
+          "end_srt": "00:00:30,551",
+          "probability": 0.9991
+        },
+        {
+          "word": "ocurre",
+          "start_ms": 30551,
+          "end_ms": 30830,
+          "start_srt": "00:00:30,551",
+          "end_srt": "00:00:30,830",
+          "probability": 0.9894
+        },
+        {
+          "word": "en",
+          "start_ms": 30830,
+          "end_ms": 30930,
+          "start_srt": "00:00:30,830",
+          "end_srt": "00:00:30,930",
+          "probability": 0.9949
+        },
+        {
+          "word": "control",
+          "start_ms": 30930,
+          "end_ms": 31170,
+          "start_srt": "00:00:30,930",
+          "end_srt": "00:00:31,170",
+          "probability": 0.795
+        },
+        {
+          "word": "sanitario",
+          "start_ms": 31170,
+          "end_ms": 31609,
+          "start_srt": "00:00:31,170",
+          "end_srt": "00:00:31,609",
+          "probability": 0.9915
+        },
+        {
+          "word": "cuando",
+          "start_ms": 31609,
+          "end_ms": 31770,
+          "start_srt": "00:00:31,609",
+          "end_srt": "00:00:31,770",
+          "probability": 0.9169
+        },
+        {
+          "word": "varios",
+          "start_ms": 31770,
+          "end_ms": 32030,
+          "start_srt": "00:00:31,770",
+          "end_srt": "00:00:32,030",
+          "probability": 0.9964
+        },
+        {
+          "word": "animales",
+          "start_ms": 32030,
+          "end_ms": 32330,
+          "start_srt": "00:00:32,030",
+          "end_srt": "00:00:32,330",
+          "probability": 0.9985
+        },
+        {
+          "word": "presentan",
+          "start_ms": 32330,
+          "end_ms": 32830,
+          "start_srt": "00:00:32,330",
+          "end_srt": "00:00:32,830",
+          "probability": 0.9823
+        },
+        {
+          "word": "la",
+          "start_ms": 32830,
+          "end_ms": 32930,
+          "start_srt": "00:00:32,830",
+          "end_srt": "00:00:32,930",
+          "probability": 0.9976
+        },
+        {
+          "word": "misma",
+          "start_ms": 32930,
+          "end_ms": 33090,
+          "start_srt": "00:00:32,930",
+          "end_srt": "00:00:33,090",
+          "probability": 0.9991
+        },
+        {
+          "word": "enfermedad",
+          "start_ms": 33090,
+          "end_ms": 33570,
+          "start_srt": "00:00:33,090",
+          "end_srt": "00:00:33,570",
+          "probability": 0.9983
+        },
+        {
+          "word": "en",
+          "start_ms": 33570,
+          "end_ms": 33691,
+          "start_srt": "00:00:33,570",
+          "end_srt": "00:00:33,691",
+          "probability": 0.9844
+        },
+        {
+          "word": "corto",
+          "start_ms": 33691,
+          "end_ms": 33929,
+          "start_srt": "00:00:33,691",
+          "end_srt": "00:00:33,929",
+          "probability": 0.9728
+        },
+        {
+          "word": "tiempo.",
+          "start_ms": 33929,
+          "end_ms": 34170,
+          "start_srt": "00:00:33,929",
+          "end_srt": "00:00:34,170",
+          "probability": 0.9995
+        },
+        {
+          "word": "El",
+          "start_ms": 34170,
+          "end_ms": 34655,
+          "start_srt": "00:00:34,170",
+          "end_srt": "00:00:34,655",
+          "probability": 0.0888
+        },
+        {
+          "word": "sistema",
+          "start_ms": 34655,
+          "end_ms": 34960,
+          "start_srt": "00:00:34,655",
+          "end_srt": "00:00:34,960",
+          "probability": 0.9339
+        },
+        {
+          "word": "enciende",
+          "start_ms": 34960,
+          "end_ms": 35280,
+          "start_srt": "00:00:34,960",
+          "end_srt": "00:00:35,280",
+          "probability": 0.9099
+        },
+        {
+          "word": "esta",
+          "start_ms": 35280,
+          "end_ms": 35476,
+          "start_srt": "00:00:35,280",
+          "end_srt": "00:00:35,476",
+          "probability": 0.9399
+        },
+        {
+          "word": "alerta",
+          "start_ms": 35476,
+          "end_ms": 35724,
+          "start_srt": "00:00:35,476",
+          "end_srt": "00:00:35,724",
+          "probability": 0.9933
+        },
+        {
+          "word": "de",
+          "start_ms": 35724,
+          "end_ms": 35820,
+          "start_srt": "00:00:35,724",
+          "end_srt": "00:00:35,820",
+          "probability": 0.89
+        },
+        {
+          "word": "brote",
+          "start_ms": 35820,
+          "end_ms": 35984,
+          "start_srt": "00:00:35,820",
+          "end_srt": "00:00:35,984",
+          "probability": 0.7652
+        },
+        {
+          "word": "epidemiológico",
+          "start_ms": 35984,
+          "end_ms": 36577,
+          "start_srt": "00:00:35,984",
+          "end_srt": "00:00:36,577",
+          "probability": 0.9931
+        },
+        {
+          "word": "indicando",
+          "start_ms": 36577,
+          "end_ms": 36960,
+          "start_srt": "00:00:36,577",
+          "end_srt": "00:00:36,960",
+          "probability": 0.9752
+        },
+        {
+          "word": "el",
+          "start_ms": 36960,
+          "end_ms": 37100,
+          "start_srt": "00:00:36,960",
+          "end_srt": "00:00:37,100",
+          "probability": 0.9406
+        },
+        {
+          "word": "nivel",
+          "start_ms": 37100,
+          "end_ms": 37240,
+          "start_srt": "00:00:37,100",
+          "end_srt": "00:00:37,240",
+          "probability": 0.9951
+        },
+        {
+          "word": "de",
+          "start_ms": 37240,
+          "end_ms": 37380,
+          "start_srt": "00:00:37,240",
+          "end_srt": "00:00:37,380",
+          "probability": 0.9984
+        },
+        {
+          "word": "severidad",
+          "start_ms": 37380,
+          "end_ms": 37757,
+          "start_srt": "00:00:37,380",
+          "end_srt": "00:00:37,757",
+          "probability": 0.9637
+        },
+        {
+          "word": "para",
+          "start_ms": 37757,
+          "end_ms": 37944,
+          "start_srt": "00:00:37,757",
+          "end_srt": "00:00:37,944",
+          "probability": 0.9755
+        },
+        {
+          "word": "que",
+          "start_ms": 37944,
+          "end_ms": 38093,
+          "start_srt": "00:00:37,944",
+          "end_srt": "00:00:38,093",
+          "probability": 0.9965
+        },
+        {
+          "word": "actúes",
+          "start_ms": 38093,
+          "end_ms": 38379,
+          "start_srt": "00:00:38,093",
+          "end_srt": "00:00:38,379",
+          "probability": 0.8796
+        },
+        {
+          "word": "de",
+          "start_ms": 38379,
+          "end_ms": 38463,
+          "start_srt": "00:00:38,379",
+          "end_srt": "00:00:38,463",
+          "probability": 0.998
+        },
+        {
+          "word": "inmediato.",
+          "start_ms": 38463,
+          "end_ms": 38909,
+          "start_srt": "00:00:38,463",
+          "end_srt": "00:00:38,909",
+          "probability": 0.995
+        }
+      ]
+    },
+    {
+      "index": 25,
+      "type": "silence",
+      "start_ms": 38909,
+      "end_ms": 40213,
+      "duration_ms": 1304,
+      "start_srt": "00:00:38,909",
+      "end_srt": "00:00:40,213",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 26,
+      "type": "speech",
+      "start_ms": 40213,
+      "end_ms": 40686,
+      "duration_ms": 473,
+      "start_srt": "00:00:40,213",
+      "end_srt": "00:00:40,686",
+      "text": "Debajo,",
+      "words": [
+        {
+          "word": "Debajo,",
+          "start_ms": 40213,
+          "end_ms": 40686,
+          "start_srt": "00:00:40,213",
+          "end_srt": "00:00:40,686",
+          "probability": 0.8674
+        }
+      ]
+    },
+    {
+      "index": 27,
+      "type": "silence",
+      "start_ms": 40686,
+      "end_ms": 40977,
+      "duration_ms": 291,
+      "start_srt": "00:00:40,686",
+      "end_srt": "00:00:40,977",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 28,
+      "type": "speech",
+      "start_ms": 40977,
+      "end_ms": 44912,
+      "duration_ms": 3935,
+      "start_srt": "00:00:40,977",
+      "end_srt": "00:00:44,912",
+      "text": "el sistema calcula automáticamente tres indicadores críticos con semáforo de color.",
+      "words": [
+        {
+          "word": "el",
+          "start_ms": 40977,
+          "end_ms": 41100,
+          "start_srt": "00:00:40,977",
+          "end_srt": "00:00:41,100",
+          "probability": 0.9449
+        },
+        {
+          "word": "sistema",
+          "start_ms": 41100,
+          "end_ms": 41380,
+          "start_srt": "00:00:41,100",
+          "end_srt": "00:00:41,380",
+          "probability": 0.989
+        },
+        {
+          "word": "calcula",
+          "start_ms": 41380,
+          "end_ms": 41860,
+          "start_srt": "00:00:41,380",
+          "end_srt": "00:00:41,860",
+          "probability": 0.9771
+        },
+        {
+          "word": "automáticamente",
+          "start_ms": 41860,
+          "end_ms": 42520,
+          "start_srt": "00:00:41,860",
+          "end_srt": "00:00:42,520",
+          "probability": 0.9806
+        },
+        {
+          "word": "tres",
+          "start_ms": 42520,
+          "end_ms": 42760,
+          "start_srt": "00:00:42,520",
+          "end_srt": "00:00:42,760",
+          "probability": 0.659
+        },
+        {
+          "word": "indicadores",
+          "start_ms": 42760,
+          "end_ms": 43300,
+          "start_srt": "00:00:42,760",
+          "end_srt": "00:00:43,300",
+          "probability": 0.9768
+        },
+        {
+          "word": "críticos",
+          "start_ms": 43300,
+          "end_ms": 43880,
+          "start_srt": "00:00:43,300",
+          "end_srt": "00:00:43,880",
+          "probability": 0.995
+        },
+        {
+          "word": "con",
+          "start_ms": 43880,
+          "end_ms": 44100,
+          "start_srt": "00:00:43,880",
+          "end_srt": "00:00:44,100",
+          "probability": 0.9756
+        },
+        {
+          "word": "semáforo",
+          "start_ms": 44100,
+          "end_ms": 44580,
+          "start_srt": "00:00:44,100",
+          "end_srt": "00:00:44,580",
+          "probability": 0.9831
+        },
+        {
+          "word": "de",
+          "start_ms": 44580,
+          "end_ms": 44730,
+          "start_srt": "00:00:44,580",
+          "end_srt": "00:00:44,730",
+          "probability": 0.9963
+        },
+        {
+          "word": "color.",
+          "start_ms": 44730,
+          "end_ms": 44912,
+          "start_srt": "00:00:44,730",
+          "end_srt": "00:00:44,912",
+          "probability": 0.9944
+        }
+      ]
+    },
+    {
+      "index": 29,
+      "type": "silence",
+      "start_ms": 44912,
+      "end_ms": 45346,
+      "duration_ms": 434,
+      "start_srt": "00:00:44,912",
+      "end_srt": "00:00:45,346",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 30,
+      "type": "speech",
+      "start_ms": 45346,
+      "end_ms": 47135,
+      "duration_ms": 1789,
+      "start_srt": "00:00:45,346",
+      "end_srt": "00:00:47,135",
+      "text": "La mortalidad en crías recién nacidas,",
+      "words": [
+        {
+          "word": "La",
+          "start_ms": 45346,
+          "end_ms": 45430,
+          "start_srt": "00:00:45,346",
+          "end_srt": "00:00:45,430",
+          "probability": 0.9686
+        },
+        {
+          "word": "mortalidad",
+          "start_ms": 45430,
+          "end_ms": 45870,
+          "start_srt": "00:00:45,430",
+          "end_srt": "00:00:45,870",
+          "probability": 0.9904
+        },
+        {
+          "word": "en",
+          "start_ms": 45870,
+          "end_ms": 46030,
+          "start_srt": "00:00:45,870",
+          "end_srt": "00:00:46,030",
+          "probability": 0.9167
+        },
+        {
+          "word": "crías",
+          "start_ms": 46030,
+          "end_ms": 46230,
+          "start_srt": "00:00:46,030",
+          "end_srt": "00:00:46,230",
+          "probability": 0.7597
+        },
+        {
+          "word": "recién",
+          "start_ms": 46230,
+          "end_ms": 46570,
+          "start_srt": "00:00:46,230",
+          "end_srt": "00:00:46,570",
+          "probability": 0.9435
+        },
+        {
+          "word": "nacidas,",
+          "start_ms": 46570,
+          "end_ms": 47135,
+          "start_srt": "00:00:46,570",
+          "end_srt": "00:00:47,135",
+          "probability": 0.9856
+        }
+      ]
+    },
+    {
+      "index": 31,
+      "type": "silence",
+      "start_ms": 47135,
+      "end_ms": 47505,
+      "duration_ms": 370,
+      "start_srt": "00:00:47,135",
+      "end_srt": "00:00:47,505",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 32,
+      "type": "speech",
+      "start_ms": 47505,
+      "end_ms": 50499,
+      "duration_ms": 2994,
+      "start_srt": "00:00:47,505",
+      "end_srt": "00:00:50,499",
+      "text": "la mortalidad general del hato y el porcentaje de animales vacunados.",
+      "words": [
+        {
+          "word": "la",
+          "start_ms": 47505,
+          "end_ms": 47600,
+          "start_srt": "00:00:47,505",
+          "end_srt": "00:00:47,600",
+          "probability": 0.9842
+        },
+        {
+          "word": "mortalidad",
+          "start_ms": 47600,
+          "end_ms": 48036,
+          "start_srt": "00:00:47,600",
+          "end_srt": "00:00:48,036",
+          "probability": 0.9972
+        },
+        {
+          "word": "general",
+          "start_ms": 48036,
+          "end_ms": 48361,
+          "start_srt": "00:00:48,036",
+          "end_srt": "00:00:48,361",
+          "probability": 0.9465
+        },
+        {
+          "word": "de",
+          "start_ms": 48361,
+          "end_ms": 48560,
+          "start_srt": "00:00:48,361",
+          "end_srt": "00:00:48,560",
+          "probability": 0.6657
+        },
+        {
+          "word": "lato",
+          "start_ms": 48560,
+          "end_ms": 48861,
+          "start_srt": "00:00:48,560",
+          "end_srt": "00:00:48,861",
+          "probability": 0.8165
+        },
+        {
+          "word": "y",
+          "start_ms": 48861,
+          "end_ms": 48980,
+          "start_srt": "00:00:48,861",
+          "end_srt": "00:00:48,980",
+          "probability": 0.9787
+        },
+        {
+          "word": "el",
+          "start_ms": 48980,
+          "end_ms": 49079,
+          "start_srt": "00:00:48,980",
+          "end_srt": "00:00:49,079",
+          "probability": 0.9984
+        },
+        {
+          "word": "porcentaje",
+          "start_ms": 49079,
+          "end_ms": 49640,
+          "start_srt": "00:00:49,079",
+          "end_srt": "00:00:49,640",
+          "probability": 0.9975
+        },
+        {
+          "word": "de",
+          "start_ms": 49640,
+          "end_ms": 49760,
+          "start_srt": "00:00:49,640",
+          "end_srt": "00:00:49,760",
+          "probability": 0.9974
+        },
+        {
+          "word": "animales",
+          "start_ms": 49760,
+          "end_ms": 49939,
+          "start_srt": "00:00:49,760",
+          "end_srt": "00:00:49,939",
+          "probability": 0.9988
+        },
+        {
+          "word": "vacunados.",
+          "start_ms": 49939,
+          "end_ms": 50499,
+          "start_srt": "00:00:49,939",
+          "end_srt": "00:00:50,499",
+          "probability": 0.9979
+        }
+      ]
+    },
+    {
+      "index": 33,
+      "type": "silence",
+      "start_ms": 50499,
+      "end_ms": 54193,
+      "duration_ms": 3694,
+      "start_srt": "00:00:50,499",
+      "end_srt": "00:00:54,193",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 34,
+      "type": "speech",
+      "start_ms": 54193,
+      "end_ms": 56976,
+      "duration_ms": 2783,
+      "start_srt": "00:00:54,193",
+      "end_srt": "00:00:56,976",
+      "text": "Y al final encontramos el bloque de cumplimiento regulatorio ICA,",
+      "words": [
+        {
+          "word": "Y",
+          "start_ms": 54193,
+          "end_ms": 54270,
+          "start_srt": "00:00:54,193",
+          "end_srt": "00:00:54,270",
+          "probability": 0.901
+        },
+        {
+          "word": "al",
+          "start_ms": 54270,
+          "end_ms": 54370,
+          "start_srt": "00:00:54,270",
+          "end_srt": "00:00:54,370",
+          "probability": 0.9836
+        },
+        {
+          "word": "final",
+          "start_ms": 54370,
+          "end_ms": 54550,
+          "start_srt": "00:00:54,370",
+          "end_srt": "00:00:54,550",
+          "probability": 0.9984
+        },
+        {
+          "word": "encontramos",
+          "start_ms": 54550,
+          "end_ms": 55050,
+          "start_srt": "00:00:54,550",
+          "end_srt": "00:00:55,050",
+          "probability": 0.9927
+        },
+        {
+          "word": "el",
+          "start_ms": 55050,
+          "end_ms": 55290,
+          "start_srt": "00:00:55,050",
+          "end_srt": "00:00:55,290",
+          "probability": 0.9933
+        },
+        {
+          "word": "bloque",
+          "start_ms": 55290,
+          "end_ms": 55470,
+          "start_srt": "00:00:55,290",
+          "end_srt": "00:00:55,470",
+          "probability": 0.8875
+        },
+        {
+          "word": "de",
+          "start_ms": 55470,
+          "end_ms": 55667,
+          "start_srt": "00:00:55,470",
+          "end_srt": "00:00:55,667",
+          "probability": 0.9884
+        },
+        {
+          "word": "cumplimiento",
+          "start_ms": 55667,
+          "end_ms": 55986,
+          "start_srt": "00:00:55,667",
+          "end_srt": "00:00:55,986",
+          "probability": 0.995
+        },
+        {
+          "word": "regulatorio",
+          "start_ms": 55986,
+          "end_ms": 56729,
+          "start_srt": "00:00:55,986",
+          "end_srt": "00:00:56,729",
+          "probability": 0.8741
+        },
+        {
+          "word": "ICA,",
+          "start_ms": 56729,
+          "end_ms": 56976,
+          "start_srt": "00:00:56,729",
+          "end_srt": "00:00:56,976",
+          "probability": 0.7075
+        }
+      ]
+    },
+    {
+      "index": 35,
+      "type": "silence",
+      "start_ms": 56976,
+      "end_ms": 57306,
+      "duration_ms": 330,
+      "start_srt": "00:00:56,976",
+      "end_srt": "00:00:57,306",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 36,
+      "type": "speech",
+      "start_ms": 57306,
+      "end_ms": 61885,
+      "duration_ms": 4579,
+      "start_srt": "00:00:57,306",
+      "end_srt": "00:01:01,885",
+      "text": "que evalúa de cero a cien que tan lista está tu finca frente a una visita o auditoría sanitaria oficial.",
+      "words": [
+        {
+          "word": "que",
+          "start_ms": 57306,
+          "end_ms": 57392,
+          "start_srt": "00:00:57,306",
+          "end_srt": "00:00:57,392",
+          "probability": 0.9834
+        },
+        {
+          "word": "evalúa",
+          "start_ms": 57392,
+          "end_ms": 57650,
+          "start_srt": "00:00:57,392",
+          "end_srt": "00:00:57,650",
+          "probability": 0.7901
+        },
+        {
+          "word": "de",
+          "start_ms": 57650,
+          "end_ms": 57810,
+          "start_srt": "00:00:57,650",
+          "end_srt": "00:00:57,810",
+          "probability": 0.8407
+        },
+        {
+          "word": "cero",
+          "start_ms": 57810,
+          "end_ms": 57950,
+          "start_srt": "00:00:57,810",
+          "end_srt": "00:00:57,950",
+          "probability": 0.8404
+        },
+        {
+          "word": "a",
+          "start_ms": 57950,
+          "end_ms": 58090,
+          "start_srt": "00:00:57,950",
+          "end_srt": "00:00:58,090",
+          "probability": 0.7933
+        },
+        {
+          "word": "cien",
+          "start_ms": 58090,
+          "end_ms": 58207,
+          "start_srt": "00:00:58,090",
+          "end_srt": "00:00:58,207",
+          "probability": 0.933
+        },
+        {
+          "word": "que",
+          "start_ms": 58207,
+          "end_ms": 58349,
+          "start_srt": "00:00:58,207",
+          "end_srt": "00:00:58,349",
+          "probability": 0.9678
+        },
+        {
+          "word": "tan",
+          "start_ms": 58349,
+          "end_ms": 58530,
+          "start_srt": "00:00:58,349",
+          "end_srt": "00:00:58,530",
+          "probability": 0.9794
+        },
+        {
+          "word": "lista",
+          "start_ms": 58530,
+          "end_ms": 58730,
+          "start_srt": "00:00:58,530",
+          "end_srt": "00:00:58,730",
+          "probability": 0.959
+        },
+        {
+          "word": "está",
+          "start_ms": 58730,
+          "end_ms": 58967,
+          "start_srt": "00:00:58,730",
+          "end_srt": "00:00:58,967",
+          "probability": 0.359
+        },
+        {
+          "word": "tu",
+          "start_ms": 58967,
+          "end_ms": 59105,
+          "start_srt": "00:00:58,967",
+          "end_srt": "00:00:59,105",
+          "probability": 0.9875
+        },
+        {
+          "word": "finca",
+          "start_ms": 59105,
+          "end_ms": 59435,
+          "start_srt": "00:00:59,105",
+          "end_srt": "00:00:59,435",
+          "probability": 0.9698
+        },
+        {
+          "word": "frente",
+          "start_ms": 59435,
+          "end_ms": 59661,
+          "start_srt": "00:00:59,435",
+          "end_srt": "00:00:59,661",
+          "probability": 0.9976
+        },
+        {
+          "word": "a",
+          "start_ms": 59661,
+          "end_ms": 59870,
+          "start_srt": "00:00:59,661",
+          "end_srt": "00:00:59,870",
+          "probability": 0.9927
+        },
+        {
+          "word": "una",
+          "start_ms": 59870,
+          "end_ms": 59970,
+          "start_srt": "00:00:59,870",
+          "end_srt": "00:00:59,970",
+          "probability": 0.9984
+        },
+        {
+          "word": "visita",
+          "start_ms": 59970,
+          "end_ms": 60415,
+          "start_srt": "00:00:59,970",
+          "end_srt": "00:01:00,415",
+          "probability": 0.9987
+        },
+        {
+          "word": "a",
+          "start_ms": 60415,
+          "end_ms": 60530,
+          "start_srt": "00:01:00,415",
+          "end_srt": "00:01:00,530",
+          "probability": 0.8724
+        },
+        {
+          "word": "auditoría",
+          "start_ms": 60530,
+          "end_ms": 60990,
+          "start_srt": "00:01:00,530",
+          "end_srt": "00:01:00,990",
+          "probability": 0.8244
+        },
+        {
+          "word": "sanitaria",
+          "start_ms": 60990,
+          "end_ms": 61467,
+          "start_srt": "00:01:00,990",
+          "end_srt": "00:01:01,467",
+          "probability": 0.9911
+        },
+        {
+          "word": "oficial.",
+          "start_ms": 61467,
+          "end_ms": 61885,
+          "start_srt": "00:01:01,467",
+          "end_srt": "00:01:01,885",
+          "probability": 0.995
+        }
+      ]
+    },
+    {
+      "index": 37,
+      "type": "silence",
+      "start_ms": 61885,
+      "end_ms": 66191,
+      "duration_ms": 4306,
+      "start_srt": "00:01:01,885",
+      "end_srt": "00:01:06,191",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 38,
+      "type": "speech",
+      "start_ms": 66191,
+      "end_ms": 68273,
+      "duration_ms": 2082,
+      "start_srt": "00:01:06,191",
+      "end_srt": "00:01:08,273",
+      "text": "A la derecha te califica tus tres pilares,",
+      "words": [
+        {
+          "word": "A",
+          "start_ms": 66191,
+          "end_ms": 66300,
+          "start_srt": "00:01:06,191",
+          "end_srt": "00:01:06,300",
+          "probability": 0.9471
+        },
+        {
+          "word": "la",
+          "start_ms": 66300,
+          "end_ms": 66380,
+          "start_srt": "00:01:06,300",
+          "end_srt": "00:01:06,380",
+          "probability": 0.998
+        },
+        {
+          "word": "derecha",
+          "start_ms": 66380,
+          "end_ms": 66672,
+          "start_srt": "00:01:06,380",
+          "end_srt": "00:01:06,672",
+          "probability": 0.9841
+        },
+        {
+          "word": "te",
+          "start_ms": 66672,
+          "end_ms": 66798,
+          "start_srt": "00:01:06,672",
+          "end_srt": "00:01:06,798",
+          "probability": 0.9744
+        },
+        {
+          "word": "califica",
+          "start_ms": 66798,
+          "end_ms": 67256,
+          "start_srt": "00:01:06,798",
+          "end_srt": "00:01:07,256",
+          "probability": 0.9667
+        },
+        {
+          "word": "tus",
+          "start_ms": 67256,
+          "end_ms": 67480,
+          "start_srt": "00:01:07,256",
+          "end_srt": "00:01:07,480",
+          "probability": 0.9752
+        },
+        {
+          "word": "tres",
+          "start_ms": 67480,
+          "end_ms": 67720,
+          "start_srt": "00:01:07,480",
+          "end_srt": "00:01:07,720",
+          "probability": 0.9243
+        },
+        {
+          "word": "pilares,",
+          "start_ms": 67720,
+          "end_ms": 68273,
+          "start_srt": "00:01:07,720",
+          "end_srt": "00:01:08,273",
+          "probability": 0.9599
+        }
+      ]
+    },
+    {
+      "index": 39,
+      "type": "silence",
+      "start_ms": 68273,
+      "end_ms": 68515,
+      "duration_ms": 242,
+      "start_srt": "00:01:08,273",
+      "end_srt": "00:01:08,515",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 40,
+      "type": "speech",
+      "start_ms": 68515,
+      "end_ms": 69898,
+      "duration_ms": 1383,
+      "start_srt": "00:01:08,515",
+      "end_srt": "00:01:09,898",
+      "text": "identificación de animales,",
+      "words": [
+        {
+          "word": "identificación",
+          "start_ms": 68515,
+          "end_ms": 69120,
+          "start_srt": "00:01:08,515",
+          "end_srt": "00:01:09,120",
+          "probability": 0.9443
+        },
+        {
+          "word": "de",
+          "start_ms": 69120,
+          "end_ms": 69340,
+          "start_srt": "00:01:09,120",
+          "end_srt": "00:01:09,340",
+          "probability": 0.9989
+        },
+        {
+          "word": "animales,",
+          "start_ms": 69340,
+          "end_ms": 69898,
+          "start_srt": "00:01:09,340",
+          "end_srt": "00:01:09,898",
+          "probability": 0.9976
+        }
+      ]
+    },
+    {
+      "index": 41,
+      "type": "silence",
+      "start_ms": 69898,
+      "end_ms": 70236,
+      "duration_ms": 338,
+      "start_srt": "00:01:09,898",
+      "end_srt": "00:01:10,236",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 42,
+      "type": "speech",
+      "start_ms": 70236,
+      "end_ms": 71945,
+      "duration_ms": 1709,
+      "start_srt": "00:01:10,236",
+      "end_srt": "00:01:11,945",
+      "text": "vacunas de ley y guías de transporte",
+      "words": [
+        {
+          "word": "vacunas",
+          "start_ms": 70236,
+          "end_ms": 70599,
+          "start_srt": "00:01:10,236",
+          "end_srt": "00:01:10,599",
+          "probability": 0.9654
+        },
+        {
+          "word": "de",
+          "start_ms": 70599,
+          "end_ms": 70740,
+          "start_srt": "00:01:10,599",
+          "end_srt": "00:01:10,740",
+          "probability": 0.9758
+        },
+        {
+          "word": "ley",
+          "start_ms": 70740,
+          "end_ms": 70880,
+          "start_srt": "00:01:10,740",
+          "end_srt": "00:01:10,880",
+          "probability": 0.9749
+        },
+        {
+          "word": "y",
+          "start_ms": 70880,
+          "end_ms": 71082,
+          "start_srt": "00:01:10,880",
+          "end_srt": "00:01:11,082",
+          "probability": 0.9491
+        },
+        {
+          "word": "guías",
+          "start_ms": 71082,
+          "end_ms": 71220,
+          "start_srt": "00:01:11,082",
+          "end_srt": "00:01:11,220",
+          "probability": 0.9793
+        },
+        {
+          "word": "de",
+          "start_ms": 71220,
+          "end_ms": 71312,
+          "start_srt": "00:01:11,220",
+          "end_srt": "00:01:11,312",
+          "probability": 0.9985
+        },
+        {
+          "word": "transporte",
+          "start_ms": 71312,
+          "end_ms": 71945,
+          "start_srt": "00:01:11,312",
+          "end_srt": "00:01:11,945",
+          "probability": 0.9975
+        }
+      ]
+    },
+    {
+      "index": 43,
+      "type": "silence",
+      "start_ms": 71945,
+      "end_ms": 72161,
+      "duration_ms": 216,
+      "start_srt": "00:01:11,945",
+      "end_srt": "00:01:12,161",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 44,
+      "type": "speech",
+      "start_ms": 72161,
+      "end_ms": 77752,
+      "duration_ms": 5591,
+      "start_srt": "00:01:12,161",
+      "end_srt": "00:01:17,752",
+      "text": "y abajo en acciones pendientes te dice con número exacto cuántos animales debes chapetear o vacunar para llegar al 100%.",
+      "words": [
+        {
+          "word": "y",
+          "start_ms": 72161,
+          "end_ms": 72220,
+          "start_srt": "00:01:12,161",
+          "end_srt": "00:01:12,220",
+          "probability": 0.663
+        },
+        {
+          "word": "abajo",
+          "start_ms": 72220,
+          "end_ms": 72380,
+          "start_srt": "00:01:12,220",
+          "end_srt": "00:01:12,380",
+          "probability": 0.8647
+        },
+        {
+          "word": "en",
+          "start_ms": 72380,
+          "end_ms": 72540,
+          "start_srt": "00:01:12,380",
+          "end_srt": "00:01:12,540",
+          "probability": 0.9928
+        },
+        {
+          "word": "acciones",
+          "start_ms": 72540,
+          "end_ms": 72840,
+          "start_srt": "00:01:12,540",
+          "end_srt": "00:01:12,840",
+          "probability": 0.9603
+        },
+        {
+          "word": "pendientes",
+          "start_ms": 72840,
+          "end_ms": 73347,
+          "start_srt": "00:01:12,840",
+          "end_srt": "00:01:13,347",
+          "probability": 0.9957
+        },
+        {
+          "word": "te",
+          "start_ms": 73347,
+          "end_ms": 73551,
+          "start_srt": "00:01:13,347",
+          "end_srt": "00:01:13,551",
+          "probability": 0.8694
+        },
+        {
+          "word": "dice",
+          "start_ms": 73551,
+          "end_ms": 73719,
+          "start_srt": "00:01:13,551",
+          "end_srt": "00:01:13,719",
+          "probability": 0.996
+        },
+        {
+          "word": "con",
+          "start_ms": 73719,
+          "end_ms": 73901,
+          "start_srt": "00:01:13,719",
+          "end_srt": "00:01:13,901",
+          "probability": 0.984
+        },
+        {
+          "word": "número",
+          "start_ms": 73901,
+          "end_ms": 74120,
+          "start_srt": "00:01:13,901",
+          "end_srt": "00:01:14,120",
+          "probability": 0.9482
+        },
+        {
+          "word": "exacto",
+          "start_ms": 74120,
+          "end_ms": 74620,
+          "start_srt": "00:01:14,120",
+          "end_srt": "00:01:14,620",
+          "probability": 0.9879
+        },
+        {
+          "word": "cuántos",
+          "start_ms": 74620,
+          "end_ms": 74940,
+          "start_srt": "00:01:14,620",
+          "end_srt": "00:01:14,940",
+          "probability": 0.8048
+        },
+        {
+          "word": "animales",
+          "start_ms": 74940,
+          "end_ms": 75200,
+          "start_srt": "00:01:14,940",
+          "end_srt": "00:01:15,200",
+          "probability": 0.9975
+        },
+        {
+          "word": "debes",
+          "start_ms": 75200,
+          "end_ms": 75620,
+          "start_srt": "00:01:15,200",
+          "end_srt": "00:01:15,620",
+          "probability": 0.9897
+        },
+        {
+          "word": "chapetear",
+          "start_ms": 75620,
+          "end_ms": 76120,
+          "start_srt": "00:01:15,620",
+          "end_srt": "00:01:16,120",
+          "probability": 0.9141
+        },
+        {
+          "word": "o",
+          "start_ms": 76120,
+          "end_ms": 76240,
+          "start_srt": "00:01:16,120",
+          "end_srt": "00:01:16,240",
+          "probability": 0.9949
+        },
+        {
+          "word": "vacunar",
+          "start_ms": 76240,
+          "end_ms": 76612,
+          "start_srt": "00:01:16,240",
+          "end_srt": "00:01:16,612",
+          "probability": 0.9245
+        },
+        {
+          "word": "para",
+          "start_ms": 76612,
+          "end_ms": 76800,
+          "start_srt": "00:01:16,612",
+          "end_srt": "00:01:16,800",
+          "probability": 0.9915
+        },
+        {
+          "word": "llegar",
+          "start_ms": 76800,
+          "end_ms": 77040,
+          "start_srt": "00:01:16,800",
+          "end_srt": "00:01:17,040",
+          "probability": 0.9987
+        },
+        {
+          "word": "al",
+          "start_ms": 77040,
+          "end_ms": 77240,
+          "start_srt": "00:01:17,040",
+          "end_srt": "00:01:17,240",
+          "probability": 0.9986
+        },
+        {
+          "word": "100%.",
+          "start_ms": 77240,
+          "end_ms": 77752,
+          "start_srt": "00:01:17,240",
+          "end_srt": "00:01:17,752",
+          "probability": 0.8616
+        }
+      ]
+    },
+    {
+      "index": 45,
+      "type": "silence",
+      "start_ms": 77752,
+      "end_ms": 82520,
+      "duration_ms": 4768,
+      "start_srt": "00:01:17,752",
+      "end_srt": "00:01:22,520",
+      "text": "[...]",
+      "words": []
+    }
+  ],
+  "words": [
+    {
+      "word": "Hola,",
+      "start_ms": 4030,
+      "end_ms": 4297,
+      "start_srt": "00:00:04,030",
+      "end_srt": "00:00:04,297",
+      "probability": 0.7255
+    },
+    {
+      "word": "bienvenido",
+      "start_ms": 5025,
+      "end_ms": 5410,
+      "start_srt": "00:00:05,025",
+      "end_srt": "00:00:05,410",
+      "probability": 0.9444
+    },
+    {
+      "word": "a",
+      "start_ms": 5410,
+      "end_ms": 5510,
+      "start_srt": "00:00:05,410",
+      "end_srt": "00:00:05,510",
+      "probability": 0.9471
+    },
+    {
+      "word": "un",
+      "start_ms": 5510,
+      "end_ms": 5530,
+      "start_srt": "00:00:05,510",
+      "end_srt": "00:00:05,530",
+      "probability": 0.9745
+    },
+    {
+      "word": "nuevo",
+      "start_ms": 5530,
+      "end_ms": 5630,
+      "start_srt": "00:00:05,530",
+      "end_srt": "00:00:05,630",
+      "probability": 0.9967
+    },
+    {
+      "word": "tutorial",
+      "start_ms": 5630,
+      "end_ms": 5910,
+      "start_srt": "00:00:05,630",
+      "end_srt": "00:00:05,910",
+      "probability": 0.985
+    },
+    {
+      "word": "de",
+      "start_ms": 5910,
+      "end_ms": 6090,
+      "start_srt": "00:00:05,910",
+      "end_srt": "00:00:06,090",
+      "probability": 0.9944
+    },
+    {
+      "word": "Datagan",
+      "start_ms": 6090,
+      "end_ms": 6350,
+      "start_srt": "00:00:06,090",
+      "end_srt": "00:00:06,350",
+      "probability": 0.3061
+    },
+    {
+      "word": "360.",
+      "start_ms": 6350,
+      "end_ms": 7162,
+      "start_srt": "00:00:06,350",
+      "end_srt": "00:00:07,162",
+      "probability": 0.8165
+    },
+    {
+      "word": "En",
+      "start_ms": 8151,
+      "end_ms": 8230,
+      "start_srt": "00:00:08,151",
+      "end_srt": "00:00:08,230",
+      "probability": 0.9584
+    },
+    {
+      "word": "la",
+      "start_ms": 8230,
+      "end_ms": 8310,
+      "start_srt": "00:00:08,230",
+      "end_srt": "00:00:08,310",
+      "probability": 0.9925
+    },
+    {
+      "word": "segunda",
+      "start_ms": 8310,
+      "end_ms": 8510,
+      "start_srt": "00:00:08,310",
+      "end_srt": "00:00:08,510",
+      "probability": 0.9663
+    },
+    {
+      "word": "pestaña",
+      "start_ms": 8510,
+      "end_ms": 8910,
+      "start_srt": "00:00:08,510",
+      "end_srt": "00:00:08,910",
+      "probability": 0.9838
+    },
+    {
+      "word": "del",
+      "start_ms": 8910,
+      "end_ms": 9010,
+      "start_srt": "00:00:08,910",
+      "end_srt": "00:00:09,010",
+      "probability": 0.7857
+    },
+    {
+      "word": "Dashboard,",
+      "start_ms": 9010,
+      "end_ms": 9350,
+      "start_srt": "00:00:09,010",
+      "end_srt": "00:00:09,350",
+      "probability": 0.6068
+    },
+    {
+      "word": "gestión",
+      "start_ms": 9656,
+      "end_ms": 9870,
+      "start_srt": "00:00:09,656",
+      "end_srt": "00:00:09,870",
+      "probability": 0.7982
+    },
+    {
+      "word": "operativa,",
+      "start_ms": 9870,
+      "end_ms": 10316,
+      "start_srt": "00:00:09,870",
+      "end_srt": "00:00:10,316",
+      "probability": 0.9944
+    },
+    {
+      "word": "se",
+      "start_ms": 10557,
+      "end_ms": 10650,
+      "start_srt": "00:00:10,557",
+      "end_srt": "00:00:10,650",
+      "probability": 0.9928
+    },
+    {
+      "word": "reflejan",
+      "start_ms": 10650,
+      "end_ms": 10937,
+      "start_srt": "00:00:10,650",
+      "end_srt": "00:00:10,937",
+      "probability": 0.9935
+    },
+    {
+      "word": "todos",
+      "start_ms": 10937,
+      "end_ms": 11090,
+      "start_srt": "00:00:10,937",
+      "end_srt": "00:00:11,090",
+      "probability": 0.9913
+    },
+    {
+      "word": "los",
+      "start_ms": 11090,
+      "end_ms": 11250,
+      "start_srt": "00:00:11,090",
+      "end_srt": "00:00:11,250",
+      "probability": 0.9979
+    },
+    {
+      "word": "eventos",
+      "start_ms": 11250,
+      "end_ms": 11512,
+      "start_srt": "00:00:11,250",
+      "end_srt": "00:00:11,512",
+      "probability": 0.9956
+    },
+    {
+      "word": "de",
+      "start_ms": 11512,
+      "end_ms": 11590,
+      "start_srt": "00:00:11,512",
+      "end_srt": "00:00:11,590",
+      "probability": 0.9986
+    },
+    {
+      "word": "salud",
+      "start_ms": 11590,
+      "end_ms": 11790,
+      "start_srt": "00:00:11,590",
+      "end_srt": "00:00:11,790",
+      "probability": 0.9793
+    },
+    {
+      "word": "y",
+      "start_ms": 11790,
+      "end_ms": 11930,
+      "start_srt": "00:00:11,790",
+      "end_srt": "00:00:11,930",
+      "probability": 0.9947
+    },
+    {
+      "word": "trazabilidad.",
+      "start_ms": 11930,
+      "end_ms": 12379,
+      "start_srt": "00:00:11,930",
+      "end_srt": "00:00:12,379",
+      "probability": 0.9252
+    },
+    {
+      "word": "Arriba",
+      "start_ms": 13118,
+      "end_ms": 13360,
+      "start_srt": "00:00:13,118",
+      "end_srt": "00:00:13,360",
+      "probability": 0.9432
+    },
+    {
+      "word": "ves",
+      "start_ms": 13360,
+      "end_ms": 13500,
+      "start_srt": "00:00:13,360",
+      "end_srt": "00:00:13,500",
+      "probability": 0.7213
+    },
+    {
+      "word": "la",
+      "start_ms": 13500,
+      "end_ms": 13620,
+      "start_srt": "00:00:13,500",
+      "end_srt": "00:00:13,620",
+      "probability": 0.7277
+    },
+    {
+      "word": "tasa",
+      "start_ms": 13620,
+      "end_ms": 13814,
+      "start_srt": "00:00:13,620",
+      "end_srt": "00:00:13,814",
+      "probability": 0.9551
+    },
+    {
+      "word": "de",
+      "start_ms": 13814,
+      "end_ms": 13934,
+      "start_srt": "00:00:13,814",
+      "end_srt": "00:00:13,934",
+      "probability": 0.9927
+    },
+    {
+      "word": "preñes",
+      "start_ms": 13934,
+      "end_ms": 14100,
+      "start_srt": "00:00:13,934",
+      "end_srt": "00:00:14,100",
+      "probability": 0.8419
+    },
+    {
+      "word": "e",
+      "start_ms": 14100,
+      "end_ms": 14199,
+      "start_srt": "00:00:14,100",
+      "end_srt": "00:00:14,199",
+      "probability": 0.4425
+    },
+    {
+      "word": "interpartos",
+      "start_ms": 14199,
+      "end_ms": 14647,
+      "start_srt": "00:00:14,199",
+      "end_srt": "00:00:14,647",
+      "probability": 0.7943
+    },
+    {
+      "word": "y",
+      "start_ms": 14647,
+      "end_ms": 14980,
+      "start_srt": "00:00:14,647",
+      "end_srt": "00:00:14,980",
+      "probability": 0.3371
+    },
+    {
+      "word": "debajo",
+      "start_ms": 14980,
+      "end_ms": 15160,
+      "start_srt": "00:00:14,980",
+      "end_srt": "00:00:15,160",
+      "probability": 0.975
+    },
+    {
+      "word": "el",
+      "start_ms": 15160,
+      "end_ms": 15240,
+      "start_srt": "00:00:15,160",
+      "end_srt": "00:00:15,240",
+      "probability": 0.9617
+    },
+    {
+      "word": "monitor",
+      "start_ms": 15240,
+      "end_ms": 15464,
+      "start_srt": "00:00:15,240",
+      "end_srt": "00:00:15,464",
+      "probability": 0.9871
+    },
+    {
+      "word": "de",
+      "start_ms": 15464,
+      "end_ms": 15562,
+      "start_srt": "00:00:15,464",
+      "end_srt": "00:00:15,562",
+      "probability": 0.9863
+    },
+    {
+      "word": "clima",
+      "start_ms": 15562,
+      "end_ms": 15820,
+      "start_srt": "00:00:15,562",
+      "end_srt": "00:00:15,820",
+      "probability": 0.9876
+    },
+    {
+      "word": "y",
+      "start_ms": 15820,
+      "end_ms": 15860,
+      "start_srt": "00:00:15,820",
+      "end_srt": "00:00:15,860",
+      "probability": 0.7296
+    },
+    {
+      "word": "estrés",
+      "start_ms": 15860,
+      "end_ms": 16033,
+      "start_srt": "00:00:15,860",
+      "end_srt": "00:00:16,033",
+      "probability": 0.9807
+    },
+    {
+      "word": "calórico",
+      "start_ms": 16033,
+      "end_ms": 16370,
+      "start_srt": "00:00:16,033",
+      "end_srt": "00:00:16,370",
+      "probability": 0.9342
+    },
+    {
+      "word": "que",
+      "start_ms": 16370,
+      "end_ms": 16521,
+      "start_srt": "00:00:16,370",
+      "end_srt": "00:00:16,521",
+      "probability": 0.9341
+    },
+    {
+      "word": "mide",
+      "start_ms": 16521,
+      "end_ms": 16593,
+      "start_srt": "00:00:16,521",
+      "end_srt": "00:00:16,593",
+      "probability": 0.9624
+    },
+    {
+      "word": "como",
+      "start_ms": 16593,
+      "end_ms": 16759,
+      "start_srt": "00:00:16,593",
+      "end_srt": "00:00:16,759",
+      "probability": 0.8779
+    },
+    {
+      "word": "el",
+      "start_ms": 16759,
+      "end_ms": 16905,
+      "start_srt": "00:00:16,759",
+      "end_srt": "00:00:16,905",
+      "probability": 0.9923
+    },
+    {
+      "word": "calor",
+      "start_ms": 16905,
+      "end_ms": 16978,
+      "start_srt": "00:00:16,905",
+      "end_srt": "00:00:16,978",
+      "probability": 0.9954
+    },
+    {
+      "word": "afecta",
+      "start_ms": 16978,
+      "end_ms": 17310,
+      "start_srt": "00:00:16,978",
+      "end_srt": "00:00:17,310",
+      "probability": 0.9967
+    },
+    {
+      "word": "tu",
+      "start_ms": 17310,
+      "end_ms": 17447,
+      "start_srt": "00:00:17,310",
+      "end_srt": "00:00:17,447",
+      "probability": 0.6574
+    },
+    {
+      "word": "ordeño.",
+      "start_ms": 17447,
+      "end_ms": 17638,
+      "start_srt": "00:00:17,447",
+      "end_srt": "00:00:17,638",
+      "probability": 0.937
+    },
+    {
+      "word": "Al",
+      "start_ms": 18662,
+      "end_ms": 18770,
+      "start_srt": "00:00:18,662",
+      "end_srt": "00:00:18,770",
+      "probability": 0.9839
+    },
+    {
+      "word": "bajar",
+      "start_ms": 18770,
+      "end_ms": 18970,
+      "start_srt": "00:00:18,770",
+      "end_srt": "00:00:18,970",
+      "probability": 0.995
+    },
+    {
+      "word": "a",
+      "start_ms": 18970,
+      "end_ms": 19050,
+      "start_srt": "00:00:18,970",
+      "end_srt": "00:00:19,050",
+      "probability": 0.7671
+    },
+    {
+      "word": "salud",
+      "start_ms": 19050,
+      "end_ms": 19210,
+      "start_srt": "00:00:19,050",
+      "end_srt": "00:00:19,210",
+      "probability": 0.9926
+    },
+    {
+      "word": "de",
+      "start_ms": 19210,
+      "end_ms": 19370,
+      "start_srt": "00:00:19,210",
+      "end_srt": "00:00:19,370",
+      "probability": 0.6601
+    },
+    {
+      "word": "lato,",
+      "start_ms": 19370,
+      "end_ms": 19616,
+      "start_srt": "00:00:19,370",
+      "end_srt": "00:00:19,616",
+      "probability": 0.9175
+    },
+    {
+      "word": "estas",
+      "start_ms": 19911,
+      "end_ms": 20061,
+      "start_srt": "00:00:19,911",
+      "end_srt": "00:00:20,061",
+      "probability": 0.9746
+    },
+    {
+      "word": "cuatro",
+      "start_ms": 20061,
+      "end_ms": 20250,
+      "start_srt": "00:00:20,061",
+      "end_srt": "00:00:20,250",
+      "probability": 0.8597
+    },
+    {
+      "word": "tarjetas",
+      "start_ms": 20250,
+      "end_ms": 20658,
+      "start_srt": "00:00:20,250",
+      "end_srt": "00:00:20,658",
+      "probability": 0.9324
+    },
+    {
+      "word": "resumen",
+      "start_ms": 20658,
+      "end_ms": 20910,
+      "start_srt": "00:00:20,658",
+      "end_srt": "00:00:20,910",
+      "probability": 0.9579
+    },
+    {
+      "word": "lo",
+      "start_ms": 20910,
+      "end_ms": 21065,
+      "start_srt": "00:00:20,910",
+      "end_srt": "00:00:21,065",
+      "probability": 0.9946
+    },
+    {
+      "word": "ocurrido",
+      "start_ms": 21065,
+      "end_ms": 21310,
+      "start_srt": "00:00:21,065",
+      "end_srt": "00:00:21,310",
+      "probability": 0.9755
+    },
+    {
+      "word": "en",
+      "start_ms": 21310,
+      "end_ms": 21428,
+      "start_srt": "00:00:21,310",
+      "end_srt": "00:00:21,428",
+      "probability": 0.9929
+    },
+    {
+      "word": "los",
+      "start_ms": 21428,
+      "end_ms": 21490,
+      "start_srt": "00:00:21,428",
+      "end_srt": "00:00:21,490",
+      "probability": 0.9976
+    },
+    {
+      "word": "últimos",
+      "start_ms": 21490,
+      "end_ms": 21710,
+      "start_srt": "00:00:21,490",
+      "end_srt": "00:00:21,710",
+      "probability": 0.9971
+    },
+    {
+      "word": "30",
+      "start_ms": 21710,
+      "end_ms": 21942,
+      "start_srt": "00:00:21,710",
+      "end_srt": "00:00:21,942",
+      "probability": 0.7904
+    },
+    {
+      "word": "días",
+      "start_ms": 21942,
+      "end_ms": 22250,
+      "start_srt": "00:00:21,942",
+      "end_srt": "00:00:22,250",
+      "probability": 0.9981
+    },
+    {
+      "word": "en",
+      "start_ms": 22250,
+      "end_ms": 22410,
+      "start_srt": "00:00:22,250",
+      "end_srt": "00:00:22,410",
+      "probability": 0.9639
+    },
+    {
+      "word": "el",
+      "start_ms": 22410,
+      "end_ms": 22490,
+      "start_srt": "00:00:22,410",
+      "end_srt": "00:00:22,490",
+      "probability": 0.9978
+    },
+    {
+      "word": "módulo",
+      "start_ms": 22490,
+      "end_ms": 22690,
+      "start_srt": "00:00:22,490",
+      "end_srt": "00:00:22,690",
+      "probability": 0.9797
+    },
+    {
+      "word": "de",
+      "start_ms": 22690,
+      "end_ms": 22790,
+      "start_srt": "00:00:22,690",
+      "end_srt": "00:00:22,790",
+      "probability": 0.9987
+    },
+    {
+      "word": "trazabilidad.",
+      "start_ms": 22790,
+      "end_ms": 23295,
+      "start_srt": "00:00:22,790",
+      "end_srt": "00:00:23,295",
+      "probability": 0.9512
+    },
+    {
+      "word": "¿Cuántos",
+      "start_ms": 23542,
+      "end_ms": 23750,
+      "start_srt": "00:00:23,542",
+      "end_srt": "00:00:23,750",
+      "probability": 0.8799
+    },
+    {
+      "word": "animales",
+      "start_ms": 23750,
+      "end_ms": 23950,
+      "start_srt": "00:00:23,750",
+      "end_srt": "00:00:23,950",
+      "probability": 0.9975
+    },
+    {
+      "word": "siguen",
+      "start_ms": 23950,
+      "end_ms": 24310,
+      "start_srt": "00:00:23,950",
+      "end_srt": "00:00:24,310",
+      "probability": 0.989
+    },
+    {
+      "word": "enfermos?",
+      "start_ms": 24310,
+      "end_ms": 24800,
+      "start_srt": "00:00:24,310",
+      "end_srt": "00:00:24,800",
+      "probability": 0.9502
+    },
+    {
+      "word": "¿Cuántos",
+      "start_ms": 25055,
+      "end_ms": 25250,
+      "start_srt": "00:00:25,055",
+      "end_srt": "00:00:25,250",
+      "probability": 0.9699
+    },
+    {
+      "word": "están",
+      "start_ms": 25250,
+      "end_ms": 25470,
+      "start_srt": "00:00:25,250",
+      "end_srt": "00:00:25,470",
+      "probability": 0.9909
+    },
+    {
+      "word": "en",
+      "start_ms": 25470,
+      "end_ms": 25590,
+      "start_srt": "00:00:25,470",
+      "end_srt": "00:00:25,590",
+      "probability": 0.999
+    },
+    {
+      "word": "tratamiento?",
+      "start_ms": 25590,
+      "end_ms": 26102,
+      "start_srt": "00:00:25,590",
+      "end_srt": "00:00:26,102",
+      "probability": 0.9982
+    },
+    {
+      "word": "¿Vacunas",
+      "start_ms": 26345,
+      "end_ms": 26670,
+      "start_srt": "00:00:26,345",
+      "end_srt": "00:00:26,670",
+      "probability": 0.8094
+    },
+    {
+      "word": "aplicadas",
+      "start_ms": 26670,
+      "end_ms": 27050,
+      "start_srt": "00:00:26,670",
+      "end_srt": "00:00:27,050",
+      "probability": 0.9966
+    },
+    {
+      "word": "y",
+      "start_ms": 27050,
+      "end_ms": 27241,
+      "start_srt": "00:00:27,050",
+      "end_srt": "00:00:27,241",
+      "probability": 0.8754
+    },
+    {
+      "word": "el",
+      "start_ms": 27241,
+      "end_ms": 27330,
+      "start_srt": "00:00:27,241",
+      "end_srt": "00:00:27,330",
+      "probability": 0.988
+    },
+    {
+      "word": "gráfico",
+      "start_ms": 27330,
+      "end_ms": 27625,
+      "start_srt": "00:00:27,330",
+      "end_srt": "00:00:27,625",
+      "probability": 0.9968
+    },
+    {
+      "word": "con",
+      "start_ms": 27625,
+      "end_ms": 27771,
+      "start_srt": "00:00:27,625",
+      "end_srt": "00:00:27,771",
+      "probability": 0.991
+    },
+    {
+      "word": "las",
+      "start_ms": 27771,
+      "end_ms": 27860,
+      "start_srt": "00:00:27,771",
+      "end_srt": "00:00:27,860",
+      "probability": 0.9936
+    },
+    {
+      "word": "patologías",
+      "start_ms": 27860,
+      "end_ms": 28310,
+      "start_srt": "00:00:27,860",
+      "end_srt": "00:00:28,310",
+      "probability": 0.9972
+    },
+    {
+      "word": "predominantes?",
+      "start_ms": 28310,
+      "end_ms": 28992,
+      "start_srt": "00:00:28,310",
+      "end_srt": "00:00:28,992",
+      "probability": 0.9932
+    },
+    {
+      "word": "Mira",
+      "start_ms": 30174,
+      "end_ms": 30330,
+      "start_srt": "00:00:30,174",
+      "end_srt": "00:00:30,330",
+      "probability": 0.8388
+    },
+    {
+      "word": "lo",
+      "start_ms": 30330,
+      "end_ms": 30470,
+      "start_srt": "00:00:30,330",
+      "end_srt": "00:00:30,470",
+      "probability": 0.9982
+    },
+    {
+      "word": "que",
+      "start_ms": 30470,
+      "end_ms": 30551,
+      "start_srt": "00:00:30,470",
+      "end_srt": "00:00:30,551",
+      "probability": 0.9991
+    },
+    {
+      "word": "ocurre",
+      "start_ms": 30551,
+      "end_ms": 30830,
+      "start_srt": "00:00:30,551",
+      "end_srt": "00:00:30,830",
+      "probability": 0.9894
+    },
+    {
+      "word": "en",
+      "start_ms": 30830,
+      "end_ms": 30930,
+      "start_srt": "00:00:30,830",
+      "end_srt": "00:00:30,930",
+      "probability": 0.9949
+    },
+    {
+      "word": "control",
+      "start_ms": 30930,
+      "end_ms": 31170,
+      "start_srt": "00:00:30,930",
+      "end_srt": "00:00:31,170",
+      "probability": 0.795
+    },
+    {
+      "word": "sanitario",
+      "start_ms": 31170,
+      "end_ms": 31609,
+      "start_srt": "00:00:31,170",
+      "end_srt": "00:00:31,609",
+      "probability": 0.9915
+    },
+    {
+      "word": "cuando",
+      "start_ms": 31609,
+      "end_ms": 31770,
+      "start_srt": "00:00:31,609",
+      "end_srt": "00:00:31,770",
+      "probability": 0.9169
+    },
+    {
+      "word": "varios",
+      "start_ms": 31770,
+      "end_ms": 32030,
+      "start_srt": "00:00:31,770",
+      "end_srt": "00:00:32,030",
+      "probability": 0.9964
+    },
+    {
+      "word": "animales",
+      "start_ms": 32030,
+      "end_ms": 32330,
+      "start_srt": "00:00:32,030",
+      "end_srt": "00:00:32,330",
+      "probability": 0.9985
+    },
+    {
+      "word": "presentan",
+      "start_ms": 32330,
+      "end_ms": 32830,
+      "start_srt": "00:00:32,330",
+      "end_srt": "00:00:32,830",
+      "probability": 0.9823
+    },
+    {
+      "word": "la",
+      "start_ms": 32830,
+      "end_ms": 32930,
+      "start_srt": "00:00:32,830",
+      "end_srt": "00:00:32,930",
+      "probability": 0.9976
+    },
+    {
+      "word": "misma",
+      "start_ms": 32930,
+      "end_ms": 33090,
+      "start_srt": "00:00:32,930",
+      "end_srt": "00:00:33,090",
+      "probability": 0.9991
+    },
+    {
+      "word": "enfermedad",
+      "start_ms": 33090,
+      "end_ms": 33570,
+      "start_srt": "00:00:33,090",
+      "end_srt": "00:00:33,570",
+      "probability": 0.9983
+    },
+    {
+      "word": "en",
+      "start_ms": 33570,
+      "end_ms": 33691,
+      "start_srt": "00:00:33,570",
+      "end_srt": "00:00:33,691",
+      "probability": 0.9844
+    },
+    {
+      "word": "corto",
+      "start_ms": 33691,
+      "end_ms": 33929,
+      "start_srt": "00:00:33,691",
+      "end_srt": "00:00:33,929",
+      "probability": 0.9728
+    },
+    {
+      "word": "tiempo.",
+      "start_ms": 33929,
+      "end_ms": 34170,
+      "start_srt": "00:00:33,929",
+      "end_srt": "00:00:34,170",
+      "probability": 0.9995
+    },
+    {
+      "word": "El",
+      "start_ms": 34170,
+      "end_ms": 34655,
+      "start_srt": "00:00:34,170",
+      "end_srt": "00:00:34,655",
+      "probability": 0.0888
+    },
+    {
+      "word": "sistema",
+      "start_ms": 34655,
+      "end_ms": 34960,
+      "start_srt": "00:00:34,655",
+      "end_srt": "00:00:34,960",
+      "probability": 0.9339
+    },
+    {
+      "word": "enciende",
+      "start_ms": 34960,
+      "end_ms": 35280,
+      "start_srt": "00:00:34,960",
+      "end_srt": "00:00:35,280",
+      "probability": 0.9099
+    },
+    {
+      "word": "esta",
+      "start_ms": 35280,
+      "end_ms": 35476,
+      "start_srt": "00:00:35,280",
+      "end_srt": "00:00:35,476",
+      "probability": 0.9399
+    },
+    {
+      "word": "alerta",
+      "start_ms": 35476,
+      "end_ms": 35724,
+      "start_srt": "00:00:35,476",
+      "end_srt": "00:00:35,724",
+      "probability": 0.9933
+    },
+    {
+      "word": "de",
+      "start_ms": 35724,
+      "end_ms": 35820,
+      "start_srt": "00:00:35,724",
+      "end_srt": "00:00:35,820",
+      "probability": 0.89
+    },
+    {
+      "word": "brote",
+      "start_ms": 35820,
+      "end_ms": 35984,
+      "start_srt": "00:00:35,820",
+      "end_srt": "00:00:35,984",
+      "probability": 0.7652
+    },
+    {
+      "word": "epidemiológico",
+      "start_ms": 35984,
+      "end_ms": 36577,
+      "start_srt": "00:00:35,984",
+      "end_srt": "00:00:36,577",
+      "probability": 0.9931
+    },
+    {
+      "word": "indicando",
+      "start_ms": 36577,
+      "end_ms": 36960,
+      "start_srt": "00:00:36,577",
+      "end_srt": "00:00:36,960",
+      "probability": 0.9752
+    },
+    {
+      "word": "el",
+      "start_ms": 36960,
+      "end_ms": 37100,
+      "start_srt": "00:00:36,960",
+      "end_srt": "00:00:37,100",
+      "probability": 0.9406
+    },
+    {
+      "word": "nivel",
+      "start_ms": 37100,
+      "end_ms": 37240,
+      "start_srt": "00:00:37,100",
+      "end_srt": "00:00:37,240",
+      "probability": 0.9951
+    },
+    {
+      "word": "de",
+      "start_ms": 37240,
+      "end_ms": 37380,
+      "start_srt": "00:00:37,240",
+      "end_srt": "00:00:37,380",
+      "probability": 0.9984
+    },
+    {
+      "word": "severidad",
+      "start_ms": 37380,
+      "end_ms": 37757,
+      "start_srt": "00:00:37,380",
+      "end_srt": "00:00:37,757",
+      "probability": 0.9637
+    },
+    {
+      "word": "para",
+      "start_ms": 37757,
+      "end_ms": 37944,
+      "start_srt": "00:00:37,757",
+      "end_srt": "00:00:37,944",
+      "probability": 0.9755
+    },
+    {
+      "word": "que",
+      "start_ms": 37944,
+      "end_ms": 38093,
+      "start_srt": "00:00:37,944",
+      "end_srt": "00:00:38,093",
+      "probability": 0.9965
+    },
+    {
+      "word": "actúes",
+      "start_ms": 38093,
+      "end_ms": 38379,
+      "start_srt": "00:00:38,093",
+      "end_srt": "00:00:38,379",
+      "probability": 0.8796
+    },
+    {
+      "word": "de",
+      "start_ms": 38379,
+      "end_ms": 38463,
+      "start_srt": "00:00:38,379",
+      "end_srt": "00:00:38,463",
+      "probability": 0.998
+    },
+    {
+      "word": "inmediato.",
+      "start_ms": 38463,
+      "end_ms": 38909,
+      "start_srt": "00:00:38,463",
+      "end_srt": "00:00:38,909",
+      "probability": 0.995
+    },
+    {
+      "word": "Debajo,",
+      "start_ms": 40213,
+      "end_ms": 40686,
+      "start_srt": "00:00:40,213",
+      "end_srt": "00:00:40,686",
+      "probability": 0.8674
+    },
+    {
+      "word": "el",
+      "start_ms": 40977,
+      "end_ms": 41100,
+      "start_srt": "00:00:40,977",
+      "end_srt": "00:00:41,100",
+      "probability": 0.9449
+    },
+    {
+      "word": "sistema",
+      "start_ms": 41100,
+      "end_ms": 41380,
+      "start_srt": "00:00:41,100",
+      "end_srt": "00:00:41,380",
+      "probability": 0.989
+    },
+    {
+      "word": "calcula",
+      "start_ms": 41380,
+      "end_ms": 41860,
+      "start_srt": "00:00:41,380",
+      "end_srt": "00:00:41,860",
+      "probability": 0.9771
+    },
+    {
+      "word": "automáticamente",
+      "start_ms": 41860,
+      "end_ms": 42520,
+      "start_srt": "00:00:41,860",
+      "end_srt": "00:00:42,520",
+      "probability": 0.9806
+    },
+    {
+      "word": "tres",
+      "start_ms": 42520,
+      "end_ms": 42760,
+      "start_srt": "00:00:42,520",
+      "end_srt": "00:00:42,760",
+      "probability": 0.659
+    },
+    {
+      "word": "indicadores",
+      "start_ms": 42760,
+      "end_ms": 43300,
+      "start_srt": "00:00:42,760",
+      "end_srt": "00:00:43,300",
+      "probability": 0.9768
+    },
+    {
+      "word": "críticos",
+      "start_ms": 43300,
+      "end_ms": 43880,
+      "start_srt": "00:00:43,300",
+      "end_srt": "00:00:43,880",
+      "probability": 0.995
+    },
+    {
+      "word": "con",
+      "start_ms": 43880,
+      "end_ms": 44100,
+      "start_srt": "00:00:43,880",
+      "end_srt": "00:00:44,100",
+      "probability": 0.9756
+    },
+    {
+      "word": "semáforo",
+      "start_ms": 44100,
+      "end_ms": 44580,
+      "start_srt": "00:00:44,100",
+      "end_srt": "00:00:44,580",
+      "probability": 0.9831
+    },
+    {
+      "word": "de",
+      "start_ms": 44580,
+      "end_ms": 44730,
+      "start_srt": "00:00:44,580",
+      "end_srt": "00:00:44,730",
+      "probability": 0.9963
+    },
+    {
+      "word": "color.",
+      "start_ms": 44730,
+      "end_ms": 44912,
+      "start_srt": "00:00:44,730",
+      "end_srt": "00:00:44,912",
+      "probability": 0.9944
+    },
+    {
+      "word": "La",
+      "start_ms": 45346,
+      "end_ms": 45430,
+      "start_srt": "00:00:45,346",
+      "end_srt": "00:00:45,430",
+      "probability": 0.9686
+    },
+    {
+      "word": "mortalidad",
+      "start_ms": 45430,
+      "end_ms": 45870,
+      "start_srt": "00:00:45,430",
+      "end_srt": "00:00:45,870",
+      "probability": 0.9904
+    },
+    {
+      "word": "en",
+      "start_ms": 45870,
+      "end_ms": 46030,
+      "start_srt": "00:00:45,870",
+      "end_srt": "00:00:46,030",
+      "probability": 0.9167
+    },
+    {
+      "word": "crías",
+      "start_ms": 46030,
+      "end_ms": 46230,
+      "start_srt": "00:00:46,030",
+      "end_srt": "00:00:46,230",
+      "probability": 0.7597
+    },
+    {
+      "word": "recién",
+      "start_ms": 46230,
+      "end_ms": 46570,
+      "start_srt": "00:00:46,230",
+      "end_srt": "00:00:46,570",
+      "probability": 0.9435
+    },
+    {
+      "word": "nacidas,",
+      "start_ms": 46570,
+      "end_ms": 47135,
+      "start_srt": "00:00:46,570",
+      "end_srt": "00:00:47,135",
+      "probability": 0.9856
+    },
+    {
+      "word": "la",
+      "start_ms": 47505,
+      "end_ms": 47600,
+      "start_srt": "00:00:47,505",
+      "end_srt": "00:00:47,600",
+      "probability": 0.9842
+    },
+    {
+      "word": "mortalidad",
+      "start_ms": 47600,
+      "end_ms": 48036,
+      "start_srt": "00:00:47,600",
+      "end_srt": "00:00:48,036",
+      "probability": 0.9972
+    },
+    {
+      "word": "general",
+      "start_ms": 48036,
+      "end_ms": 48361,
+      "start_srt": "00:00:48,036",
+      "end_srt": "00:00:48,361",
+      "probability": 0.9465
+    },
+    {
+      "word": "de",
+      "start_ms": 48361,
+      "end_ms": 48560,
+      "start_srt": "00:00:48,361",
+      "end_srt": "00:00:48,560",
+      "probability": 0.6657
+    },
+    {
+      "word": "lato",
+      "start_ms": 48560,
+      "end_ms": 48861,
+      "start_srt": "00:00:48,560",
+      "end_srt": "00:00:48,861",
+      "probability": 0.8165
+    },
+    {
+      "word": "y",
+      "start_ms": 48861,
+      "end_ms": 48980,
+      "start_srt": "00:00:48,861",
+      "end_srt": "00:00:48,980",
+      "probability": 0.9787
+    },
+    {
+      "word": "el",
+      "start_ms": 48980,
+      "end_ms": 49079,
+      "start_srt": "00:00:48,980",
+      "end_srt": "00:00:49,079",
+      "probability": 0.9984
+    },
+    {
+      "word": "porcentaje",
+      "start_ms": 49079,
+      "end_ms": 49640,
+      "start_srt": "00:00:49,079",
+      "end_srt": "00:00:49,640",
+      "probability": 0.9975
+    },
+    {
+      "word": "de",
+      "start_ms": 49640,
+      "end_ms": 49760,
+      "start_srt": "00:00:49,640",
+      "end_srt": "00:00:49,760",
+      "probability": 0.9974
+    },
+    {
+      "word": "animales",
+      "start_ms": 49760,
+      "end_ms": 49939,
+      "start_srt": "00:00:49,760",
+      "end_srt": "00:00:49,939",
+      "probability": 0.9988
+    },
+    {
+      "word": "vacunados.",
+      "start_ms": 49939,
+      "end_ms": 50499,
+      "start_srt": "00:00:49,939",
+      "end_srt": "00:00:50,499",
+      "probability": 0.9979
+    },
+    {
+      "word": "Y",
+      "start_ms": 54193,
+      "end_ms": 54270,
+      "start_srt": "00:00:54,193",
+      "end_srt": "00:00:54,270",
+      "probability": 0.901
+    },
+    {
+      "word": "al",
+      "start_ms": 54270,
+      "end_ms": 54370,
+      "start_srt": "00:00:54,270",
+      "end_srt": "00:00:54,370",
+      "probability": 0.9836
+    },
+    {
+      "word": "final",
+      "start_ms": 54370,
+      "end_ms": 54550,
+      "start_srt": "00:00:54,370",
+      "end_srt": "00:00:54,550",
+      "probability": 0.9984
+    },
+    {
+      "word": "encontramos",
+      "start_ms": 54550,
+      "end_ms": 55050,
+      "start_srt": "00:00:54,550",
+      "end_srt": "00:00:55,050",
+      "probability": 0.9927
+    },
+    {
+      "word": "el",
+      "start_ms": 55050,
+      "end_ms": 55290,
+      "start_srt": "00:00:55,050",
+      "end_srt": "00:00:55,290",
+      "probability": 0.9933
+    },
+    {
+      "word": "bloque",
+      "start_ms": 55290,
+      "end_ms": 55470,
+      "start_srt": "00:00:55,290",
+      "end_srt": "00:00:55,470",
+      "probability": 0.8875
+    },
+    {
+      "word": "de",
+      "start_ms": 55470,
+      "end_ms": 55667,
+      "start_srt": "00:00:55,470",
+      "end_srt": "00:00:55,667",
+      "probability": 0.9884
+    },
+    {
+      "word": "cumplimiento",
+      "start_ms": 55667,
+      "end_ms": 55986,
+      "start_srt": "00:00:55,667",
+      "end_srt": "00:00:55,986",
+      "probability": 0.995
+    },
+    {
+      "word": "regulatorio",
+      "start_ms": 55986,
+      "end_ms": 56729,
+      "start_srt": "00:00:55,986",
+      "end_srt": "00:00:56,729",
+      "probability": 0.8741
+    },
+    {
+      "word": "ICA,",
+      "start_ms": 56729,
+      "end_ms": 56976,
+      "start_srt": "00:00:56,729",
+      "end_srt": "00:00:56,976",
+      "probability": 0.7075
+    },
+    {
+      "word": "que",
+      "start_ms": 57306,
+      "end_ms": 57392,
+      "start_srt": "00:00:57,306",
+      "end_srt": "00:00:57,392",
+      "probability": 0.9834
+    },
+    {
+      "word": "evalúa",
+      "start_ms": 57392,
+      "end_ms": 57650,
+      "start_srt": "00:00:57,392",
+      "end_srt": "00:00:57,650",
+      "probability": 0.7901
+    },
+    {
+      "word": "de",
+      "start_ms": 57650,
+      "end_ms": 57810,
+      "start_srt": "00:00:57,650",
+      "end_srt": "00:00:57,810",
+      "probability": 0.8407
+    },
+    {
+      "word": "cero",
+      "start_ms": 57810,
+      "end_ms": 57950,
+      "start_srt": "00:00:57,810",
+      "end_srt": "00:00:57,950",
+      "probability": 0.8404
+    },
+    {
+      "word": "a",
+      "start_ms": 57950,
+      "end_ms": 58090,
+      "start_srt": "00:00:57,950",
+      "end_srt": "00:00:58,090",
+      "probability": 0.7933
+    },
+    {
+      "word": "cien",
+      "start_ms": 58090,
+      "end_ms": 58207,
+      "start_srt": "00:00:58,090",
+      "end_srt": "00:00:58,207",
+      "probability": 0.933
+    },
+    {
+      "word": "que",
+      "start_ms": 58207,
+      "end_ms": 58349,
+      "start_srt": "00:00:58,207",
+      "end_srt": "00:00:58,349",
+      "probability": 0.9678
+    },
+    {
+      "word": "tan",
+      "start_ms": 58349,
+      "end_ms": 58530,
+      "start_srt": "00:00:58,349",
+      "end_srt": "00:00:58,530",
+      "probability": 0.9794
+    },
+    {
+      "word": "lista",
+      "start_ms": 58530,
+      "end_ms": 58730,
+      "start_srt": "00:00:58,530",
+      "end_srt": "00:00:58,730",
+      "probability": 0.959
+    },
+    {
+      "word": "está",
+      "start_ms": 58730,
+      "end_ms": 58967,
+      "start_srt": "00:00:58,730",
+      "end_srt": "00:00:58,967",
+      "probability": 0.359
+    },
+    {
+      "word": "tu",
+      "start_ms": 58967,
+      "end_ms": 59105,
+      "start_srt": "00:00:58,967",
+      "end_srt": "00:00:59,105",
+      "probability": 0.9875
+    },
+    {
+      "word": "finca",
+      "start_ms": 59105,
+      "end_ms": 59435,
+      "start_srt": "00:00:59,105",
+      "end_srt": "00:00:59,435",
+      "probability": 0.9698
+    },
+    {
+      "word": "frente",
+      "start_ms": 59435,
+      "end_ms": 59661,
+      "start_srt": "00:00:59,435",
+      "end_srt": "00:00:59,661",
+      "probability": 0.9976
+    },
+    {
+      "word": "a",
+      "start_ms": 59661,
+      "end_ms": 59870,
+      "start_srt": "00:00:59,661",
+      "end_srt": "00:00:59,870",
+      "probability": 0.9927
+    },
+    {
+      "word": "una",
+      "start_ms": 59870,
+      "end_ms": 59970,
+      "start_srt": "00:00:59,870",
+      "end_srt": "00:00:59,970",
+      "probability": 0.9984
+    },
+    {
+      "word": "visita",
+      "start_ms": 59970,
+      "end_ms": 60415,
+      "start_srt": "00:00:59,970",
+      "end_srt": "00:01:00,415",
+      "probability": 0.9987
+    },
+    {
+      "word": "a",
+      "start_ms": 60415,
+      "end_ms": 60530,
+      "start_srt": "00:01:00,415",
+      "end_srt": "00:01:00,530",
+      "probability": 0.8724
+    },
+    {
+      "word": "auditoría",
+      "start_ms": 60530,
+      "end_ms": 60990,
+      "start_srt": "00:01:00,530",
+      "end_srt": "00:01:00,990",
+      "probability": 0.8244
+    },
+    {
+      "word": "sanitaria",
+      "start_ms": 60990,
+      "end_ms": 61467,
+      "start_srt": "00:01:00,990",
+      "end_srt": "00:01:01,467",
+      "probability": 0.9911
+    },
+    {
+      "word": "oficial.",
+      "start_ms": 61467,
+      "end_ms": 61885,
+      "start_srt": "00:01:01,467",
+      "end_srt": "00:01:01,885",
+      "probability": 0.995
+    },
+    {
+      "word": "A",
+      "start_ms": 66191,
+      "end_ms": 66300,
+      "start_srt": "00:01:06,191",
+      "end_srt": "00:01:06,300",
+      "probability": 0.9471
+    },
+    {
+      "word": "la",
+      "start_ms": 66300,
+      "end_ms": 66380,
+      "start_srt": "00:01:06,300",
+      "end_srt": "00:01:06,380",
+      "probability": 0.998
+    },
+    {
+      "word": "derecha",
+      "start_ms": 66380,
+      "end_ms": 66672,
+      "start_srt": "00:01:06,380",
+      "end_srt": "00:01:06,672",
+      "probability": 0.9841
+    },
+    {
+      "word": "te",
+      "start_ms": 66672,
+      "end_ms": 66798,
+      "start_srt": "00:01:06,672",
+      "end_srt": "00:01:06,798",
+      "probability": 0.9744
+    },
+    {
+      "word": "califica",
+      "start_ms": 66798,
+      "end_ms": 67256,
+      "start_srt": "00:01:06,798",
+      "end_srt": "00:01:07,256",
+      "probability": 0.9667
+    },
+    {
+      "word": "tus",
+      "start_ms": 67256,
+      "end_ms": 67480,
+      "start_srt": "00:01:07,256",
+      "end_srt": "00:01:07,480",
+      "probability": 0.9752
+    },
+    {
+      "word": "tres",
+      "start_ms": 67480,
+      "end_ms": 67720,
+      "start_srt": "00:01:07,480",
+      "end_srt": "00:01:07,720",
+      "probability": 0.9243
+    },
+    {
+      "word": "pilares,",
+      "start_ms": 67720,
+      "end_ms": 68273,
+      "start_srt": "00:01:07,720",
+      "end_srt": "00:01:08,273",
+      "probability": 0.9599
+    },
+    {
+      "word": "identificación",
+      "start_ms": 68515,
+      "end_ms": 69120,
+      "start_srt": "00:01:08,515",
+      "end_srt": "00:01:09,120",
+      "probability": 0.9443
+    },
+    {
+      "word": "de",
+      "start_ms": 69120,
+      "end_ms": 69340,
+      "start_srt": "00:01:09,120",
+      "end_srt": "00:01:09,340",
+      "probability": 0.9989
+    },
+    {
+      "word": "animales,",
+      "start_ms": 69340,
+      "end_ms": 69898,
+      "start_srt": "00:01:09,340",
+      "end_srt": "00:01:09,898",
+      "probability": 0.9976
+    },
+    {
+      "word": "vacunas",
+      "start_ms": 70236,
+      "end_ms": 70599,
+      "start_srt": "00:01:10,236",
+      "end_srt": "00:01:10,599",
+      "probability": 0.9654
+    },
+    {
+      "word": "de",
+      "start_ms": 70599,
+      "end_ms": 70740,
+      "start_srt": "00:01:10,599",
+      "end_srt": "00:01:10,740",
+      "probability": 0.9758
+    },
+    {
+      "word": "ley",
+      "start_ms": 70740,
+      "end_ms": 70880,
+      "start_srt": "00:01:10,740",
+      "end_srt": "00:01:10,880",
+      "probability": 0.9749
+    },
+    {
+      "word": "y",
+      "start_ms": 70880,
+      "end_ms": 71082,
+      "start_srt": "00:01:10,880",
+      "end_srt": "00:01:11,082",
+      "probability": 0.9491
+    },
+    {
+      "word": "guías",
+      "start_ms": 71082,
+      "end_ms": 71220,
+      "start_srt": "00:01:11,082",
+      "end_srt": "00:01:11,220",
+      "probability": 0.9793
+    },
+    {
+      "word": "de",
+      "start_ms": 71220,
+      "end_ms": 71312,
+      "start_srt": "00:01:11,220",
+      "end_srt": "00:01:11,312",
+      "probability": 0.9985
+    },
+    {
+      "word": "transporte",
+      "start_ms": 71312,
+      "end_ms": 71945,
+      "start_srt": "00:01:11,312",
+      "end_srt": "00:01:11,945",
+      "probability": 0.9975
+    },
+    {
+      "word": "y",
+      "start_ms": 72161,
+      "end_ms": 72220,
+      "start_srt": "00:01:12,161",
+      "end_srt": "00:01:12,220",
+      "probability": 0.663
+    },
+    {
+      "word": "abajo",
+      "start_ms": 72220,
+      "end_ms": 72380,
+      "start_srt": "00:01:12,220",
+      "end_srt": "00:01:12,380",
+      "probability": 0.8647
+    },
+    {
+      "word": "en",
+      "start_ms": 72380,
+      "end_ms": 72540,
+      "start_srt": "00:01:12,380",
+      "end_srt": "00:01:12,540",
+      "probability": 0.9928
+    },
+    {
+      "word": "acciones",
+      "start_ms": 72540,
+      "end_ms": 72840,
+      "start_srt": "00:01:12,540",
+      "end_srt": "00:01:12,840",
+      "probability": 0.9603
+    },
+    {
+      "word": "pendientes",
+      "start_ms": 72840,
+      "end_ms": 73347,
+      "start_srt": "00:01:12,840",
+      "end_srt": "00:01:13,347",
+      "probability": 0.9957
+    },
+    {
+      "word": "te",
+      "start_ms": 73347,
+      "end_ms": 73551,
+      "start_srt": "00:01:13,347",
+      "end_srt": "00:01:13,551",
+      "probability": 0.8694
+    },
+    {
+      "word": "dice",
+      "start_ms": 73551,
+      "end_ms": 73719,
+      "start_srt": "00:01:13,551",
+      "end_srt": "00:01:13,719",
+      "probability": 0.996
+    },
+    {
+      "word": "con",
+      "start_ms": 73719,
+      "end_ms": 73901,
+      "start_srt": "00:01:13,719",
+      "end_srt": "00:01:13,901",
+      "probability": 0.984
+    },
+    {
+      "word": "número",
+      "start_ms": 73901,
+      "end_ms": 74120,
+      "start_srt": "00:01:13,901",
+      "end_srt": "00:01:14,120",
+      "probability": 0.9482
+    },
+    {
+      "word": "exacto",
+      "start_ms": 74120,
+      "end_ms": 74620,
+      "start_srt": "00:01:14,120",
+      "end_srt": "00:01:14,620",
+      "probability": 0.9879
+    },
+    {
+      "word": "cuántos",
+      "start_ms": 74620,
+      "end_ms": 74940,
+      "start_srt": "00:01:14,620",
+      "end_srt": "00:01:14,940",
+      "probability": 0.8048
+    },
+    {
+      "word": "animales",
+      "start_ms": 74940,
+      "end_ms": 75200,
+      "start_srt": "00:01:14,940",
+      "end_srt": "00:01:15,200",
+      "probability": 0.9975
+    },
+    {
+      "word": "debes",
+      "start_ms": 75200,
+      "end_ms": 75620,
+      "start_srt": "00:01:15,200",
+      "end_srt": "00:01:15,620",
+      "probability": 0.9897
+    },
+    {
+      "word": "chapetear",
+      "start_ms": 75620,
+      "end_ms": 76120,
+      "start_srt": "00:01:15,620",
+      "end_srt": "00:01:16,120",
+      "probability": 0.9141
+    },
+    {
+      "word": "o",
+      "start_ms": 76120,
+      "end_ms": 76240,
+      "start_srt": "00:01:16,120",
+      "end_srt": "00:01:16,240",
+      "probability": 0.9949
+    },
+    {
+      "word": "vacunar",
+      "start_ms": 76240,
+      "end_ms": 76612,
+      "start_srt": "00:01:16,240",
+      "end_srt": "00:01:16,612",
+      "probability": 0.9245
+    },
+    {
+      "word": "para",
+      "start_ms": 76612,
+      "end_ms": 76800,
+      "start_srt": "00:01:16,612",
+      "end_srt": "00:01:16,800",
+      "probability": 0.9915
+    },
+    {
+      "word": "llegar",
+      "start_ms": 76800,
+      "end_ms": 77040,
+      "start_srt": "00:01:16,800",
+      "end_srt": "00:01:17,040",
+      "probability": 0.9987
+    },
+    {
+      "word": "al",
+      "start_ms": 77040,
+      "end_ms": 77240,
+      "start_srt": "00:01:17,040",
+      "end_srt": "00:01:17,240",
+      "probability": 0.9986
+    },
+    {
+      "word": "100%.",
+      "start_ms": 77240,
+      "end_ms": 77752,
+      "start_srt": "00:01:17,240",
+      "end_srt": "00:01:17,752",
+      "probability": 0.8616
+    }
+  ]
+}

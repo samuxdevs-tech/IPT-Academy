@@ -1,0 +1,315 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,036
+[...]
+
+4
+00:00:05,036 --> 00:00:07,167
+bienvenido a un nuevo tutorial de DataGan 360.
+
+5
+00:00:07,167 --> 00:00:08,163
+[...]
+
+6
+00:00:08,163 --> 00:00:11,975
+En el módulo de reportes conviertes toda la información que has cargado en la web en informes a medida listos para imprimir.
+
+7
+00:00:11,975 --> 00:00:12,750
+[...]
+
+8
+00:00:12,750 --> 00:00:13,812
+Puedes armar reportes de hembras,
+
+9
+00:00:13,812 --> 00:00:14,091
+[...]
+
+10
+00:00:14,091 --> 00:00:14,498
+machos,
+
+11
+00:00:14,498 --> 00:00:14,734
+[...]
+
+12
+00:00:14,734 --> 00:00:14,970
+leche,
+
+13
+00:00:14,970 --> 00:00:15,218
+[...]
+
+14
+00:00:15,218 --> 00:00:15,551
+pesajes,
+
+15
+00:00:15,551 --> 00:00:15,793
+[...]
+
+16
+00:00:15,793 --> 00:00:16,850
+inventario o abrir hojas de vida.
+
+17
+00:00:16,850 --> 00:00:17,595
+[...]
+
+18
+00:00:17,595 --> 00:00:18,341
+Entremos a hembras.
+
+19
+00:00:18,341 --> 00:00:19,302
+[...]
+
+20
+00:00:19,302 --> 00:00:21,495
+En el paso dos filtras exactamente qué animales quieres incluir.
+
+21
+00:00:21,495 --> 00:00:21,790
+[...]
+
+22
+00:00:21,790 --> 00:00:23,012
+Puedes filtrar por estado reproductivo,
+
+23
+00:00:23,012 --> 00:00:23,248
+[...]
+
+24
+00:00:23,248 --> 00:00:23,521
+raza,
+
+25
+00:00:23,521 --> 00:00:23,731
+[...]
+
+26
+00:00:23,731 --> 00:00:28,420
+dieta o entrar por ejemplo a rango de peso para pedirle al sistema únicamente las hembras que hoy pesan entre 200 y 300 kilos.
+
+27
+00:00:28,420 --> 00:00:29,184
+[...]
+
+28
+00:00:29,184 --> 00:00:30,160
+Damos clic en siguiente paso.
+
+29
+00:00:30,160 --> 00:00:31,216
+[...]
+
+30
+00:00:31,216 --> 00:00:33,715
+En el paso tres tu diseñas las columnas del documento,
+
+31
+00:00:33,715 --> 00:00:34,029
+[...]
+
+32
+00:00:34,029 --> 00:00:36,072
+marcas o desmarcas, quedatos básicos,
+
+33
+00:00:36,072 --> 00:00:36,424
+[...]
+
+34
+00:00:36,424 --> 00:00:37,243
+reproductivos,
+
+35
+00:00:37,243 --> 00:00:37,566
+[...]
+
+36
+00:00:37,566 --> 00:00:41,264
+de pesaje o genealógicos, quieres que salgan impresos y presionas crear informe.
+
+37
+00:00:41,264 --> 00:00:45,209
+[...]
+
+38
+00:00:45,209 --> 00:00:49,658
+En el paso cuatro tienes la vista previa con todos los ejemplares de tu finca que cumplen ese filtro,
+
+39
+00:00:49,658 --> 00:00:50,013
+[...]
+
+40
+00:00:50,013 --> 00:00:52,548
+pudiendo ampliar la cantidad de filas visibles en pantalla.
+
+41
+00:00:52,548 --> 00:00:57,213
+[...]
+
+42
+00:00:57,213 --> 00:01:03,846
+Desde los botones superiores descargas el listado maquetado en PDF con un clic o lo exportas a Excel si deseas trabajar las tablas dinámicas.
+
+43
+00:01:03,846 --> 00:01:07,203
+[...]
+
+44
+00:01:07,203 --> 00:01:11,449
+Con editar selección puedes volver atrás para activar todas las columnas de golpe o limpiarlas.
+
+45
+00:01:11,449 --> 00:01:12,479
+[...]
+
+46
+00:01:12,479 --> 00:01:15,900
+Ahora regresamos al inicio del módulo para conocer una de las joyas de DataGan,
+
+47
+00:01:15,900 --> 00:01:16,297
+[...]
+
+48
+00:01:16,297 --> 00:01:17,256
+la hoja de vida del animal.
+
+49
+00:01:17,256 --> 00:01:26,208
+[...]
+
+50
+00:01:26,208 --> 00:01:30,876
+Aquí buscas cualquier ejemplar de tu hato y se despliega su expediente clínico y productivo completo.
+
+51
+00:01:30,876 --> 00:01:31,195
+[...]
+
+52
+00:01:31,195 --> 00:01:32,031
+Ve su peso actual,
+
+53
+00:01:32,031 --> 00:01:32,306
+[...]
+
+54
+00:01:32,306 --> 00:01:33,252
+estado reproductivo,
+
+55
+00:01:33,252 --> 00:01:33,525
+[...]
+
+56
+00:01:33,525 --> 00:01:34,376
+cuántos partos lleva,
+
+57
+00:01:34,376 --> 00:01:34,670
+[...]
+
+58
+00:01:34,670 --> 00:01:35,934
+quién es su propietario actual,
+
+59
+00:01:35,934 --> 00:01:36,228
+[...]
+
+60
+00:01:36,228 --> 00:01:38,195
+en qué lote está y en qué potrero pastorea.
+
+61
+00:01:38,195 --> 00:01:46,207
+[...]
+
+62
+00:01:46,207 --> 00:01:48,355
+En su encabezado tienes dos botones directos,
+
+63
+00:01:48,355 --> 00:01:48,719
+[...]
+
+64
+00:01:48,719 --> 00:01:54,138
+Pesaje te lleva a la curva gráfica con toda la evolución de kilos de ese animal y Leche abre su curva histórica de ordeño.
+
+65
+00:01:54,138 --> 00:02:00,183
+[...]
+
+66
+00:02:00,183 --> 00:02:01,958
+Y al cambiar entre las pestañas producción,
+
+67
+00:02:01,958 --> 00:02:02,276
+[...]
+
+68
+00:02:02,276 --> 00:02:04,301
+salud y movimientos consultarás cada ordeño,
+
+69
+00:02:04,301 --> 00:02:04,582
+[...]
+
+70
+00:02:04,582 --> 00:02:05,202
+cada enfermedad,
+
+71
+00:02:05,202 --> 00:02:05,420
+[...]
+
+72
+00:02:05,420 --> 00:02:07,718
+celo o palpación que se le haya hecho en los módulos sanitarios.
+
+73
+00:02:07,718 --> 00:02:09,210
+[...]
+
+74
+00:02:09,210 --> 00:02:10,730
+Cuando vayas a vender un reproductor,
+
+75
+00:02:10,730 --> 00:02:11,045
+[...]
+
+76
+00:02:11,045 --> 00:02:13,008
+una vaca lechera o recibir una auditoría,
+
+77
+00:02:13,008 --> 00:02:13,385
+[...]
+
+78
+00:02:13,385 --> 00:02:19,999
+presionas exportar PDF y obtienes este documento oficial de dos páginas con el membrete de tu ganadería y todo el historial de vida del ejemplar.
+
+79
+00:02:19,999 --> 00:02:29,290
+[...]

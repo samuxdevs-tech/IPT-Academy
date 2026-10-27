@@ -46,9 +46,9 @@ frontend/.env*.local
 Thumbs.db
 
 # Temporary raw HTML dumps
-tecnogan.html
+
 sandbox_app.html
 sandbox_aside.html
 replica_dashboard.html
-datagan_dashboard_raw.html
+
 sandbox_styles.css

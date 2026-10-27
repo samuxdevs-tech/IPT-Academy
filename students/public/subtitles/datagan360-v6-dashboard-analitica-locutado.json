@@ -1,0 +1,5277 @@
+{
+  "file": "datagan360-v6-dashboard-analitica-locutado.mp3",
+  "duration_ms": 102540,
+  "duration_srt": "00:01:42,540",
+  "language": "es",
+  "total_segments": 63,
+  "speech_segments": 31,
+  "silence_segments": 32,
+  "total_words": 269,
+  "full_text": "Hola, bienvenido a un nuevo tutorial de DataGan 360, una vez que has registrado potreros, animales, ordeños y finanzas, así cobra vida la pestaña analítica del Dashboard, arriba ves cuántos potreros tienes ocupados o descansando junto a sus polígonos en el mapa satelital. En la barra de filtros puedes elegir si deseas analizar los últimos 30 días o ver un rango personalizado de fechas para auditar cualquier época del año. Al pasar el mouse por las tarjetas de eficiencia por hectárea, el sistema cruza tus pesajes, ordeños y hectáreas de potreros para mostrarte tu producción de carne y leche por hectárea, tu carga en Unidades Gran Ganado y tu tasa de extracción frente a Fedegán. En el resumen analítico tienes dos indicadores en tiempo real. Cuántas vacas están en lactancia, nacimientos del periodo, toros activos, cuál es tu vaca más productora, el peso promedio del hato y el estado general de salud. Debajo, la sección de producción convierte tus registros diarios en gráficas visuales. La curva de leche día por día, el balance de potreros en pastoreo y los nacimientos por fecha. Más abajo, el resumen financiero trae automáticamente los datos del módulo de finanzas, tus ingresos, egresos, el valor actual de tu bodega de inventario y cuánto vale hoy todo tu ganado sumado. Incluso cruza tus gastos contra los litros ordeñados para decirte cuántos pesos te cuesta producir cada litro de leche, graficando a la derecha el flujo de caja mes a mes. Finalmente, en la base tienes el comparativo automático frente a los estándares ideales de tu tipo de ganadería, indicándote en qué métricas superas el promedio y cuáles debes optimizar.",
+  "full_text_with_silences": "[...] Hola, [...] bienvenido a un nuevo tutorial de DataGan 360, [...] una vez que has registrado potreros, [...] animales, [...] ordeños y finanzas, [...] así cobra vida la pestaña analítica del Dashboard, [...] arriba ves cuántos potreros tienes ocupados o descansando junto a sus polígonos en el mapa satelital. [...] En la barra de filtros puedes elegir si deseas analizar los últimos 30 días o ver un rango personalizado de fechas para auditar cualquier época del año. [...] Al pasar el mouse por las tarjetas de eficiencia por hectárea, [...] el sistema cruza tus pesajes, [...] ordeños y hectáreas de potreros para mostrarte tu producción de carne y leche por hectárea, tu [...] carga en Unidades Gran Ganado y tu tasa de extracción frente a Fedegán. [...] En el resumen analítico tienes dos indicadores en tiempo real. [...] Cuántas vacas están en lactancia, [...] nacimientos del periodo, [...] toros activos, [...] cuál es tu vaca más productora, [...] el peso promedio del hato y el estado general de salud. [...] Debajo, [...] la sección de producción convierte tus registros diarios en gráficas visuales. [...] La curva de leche día por día, [...] el balance de potreros en pastoreo y los nacimientos por fecha. [...] Más abajo, [...] el resumen financiero trae automáticamente los datos del módulo de finanzas, [...] tus ingresos, egresos, [...] el valor actual de tu bodega de inventario y cuánto vale hoy todo tu ganado sumado. [...] Incluso cruza tus gastos contra los litros ordeñados para decirte cuántos pesos te cuesta producir cada litro de leche, [...] graficando a la derecha el flujo de caja mes a mes. [...] Finalmente, [...] en la base tienes el comparativo automático frente a los estándares ideales de tu tipo de ganadería, [...] indicándote en qué métricas superas el promedio y cuáles debes optimizar. [...]",
+  "acoustic_silences_ms": [
+    {
+      "start_ms": 0,
+      "end_ms": 1005,
+      "duration_ms": 1005,
+      "start_srt": "00:00:00,000",
+      "end_srt": "00:00:01,005"
+    },
+    {
+      "start_ms": 4297,
+      "end_ms": 5039,
+      "duration_ms": 742,
+      "start_srt": "00:00:04,297",
+      "end_srt": "00:00:05,039"
+    },
+    {
+      "start_ms": 7162,
+      "end_ms": 8159,
+      "duration_ms": 997,
+      "start_srt": "00:00:07,162",
+      "end_srt": "00:00:08,159"
+    },
+    {
+      "start_ms": 9386,
+      "end_ms": 9613,
+      "duration_ms": 227,
+      "start_srt": "00:00:09,386",
+      "end_srt": "00:00:09,613"
+    },
+    {
+      "start_ms": 11092,
+      "end_ms": 11365,
+      "duration_ms": 273,
+      "start_srt": "00:00:11,092",
+      "end_srt": "00:00:11,365"
+    },
+    {
+      "start_ms": 13097,
+      "end_ms": 13433,
+      "duration_ms": 336,
+      "start_srt": "00:00:13,097",
+      "end_srt": "00:00:13,433"
+    },
+    {
+      "start_ms": 16833,
+      "end_ms": 17853,
+      "duration_ms": 1020,
+      "start_srt": "00:00:16,833",
+      "end_srt": "00:00:17,853"
+    },
+    {
+      "start_ms": 24791,
+      "end_ms": 29184,
+      "duration_ms": 4393,
+      "start_srt": "00:00:24,791",
+      "end_srt": "00:00:29,184"
+    },
+    {
+      "start_ms": 31653,
+      "end_ms": 32003,
+      "duration_ms": 350,
+      "start_srt": "00:00:31,653",
+      "end_srt": "00:00:32,003"
+    },
+    {
+      "start_ms": 33490,
+      "end_ms": 33774,
+      "duration_ms": 284,
+      "start_srt": "00:00:33,490",
+      "end_srt": "00:00:33,774"
+    },
+    {
+      "start_ms": 37564,
+      "end_ms": 37872,
+      "duration_ms": 308,
+      "start_srt": "00:00:37,564",
+      "end_srt": "00:00:37,872"
+    },
+    {
+      "start_ms": 40849,
+      "end_ms": 42186,
+      "duration_ms": 1337,
+      "start_srt": "00:00:40,849",
+      "end_srt": "00:00:42,186"
+    },
+    {
+      "start_ms": 44950,
+      "end_ms": 45231,
+      "duration_ms": 281,
+      "start_srt": "00:00:44,950",
+      "end_srt": "00:00:45,231"
+    },
+    {
+      "start_ms": 46740,
+      "end_ms": 47063,
+      "duration_ms": 323,
+      "start_srt": "00:00:46,740",
+      "end_srt": "00:00:47,063"
+    },
+    {
+      "start_ms": 48062,
+      "end_ms": 48378,
+      "duration_ms": 316,
+      "start_srt": "00:00:48,062",
+      "end_srt": "00:00:48,378"
+    },
+    {
+      "start_ms": 49089,
+      "end_ms": 49313,
+      "duration_ms": 224,
+      "start_srt": "00:00:49,089",
+      "end_srt": "00:00:49,313"
+    },
+    {
+      "start_ms": 50492,
+      "end_ms": 50754,
+      "duration_ms": 262,
+      "start_srt": "00:00:50,492",
+      "end_srt": "00:00:50,754"
+    },
+    {
+      "start_ms": 52886,
+      "end_ms": 54173,
+      "duration_ms": 1287,
+      "start_srt": "00:00:52,886",
+      "end_srt": "00:00:54,173"
+    },
+    {
+      "start_ms": 54547,
+      "end_ms": 54808,
+      "duration_ms": 261,
+      "start_srt": "00:00:54,547",
+      "end_srt": "00:00:54,808"
+    },
+    {
+      "start_ms": 57800,
+      "end_ms": 58135,
+      "duration_ms": 335,
+      "start_srt": "00:00:57,800",
+      "end_srt": "00:00:58,135"
+    },
+    {
+      "start_ms": 59269,
+      "end_ms": 59539,
+      "duration_ms": 270,
+      "start_srt": "00:00:59,269",
+      "end_srt": "00:00:59,539"
+    },
+    {
+      "start_ms": 61950,
+      "end_ms": 63163,
+      "duration_ms": 1213,
+      "start_srt": "00:01:01,950",
+      "end_srt": "00:01:03,163"
+    },
+    {
+      "start_ms": 63602,
+      "end_ms": 63850,
+      "duration_ms": 248,
+      "start_srt": "00:01:03,602",
+      "end_srt": "00:01:03,850"
+    },
+    {
+      "start_ms": 66634,
+      "end_ms": 66882,
+      "duration_ms": 248,
+      "start_srt": "00:01:06,634",
+      "end_srt": "00:01:06,882"
+    },
+    {
+      "start_ms": 67417,
+      "end_ms": 67670,
+      "duration_ms": 253,
+      "start_srt": "00:01:07,417",
+      "end_srt": "00:01:07,670"
+    },
+    {
+      "start_ms": 68106,
+      "end_ms": 68353,
+      "duration_ms": 247,
+      "start_srt": "00:01:08,106",
+      "end_srt": "00:01:08,353"
+    },
+    {
+      "start_ms": 70974,
+      "end_ms": 72200,
+      "duration_ms": 1226,
+      "start_srt": "00:01:10,974",
+      "end_srt": "00:01:12,200"
+    },
+    {
+      "start_ms": 77739,
+      "end_ms": 78104,
+      "duration_ms": 365,
+      "start_srt": "00:01:17,739",
+      "end_srt": "00:01:18,104"
+    },
+    {
+      "start_ms": 80285,
+      "end_ms": 89210,
+      "duration_ms": 8925,
+      "start_srt": "00:01:20,285",
+      "end_srt": "00:01:29,210"
+    },
+    {
+      "start_ms": 89866,
+      "end_ms": 90170,
+      "duration_ms": 304,
+      "start_srt": "00:01:29,866",
+      "end_srt": "00:01:30,170"
+    },
+    {
+      "start_ms": 94550,
+      "end_ms": 94884,
+      "duration_ms": 334,
+      "start_srt": "00:01:34,550",
+      "end_srt": "00:01:34,884"
+    },
+    {
+      "start_ms": 98162,
+      "end_ms": 99142,
+      "duration_ms": 980,
+      "start_srt": "00:01:38,162",
+      "end_srt": "00:01:39,142"
+    },
+    {
+      "start_ms": 101677,
+      "end_ms": 102539,
+      "duration_ms": 862,
+      "start_srt": "00:01:41,677",
+      "end_srt": "00:01:42,539"
+    }
+  ],
+  "timeline": [
+    {
+      "index": 1,
+      "type": "silence",
+      "start_ms": 0,
+      "end_ms": 4030,
+      "duration_ms": 4030,
+      "start_srt": "00:00:00,000",
+      "end_srt": "00:00:04,030",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 2,
+      "type": "speech",
+      "start_ms": 4030,
+      "end_ms": 4297,
+      "duration_ms": 267,
+      "start_srt": "00:00:04,030",
+      "end_srt": "00:00:04,297",
+      "text": "Hola,",
+      "words": [
+        {
+          "word": "Hola,",
+          "start_ms": 4030,
+          "end_ms": 4297,
+          "start_srt": "00:00:04,030",
+          "end_srt": "00:00:04,297",
+          "probability": 0.7677
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "type": "silence",
+      "start_ms": 4297,
+      "end_ms": 5039,
+      "duration_ms": 742,
+      "start_srt": "00:00:04,297",
+      "end_srt": "00:00:05,039",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 4,
+      "type": "speech",
+      "start_ms": 5039,
+      "end_ms": 7162,
+      "duration_ms": 2123,
+      "start_srt": "00:00:05,039",
+      "end_srt": "00:00:07,162",
+      "text": "bienvenido a un nuevo tutorial de DataGan 360,",
+      "words": [
+        {
+          "word": "bienvenido",
+          "start_ms": 5039,
+          "end_ms": 5410,
+          "start_srt": "00:00:05,039",
+          "end_srt": "00:00:05,410",
+          "probability": 0.9437
+        },
+        {
+          "word": "a",
+          "start_ms": 5410,
+          "end_ms": 5530,
+          "start_srt": "00:00:05,410",
+          "end_srt": "00:00:05,530",
+          "probability": 0.9158
+        },
+        {
+          "word": "un",
+          "start_ms": 5530,
+          "end_ms": 5540,
+          "start_srt": "00:00:05,530",
+          "end_srt": "00:00:05,540",
+          "probability": 0.9246
+        },
+        {
+          "word": "nuevo",
+          "start_ms": 5540,
+          "end_ms": 5630,
+          "start_srt": "00:00:05,540",
+          "end_srt": "00:00:05,630",
+          "probability": 0.996
+        },
+        {
+          "word": "tutorial",
+          "start_ms": 5630,
+          "end_ms": 5910,
+          "start_srt": "00:00:05,630",
+          "end_srt": "00:00:05,910",
+          "probability": 0.9879
+        },
+        {
+          "word": "de",
+          "start_ms": 5910,
+          "end_ms": 6110,
+          "start_srt": "00:00:05,910",
+          "end_srt": "00:00:06,110",
+          "probability": 0.9959
+        },
+        {
+          "word": "DataGun",
+          "start_ms": 6110,
+          "end_ms": 6361,
+          "start_srt": "00:00:06,110",
+          "end_srt": "00:00:06,361",
+          "probability": 0.4287
+        },
+        {
+          "word": "360,",
+          "start_ms": 6361,
+          "end_ms": 7162,
+          "start_srt": "00:00:06,361",
+          "end_srt": "00:00:07,162",
+          "probability": 0.4713
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "type": "silence",
+      "start_ms": 7162,
+      "end_ms": 8159,
+      "duration_ms": 997,
+      "start_srt": "00:00:07,162",
+      "end_srt": "00:00:08,159",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 6,
+      "type": "speech",
+      "start_ms": 8159,
+      "end_ms": 9386,
+      "duration_ms": 1227,
+      "start_srt": "00:00:08,159",
+      "end_srt": "00:00:09,386",
+      "text": "una vez que has registrado potreros,",
+      "words": [
+        {
+          "word": "una",
+          "start_ms": 8159,
+          "end_ms": 8290,
+          "start_srt": "00:00:08,159",
+          "end_srt": "00:00:08,290",
+          "probability": 0.9729
+        },
+        {
+          "word": "vez",
+          "start_ms": 8290,
+          "end_ms": 8410,
+          "start_srt": "00:00:08,290",
+          "end_srt": "00:00:08,410",
+          "probability": 0.9975
+        },
+        {
+          "word": "que",
+          "start_ms": 8410,
+          "end_ms": 8492,
+          "start_srt": "00:00:08,410",
+          "end_srt": "00:00:08,492",
+          "probability": 0.9943
+        },
+        {
+          "word": "he",
+          "start_ms": 8492,
+          "end_ms": 8550,
+          "start_srt": "00:00:08,492",
+          "end_srt": "00:00:08,550",
+          "probability": 0.6597
+        },
+        {
+          "word": "registrado",
+          "start_ms": 8550,
+          "end_ms": 8863,
+          "start_srt": "00:00:08,550",
+          "end_srt": "00:00:08,863",
+          "probability": 0.9978
+        },
+        {
+          "word": "potreros,",
+          "start_ms": 8863,
+          "end_ms": 9386,
+          "start_srt": "00:00:08,863",
+          "end_srt": "00:00:09,386",
+          "probability": 0.9788
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "type": "silence",
+      "start_ms": 9386,
+      "end_ms": 9613,
+      "duration_ms": 227,
+      "start_srt": "00:00:09,386",
+      "end_srt": "00:00:09,613",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 8,
+      "type": "speech",
+      "start_ms": 9613,
+      "end_ms": 9922,
+      "duration_ms": 309,
+      "start_srt": "00:00:09,613",
+      "end_srt": "00:00:09,922",
+      "text": "animales,",
+      "words": [
+        {
+          "word": "animales,",
+          "start_ms": 9613,
+          "end_ms": 9922,
+          "start_srt": "00:00:09,613",
+          "end_srt": "00:00:09,922",
+          "probability": 0.9788
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "type": "silence",
+      "start_ms": 9922,
+      "end_ms": 10234,
+      "duration_ms": 312,
+      "start_srt": "00:00:09,922",
+      "end_srt": "00:00:10,234",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 10,
+      "type": "speech",
+      "start_ms": 10234,
+      "end_ms": 11092,
+      "duration_ms": 858,
+      "start_srt": "00:00:10,234",
+      "end_srt": "00:00:11,092",
+      "text": "ordeños y finanzas,",
+      "words": [
+        {
+          "word": "ordeños",
+          "start_ms": 10234,
+          "end_ms": 10530,
+          "start_srt": "00:00:10,234",
+          "end_srt": "00:00:10,530",
+          "probability": 0.9035
+        },
+        {
+          "word": "y",
+          "start_ms": 10530,
+          "end_ms": 10650,
+          "start_srt": "00:00:10,530",
+          "end_srt": "00:00:10,650",
+          "probability": 0.9805
+        },
+        {
+          "word": "finanzas,",
+          "start_ms": 10650,
+          "end_ms": 11092,
+          "start_srt": "00:00:10,650",
+          "end_srt": "00:00:11,092",
+          "probability": 0.9898
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "type": "silence",
+      "start_ms": 11092,
+      "end_ms": 11365,
+      "duration_ms": 273,
+      "start_srt": "00:00:11,092",
+      "end_srt": "00:00:11,365",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 12,
+      "type": "speech",
+      "start_ms": 11365,
+      "end_ms": 13097,
+      "duration_ms": 1732,
+      "start_srt": "00:00:11,365",
+      "end_srt": "00:00:13,097",
+      "text": "así cobra vida la pestaña analítica del Dashboard,",
+      "words": [
+        {
+          "word": "así",
+          "start_ms": 11365,
+          "end_ms": 11490,
+          "start_srt": "00:00:11,365",
+          "end_srt": "00:00:11,490",
+          "probability": 0.9597
+        },
+        {
+          "word": "corabida",
+          "start_ms": 11490,
+          "end_ms": 11750,
+          "start_srt": "00:00:11,490",
+          "end_srt": "00:00:11,750",
+          "probability": 0.446
+        },
+        {
+          "word": "la",
+          "start_ms": 11750,
+          "end_ms": 11910,
+          "start_srt": "00:00:11,750",
+          "end_srt": "00:00:11,910",
+          "probability": 0.956
+        },
+        {
+          "word": "pestaña",
+          "start_ms": 11910,
+          "end_ms": 12210,
+          "start_srt": "00:00:11,910",
+          "end_srt": "00:00:12,210",
+          "probability": 0.9816
+        },
+        {
+          "word": "analítica",
+          "start_ms": 12210,
+          "end_ms": 12610,
+          "start_srt": "00:00:12,210",
+          "end_srt": "00:00:12,610",
+          "probability": 0.9741
+        },
+        {
+          "word": "del",
+          "start_ms": 12610,
+          "end_ms": 12730,
+          "start_srt": "00:00:12,610",
+          "end_srt": "00:00:12,730",
+          "probability": 0.9455
+        },
+        {
+          "word": "Dashboard,",
+          "start_ms": 12730,
+          "end_ms": 13097,
+          "start_srt": "00:00:12,730",
+          "end_srt": "00:00:13,097",
+          "probability": 0.6578
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "type": "silence",
+      "start_ms": 13097,
+      "end_ms": 13433,
+      "duration_ms": 336,
+      "start_srt": "00:00:13,097",
+      "end_srt": "00:00:13,433",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 14,
+      "type": "speech",
+      "start_ms": 13433,
+      "end_ms": 16833,
+      "duration_ms": 3400,
+      "start_srt": "00:00:13,433",
+      "end_srt": "00:00:16,833",
+      "text": "arriba ves cuántos potreros tienes ocupados o descansando junto a sus polígonos en el mapa satelital.",
+      "words": [
+        {
+          "word": "arriba",
+          "start_ms": 13433,
+          "end_ms": 13550,
+          "start_srt": "00:00:13,433",
+          "end_srt": "00:00:13,550",
+          "probability": 0.9627
+        },
+        {
+          "word": "es",
+          "start_ms": 13550,
+          "end_ms": 13746,
+          "start_srt": "00:00:13,550",
+          "end_srt": "00:00:13,746",
+          "probability": 0.4804
+        },
+        {
+          "word": "cuántos",
+          "start_ms": 13746,
+          "end_ms": 13991,
+          "start_srt": "00:00:13,746",
+          "end_srt": "00:00:13,991",
+          "probability": 0.8287
+        },
+        {
+          "word": "potreros",
+          "start_ms": 13991,
+          "end_ms": 14306,
+          "start_srt": "00:00:13,991",
+          "end_srt": "00:00:14,306",
+          "probability": 0.998
+        },
+        {
+          "word": "tienes",
+          "start_ms": 14306,
+          "end_ms": 14470,
+          "start_srt": "00:00:14,306",
+          "end_srt": "00:00:14,470",
+          "probability": 0.9866
+        },
+        {
+          "word": "ocupados",
+          "start_ms": 14470,
+          "end_ms": 14847,
+          "start_srt": "00:00:14,470",
+          "end_srt": "00:00:14,847",
+          "probability": 0.8147
+        },
+        {
+          "word": "o",
+          "start_ms": 14847,
+          "end_ms": 14971,
+          "start_srt": "00:00:14,847",
+          "end_srt": "00:00:14,971",
+          "probability": 0.9803
+        },
+        {
+          "word": "descansando",
+          "start_ms": 14971,
+          "end_ms": 15319,
+          "start_srt": "00:00:14,971",
+          "end_srt": "00:00:15,319",
+          "probability": 0.9922
+        },
+        {
+          "word": "junto",
+          "start_ms": 15319,
+          "end_ms": 15431,
+          "start_srt": "00:00:15,319",
+          "end_srt": "00:00:15,431",
+          "probability": 0.9144
+        },
+        {
+          "word": "a",
+          "start_ms": 15431,
+          "end_ms": 15630,
+          "start_srt": "00:00:15,431",
+          "end_srt": "00:00:15,630",
+          "probability": 0.9956
+        },
+        {
+          "word": "sus",
+          "start_ms": 15630,
+          "end_ms": 15690,
+          "start_srt": "00:00:15,630",
+          "end_srt": "00:00:15,690",
+          "probability": 0.993
+        },
+        {
+          "word": "polígonos",
+          "start_ms": 15690,
+          "end_ms": 16070,
+          "start_srt": "00:00:15,690",
+          "end_srt": "00:00:16,070",
+          "probability": 0.9804
+        },
+        {
+          "word": "en",
+          "start_ms": 16070,
+          "end_ms": 16170,
+          "start_srt": "00:00:16,070",
+          "end_srt": "00:00:16,170",
+          "probability": 0.9916
+        },
+        {
+          "word": "el",
+          "start_ms": 16170,
+          "end_ms": 16250,
+          "start_srt": "00:00:16,170",
+          "end_srt": "00:00:16,250",
+          "probability": 0.9944
+        },
+        {
+          "word": "mapa",
+          "start_ms": 16250,
+          "end_ms": 16350,
+          "start_srt": "00:00:16,250",
+          "end_srt": "00:00:16,350",
+          "probability": 0.9475
+        },
+        {
+          "word": "satelital.",
+          "start_ms": 16350,
+          "end_ms": 16833,
+          "start_srt": "00:00:16,350",
+          "end_srt": "00:00:16,833",
+          "probability": 0.9622
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "type": "silence",
+      "start_ms": 16833,
+      "end_ms": 17853,
+      "duration_ms": 1020,
+      "start_srt": "00:00:16,833",
+      "end_srt": "00:00:17,853",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 16,
+      "type": "speech",
+      "start_ms": 17853,
+      "end_ms": 24791,
+      "duration_ms": 6938,
+      "start_srt": "00:00:17,853",
+      "end_srt": "00:00:24,791",
+      "text": "En la barra de filtros puedes elegir si deseas analizar los últimos 30 días o ver un rango personalizado de fechas para auditar cualquier época del año.",
+      "words": [
+        {
+          "word": "En",
+          "start_ms": 17853,
+          "end_ms": 17950,
+          "start_srt": "00:00:17,853",
+          "end_srt": "00:00:17,950",
+          "probability": 0.9857
+        },
+        {
+          "word": "la",
+          "start_ms": 17950,
+          "end_ms": 18070,
+          "start_srt": "00:00:17,950",
+          "end_srt": "00:00:18,070",
+          "probability": 0.9798
+        },
+        {
+          "word": "barra",
+          "start_ms": 18070,
+          "end_ms": 18270,
+          "start_srt": "00:00:18,070",
+          "end_srt": "00:00:18,270",
+          "probability": 0.99
+        },
+        {
+          "word": "de",
+          "start_ms": 18270,
+          "end_ms": 18410,
+          "start_srt": "00:00:18,270",
+          "end_srt": "00:00:18,410",
+          "probability": 0.9971
+        },
+        {
+          "word": "filtros",
+          "start_ms": 18410,
+          "end_ms": 18670,
+          "start_srt": "00:00:18,410",
+          "end_srt": "00:00:18,670",
+          "probability": 0.9896
+        },
+        {
+          "word": "puedes",
+          "start_ms": 18670,
+          "end_ms": 18930,
+          "start_srt": "00:00:18,670",
+          "end_srt": "00:00:18,930",
+          "probability": 0.9244
+        },
+        {
+          "word": "elegir",
+          "start_ms": 18930,
+          "end_ms": 19310,
+          "start_srt": "00:00:18,930",
+          "end_srt": "00:00:19,310",
+          "probability": 0.9833
+        },
+        {
+          "word": "si",
+          "start_ms": 19310,
+          "end_ms": 19470,
+          "start_srt": "00:00:19,310",
+          "end_srt": "00:00:19,470",
+          "probability": 0.995
+        },
+        {
+          "word": "deseas",
+          "start_ms": 19470,
+          "end_ms": 19770,
+          "start_srt": "00:00:19,470",
+          "end_srt": "00:00:19,770",
+          "probability": 0.9863
+        },
+        {
+          "word": "analizar",
+          "start_ms": 19770,
+          "end_ms": 20170,
+          "start_srt": "00:00:19,770",
+          "end_srt": "00:00:20,170",
+          "probability": 0.9954
+        },
+        {
+          "word": "los",
+          "start_ms": 20170,
+          "end_ms": 20356,
+          "start_srt": "00:00:20,170",
+          "end_srt": "00:00:20,356",
+          "probability": 0.9965
+        },
+        {
+          "word": "últimos",
+          "start_ms": 20356,
+          "end_ms": 20670,
+          "start_srt": "00:00:20,356",
+          "end_srt": "00:00:20,670",
+          "probability": 0.998
+        },
+        {
+          "word": "30",
+          "start_ms": 20670,
+          "end_ms": 20950,
+          "start_srt": "00:00:20,670",
+          "end_srt": "00:00:20,950",
+          "probability": 0.9229
+        },
+        {
+          "word": "días",
+          "start_ms": 20950,
+          "end_ms": 21350,
+          "start_srt": "00:00:20,950",
+          "end_srt": "00:00:21,350",
+          "probability": 0.9976
+        },
+        {
+          "word": "sobre",
+          "start_ms": 21350,
+          "end_ms": 21610,
+          "start_srt": "00:00:21,350",
+          "end_srt": "00:00:21,610",
+          "probability": 0.3448
+        },
+        {
+          "word": "un",
+          "start_ms": 21610,
+          "end_ms": 21810,
+          "start_srt": "00:00:21,610",
+          "end_srt": "00:00:21,810",
+          "probability": 0.8746
+        },
+        {
+          "word": "rango",
+          "start_ms": 21810,
+          "end_ms": 22050,
+          "start_srt": "00:00:21,810",
+          "end_srt": "00:00:22,050",
+          "probability": 0.9917
+        },
+        {
+          "word": "personalizado",
+          "start_ms": 22050,
+          "end_ms": 22810,
+          "start_srt": "00:00:22,050",
+          "end_srt": "00:00:22,810",
+          "probability": 0.9951
+        },
+        {
+          "word": "de",
+          "start_ms": 22810,
+          "end_ms": 22950,
+          "start_srt": "00:00:22,810",
+          "end_srt": "00:00:22,950",
+          "probability": 0.9498
+        },
+        {
+          "word": "fechas",
+          "start_ms": 22950,
+          "end_ms": 23251,
+          "start_srt": "00:00:22,950",
+          "end_srt": "00:00:23,251",
+          "probability": 0.9934
+        },
+        {
+          "word": "para",
+          "start_ms": 23251,
+          "end_ms": 23490,
+          "start_srt": "00:00:23,251",
+          "end_srt": "00:00:23,490",
+          "probability": 0.9894
+        },
+        {
+          "word": "auditar",
+          "start_ms": 23490,
+          "end_ms": 23798,
+          "start_srt": "00:00:23,490",
+          "end_srt": "00:00:23,798",
+          "probability": 0.8304
+        },
+        {
+          "word": "cualquier",
+          "start_ms": 23798,
+          "end_ms": 24030,
+          "start_srt": "00:00:23,798",
+          "end_srt": "00:00:24,030",
+          "probability": 0.9914
+        },
+        {
+          "word": "época",
+          "start_ms": 24030,
+          "end_ms": 24464,
+          "start_srt": "00:00:24,030",
+          "end_srt": "00:00:24,464",
+          "probability": 0.9975
+        },
+        {
+          "word": "del",
+          "start_ms": 24464,
+          "end_ms": 24690,
+          "start_srt": "00:00:24,464",
+          "end_srt": "00:00:24,690",
+          "probability": 0.9952
+        },
+        {
+          "word": "año.",
+          "start_ms": 24690,
+          "end_ms": 24791,
+          "start_srt": "00:00:24,690",
+          "end_srt": "00:00:24,791",
+          "probability": 0.9984
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "type": "silence",
+      "start_ms": 24791,
+      "end_ms": 29184,
+      "duration_ms": 4393,
+      "start_srt": "00:00:24,791",
+      "end_srt": "00:00:29,184",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 18,
+      "type": "speech",
+      "start_ms": 29184,
+      "end_ms": 31653,
+      "duration_ms": 2469,
+      "start_srt": "00:00:29,184",
+      "end_srt": "00:00:31,653",
+      "text": "Al pasar el mouse por las tarjetas de eficiencia por hectárea,",
+      "words": [
+        {
+          "word": "Al",
+          "start_ms": 29184,
+          "end_ms": 29266,
+          "start_srt": "00:00:29,184",
+          "end_srt": "00:00:29,266",
+          "probability": 0.9788
+        },
+        {
+          "word": "pasar",
+          "start_ms": 29266,
+          "end_ms": 29540,
+          "start_srt": "00:00:29,266",
+          "end_srt": "00:00:29,540",
+          "probability": 0.9975
+        },
+        {
+          "word": "el",
+          "start_ms": 29540,
+          "end_ms": 29700,
+          "start_srt": "00:00:29,540",
+          "end_srt": "00:00:29,700",
+          "probability": 0.9829
+        },
+        {
+          "word": "mouse",
+          "start_ms": 29700,
+          "end_ms": 29840,
+          "start_srt": "00:00:29,700",
+          "end_srt": "00:00:29,840",
+          "probability": 0.494
+        },
+        {
+          "word": "por",
+          "start_ms": 29840,
+          "end_ms": 30040,
+          "start_srt": "00:00:29,840",
+          "end_srt": "00:00:30,040",
+          "probability": 0.9908
+        },
+        {
+          "word": "las",
+          "start_ms": 30040,
+          "end_ms": 30160,
+          "start_srt": "00:00:30,040",
+          "end_srt": "00:00:30,160",
+          "probability": 0.9937
+        },
+        {
+          "word": "tarjetas",
+          "start_ms": 30160,
+          "end_ms": 30560,
+          "start_srt": "00:00:30,160",
+          "end_srt": "00:00:30,560",
+          "probability": 0.9948
+        },
+        {
+          "word": "de",
+          "start_ms": 30560,
+          "end_ms": 30663,
+          "start_srt": "00:00:30,560",
+          "end_srt": "00:00:30,663",
+          "probability": 0.9625
+        },
+        {
+          "word": "eficiencia",
+          "start_ms": 30663,
+          "end_ms": 31040,
+          "start_srt": "00:00:30,663",
+          "end_srt": "00:00:31,040",
+          "probability": 0.9761
+        },
+        {
+          "word": "polectaria,",
+          "start_ms": 31040,
+          "end_ms": 31653,
+          "start_srt": "00:00:31,040",
+          "end_srt": "00:00:31,653",
+          "probability": 0.7677
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "type": "silence",
+      "start_ms": 31653,
+      "end_ms": 32003,
+      "duration_ms": 350,
+      "start_srt": "00:00:31,653",
+      "end_srt": "00:00:32,003",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 20,
+      "type": "speech",
+      "start_ms": 32003,
+      "end_ms": 33490,
+      "duration_ms": 1487,
+      "start_srt": "00:00:32,003",
+      "end_srt": "00:00:33,490",
+      "text": "el sistema cruza tus pesajes,",
+      "words": [
+        {
+          "word": "el",
+          "start_ms": 32003,
+          "end_ms": 32110,
+          "start_srt": "00:00:32,003",
+          "end_srt": "00:00:32,110",
+          "probability": 0.9922
+        },
+        {
+          "word": "sistema",
+          "start_ms": 32110,
+          "end_ms": 32371,
+          "start_srt": "00:00:32,110",
+          "end_srt": "00:00:32,371",
+          "probability": 0.9799
+        },
+        {
+          "word": "cruza",
+          "start_ms": 32371,
+          "end_ms": 32726,
+          "start_srt": "00:00:32,371",
+          "end_srt": "00:00:32,726",
+          "probability": 0.9959
+        },
+        {
+          "word": "tus",
+          "start_ms": 32726,
+          "end_ms": 32908,
+          "start_srt": "00:00:32,726",
+          "end_srt": "00:00:32,908",
+          "probability": 0.9885
+        },
+        {
+          "word": "pesajes,",
+          "start_ms": 32908,
+          "end_ms": 33490,
+          "start_srt": "00:00:32,908",
+          "end_srt": "00:00:33,490",
+          "probability": 0.9196
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "type": "silence",
+      "start_ms": 33490,
+      "end_ms": 33774,
+      "duration_ms": 284,
+      "start_srt": "00:00:33,490",
+      "end_srt": "00:00:33,774",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 22,
+      "type": "speech",
+      "start_ms": 33774,
+      "end_ms": 37564,
+      "duration_ms": 3790,
+      "start_srt": "00:00:33,774",
+      "end_srt": "00:00:37,564",
+      "text": "ordeños y hectáreas de potreros para mostrarte tu producción de carne y leche por hectárea, tu",
+      "words": [
+        {
+          "word": "ordeños",
+          "start_ms": 33774,
+          "end_ms": 34090,
+          "start_srt": "00:00:33,774",
+          "end_srt": "00:00:34,090",
+          "probability": 0.9923
+        },
+        {
+          "word": "y",
+          "start_ms": 34090,
+          "end_ms": 34231,
+          "start_srt": "00:00:34,090",
+          "end_srt": "00:00:34,231",
+          "probability": 0.9677
+        },
+        {
+          "word": "hectáreas",
+          "start_ms": 34231,
+          "end_ms": 34510,
+          "start_srt": "00:00:34,231",
+          "end_srt": "00:00:34,510",
+          "probability": 0.9587
+        },
+        {
+          "word": "de",
+          "start_ms": 34510,
+          "end_ms": 34636,
+          "start_srt": "00:00:34,510",
+          "end_srt": "00:00:34,636",
+          "probability": 0.9986
+        },
+        {
+          "word": "potreros",
+          "start_ms": 34636,
+          "end_ms": 35076,
+          "start_srt": "00:00:34,636",
+          "end_srt": "00:00:35,076",
+          "probability": 0.9968
+        },
+        {
+          "word": "para",
+          "start_ms": 35076,
+          "end_ms": 35269,
+          "start_srt": "00:00:35,076",
+          "end_srt": "00:00:35,269",
+          "probability": 0.9826
+        },
+        {
+          "word": "mostrarte",
+          "start_ms": 35269,
+          "end_ms": 35743,
+          "start_srt": "00:00:35,269",
+          "end_srt": "00:00:35,743",
+          "probability": 0.9839
+        },
+        {
+          "word": "tu",
+          "start_ms": 35743,
+          "end_ms": 35870,
+          "start_srt": "00:00:35,743",
+          "end_srt": "00:00:35,870",
+          "probability": 0.9913
+        },
+        {
+          "word": "producción",
+          "start_ms": 35870,
+          "end_ms": 36177,
+          "start_srt": "00:00:35,870",
+          "end_srt": "00:00:36,177",
+          "probability": 0.9977
+        },
+        {
+          "word": "de",
+          "start_ms": 36177,
+          "end_ms": 36408,
+          "start_srt": "00:00:36,177",
+          "end_srt": "00:00:36,408",
+          "probability": 0.9986
+        },
+        {
+          "word": "carne",
+          "start_ms": 36408,
+          "end_ms": 36630,
+          "start_srt": "00:00:36,408",
+          "end_srt": "00:00:36,630",
+          "probability": 0.9981
+        },
+        {
+          "word": "y",
+          "start_ms": 36630,
+          "end_ms": 36810,
+          "start_srt": "00:00:36,630",
+          "end_srt": "00:00:36,810",
+          "probability": 0.998
+        },
+        {
+          "word": "leche",
+          "start_ms": 36810,
+          "end_ms": 36961,
+          "start_srt": "00:00:36,810",
+          "end_srt": "00:00:36,961",
+          "probability": 0.9936
+        },
+        {
+          "word": "polectaria,",
+          "start_ms": 36961,
+          "end_ms": 37479,
+          "start_srt": "00:00:36,961",
+          "end_srt": "00:00:37,479",
+          "probability": 0.9826
+        },
+        {
+          "word": "tu",
+          "start_ms": 37479,
+          "end_ms": 37564,
+          "start_srt": "00:00:37,479",
+          "end_srt": "00:00:37,564",
+          "probability": 0.1438
+        }
+      ]
+    },
+    {
+      "index": 23,
+      "type": "silence",
+      "start_ms": 37564,
+      "end_ms": 37872,
+      "duration_ms": 308,
+      "start_srt": "00:00:37,564",
+      "end_srt": "00:00:37,872",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 24,
+      "type": "speech",
+      "start_ms": 37872,
+      "end_ms": 40849,
+      "duration_ms": 2977,
+      "start_srt": "00:00:37,872",
+      "end_srt": "00:00:40,849",
+      "text": "carga en Unidades Gran Ganado y tu tasa de extracción frente a Fedegán.",
+      "words": [
+        {
+          "word": "carga",
+          "start_ms": 37872,
+          "end_ms": 38120,
+          "start_srt": "00:00:37,872",
+          "end_srt": "00:00:38,120",
+          "probability": 0.8953
+        },
+        {
+          "word": "en",
+          "start_ms": 38120,
+          "end_ms": 38300,
+          "start_srt": "00:00:38,120",
+          "end_srt": "00:00:38,300",
+          "probability": 0.8787
+        },
+        {
+          "word": "unidad",
+          "start_ms": 38300,
+          "end_ms": 38540,
+          "start_srt": "00:00:38,300",
+          "end_srt": "00:00:38,540",
+          "probability": 0.9531
+        },
+        {
+          "word": "es",
+          "start_ms": 38540,
+          "end_ms": 38720,
+          "start_srt": "00:00:38,540",
+          "end_srt": "00:00:38,720",
+          "probability": 0.9928
+        },
+        {
+          "word": "gran",
+          "start_ms": 38720,
+          "end_ms": 38840,
+          "start_srt": "00:00:38,720",
+          "end_srt": "00:00:38,840",
+          "probability": 0.9069
+        },
+        {
+          "word": "ganado",
+          "start_ms": 38840,
+          "end_ms": 39200,
+          "start_srt": "00:00:38,840",
+          "end_srt": "00:00:39,200",
+          "probability": 0.9793
+        },
+        {
+          "word": "y",
+          "start_ms": 39200,
+          "end_ms": 39356,
+          "start_srt": "00:00:39,200",
+          "end_srt": "00:00:39,356",
+          "probability": 0.9738
+        },
+        {
+          "word": "tu",
+          "start_ms": 39356,
+          "end_ms": 39371,
+          "start_srt": "00:00:39,356",
+          "end_srt": "00:00:39,371",
+          "probability": 0.983
+        },
+        {
+          "word": "tasa",
+          "start_ms": 39371,
+          "end_ms": 39662,
+          "start_srt": "00:00:39,371",
+          "end_srt": "00:00:39,662",
+          "probability": 0.9796
+        },
+        {
+          "word": "de",
+          "start_ms": 39662,
+          "end_ms": 39739,
+          "start_srt": "00:00:39,662",
+          "end_srt": "00:00:39,739",
+          "probability": 0.9764
+        },
+        {
+          "word": "extracción",
+          "start_ms": 39739,
+          "end_ms": 40112,
+          "start_srt": "00:00:39,739",
+          "end_srt": "00:00:40,112",
+          "probability": 0.9628
+        },
+        {
+          "word": "frente",
+          "start_ms": 40112,
+          "end_ms": 40331,
+          "start_srt": "00:00:40,112",
+          "end_srt": "00:00:40,331",
+          "probability": 0.9973
+        },
+        {
+          "word": "a",
+          "start_ms": 40331,
+          "end_ms": 40540,
+          "start_srt": "00:00:40,331",
+          "end_srt": "00:00:40,540",
+          "probability": 0.9876
+        },
+        {
+          "word": "Feegan.",
+          "start_ms": 40540,
+          "end_ms": 40849,
+          "start_srt": "00:00:40,540",
+          "end_srt": "00:00:40,849",
+          "probability": 0.2012
+        }
+      ]
+    },
+    {
+      "index": 25,
+      "type": "silence",
+      "start_ms": 40849,
+      "end_ms": 42186,
+      "duration_ms": 1337,
+      "start_srt": "00:00:40,849",
+      "end_srt": "00:00:42,186",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 26,
+      "type": "speech",
+      "start_ms": 42186,
+      "end_ms": 44950,
+      "duration_ms": 2764,
+      "start_srt": "00:00:42,186",
+      "end_srt": "00:00:44,950",
+      "text": "En el resumen analítico tienes dos indicadores en tiempo real.",
+      "words": [
+        {
+          "word": "En",
+          "start_ms": 42186,
+          "end_ms": 42290,
+          "start_srt": "00:00:42,186",
+          "end_srt": "00:00:42,290",
+          "probability": 0.9734
+        },
+        {
+          "word": "el",
+          "start_ms": 42290,
+          "end_ms": 42410,
+          "start_srt": "00:00:42,290",
+          "end_srt": "00:00:42,410",
+          "probability": 0.9965
+        },
+        {
+          "word": "resumen",
+          "start_ms": 42410,
+          "end_ms": 42710,
+          "start_srt": "00:00:42,410",
+          "end_srt": "00:00:42,710",
+          "probability": 0.9912
+        },
+        {
+          "word": "analítico",
+          "start_ms": 42710,
+          "end_ms": 43225,
+          "start_srt": "00:00:42,710",
+          "end_srt": "00:00:43,225",
+          "probability": 0.9731
+        },
+        {
+          "word": "tienes",
+          "start_ms": 43225,
+          "end_ms": 43450,
+          "start_srt": "00:00:43,225",
+          "end_srt": "00:00:43,450",
+          "probability": 0.9432
+        },
+        {
+          "word": "dos",
+          "start_ms": 43450,
+          "end_ms": 43630,
+          "start_srt": "00:00:43,450",
+          "end_srt": "00:00:43,630",
+          "probability": 0.8595
+        },
+        {
+          "word": "indicadores",
+          "start_ms": 43630,
+          "end_ms": 44150,
+          "start_srt": "00:00:43,630",
+          "end_srt": "00:00:44,150",
+          "probability": 0.9874
+        },
+        {
+          "word": "en",
+          "start_ms": 44150,
+          "end_ms": 44390,
+          "start_srt": "00:00:44,150",
+          "end_srt": "00:00:44,390",
+          "probability": 0.9901
+        },
+        {
+          "word": "tiempo",
+          "start_ms": 44390,
+          "end_ms": 44629,
+          "start_srt": "00:00:44,390",
+          "end_srt": "00:00:44,629",
+          "probability": 0.9919
+        },
+        {
+          "word": "real.",
+          "start_ms": 44629,
+          "end_ms": 44950,
+          "start_srt": "00:00:44,629",
+          "end_srt": "00:00:44,950",
+          "probability": 0.9925
+        }
+      ]
+    },
+    {
+      "index": 27,
+      "type": "silence",
+      "start_ms": 44950,
+      "end_ms": 45231,
+      "duration_ms": 281,
+      "start_srt": "00:00:44,950",
+      "end_srt": "00:00:45,231",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 28,
+      "type": "speech",
+      "start_ms": 45231,
+      "end_ms": 46740,
+      "duration_ms": 1509,
+      "start_srt": "00:00:45,231",
+      "end_srt": "00:00:46,740",
+      "text": "Cuántas vacas están en lactancia,",
+      "words": [
+        {
+          "word": "Cuántas",
+          "start_ms": 45231,
+          "end_ms": 45479,
+          "start_srt": "00:00:45,231",
+          "end_srt": "00:00:45,479",
+          "probability": 0.6587
+        },
+        {
+          "word": "vacas",
+          "start_ms": 45479,
+          "end_ms": 45800,
+          "start_srt": "00:00:45,479",
+          "end_srt": "00:00:45,800",
+          "probability": 0.9842
+        },
+        {
+          "word": "están",
+          "start_ms": 45800,
+          "end_ms": 46040,
+          "start_srt": "00:00:45,800",
+          "end_srt": "00:00:46,040",
+          "probability": 0.9731
+        },
+        {
+          "word": "en",
+          "start_ms": 46040,
+          "end_ms": 46180,
+          "start_srt": "00:00:46,040",
+          "end_srt": "00:00:46,180",
+          "probability": 0.9972
+        },
+        {
+          "word": "lactancia,",
+          "start_ms": 46180,
+          "end_ms": 46740,
+          "start_srt": "00:00:46,180",
+          "end_srt": "00:00:46,740",
+          "probability": 0.9729
+        }
+      ]
+    },
+    {
+      "index": 29,
+      "type": "silence",
+      "start_ms": 46740,
+      "end_ms": 47063,
+      "duration_ms": 323,
+      "start_srt": "00:00:46,740",
+      "end_srt": "00:00:47,063",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 30,
+      "type": "speech",
+      "start_ms": 47063,
+      "end_ms": 48062,
+      "duration_ms": 999,
+      "start_srt": "00:00:47,063",
+      "end_srt": "00:00:48,062",
+      "text": "nacimientos del periodo,",
+      "words": [
+        {
+          "word": "nacimientos",
+          "start_ms": 47063,
+          "end_ms": 47450,
+          "start_srt": "00:00:47,063",
+          "end_srt": "00:00:47,450",
+          "probability": 0.9799
+        },
+        {
+          "word": "del",
+          "start_ms": 47450,
+          "end_ms": 47690,
+          "start_srt": "00:00:47,450",
+          "end_srt": "00:00:47,690",
+          "probability": 0.625
+        },
+        {
+          "word": "periodo,",
+          "start_ms": 47690,
+          "end_ms": 48062,
+          "start_srt": "00:00:47,690",
+          "end_srt": "00:00:48,062",
+          "probability": 0.6966
+        }
+      ]
+    },
+    {
+      "index": 31,
+      "type": "silence",
+      "start_ms": 48062,
+      "end_ms": 48378,
+      "duration_ms": 316,
+      "start_srt": "00:00:48,062",
+      "end_srt": "00:00:48,378",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 32,
+      "type": "speech",
+      "start_ms": 48378,
+      "end_ms": 49089,
+      "duration_ms": 711,
+      "start_srt": "00:00:48,378",
+      "end_srt": "00:00:49,089",
+      "text": "toros activos,",
+      "words": [
+        {
+          "word": "todos",
+          "start_ms": 48378,
+          "end_ms": 48480,
+          "start_srt": "00:00:48,378",
+          "end_srt": "00:00:48,480",
+          "probability": 0.4085
+        },
+        {
+          "word": "activos,",
+          "start_ms": 48480,
+          "end_ms": 49089,
+          "start_srt": "00:00:48,480",
+          "end_srt": "00:00:49,089",
+          "probability": 0.9328
+        }
+      ]
+    },
+    {
+      "index": 33,
+      "type": "silence",
+      "start_ms": 49089,
+      "end_ms": 49313,
+      "duration_ms": 224,
+      "start_srt": "00:00:49,089",
+      "end_srt": "00:00:49,313",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 34,
+      "type": "speech",
+      "start_ms": 49313,
+      "end_ms": 50492,
+      "duration_ms": 1179,
+      "start_srt": "00:00:49,313",
+      "end_srt": "00:00:50,492",
+      "text": "cuál es tu vaca más productora,",
+      "words": [
+        {
+          "word": "cuál",
+          "start_ms": 49313,
+          "end_ms": 49380,
+          "start_srt": "00:00:49,313",
+          "end_srt": "00:00:49,380",
+          "probability": 0.6615
+        },
+        {
+          "word": "es",
+          "start_ms": 49380,
+          "end_ms": 49540,
+          "start_srt": "00:00:49,380",
+          "end_srt": "00:00:49,540",
+          "probability": 0.8699
+        },
+        {
+          "word": "tu",
+          "start_ms": 49540,
+          "end_ms": 49640,
+          "start_srt": "00:00:49,540",
+          "end_srt": "00:00:49,640",
+          "probability": 0.9968
+        },
+        {
+          "word": "vaca",
+          "start_ms": 49640,
+          "end_ms": 49815,
+          "start_srt": "00:00:49,640",
+          "end_srt": "00:00:49,815",
+          "probability": 0.9693
+        },
+        {
+          "word": "más",
+          "start_ms": 49815,
+          "end_ms": 49976,
+          "start_srt": "00:00:49,815",
+          "end_srt": "00:00:49,976",
+          "probability": 0.9898
+        },
+        {
+          "word": "productora,",
+          "start_ms": 49976,
+          "end_ms": 50492,
+          "start_srt": "00:00:49,976",
+          "end_srt": "00:00:50,492",
+          "probability": 0.9423
+        }
+      ]
+    },
+    {
+      "index": 35,
+      "type": "silence",
+      "start_ms": 50492,
+      "end_ms": 50754,
+      "duration_ms": 262,
+      "start_srt": "00:00:50,492",
+      "end_srt": "00:00:50,754",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 36,
+      "type": "speech",
+      "start_ms": 50754,
+      "end_ms": 52886,
+      "duration_ms": 2132,
+      "start_srt": "00:00:50,754",
+      "end_srt": "00:00:52,886",
+      "text": "el peso promedio del hato y el estado general de salud.",
+      "words": [
+        {
+          "word": "el",
+          "start_ms": 50754,
+          "end_ms": 50840,
+          "start_srt": "00:00:50,754",
+          "end_srt": "00:00:50,840",
+          "probability": 0.993
+        },
+        {
+          "word": "peso",
+          "start_ms": 50840,
+          "end_ms": 51015,
+          "start_srt": "00:00:50,840",
+          "end_srt": "00:00:51,015",
+          "probability": 0.9905
+        },
+        {
+          "word": "promedio",
+          "start_ms": 51015,
+          "end_ms": 51420,
+          "start_srt": "00:00:51,015",
+          "end_srt": "00:00:51,420",
+          "probability": 0.9969
+        },
+        {
+          "word": "del",
+          "start_ms": 51420,
+          "end_ms": 51560,
+          "start_srt": "00:00:51,420",
+          "end_srt": "00:00:51,560",
+          "probability": 0.5084
+        },
+        {
+          "word": "ato",
+          "start_ms": 51560,
+          "end_ms": 51780,
+          "start_srt": "00:00:51,560",
+          "end_srt": "00:00:51,780",
+          "probability": 0.8803
+        },
+        {
+          "word": "y",
+          "start_ms": 51780,
+          "end_ms": 51840,
+          "start_srt": "00:00:51,780",
+          "end_srt": "00:00:51,840",
+          "probability": 0.9794
+        },
+        {
+          "word": "el",
+          "start_ms": 51840,
+          "end_ms": 51940,
+          "start_srt": "00:00:51,840",
+          "end_srt": "00:00:51,940",
+          "probability": 0.9982
+        },
+        {
+          "word": "estado",
+          "start_ms": 51940,
+          "end_ms": 52120,
+          "start_srt": "00:00:51,940",
+          "end_srt": "00:00:52,120",
+          "probability": 0.9242
+        },
+        {
+          "word": "general",
+          "start_ms": 52120,
+          "end_ms": 52400,
+          "start_srt": "00:00:52,120",
+          "end_srt": "00:00:52,400",
+          "probability": 0.9815
+        },
+        {
+          "word": "de",
+          "start_ms": 52400,
+          "end_ms": 52620,
+          "start_srt": "00:00:52,400",
+          "end_srt": "00:00:52,620",
+          "probability": 0.9967
+        },
+        {
+          "word": "salud.",
+          "start_ms": 52620,
+          "end_ms": 52886,
+          "start_srt": "00:00:52,620",
+          "end_srt": "00:00:52,886",
+          "probability": 0.9948
+        }
+      ]
+    },
+    {
+      "index": 37,
+      "type": "silence",
+      "start_ms": 52886,
+      "end_ms": 54173,
+      "duration_ms": 1287,
+      "start_srt": "00:00:52,886",
+      "end_srt": "00:00:54,173",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 38,
+      "type": "speech",
+      "start_ms": 54173,
+      "end_ms": 54547,
+      "duration_ms": 374,
+      "start_srt": "00:00:54,173",
+      "end_srt": "00:00:54,547",
+      "text": "Debajo,",
+      "words": [
+        {
+          "word": "Debajo,",
+          "start_ms": 54173,
+          "end_ms": 54547,
+          "start_srt": "00:00:54,173",
+          "end_srt": "00:00:54,547",
+          "probability": 0.8359
+        }
+      ]
+    },
+    {
+      "index": 39,
+      "type": "silence",
+      "start_ms": 54547,
+      "end_ms": 54808,
+      "duration_ms": 261,
+      "start_srt": "00:00:54,547",
+      "end_srt": "00:00:54,808",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 40,
+      "type": "speech",
+      "start_ms": 54808,
+      "end_ms": 57800,
+      "duration_ms": 2992,
+      "start_srt": "00:00:54,808",
+      "end_srt": "00:00:57,800",
+      "text": "la sección de producción convierte tus registros diarios en gráficas visuales.",
+      "words": [
+        {
+          "word": "la",
+          "start_ms": 54808,
+          "end_ms": 54890,
+          "start_srt": "00:00:54,808",
+          "end_srt": "00:00:54,890",
+          "probability": 0.9919
+        },
+        {
+          "word": "sección",
+          "start_ms": 54890,
+          "end_ms": 55190,
+          "start_srt": "00:00:54,890",
+          "end_srt": "00:00:55,190",
+          "probability": 0.9873
+        },
+        {
+          "word": "de",
+          "start_ms": 55190,
+          "end_ms": 55270,
+          "start_srt": "00:00:55,190",
+          "end_srt": "00:00:55,270",
+          "probability": 0.9978
+        },
+        {
+          "word": "producción",
+          "start_ms": 55270,
+          "end_ms": 55515,
+          "start_srt": "00:00:55,270",
+          "end_srt": "00:00:55,515",
+          "probability": 0.9971
+        },
+        {
+          "word": "convierte",
+          "start_ms": 55515,
+          "end_ms": 55975,
+          "start_srt": "00:00:55,515",
+          "end_srt": "00:00:55,975",
+          "probability": 0.9631
+        },
+        {
+          "word": "tu",
+          "start_ms": 55975,
+          "end_ms": 56110,
+          "start_srt": "00:00:55,975",
+          "end_srt": "00:00:56,110",
+          "probability": 0.9791
+        },
+        {
+          "word": "registro",
+          "start_ms": 56110,
+          "end_ms": 56490,
+          "start_srt": "00:00:56,110",
+          "end_srt": "00:00:56,490",
+          "probability": 0.997
+        },
+        {
+          "word": "diarios",
+          "start_ms": 56490,
+          "end_ms": 56750,
+          "start_srt": "00:00:56,490",
+          "end_srt": "00:00:56,750",
+          "probability": 0.9263
+        },
+        {
+          "word": "en",
+          "start_ms": 56750,
+          "end_ms": 56930,
+          "start_srt": "00:00:56,750",
+          "end_srt": "00:00:56,930",
+          "probability": 0.9979
+        },
+        {
+          "word": "gráficas",
+          "start_ms": 56930,
+          "end_ms": 57289,
+          "start_srt": "00:00:56,930",
+          "end_srt": "00:00:57,289",
+          "probability": 0.9964
+        },
+        {
+          "word": "visuales.",
+          "start_ms": 57289,
+          "end_ms": 57800,
+          "start_srt": "00:00:57,289",
+          "end_srt": "00:00:57,800",
+          "probability": 0.9906
+        }
+      ]
+    },
+    {
+      "index": 41,
+      "type": "silence",
+      "start_ms": 57800,
+      "end_ms": 58135,
+      "duration_ms": 335,
+      "start_srt": "00:00:57,800",
+      "end_srt": "00:00:58,135",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 42,
+      "type": "speech",
+      "start_ms": 58135,
+      "end_ms": 59269,
+      "duration_ms": 1134,
+      "start_srt": "00:00:58,135",
+      "end_srt": "00:00:59,269",
+      "text": "La curva de leche día por día,",
+      "words": [
+        {
+          "word": "La",
+          "start_ms": 58135,
+          "end_ms": 58220,
+          "start_srt": "00:00:58,135",
+          "end_srt": "00:00:58,220",
+          "probability": 0.9576
+        },
+        {
+          "word": "curva",
+          "start_ms": 58220,
+          "end_ms": 58440,
+          "start_srt": "00:00:58,220",
+          "end_srt": "00:00:58,440",
+          "probability": 0.9758
+        },
+        {
+          "word": "de",
+          "start_ms": 58440,
+          "end_ms": 58540,
+          "start_srt": "00:00:58,440",
+          "end_srt": "00:00:58,540",
+          "probability": 0.9797
+        },
+        {
+          "word": "leche",
+          "start_ms": 58540,
+          "end_ms": 58701,
+          "start_srt": "00:00:58,540",
+          "end_srt": "00:00:58,701",
+          "probability": 0.887
+        },
+        {
+          "word": "día",
+          "start_ms": 58701,
+          "end_ms": 58879,
+          "start_srt": "00:00:58,701",
+          "end_srt": "00:00:58,879",
+          "probability": 0.6059
+        },
+        {
+          "word": "por",
+          "start_ms": 58879,
+          "end_ms": 59031,
+          "start_srt": "00:00:58,879",
+          "end_srt": "00:00:59,031",
+          "probability": 0.9943
+        },
+        {
+          "word": "día,",
+          "start_ms": 59031,
+          "end_ms": 59269,
+          "start_srt": "00:00:59,031",
+          "end_srt": "00:00:59,269",
+          "probability": 0.9928
+        }
+      ]
+    },
+    {
+      "index": 43,
+      "type": "silence",
+      "start_ms": 59269,
+      "end_ms": 59539,
+      "duration_ms": 270,
+      "start_srt": "00:00:59,269",
+      "end_srt": "00:00:59,539",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 44,
+      "type": "speech",
+      "start_ms": 59539,
+      "end_ms": 61950,
+      "duration_ms": 2411,
+      "start_srt": "00:00:59,539",
+      "end_srt": "00:01:01,950",
+      "text": "el balance de potreros en pastoreo y los nacimientos por fecha.",
+      "words": [
+        {
+          "word": "el",
+          "start_ms": 59539,
+          "end_ms": 59620,
+          "start_srt": "00:00:59,539",
+          "end_srt": "00:00:59,620",
+          "probability": 0.9958
+        },
+        {
+          "word": "balance",
+          "start_ms": 59620,
+          "end_ms": 59820,
+          "start_srt": "00:00:59,620",
+          "end_srt": "00:00:59,820",
+          "probability": 0.9922
+        },
+        {
+          "word": "de",
+          "start_ms": 59820,
+          "end_ms": 60020,
+          "start_srt": "00:00:59,820",
+          "end_srt": "00:01:00,020",
+          "probability": 0.971
+        },
+        {
+          "word": "potreros",
+          "start_ms": 60020,
+          "end_ms": 60360,
+          "start_srt": "00:01:00,020",
+          "end_srt": "00:01:00,360",
+          "probability": 0.9656
+        },
+        {
+          "word": "en",
+          "start_ms": 60360,
+          "end_ms": 60440,
+          "start_srt": "00:01:00,360",
+          "end_srt": "00:01:00,440",
+          "probability": 0.9941
+        },
+        {
+          "word": "pastoreo",
+          "start_ms": 60440,
+          "end_ms": 60869,
+          "start_srt": "00:01:00,440",
+          "end_srt": "00:01:00,869",
+          "probability": 0.9542
+        },
+        {
+          "word": "y",
+          "start_ms": 60869,
+          "end_ms": 61000,
+          "start_srt": "00:01:00,869",
+          "end_srt": "00:01:01,000",
+          "probability": 0.9886
+        },
+        {
+          "word": "los",
+          "start_ms": 61000,
+          "end_ms": 61100,
+          "start_srt": "00:01:01,000",
+          "end_srt": "00:01:01,100",
+          "probability": 0.9928
+        },
+        {
+          "word": "nacimientos",
+          "start_ms": 61100,
+          "end_ms": 61480,
+          "start_srt": "00:01:01,100",
+          "end_srt": "00:01:01,480",
+          "probability": 0.9731
+        },
+        {
+          "word": "por",
+          "start_ms": 61480,
+          "end_ms": 61787,
+          "start_srt": "00:01:01,480",
+          "end_srt": "00:01:01,787",
+          "probability": 0.9901
+        },
+        {
+          "word": "fecha.",
+          "start_ms": 61787,
+          "end_ms": 61950,
+          "start_srt": "00:01:01,787",
+          "end_srt": "00:01:01,950",
+          "probability": 0.9969
+        }
+      ]
+    },
+    {
+      "index": 45,
+      "type": "silence",
+      "start_ms": 61950,
+      "end_ms": 63163,
+      "duration_ms": 1213,
+      "start_srt": "00:01:01,950",
+      "end_srt": "00:01:03,163",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 46,
+      "type": "speech",
+      "start_ms": 63163,
+      "end_ms": 63602,
+      "duration_ms": 439,
+      "start_srt": "00:01:03,163",
+      "end_srt": "00:01:03,602",
+      "text": "Más abajo,",
+      "words": [
+        {
+          "word": "Más",
+          "start_ms": 63163,
+          "end_ms": 63310,
+          "start_srt": "00:01:03,163",
+          "end_srt": "00:01:03,310",
+          "probability": 0.926
+        },
+        {
+          "word": "abajo,",
+          "start_ms": 63310,
+          "end_ms": 63602,
+          "start_srt": "00:01:03,310",
+          "end_srt": "00:01:03,602",
+          "probability": 0.9931
+        }
+      ]
+    },
+    {
+      "index": 47,
+      "type": "silence",
+      "start_ms": 63602,
+      "end_ms": 63850,
+      "duration_ms": 248,
+      "start_srt": "00:01:03,602",
+      "end_srt": "00:01:03,850",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 48,
+      "type": "speech",
+      "start_ms": 63850,
+      "end_ms": 66634,
+      "duration_ms": 2784,
+      "start_srt": "00:01:03,850",
+      "end_srt": "00:01:06,634",
+      "text": "el resumen financiero trae automáticamente los datos del módulo de finanzas,",
+      "words": [
+        {
+          "word": "el",
+          "start_ms": 63850,
+          "end_ms": 63950,
+          "start_srt": "00:01:03,850",
+          "end_srt": "00:01:03,950",
+          "probability": 0.9881
+        },
+        {
+          "word": "resumen",
+          "start_ms": 63950,
+          "end_ms": 64179,
+          "start_srt": "00:01:03,950",
+          "end_srt": "00:01:04,179",
+          "probability": 0.9931
+        },
+        {
+          "word": "financiero",
+          "start_ms": 64179,
+          "end_ms": 64577,
+          "start_srt": "00:01:04,179",
+          "end_srt": "00:01:04,577",
+          "probability": 0.9971
+        },
+        {
+          "word": "trae",
+          "start_ms": 64577,
+          "end_ms": 64810,
+          "start_srt": "00:01:04,577",
+          "end_srt": "00:01:04,810",
+          "probability": 0.9751
+        },
+        {
+          "word": "automáticamente",
+          "start_ms": 64810,
+          "end_ms": 65330,
+          "start_srt": "00:01:04,810",
+          "end_srt": "00:01:05,330",
+          "probability": 0.9727
+        },
+        {
+          "word": "los",
+          "start_ms": 65330,
+          "end_ms": 65510,
+          "start_srt": "00:01:05,330",
+          "end_srt": "00:01:05,510",
+          "probability": 0.9952
+        },
+        {
+          "word": "datos",
+          "start_ms": 65510,
+          "end_ms": 65714,
+          "start_srt": "00:01:05,510",
+          "end_srt": "00:01:05,714",
+          "probability": 0.9993
+        },
+        {
+          "word": "del",
+          "start_ms": 65714,
+          "end_ms": 65870,
+          "start_srt": "00:01:05,714",
+          "end_srt": "00:01:05,870",
+          "probability": 0.9947
+        },
+        {
+          "word": "módulo",
+          "start_ms": 65870,
+          "end_ms": 66050,
+          "start_srt": "00:01:05,870",
+          "end_srt": "00:01:06,050",
+          "probability": 0.9408
+        },
+        {
+          "word": "de",
+          "start_ms": 66050,
+          "end_ms": 66170,
+          "start_srt": "00:01:06,050",
+          "end_srt": "00:01:06,170",
+          "probability": 0.9946
+        },
+        {
+          "word": "finanzas,",
+          "start_ms": 66170,
+          "end_ms": 66634,
+          "start_srt": "00:01:06,170",
+          "end_srt": "00:01:06,634",
+          "probability": 0.9781
+        }
+      ]
+    },
+    {
+      "index": 49,
+      "type": "silence",
+      "start_ms": 66634,
+      "end_ms": 66882,
+      "duration_ms": 248,
+      "start_srt": "00:01:06,634",
+      "end_srt": "00:01:06,882",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 50,
+      "type": "speech",
+      "start_ms": 66882,
+      "end_ms": 68106,
+      "duration_ms": 1224,
+      "start_srt": "00:01:06,882",
+      "end_srt": "00:01:08,106",
+      "text": "tus ingresos, egresos,",
+      "words": [
+        {
+          "word": "tus",
+          "start_ms": 66882,
+          "end_ms": 66970,
+          "start_srt": "00:01:06,882",
+          "end_srt": "00:01:06,970",
+          "probability": 0.9941
+        },
+        {
+          "word": "ingresos,",
+          "start_ms": 66970,
+          "end_ms": 67318,
+          "start_srt": "00:01:06,970",
+          "end_srt": "00:01:07,318",
+          "probability": 0.999
+        },
+        {
+          "word": "egresos,",
+          "start_ms": 67318,
+          "end_ms": 68106,
+          "start_srt": "00:01:07,318",
+          "end_srt": "00:01:08,106",
+          "probability": 0.7202
+        }
+      ]
+    },
+    {
+      "index": 51,
+      "type": "silence",
+      "start_ms": 68106,
+      "end_ms": 68353,
+      "duration_ms": 247,
+      "start_srt": "00:01:08,106",
+      "end_srt": "00:01:08,353",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 52,
+      "type": "speech",
+      "start_ms": 68353,
+      "end_ms": 70974,
+      "duration_ms": 2621,
+      "start_srt": "00:01:08,353",
+      "end_srt": "00:01:10,974",
+      "text": "el valor actual de tu bodega de inventario y cuánto vale hoy todo tu ganado sumado.",
+      "words": [
+        {
+          "word": "el",
+          "start_ms": 68353,
+          "end_ms": 68430,
+          "start_srt": "00:01:08,353",
+          "end_srt": "00:01:08,430",
+          "probability": 0.9573
+        },
+        {
+          "word": "valor",
+          "start_ms": 68430,
+          "end_ms": 68590,
+          "start_srt": "00:01:08,430",
+          "end_srt": "00:01:08,590",
+          "probability": 0.9985
+        },
+        {
+          "word": "actual",
+          "start_ms": 68590,
+          "end_ms": 68824,
+          "start_srt": "00:01:08,590",
+          "end_srt": "00:01:08,824",
+          "probability": 0.997
+        },
+        {
+          "word": "de",
+          "start_ms": 68824,
+          "end_ms": 68949,
+          "start_srt": "00:01:08,824",
+          "end_srt": "00:01:08,949",
+          "probability": 0.998
+        },
+        {
+          "word": "tu",
+          "start_ms": 68949,
+          "end_ms": 69110,
+          "start_srt": "00:01:08,949",
+          "end_srt": "00:01:09,110",
+          "probability": 0.9924
+        },
+        {
+          "word": "vega",
+          "start_ms": 69110,
+          "end_ms": 69292,
+          "start_srt": "00:01:09,110",
+          "end_srt": "00:01:09,292",
+          "probability": 0.5963
+        },
+        {
+          "word": "inventario",
+          "start_ms": 69292,
+          "end_ms": 69702,
+          "start_srt": "00:01:09,292",
+          "end_srt": "00:01:09,702",
+          "probability": 0.6443
+        },
+        {
+          "word": "cuanto",
+          "start_ms": 69702,
+          "end_ms": 69930,
+          "start_srt": "00:01:09,702",
+          "end_srt": "00:01:09,930",
+          "probability": 0.5217
+        },
+        {
+          "word": "vale",
+          "start_ms": 69930,
+          "end_ms": 70150,
+          "start_srt": "00:01:09,930",
+          "end_srt": "00:01:10,150",
+          "probability": 0.9442
+        },
+        {
+          "word": "o",
+          "start_ms": 70150,
+          "end_ms": 70205,
+          "start_srt": "00:01:10,150",
+          "end_srt": "00:01:10,205",
+          "probability": 0.5699
+        },
+        {
+          "word": "y",
+          "start_ms": 70205,
+          "end_ms": 70337,
+          "start_srt": "00:01:10,205",
+          "end_srt": "00:01:10,337",
+          "probability": 0.9151
+        },
+        {
+          "word": "todo",
+          "start_ms": 70337,
+          "end_ms": 70395,
+          "start_srt": "00:01:10,337",
+          "end_srt": "00:01:10,395",
+          "probability": 0.9672
+        },
+        {
+          "word": "tu",
+          "start_ms": 70395,
+          "end_ms": 70517,
+          "start_srt": "00:01:10,395",
+          "end_srt": "00:01:10,517",
+          "probability": 0.9568
+        },
+        {
+          "word": "ganado",
+          "start_ms": 70517,
+          "end_ms": 70730,
+          "start_srt": "00:01:10,517",
+          "end_srt": "00:01:10,730",
+          "probability": 0.8861
+        },
+        {
+          "word": "sumado.",
+          "start_ms": 70730,
+          "end_ms": 70974,
+          "start_srt": "00:01:10,730",
+          "end_srt": "00:01:10,974",
+          "probability": 0.9916
+        }
+      ]
+    },
+    {
+      "index": 53,
+      "type": "silence",
+      "start_ms": 70974,
+      "end_ms": 72200,
+      "duration_ms": 1226,
+      "start_srt": "00:01:10,974",
+      "end_srt": "00:01:12,200",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 54,
+      "type": "speech",
+      "start_ms": 72200,
+      "end_ms": 77739,
+      "duration_ms": 5539,
+      "start_srt": "00:01:12,200",
+      "end_srt": "00:01:17,739",
+      "text": "Incluso cruza tus gastos contra los litros ordeñados para decirte cuántos pesos te cuesta producir cada litro de leche,",
+      "words": [
+        {
+          "word": "Incluso",
+          "start_ms": 72200,
+          "end_ms": 72600,
+          "start_srt": "00:01:12,200",
+          "end_srt": "00:01:12,600",
+          "probability": 0.9767
+        },
+        {
+          "word": "cruza",
+          "start_ms": 72600,
+          "end_ms": 72864,
+          "start_srt": "00:01:12,600",
+          "end_srt": "00:01:12,864",
+          "probability": 0.975
+        },
+        {
+          "word": "tus",
+          "start_ms": 72864,
+          "end_ms": 73020,
+          "start_srt": "00:01:12,864",
+          "end_srt": "00:01:13,020",
+          "probability": 0.9933
+        },
+        {
+          "word": "gastos",
+          "start_ms": 73020,
+          "end_ms": 73388,
+          "start_srt": "00:01:13,020",
+          "end_srt": "00:01:13,388",
+          "probability": 0.9982
+        },
+        {
+          "word": "contra",
+          "start_ms": 73388,
+          "end_ms": 73685,
+          "start_srt": "00:01:13,388",
+          "end_srt": "00:01:13,685",
+          "probability": 0.9746
+        },
+        {
+          "word": "los",
+          "start_ms": 73685,
+          "end_ms": 73860,
+          "start_srt": "00:01:13,685",
+          "end_srt": "00:01:13,860",
+          "probability": 0.9753
+        },
+        {
+          "word": "litros",
+          "start_ms": 73860,
+          "end_ms": 74180,
+          "start_srt": "00:01:13,860",
+          "end_srt": "00:01:14,180",
+          "probability": 0.9805
+        },
+        {
+          "word": "ordeños",
+          "start_ms": 74180,
+          "end_ms": 74600,
+          "start_srt": "00:01:14,180",
+          "end_srt": "00:01:14,600",
+          "probability": 0.5893
+        },
+        {
+          "word": "para",
+          "start_ms": 74600,
+          "end_ms": 74880,
+          "start_srt": "00:01:14,600",
+          "end_srt": "00:01:14,880",
+          "probability": 0.9774
+        },
+        {
+          "word": "decirte",
+          "start_ms": 74880,
+          "end_ms": 75282,
+          "start_srt": "00:01:14,880",
+          "end_srt": "00:01:15,282",
+          "probability": 0.9782
+        },
+        {
+          "word": "cuántos",
+          "start_ms": 75282,
+          "end_ms": 75649,
+          "start_srt": "00:01:15,282",
+          "end_srt": "00:01:15,649",
+          "probability": 0.8646
+        },
+        {
+          "word": "pesos",
+          "start_ms": 75649,
+          "end_ms": 75860,
+          "start_srt": "00:01:15,649",
+          "end_srt": "00:01:15,860",
+          "probability": 0.9873
+        },
+        {
+          "word": "te",
+          "start_ms": 75860,
+          "end_ms": 76070,
+          "start_srt": "00:01:15,860",
+          "end_srt": "00:01:16,070",
+          "probability": 0.9936
+        },
+        {
+          "word": "cuesta",
+          "start_ms": 76070,
+          "end_ms": 76375,
+          "start_srt": "00:01:16,070",
+          "end_srt": "00:01:16,375",
+          "probability": 0.994
+        },
+        {
+          "word": "producir",
+          "start_ms": 76375,
+          "end_ms": 76864,
+          "start_srt": "00:01:16,375",
+          "end_srt": "00:01:16,864",
+          "probability": 0.9917
+        },
+        {
+          "word": "cada",
+          "start_ms": 76864,
+          "end_ms": 76980,
+          "start_srt": "00:01:16,864",
+          "end_srt": "00:01:16,980",
+          "probability": 0.9975
+        },
+        {
+          "word": "litro",
+          "start_ms": 76980,
+          "end_ms": 77301,
+          "start_srt": "00:01:16,980",
+          "end_srt": "00:01:17,301",
+          "probability": 0.9877
+        },
+        {
+          "word": "de",
+          "start_ms": 77301,
+          "end_ms": 77380,
+          "start_srt": "00:01:17,301",
+          "end_srt": "00:01:17,380",
+          "probability": 0.9701
+        },
+        {
+          "word": "leche,",
+          "start_ms": 77380,
+          "end_ms": 77739,
+          "start_srt": "00:01:17,380",
+          "end_srt": "00:01:17,739",
+          "probability": 0.9947
+        }
+      ]
+    },
+    {
+      "index": 55,
+      "type": "silence",
+      "start_ms": 77739,
+      "end_ms": 78104,
+      "duration_ms": 365,
+      "start_srt": "00:01:17,739",
+      "end_srt": "00:01:18,104",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 56,
+      "type": "speech",
+      "start_ms": 78104,
+      "end_ms": 80285,
+      "duration_ms": 2181,
+      "start_srt": "00:01:18,104",
+      "end_srt": "00:01:20,285",
+      "text": "graficando a la derecha el flujo de caja mes a mes.",
+      "words": [
+        {
+          "word": "graficando",
+          "start_ms": 78104,
+          "end_ms": 78601,
+          "start_srt": "00:01:18,104",
+          "end_srt": "00:01:18,601",
+          "probability": 0.9653
+        },
+        {
+          "word": "a",
+          "start_ms": 78601,
+          "end_ms": 78680,
+          "start_srt": "00:01:18,601",
+          "end_srt": "00:01:18,680",
+          "probability": 0.9919
+        },
+        {
+          "word": "la",
+          "start_ms": 78680,
+          "end_ms": 78740,
+          "start_srt": "00:01:18,680",
+          "end_srt": "00:01:18,740",
+          "probability": 0.9984
+        },
+        {
+          "word": "derecha",
+          "start_ms": 78740,
+          "end_ms": 79060,
+          "start_srt": "00:01:18,740",
+          "end_srt": "00:01:19,060",
+          "probability": 0.9986
+        },
+        {
+          "word": "el",
+          "start_ms": 79060,
+          "end_ms": 79107,
+          "start_srt": "00:01:19,060",
+          "end_srt": "00:01:19,107",
+          "probability": 0.9584
+        },
+        {
+          "word": "flujo",
+          "start_ms": 79107,
+          "end_ms": 79478,
+          "start_srt": "00:01:19,107",
+          "end_srt": "00:01:19,478",
+          "probability": 0.9954
+        },
+        {
+          "word": "de",
+          "start_ms": 79478,
+          "end_ms": 79560,
+          "start_srt": "00:01:19,478",
+          "end_srt": "00:01:19,560",
+          "probability": 0.9958
+        },
+        {
+          "word": "caja",
+          "start_ms": 79560,
+          "end_ms": 79778,
+          "start_srt": "00:01:19,560",
+          "end_srt": "00:01:19,778",
+          "probability": 0.9648
+        },
+        {
+          "word": "mes",
+          "start_ms": 79778,
+          "end_ms": 79940,
+          "start_srt": "00:01:19,778",
+          "end_srt": "00:01:19,940",
+          "probability": 0.5118
+        },
+        {
+          "word": "a",
+          "start_ms": 79940,
+          "end_ms": 80060,
+          "start_srt": "00:01:19,940",
+          "end_srt": "00:01:20,060",
+          "probability": 0.9879
+        },
+        {
+          "word": "mes.",
+          "start_ms": 80060,
+          "end_ms": 80285,
+          "start_srt": "00:01:20,060",
+          "end_srt": "00:01:20,285",
+          "probability": 0.9984
+        }
+      ]
+    },
+    {
+      "index": 57,
+      "type": "silence",
+      "start_ms": 80285,
+      "end_ms": 89210,
+      "duration_ms": 8925,
+      "start_srt": "00:01:20,285",
+      "end_srt": "00:01:29,210",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 58,
+      "type": "speech",
+      "start_ms": 89210,
+      "end_ms": 89866,
+      "duration_ms": 656,
+      "start_srt": "00:01:29,210",
+      "end_srt": "00:01:29,866",
+      "text": "Finalmente,",
+      "words": [
+        {
+          "word": "Finalmente,",
+          "start_ms": 89210,
+          "end_ms": 89866,
+          "start_srt": "00:01:29,210",
+          "end_srt": "00:01:29,866",
+          "probability": 0.9915
+        }
+      ]
+    },
+    {
+      "index": 59,
+      "type": "silence",
+      "start_ms": 89866,
+      "end_ms": 90170,
+      "duration_ms": 304,
+      "start_srt": "00:01:29,866",
+      "end_srt": "00:01:30,170",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 60,
+      "type": "speech",
+      "start_ms": 90170,
+      "end_ms": 94550,
+      "duration_ms": 4380,
+      "start_srt": "00:01:30,170",
+      "end_srt": "00:01:34,550",
+      "text": "en la base tienes el comparativo automático frente a los estándares ideales de tu tipo de ganadería,",
+      "words": [
+        {
+          "word": "en",
+          "start_ms": 90170,
+          "end_ms": 90270,
+          "start_srt": "00:01:30,170",
+          "end_srt": "00:01:30,270",
+          "probability": 0.9873
+        },
+        {
+          "word": "la",
+          "start_ms": 90270,
+          "end_ms": 90370,
+          "start_srt": "00:01:30,270",
+          "end_srt": "00:01:30,370",
+          "probability": 0.9895
+        },
+        {
+          "word": "base",
+          "start_ms": 90370,
+          "end_ms": 90530,
+          "start_srt": "00:01:30,370",
+          "end_srt": "00:01:30,530",
+          "probability": 0.9925
+        },
+        {
+          "word": "tienes",
+          "start_ms": 90530,
+          "end_ms": 90770,
+          "start_srt": "00:01:30,530",
+          "end_srt": "00:01:30,770",
+          "probability": 0.9705
+        },
+        {
+          "word": "el",
+          "start_ms": 90770,
+          "end_ms": 90944,
+          "start_srt": "00:01:30,770",
+          "end_srt": "00:01:30,944",
+          "probability": 0.9965
+        },
+        {
+          "word": "comparativo",
+          "start_ms": 90944,
+          "end_ms": 91490,
+          "start_srt": "00:01:30,944",
+          "end_srt": "00:01:31,490",
+          "probability": 0.9908
+        },
+        {
+          "word": "automático",
+          "start_ms": 91490,
+          "end_ms": 92072,
+          "start_srt": "00:01:31,490",
+          "end_srt": "00:01:32,072",
+          "probability": 0.9945
+        },
+        {
+          "word": "frente",
+          "start_ms": 92072,
+          "end_ms": 92290,
+          "start_srt": "00:01:32,072",
+          "end_srt": "00:01:32,290",
+          "probability": 0.9993
+        },
+        {
+          "word": "a",
+          "start_ms": 92290,
+          "end_ms": 92510,
+          "start_srt": "00:01:32,290",
+          "end_srt": "00:01:32,510",
+          "probability": 0.9962
+        },
+        {
+          "word": "los",
+          "start_ms": 92510,
+          "end_ms": 92610,
+          "start_srt": "00:01:32,510",
+          "end_srt": "00:01:32,610",
+          "probability": 0.9959
+        },
+        {
+          "word": "estándares",
+          "start_ms": 92610,
+          "end_ms": 93070,
+          "start_srt": "00:01:32,610",
+          "end_srt": "00:01:33,070",
+          "probability": 0.9422
+        },
+        {
+          "word": "ideales",
+          "start_ms": 93070,
+          "end_ms": 93510,
+          "start_srt": "00:01:33,070",
+          "end_srt": "00:01:33,510",
+          "probability": 0.574
+        },
+        {
+          "word": "de",
+          "start_ms": 93510,
+          "end_ms": 93579,
+          "start_srt": "00:01:33,510",
+          "end_srt": "00:01:33,579",
+          "probability": 0.9977
+        },
+        {
+          "word": "tu",
+          "start_ms": 93579,
+          "end_ms": 93704,
+          "start_srt": "00:01:33,579",
+          "end_srt": "00:01:33,704",
+          "probability": 0.9972
+        },
+        {
+          "word": "tipo",
+          "start_ms": 93704,
+          "end_ms": 93973,
+          "start_srt": "00:01:33,704",
+          "end_srt": "00:01:33,973",
+          "probability": 0.9966
+        },
+        {
+          "word": "de",
+          "start_ms": 93973,
+          "end_ms": 94050,
+          "start_srt": "00:01:33,973",
+          "end_srt": "00:01:34,050",
+          "probability": 0.999
+        },
+        {
+          "word": "ganadería,",
+          "start_ms": 94050,
+          "end_ms": 94550,
+          "start_srt": "00:01:34,050",
+          "end_srt": "00:01:34,550",
+          "probability": 0.9551
+        }
+      ]
+    },
+    {
+      "index": 61,
+      "type": "silence",
+      "start_ms": 94550,
+      "end_ms": 94884,
+      "duration_ms": 334,
+      "start_srt": "00:01:34,550",
+      "end_srt": "00:01:34,884",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 62,
+      "type": "speech",
+      "start_ms": 94884,
+      "end_ms": 98149,
+      "duration_ms": 3265,
+      "start_srt": "00:01:34,884",
+      "end_srt": "00:01:38,149",
+      "text": "indicándote en qué métricas superas el promedio y cuáles debes optimizar.",
+      "words": [
+        {
+          "word": "indicándote",
+          "start_ms": 94884,
+          "end_ms": 95466,
+          "start_srt": "00:01:34,884",
+          "end_srt": "00:01:35,466",
+          "probability": 0.9837
+        },
+        {
+          "word": "en",
+          "start_ms": 95466,
+          "end_ms": 95542,
+          "start_srt": "00:01:35,466",
+          "end_srt": "00:01:35,542",
+          "probability": 0.9894
+        },
+        {
+          "word": "que",
+          "start_ms": 95542,
+          "end_ms": 95630,
+          "start_srt": "00:01:35,542",
+          "end_srt": "00:01:35,630",
+          "probability": 0.5755
+        },
+        {
+          "word": "métricas",
+          "start_ms": 95630,
+          "end_ms": 96106,
+          "start_srt": "00:01:35,630",
+          "end_srt": "00:01:36,106",
+          "probability": 0.9043
+        },
+        {
+          "word": "superas",
+          "start_ms": 96106,
+          "end_ms": 96510,
+          "start_srt": "00:01:36,106",
+          "end_srt": "00:01:36,510",
+          "probability": 0.9746
+        },
+        {
+          "word": "el",
+          "start_ms": 96510,
+          "end_ms": 96591,
+          "start_srt": "00:01:36,510",
+          "end_srt": "00:01:36,591",
+          "probability": 0.9976
+        },
+        {
+          "word": "promedio",
+          "start_ms": 96591,
+          "end_ms": 97060,
+          "start_srt": "00:01:36,591",
+          "end_srt": "00:01:37,060",
+          "probability": 0.997
+        },
+        {
+          "word": "y",
+          "start_ms": 97060,
+          "end_ms": 97150,
+          "start_srt": "00:01:37,060",
+          "end_srt": "00:01:37,150",
+          "probability": 0.9831
+        },
+        {
+          "word": "cuáles",
+          "start_ms": 97150,
+          "end_ms": 97391,
+          "start_srt": "00:01:37,150",
+          "end_srt": "00:01:37,391",
+          "probability": 0.7987
+        },
+        {
+          "word": "debes",
+          "start_ms": 97391,
+          "end_ms": 97630,
+          "start_srt": "00:01:37,391",
+          "end_srt": "00:01:37,630",
+          "probability": 0.9859
+        },
+        {
+          "word": "optimizar.",
+          "start_ms": 97630,
+          "end_ms": 98149,
+          "start_srt": "00:01:37,630",
+          "end_srt": "00:01:38,149",
+          "probability": 0.9922
+        }
+      ]
+    },
+    {
+      "index": 63,
+      "type": "silence",
+      "start_ms": 98149,
+      "end_ms": 102540,
+      "duration_ms": 4391,
+      "start_srt": "00:01:38,149",
+      "end_srt": "00:01:42,540",
+      "text": "[...]",
+      "words": []
+    }
+  ],
+  "words": [
+    {
+      "word": "Hola,",
+      "start_ms": 4030,
+      "end_ms": 4297,
+      "start_srt": "00:00:04,030",
+      "end_srt": "00:00:04,297",
+      "probability": 0.7677
+    },
+    {
+      "word": "bienvenido",
+      "start_ms": 5039,
+      "end_ms": 5410,
+      "start_srt": "00:00:05,039",
+      "end_srt": "00:00:05,410",
+      "probability": 0.9437
+    },
+    {
+      "word": "a",
+      "start_ms": 5410,
+      "end_ms": 5530,
+      "start_srt": "00:00:05,410",
+      "end_srt": "00:00:05,530",
+      "probability": 0.9158
+    },
+    {
+      "word": "un",
+      "start_ms": 5530,
+      "end_ms": 5540,
+      "start_srt": "00:00:05,530",
+      "end_srt": "00:00:05,540",
+      "probability": 0.9246
+    },
+    {
+      "word": "nuevo",
+      "start_ms": 5540,
+      "end_ms": 5630,
+      "start_srt": "00:00:05,540",
+      "end_srt": "00:00:05,630",
+      "probability": 0.996
+    },
+    {
+      "word": "tutorial",
+      "start_ms": 5630,
+      "end_ms": 5910,
+      "start_srt": "00:00:05,630",
+      "end_srt": "00:00:05,910",
+      "probability": 0.9879
+    },
+    {
+      "word": "de",
+      "start_ms": 5910,
+      "end_ms": 6110,
+      "start_srt": "00:00:05,910",
+      "end_srt": "00:00:06,110",
+      "probability": 0.9959
+    },
+    {
+      "word": "DataGun",
+      "start_ms": 6110,
+      "end_ms": 6361,
+      "start_srt": "00:00:06,110",
+      "end_srt": "00:00:06,361",
+      "probability": 0.4287
+    },
+    {
+      "word": "360,",
+      "start_ms": 6361,
+      "end_ms": 7162,
+      "start_srt": "00:00:06,361",
+      "end_srt": "00:00:07,162",
+      "probability": 0.4713
+    },
+    {
+      "word": "una",
+      "start_ms": 8159,
+      "end_ms": 8290,
+      "start_srt": "00:00:08,159",
+      "end_srt": "00:00:08,290",
+      "probability": 0.9729
+    },
+    {
+      "word": "vez",
+      "start_ms": 8290,
+      "end_ms": 8410,
+      "start_srt": "00:00:08,290",
+      "end_srt": "00:00:08,410",
+      "probability": 0.9975
+    },
+    {
+      "word": "que",
+      "start_ms": 8410,
+      "end_ms": 8492,
+      "start_srt": "00:00:08,410",
+      "end_srt": "00:00:08,492",
+      "probability": 0.9943
+    },
+    {
+      "word": "he",
+      "start_ms": 8492,
+      "end_ms": 8550,
+      "start_srt": "00:00:08,492",
+      "end_srt": "00:00:08,550",
+      "probability": 0.6597
+    },
+    {
+      "word": "registrado",
+      "start_ms": 8550,
+      "end_ms": 8863,
+      "start_srt": "00:00:08,550",
+      "end_srt": "00:00:08,863",
+      "probability": 0.9978
+    },
+    {
+      "word": "potreros,",
+      "start_ms": 8863,
+      "end_ms": 9386,
+      "start_srt": "00:00:08,863",
+      "end_srt": "00:00:09,386",
+      "probability": 0.9788
+    },
+    {
+      "word": "animales,",
+      "start_ms": 9613,
+      "end_ms": 9922,
+      "start_srt": "00:00:09,613",
+      "end_srt": "00:00:09,922",
+      "probability": 0.9788
+    },
+    {
+      "word": "ordeños",
+      "start_ms": 10234,
+      "end_ms": 10530,
+      "start_srt": "00:00:10,234",
+      "end_srt": "00:00:10,530",
+      "probability": 0.9035
+    },
+    {
+      "word": "y",
+      "start_ms": 10530,
+      "end_ms": 10650,
+      "start_srt": "00:00:10,530",
+      "end_srt": "00:00:10,650",
+      "probability": 0.9805
+    },
+    {
+      "word": "finanzas,",
+      "start_ms": 10650,
+      "end_ms": 11092,
+      "start_srt": "00:00:10,650",
+      "end_srt": "00:00:11,092",
+      "probability": 0.9898
+    },
+    {
+      "word": "así",
+      "start_ms": 11365,
+      "end_ms": 11490,
+      "start_srt": "00:00:11,365",
+      "end_srt": "00:00:11,490",
+      "probability": 0.9597
+    },
+    {
+      "word": "corabida",
+      "start_ms": 11490,
+      "end_ms": 11750,
+      "start_srt": "00:00:11,490",
+      "end_srt": "00:00:11,750",
+      "probability": 0.446
+    },
+    {
+      "word": "la",
+      "start_ms": 11750,
+      "end_ms": 11910,
+      "start_srt": "00:00:11,750",
+      "end_srt": "00:00:11,910",
+      "probability": 0.956
+    },
+    {
+      "word": "pestaña",
+      "start_ms": 11910,
+      "end_ms": 12210,
+      "start_srt": "00:00:11,910",
+      "end_srt": "00:00:12,210",
+      "probability": 0.9816
+    },
+    {
+      "word": "analítica",
+      "start_ms": 12210,
+      "end_ms": 12610,
+      "start_srt": "00:00:12,210",
+      "end_srt": "00:00:12,610",
+      "probability": 0.9741
+    },
+    {
+      "word": "del",
+      "start_ms": 12610,
+      "end_ms": 12730,
+      "start_srt": "00:00:12,610",
+      "end_srt": "00:00:12,730",
+      "probability": 0.9455
+    },
+    {
+      "word": "Dashboard,",
+      "start_ms": 12730,
+      "end_ms": 13097,
+      "start_srt": "00:00:12,730",
+      "end_srt": "00:00:13,097",
+      "probability": 0.6578
+    },
+    {
+      "word": "arriba",
+      "start_ms": 13433,
+      "end_ms": 13550,
+      "start_srt": "00:00:13,433",
+      "end_srt": "00:00:13,550",
+      "probability": 0.9627
+    },
+    {
+      "word": "es",
+      "start_ms": 13550,
+      "end_ms": 13746,
+      "start_srt": "00:00:13,550",
+      "end_srt": "00:00:13,746",
+      "probability": 0.4804
+    },
+    {
+      "word": "cuántos",
+      "start_ms": 13746,
+      "end_ms": 13991,
+      "start_srt": "00:00:13,746",
+      "end_srt": "00:00:13,991",
+      "probability": 0.8287
+    },
+    {
+      "word": "potreros",
+      "start_ms": 13991,
+      "end_ms": 14306,
+      "start_srt": "00:00:13,991",
+      "end_srt": "00:00:14,306",
+      "probability": 0.998
+    },
+    {
+      "word": "tienes",
+      "start_ms": 14306,
+      "end_ms": 14470,
+      "start_srt": "00:00:14,306",
+      "end_srt": "00:00:14,470",
+      "probability": 0.9866
+    },
+    {
+      "word": "ocupados",
+      "start_ms": 14470,
+      "end_ms": 14847,
+      "start_srt": "00:00:14,470",
+      "end_srt": "00:00:14,847",
+      "probability": 0.8147
+    },
+    {
+      "word": "o",
+      "start_ms": 14847,
+      "end_ms": 14971,
+      "start_srt": "00:00:14,847",
+      "end_srt": "00:00:14,971",
+      "probability": 0.9803
+    },
+    {
+      "word": "descansando",
+      "start_ms": 14971,
+      "end_ms": 15319,
+      "start_srt": "00:00:14,971",
+      "end_srt": "00:00:15,319",
+      "probability": 0.9922
+    },
+    {
+      "word": "junto",
+      "start_ms": 15319,
+      "end_ms": 15431,
+      "start_srt": "00:00:15,319",
+      "end_srt": "00:00:15,431",
+      "probability": 0.9144
+    },
+    {
+      "word": "a",
+      "start_ms": 15431,
+      "end_ms": 15630,
+      "start_srt": "00:00:15,431",
+      "end_srt": "00:00:15,630",
+      "probability": 0.9956
+    },
+    {
+      "word": "sus",
+      "start_ms": 15630,
+      "end_ms": 15690,
+      "start_srt": "00:00:15,630",
+      "end_srt": "00:00:15,690",
+      "probability": 0.993
+    },
+    {
+      "word": "polígonos",
+      "start_ms": 15690,
+      "end_ms": 16070,
+      "start_srt": "00:00:15,690",
+      "end_srt": "00:00:16,070",
+      "probability": 0.9804
+    },
+    {
+      "word": "en",
+      "start_ms": 16070,
+      "end_ms": 16170,
+      "start_srt": "00:00:16,070",
+      "end_srt": "00:00:16,170",
+      "probability": 0.9916
+    },
+    {
+      "word": "el",
+      "start_ms": 16170,
+      "end_ms": 16250,
+      "start_srt": "00:00:16,170",
+      "end_srt": "00:00:16,250",
+      "probability": 0.9944
+    },
+    {
+      "word": "mapa",
+      "start_ms": 16250,
+      "end_ms": 16350,
+      "start_srt": "00:00:16,250",
+      "end_srt": "00:00:16,350",
+      "probability": 0.9475
+    },
+    {
+      "word": "satelital.",
+      "start_ms": 16350,
+      "end_ms": 16833,
+      "start_srt": "00:00:16,350",
+      "end_srt": "00:00:16,833",
+      "probability": 0.9622
+    },
+    {
+      "word": "En",
+      "start_ms": 17853,
+      "end_ms": 17950,
+      "start_srt": "00:00:17,853",
+      "end_srt": "00:00:17,950",
+      "probability": 0.9857
+    },
+    {
+      "word": "la",
+      "start_ms": 17950,
+      "end_ms": 18070,
+      "start_srt": "00:00:17,950",
+      "end_srt": "00:00:18,070",
+      "probability": 0.9798
+    },
+    {
+      "word": "barra",
+      "start_ms": 18070,
+      "end_ms": 18270,
+      "start_srt": "00:00:18,070",
+      "end_srt": "00:00:18,270",
+      "probability": 0.99
+    },
+    {
+      "word": "de",
+      "start_ms": 18270,
+      "end_ms": 18410,
+      "start_srt": "00:00:18,270",
+      "end_srt": "00:00:18,410",
+      "probability": 0.9971
+    },
+    {
+      "word": "filtros",
+      "start_ms": 18410,
+      "end_ms": 18670,
+      "start_srt": "00:00:18,410",
+      "end_srt": "00:00:18,670",
+      "probability": 0.9896
+    },
+    {
+      "word": "puedes",
+      "start_ms": 18670,
+      "end_ms": 18930,
+      "start_srt": "00:00:18,670",
+      "end_srt": "00:00:18,930",
+      "probability": 0.9244
+    },
+    {
+      "word": "elegir",
+      "start_ms": 18930,
+      "end_ms": 19310,
+      "start_srt": "00:00:18,930",
+      "end_srt": "00:00:19,310",
+      "probability": 0.9833
+    },
+    {
+      "word": "si",
+      "start_ms": 19310,
+      "end_ms": 19470,
+      "start_srt": "00:00:19,310",
+      "end_srt": "00:00:19,470",
+      "probability": 0.995
+    },
+    {
+      "word": "deseas",
+      "start_ms": 19470,
+      "end_ms": 19770,
+      "start_srt": "00:00:19,470",
+      "end_srt": "00:00:19,770",
+      "probability": 0.9863
+    },
+    {
+      "word": "analizar",
+      "start_ms": 19770,
+      "end_ms": 20170,
+      "start_srt": "00:00:19,770",
+      "end_srt": "00:00:20,170",
+      "probability": 0.9954
+    },
+    {
+      "word": "los",
+      "start_ms": 20170,
+      "end_ms": 20356,
+      "start_srt": "00:00:20,170",
+      "end_srt": "00:00:20,356",
+      "probability": 0.9965
+    },
+    {
+      "word": "últimos",
+      "start_ms": 20356,
+      "end_ms": 20670,
+      "start_srt": "00:00:20,356",
+      "end_srt": "00:00:20,670",
+      "probability": 0.998
+    },
+    {
+      "word": "30",
+      "start_ms": 20670,
+      "end_ms": 20950,
+      "start_srt": "00:00:20,670",
+      "end_srt": "00:00:20,950",
+      "probability": 0.9229
+    },
+    {
+      "word": "días",
+      "start_ms": 20950,
+      "end_ms": 21350,
+      "start_srt": "00:00:20,950",
+      "end_srt": "00:00:21,350",
+      "probability": 0.9976
+    },
+    {
+      "word": "sobre",
+      "start_ms": 21350,
+      "end_ms": 21610,
+      "start_srt": "00:00:21,350",
+      "end_srt": "00:00:21,610",
+      "probability": 0.3448
+    },
+    {
+      "word": "un",
+      "start_ms": 21610,
+      "end_ms": 21810,
+      "start_srt": "00:00:21,610",
+      "end_srt": "00:00:21,810",
+      "probability": 0.8746
+    },
+    {
+      "word": "rango",
+      "start_ms": 21810,
+      "end_ms": 22050,
+      "start_srt": "00:00:21,810",
+      "end_srt": "00:00:22,050",
+      "probability": 0.9917
+    },
+    {
+      "word": "personalizado",
+      "start_ms": 22050,
+      "end_ms": 22810,
+      "start_srt": "00:00:22,050",
+      "end_srt": "00:00:22,810",
+      "probability": 0.9951
+    },
+    {
+      "word": "de",
+      "start_ms": 22810,
+      "end_ms": 22950,
+      "start_srt": "00:00:22,810",
+      "end_srt": "00:00:22,950",
+      "probability": 0.9498
+    },
+    {
+      "word": "fechas",
+      "start_ms": 22950,
+      "end_ms": 23251,
+      "start_srt": "00:00:22,950",
+      "end_srt": "00:00:23,251",
+      "probability": 0.9934
+    },
+    {
+      "word": "para",
+      "start_ms": 23251,
+      "end_ms": 23490,
+      "start_srt": "00:00:23,251",
+      "end_srt": "00:00:23,490",
+      "probability": 0.9894
+    },
+    {
+      "word": "auditar",
+      "start_ms": 23490,
+      "end_ms": 23798,
+      "start_srt": "00:00:23,490",
+      "end_srt": "00:00:23,798",
+      "probability": 0.8304
+    },
+    {
+      "word": "cualquier",
+      "start_ms": 23798,
+      "end_ms": 24030,
+      "start_srt": "00:00:23,798",
+      "end_srt": "00:00:24,030",
+      "probability": 0.9914
+    },
+    {
+      "word": "época",
+      "start_ms": 24030,
+      "end_ms": 24464,
+      "start_srt": "00:00:24,030",
+      "end_srt": "00:00:24,464",
+      "probability": 0.9975
+    },
+    {
+      "word": "del",
+      "start_ms": 24464,
+      "end_ms": 24690,
+      "start_srt": "00:00:24,464",
+      "end_srt": "00:00:24,690",
+      "probability": 0.9952
+    },
+    {
+      "word": "año.",
+      "start_ms": 24690,
+      "end_ms": 24791,
+      "start_srt": "00:00:24,690",
+      "end_srt": "00:00:24,791",
+      "probability": 0.9984
+    },
+    {
+      "word": "Al",
+      "start_ms": 29184,
+      "end_ms": 29266,
+      "start_srt": "00:00:29,184",
+      "end_srt": "00:00:29,266",
+      "probability": 0.9788
+    },
+    {
+      "word": "pasar",
+      "start_ms": 29266,
+      "end_ms": 29540,
+      "start_srt": "00:00:29,266",
+      "end_srt": "00:00:29,540",
+      "probability": 0.9975
+    },
+    {
+      "word": "el",
+      "start_ms": 29540,
+      "end_ms": 29700,
+      "start_srt": "00:00:29,540",
+      "end_srt": "00:00:29,700",
+      "probability": 0.9829
+    },
+    {
+      "word": "mouse",
+      "start_ms": 29700,
+      "end_ms": 29840,
+      "start_srt": "00:00:29,700",
+      "end_srt": "00:00:29,840",
+      "probability": 0.494
+    },
+    {
+      "word": "por",
+      "start_ms": 29840,
+      "end_ms": 30040,
+      "start_srt": "00:00:29,840",
+      "end_srt": "00:00:30,040",
+      "probability": 0.9908
+    },
+    {
+      "word": "las",
+      "start_ms": 30040,
+      "end_ms": 30160,
+      "start_srt": "00:00:30,040",
+      "end_srt": "00:00:30,160",
+      "probability": 0.9937
+    },
+    {
+      "word": "tarjetas",
+      "start_ms": 30160,
+      "end_ms": 30560,
+      "start_srt": "00:00:30,160",
+      "end_srt": "00:00:30,560",
+      "probability": 0.9948
+    },
+    {
+      "word": "de",
+      "start_ms": 30560,
+      "end_ms": 30663,
+      "start_srt": "00:00:30,560",
+      "end_srt": "00:00:30,663",
+      "probability": 0.9625
+    },
+    {
+      "word": "eficiencia",
+      "start_ms": 30663,
+      "end_ms": 31040,
+      "start_srt": "00:00:30,663",
+      "end_srt": "00:00:31,040",
+      "probability": 0.9761
+    },
+    {
+      "word": "polectaria,",
+      "start_ms": 31040,
+      "end_ms": 31653,
+      "start_srt": "00:00:31,040",
+      "end_srt": "00:00:31,653",
+      "probability": 0.7677
+    },
+    {
+      "word": "el",
+      "start_ms": 32003,
+      "end_ms": 32110,
+      "start_srt": "00:00:32,003",
+      "end_srt": "00:00:32,110",
+      "probability": 0.9922
+    },
+    {
+      "word": "sistema",
+      "start_ms": 32110,
+      "end_ms": 32371,
+      "start_srt": "00:00:32,110",
+      "end_srt": "00:00:32,371",
+      "probability": 0.9799
+    },
+    {
+      "word": "cruza",
+      "start_ms": 32371,
+      "end_ms": 32726,
+      "start_srt": "00:00:32,371",
+      "end_srt": "00:00:32,726",
+      "probability": 0.9959
+    },
+    {
+      "word": "tus",
+      "start_ms": 32726,
+      "end_ms": 32908,
+      "start_srt": "00:00:32,726",
+      "end_srt": "00:00:32,908",
+      "probability": 0.9885
+    },
+    {
+      "word": "pesajes,",
+      "start_ms": 32908,
+      "end_ms": 33490,
+      "start_srt": "00:00:32,908",
+      "end_srt": "00:00:33,490",
+      "probability": 0.9196
+    },
+    {
+      "word": "ordeños",
+      "start_ms": 33774,
+      "end_ms": 34090,
+      "start_srt": "00:00:33,774",
+      "end_srt": "00:00:34,090",
+      "probability": 0.9923
+    },
+    {
+      "word": "y",
+      "start_ms": 34090,
+      "end_ms": 34231,
+      "start_srt": "00:00:34,090",
+      "end_srt": "00:00:34,231",
+      "probability": 0.9677
+    },
+    {
+      "word": "hectáreas",
+      "start_ms": 34231,
+      "end_ms": 34510,
+      "start_srt": "00:00:34,231",
+      "end_srt": "00:00:34,510",
+      "probability": 0.9587
+    },
+    {
+      "word": "de",
+      "start_ms": 34510,
+      "end_ms": 34636,
+      "start_srt": "00:00:34,510",
+      "end_srt": "00:00:34,636",
+      "probability": 0.9986
+    },
+    {
+      "word": "potreros",
+      "start_ms": 34636,
+      "end_ms": 35076,
+      "start_srt": "00:00:34,636",
+      "end_srt": "00:00:35,076",
+      "probability": 0.9968
+    },
+    {
+      "word": "para",
+      "start_ms": 35076,
+      "end_ms": 35269,
+      "start_srt": "00:00:35,076",
+      "end_srt": "00:00:35,269",
+      "probability": 0.9826
+    },
+    {
+      "word": "mostrarte",
+      "start_ms": 35269,
+      "end_ms": 35743,
+      "start_srt": "00:00:35,269",
+      "end_srt": "00:00:35,743",
+      "probability": 0.9839
+    },
+    {
+      "word": "tu",
+      "start_ms": 35743,
+      "end_ms": 35870,
+      "start_srt": "00:00:35,743",
+      "end_srt": "00:00:35,870",
+      "probability": 0.9913
+    },
+    {
+      "word": "producción",
+      "start_ms": 35870,
+      "end_ms": 36177,
+      "start_srt": "00:00:35,870",
+      "end_srt": "00:00:36,177",
+      "probability": 0.9977
+    },
+    {
+      "word": "de",
+      "start_ms": 36177,
+      "end_ms": 36408,
+      "start_srt": "00:00:36,177",
+      "end_srt": "00:00:36,408",
+      "probability": 0.9986
+    },
+    {
+      "word": "carne",
+      "start_ms": 36408,
+      "end_ms": 36630,
+      "start_srt": "00:00:36,408",
+      "end_srt": "00:00:36,630",
+      "probability": 0.9981
+    },
+    {
+      "word": "y",
+      "start_ms": 36630,
+      "end_ms": 36810,
+      "start_srt": "00:00:36,630",
+      "end_srt": "00:00:36,810",
+      "probability": 0.998
+    },
+    {
+      "word": "leche",
+      "start_ms": 36810,
+      "end_ms": 36961,
+      "start_srt": "00:00:36,810",
+      "end_srt": "00:00:36,961",
+      "probability": 0.9936
+    },
+    {
+      "word": "polectaria,",
+      "start_ms": 36961,
+      "end_ms": 37479,
+      "start_srt": "00:00:36,961",
+      "end_srt": "00:00:37,479",
+      "probability": 0.9826
+    },
+    {
+      "word": "tu",
+      "start_ms": 37479,
+      "end_ms": 37564,
+      "start_srt": "00:00:37,479",
+      "end_srt": "00:00:37,564",
+      "probability": 0.1438
+    },
+    {
+      "word": "carga",
+      "start_ms": 37872,
+      "end_ms": 38120,
+      "start_srt": "00:00:37,872",
+      "end_srt": "00:00:38,120",
+      "probability": 0.8953
+    },
+    {
+      "word": "en",
+      "start_ms": 38120,
+      "end_ms": 38300,
+      "start_srt": "00:00:38,120",
+      "end_srt": "00:00:38,300",
+      "probability": 0.8787
+    },
+    {
+      "word": "unidad",
+      "start_ms": 38300,
+      "end_ms": 38540,
+      "start_srt": "00:00:38,300",
+      "end_srt": "00:00:38,540",
+      "probability": 0.9531
+    },
+    {
+      "word": "es",
+      "start_ms": 38540,
+      "end_ms": 38720,
+      "start_srt": "00:00:38,540",
+      "end_srt": "00:00:38,720",
+      "probability": 0.9928
+    },
+    {
+      "word": "gran",
+      "start_ms": 38720,
+      "end_ms": 38840,
+      "start_srt": "00:00:38,720",
+      "end_srt": "00:00:38,840",
+      "probability": 0.9069
+    },
+    {
+      "word": "ganado",
+      "start_ms": 38840,
+      "end_ms": 39200,
+      "start_srt": "00:00:38,840",
+      "end_srt": "00:00:39,200",
+      "probability": 0.9793
+    },
+    {
+      "word": "y",
+      "start_ms": 39200,
+      "end_ms": 39356,
+      "start_srt": "00:00:39,200",
+      "end_srt": "00:00:39,356",
+      "probability": 0.9738
+    },
+    {
+      "word": "tu",
+      "start_ms": 39356,
+      "end_ms": 39371,
+      "start_srt": "00:00:39,356",
+      "end_srt": "00:00:39,371",
+      "probability": 0.983
+    },
+    {
+      "word": "tasa",
+      "start_ms": 39371,
+      "end_ms": 39662,
+      "start_srt": "00:00:39,371",
+      "end_srt": "00:00:39,662",
+      "probability": 0.9796
+    },
+    {
+      "word": "de",
+      "start_ms": 39662,
+      "end_ms": 39739,
+      "start_srt": "00:00:39,662",
+      "end_srt": "00:00:39,739",
+      "probability": 0.9764
+    },
+    {
+      "word": "extracción",
+      "start_ms": 39739,
+      "end_ms": 40112,
+      "start_srt": "00:00:39,739",
+      "end_srt": "00:00:40,112",
+      "probability": 0.9628
+    },
+    {
+      "word": "frente",
+      "start_ms": 40112,
+      "end_ms": 40331,
+      "start_srt": "00:00:40,112",
+      "end_srt": "00:00:40,331",
+      "probability": 0.9973
+    },
+    {
+      "word": "a",
+      "start_ms": 40331,
+      "end_ms": 40540,
+      "start_srt": "00:00:40,331",
+      "end_srt": "00:00:40,540",
+      "probability": 0.9876
+    },
+    {
+      "word": "Feegan.",
+      "start_ms": 40540,
+      "end_ms": 40849,
+      "start_srt": "00:00:40,540",
+      "end_srt": "00:00:40,849",
+      "probability": 0.2012
+    },
+    {
+      "word": "En",
+      "start_ms": 42186,
+      "end_ms": 42290,
+      "start_srt": "00:00:42,186",
+      "end_srt": "00:00:42,290",
+      "probability": 0.9734
+    },
+    {
+      "word": "el",
+      "start_ms": 42290,
+      "end_ms": 42410,
+      "start_srt": "00:00:42,290",
+      "end_srt": "00:00:42,410",
+      "probability": 0.9965
+    },
+    {
+      "word": "resumen",
+      "start_ms": 42410,
+      "end_ms": 42710,
+      "start_srt": "00:00:42,410",
+      "end_srt": "00:00:42,710",
+      "probability": 0.9912
+    },
+    {
+      "word": "analítico",
+      "start_ms": 42710,
+      "end_ms": 43225,
+      "start_srt": "00:00:42,710",
+      "end_srt": "00:00:43,225",
+      "probability": 0.9731
+    },
+    {
+      "word": "tienes",
+      "start_ms": 43225,
+      "end_ms": 43450,
+      "start_srt": "00:00:43,225",
+      "end_srt": "00:00:43,450",
+      "probability": 0.9432
+    },
+    {
+      "word": "dos",
+      "start_ms": 43450,
+      "end_ms": 43630,
+      "start_srt": "00:00:43,450",
+      "end_srt": "00:00:43,630",
+      "probability": 0.8595
+    },
+    {
+      "word": "indicadores",
+      "start_ms": 43630,
+      "end_ms": 44150,
+      "start_srt": "00:00:43,630",
+      "end_srt": "00:00:44,150",
+      "probability": 0.9874
+    },
+    {
+      "word": "en",
+      "start_ms": 44150,
+      "end_ms": 44390,
+      "start_srt": "00:00:44,150",
+      "end_srt": "00:00:44,390",
+      "probability": 0.9901
+    },
+    {
+      "word": "tiempo",
+      "start_ms": 44390,
+      "end_ms": 44629,
+      "start_srt": "00:00:44,390",
+      "end_srt": "00:00:44,629",
+      "probability": 0.9919
+    },
+    {
+      "word": "real.",
+      "start_ms": 44629,
+      "end_ms": 44950,
+      "start_srt": "00:00:44,629",
+      "end_srt": "00:00:44,950",
+      "probability": 0.9925
+    },
+    {
+      "word": "Cuántas",
+      "start_ms": 45231,
+      "end_ms": 45479,
+      "start_srt": "00:00:45,231",
+      "end_srt": "00:00:45,479",
+      "probability": 0.6587
+    },
+    {
+      "word": "vacas",
+      "start_ms": 45479,
+      "end_ms": 45800,
+      "start_srt": "00:00:45,479",
+      "end_srt": "00:00:45,800",
+      "probability": 0.9842
+    },
+    {
+      "word": "están",
+      "start_ms": 45800,
+      "end_ms": 46040,
+      "start_srt": "00:00:45,800",
+      "end_srt": "00:00:46,040",
+      "probability": 0.9731
+    },
+    {
+      "word": "en",
+      "start_ms": 46040,
+      "end_ms": 46180,
+      "start_srt": "00:00:46,040",
+      "end_srt": "00:00:46,180",
+      "probability": 0.9972
+    },
+    {
+      "word": "lactancia,",
+      "start_ms": 46180,
+      "end_ms": 46740,
+      "start_srt": "00:00:46,180",
+      "end_srt": "00:00:46,740",
+      "probability": 0.9729
+    },
+    {
+      "word": "nacimientos",
+      "start_ms": 47063,
+      "end_ms": 47450,
+      "start_srt": "00:00:47,063",
+      "end_srt": "00:00:47,450",
+      "probability": 0.9799
+    },
+    {
+      "word": "del",
+      "start_ms": 47450,
+      "end_ms": 47690,
+      "start_srt": "00:00:47,450",
+      "end_srt": "00:00:47,690",
+      "probability": 0.625
+    },
+    {
+      "word": "periodo,",
+      "start_ms": 47690,
+      "end_ms": 48062,
+      "start_srt": "00:00:47,690",
+      "end_srt": "00:00:48,062",
+      "probability": 0.6966
+    },
+    {
+      "word": "todos",
+      "start_ms": 48378,
+      "end_ms": 48480,
+      "start_srt": "00:00:48,378",
+      "end_srt": "00:00:48,480",
+      "probability": 0.4085
+    },
+    {
+      "word": "activos,",
+      "start_ms": 48480,
+      "end_ms": 49089,
+      "start_srt": "00:00:48,480",
+      "end_srt": "00:00:49,089",
+      "probability": 0.9328
+    },
+    {
+      "word": "cuál",
+      "start_ms": 49313,
+      "end_ms": 49380,
+      "start_srt": "00:00:49,313",
+      "end_srt": "00:00:49,380",
+      "probability": 0.6615
+    },
+    {
+      "word": "es",
+      "start_ms": 49380,
+      "end_ms": 49540,
+      "start_srt": "00:00:49,380",
+      "end_srt": "00:00:49,540",
+      "probability": 0.8699
+    },
+    {
+      "word": "tu",
+      "start_ms": 49540,
+      "end_ms": 49640,
+      "start_srt": "00:00:49,540",
+      "end_srt": "00:00:49,640",
+      "probability": 0.9968
+    },
+    {
+      "word": "vaca",
+      "start_ms": 49640,
+      "end_ms": 49815,
+      "start_srt": "00:00:49,640",
+      "end_srt": "00:00:49,815",
+      "probability": 0.9693
+    },
+    {
+      "word": "más",
+      "start_ms": 49815,
+      "end_ms": 49976,
+      "start_srt": "00:00:49,815",
+      "end_srt": "00:00:49,976",
+      "probability": 0.9898
+    },
+    {
+      "word": "productora,",
+      "start_ms": 49976,
+      "end_ms": 50492,
+      "start_srt": "00:00:49,976",
+      "end_srt": "00:00:50,492",
+      "probability": 0.9423
+    },
+    {
+      "word": "el",
+      "start_ms": 50754,
+      "end_ms": 50840,
+      "start_srt": "00:00:50,754",
+      "end_srt": "00:00:50,840",
+      "probability": 0.993
+    },
+    {
+      "word": "peso",
+      "start_ms": 50840,
+      "end_ms": 51015,
+      "start_srt": "00:00:50,840",
+      "end_srt": "00:00:51,015",
+      "probability": 0.9905
+    },
+    {
+      "word": "promedio",
+      "start_ms": 51015,
+      "end_ms": 51420,
+      "start_srt": "00:00:51,015",
+      "end_srt": "00:00:51,420",
+      "probability": 0.9969
+    },
+    {
+      "word": "del",
+      "start_ms": 51420,
+      "end_ms": 51560,
+      "start_srt": "00:00:51,420",
+      "end_srt": "00:00:51,560",
+      "probability": 0.5084
+    },
+    {
+      "word": "ato",
+      "start_ms": 51560,
+      "end_ms": 51780,
+      "start_srt": "00:00:51,560",
+      "end_srt": "00:00:51,780",
+      "probability": 0.8803
+    },
+    {
+      "word": "y",
+      "start_ms": 51780,
+      "end_ms": 51840,
+      "start_srt": "00:00:51,780",
+      "end_srt": "00:00:51,840",
+      "probability": 0.9794
+    },
+    {
+      "word": "el",
+      "start_ms": 51840,
+      "end_ms": 51940,
+      "start_srt": "00:00:51,840",
+      "end_srt": "00:00:51,940",
+      "probability": 0.9982
+    },
+    {
+      "word": "estado",
+      "start_ms": 51940,
+      "end_ms": 52120,
+      "start_srt": "00:00:51,940",
+      "end_srt": "00:00:52,120",
+      "probability": 0.9242
+    },
+    {
+      "word": "general",
+      "start_ms": 52120,
+      "end_ms": 52400,
+      "start_srt": "00:00:52,120",
+      "end_srt": "00:00:52,400",
+      "probability": 0.9815
+    },
+    {
+      "word": "de",
+      "start_ms": 52400,
+      "end_ms": 52620,
+      "start_srt": "00:00:52,400",
+      "end_srt": "00:00:52,620",
+      "probability": 0.9967
+    },
+    {
+      "word": "salud.",
+      "start_ms": 52620,
+      "end_ms": 52886,
+      "start_srt": "00:00:52,620",
+      "end_srt": "00:00:52,886",
+      "probability": 0.9948
+    },
+    {
+      "word": "Debajo,",
+      "start_ms": 54173,
+      "end_ms": 54547,
+      "start_srt": "00:00:54,173",
+      "end_srt": "00:00:54,547",
+      "probability": 0.8359
+    },
+    {
+      "word": "la",
+      "start_ms": 54808,
+      "end_ms": 54890,
+      "start_srt": "00:00:54,808",
+      "end_srt": "00:00:54,890",
+      "probability": 0.9919
+    },
+    {
+      "word": "sección",
+      "start_ms": 54890,
+      "end_ms": 55190,
+      "start_srt": "00:00:54,890",
+      "end_srt": "00:00:55,190",
+      "probability": 0.9873
+    },
+    {
+      "word": "de",
+      "start_ms": 55190,
+      "end_ms": 55270,
+      "start_srt": "00:00:55,190",
+      "end_srt": "00:00:55,270",
+      "probability": 0.9978
+    },
+    {
+      "word": "producción",
+      "start_ms": 55270,
+      "end_ms": 55515,
+      "start_srt": "00:00:55,270",
+      "end_srt": "00:00:55,515",
+      "probability": 0.9971
+    },
+    {
+      "word": "convierte",
+      "start_ms": 55515,
+      "end_ms": 55975,
+      "start_srt": "00:00:55,515",
+      "end_srt": "00:00:55,975",
+      "probability": 0.9631
+    },
+    {
+      "word": "tu",
+      "start_ms": 55975,
+      "end_ms": 56110,
+      "start_srt": "00:00:55,975",
+      "end_srt": "00:00:56,110",
+      "probability": 0.9791
+    },
+    {
+      "word": "registro",
+      "start_ms": 56110,
+      "end_ms": 56490,
+      "start_srt": "00:00:56,110",
+      "end_srt": "00:00:56,490",
+      "probability": 0.997
+    },
+    {
+      "word": "diarios",
+      "start_ms": 56490,
+      "end_ms": 56750,
+      "start_srt": "00:00:56,490",
+      "end_srt": "00:00:56,750",
+      "probability": 0.9263
+    },
+    {
+      "word": "en",
+      "start_ms": 56750,
+      "end_ms": 56930,
+      "start_srt": "00:00:56,750",
+      "end_srt": "00:00:56,930",
+      "probability": 0.9979
+    },
+    {
+      "word": "gráficas",
+      "start_ms": 56930,
+      "end_ms": 57289,
+      "start_srt": "00:00:56,930",
+      "end_srt": "00:00:57,289",
+      "probability": 0.9964
+    },
+    {
+      "word": "visuales.",
+      "start_ms": 57289,
+      "end_ms": 57800,
+      "start_srt": "00:00:57,289",
+      "end_srt": "00:00:57,800",
+      "probability": 0.9906
+    },
+    {
+      "word": "La",
+      "start_ms": 58135,
+      "end_ms": 58220,
+      "start_srt": "00:00:58,135",
+      "end_srt": "00:00:58,220",
+      "probability": 0.9576
+    },
+    {
+      "word": "curva",
+      "start_ms": 58220,
+      "end_ms": 58440,
+      "start_srt": "00:00:58,220",
+      "end_srt": "00:00:58,440",
+      "probability": 0.9758
+    },
+    {
+      "word": "de",
+      "start_ms": 58440,
+      "end_ms": 58540,
+      "start_srt": "00:00:58,440",
+      "end_srt": "00:00:58,540",
+      "probability": 0.9797
+    },
+    {
+      "word": "leche",
+      "start_ms": 58540,
+      "end_ms": 58701,
+      "start_srt": "00:00:58,540",
+      "end_srt": "00:00:58,701",
+      "probability": 0.887
+    },
+    {
+      "word": "día",
+      "start_ms": 58701,
+      "end_ms": 58879,
+      "start_srt": "00:00:58,701",
+      "end_srt": "00:00:58,879",
+      "probability": 0.6059
+    },
+    {
+      "word": "por",
+      "start_ms": 58879,
+      "end_ms": 59031,
+      "start_srt": "00:00:58,879",
+      "end_srt": "00:00:59,031",
+      "probability": 0.9943
+    },
+    {
+      "word": "día,",
+      "start_ms": 59031,
+      "end_ms": 59269,
+      "start_srt": "00:00:59,031",
+      "end_srt": "00:00:59,269",
+      "probability": 0.9928
+    },
+    {
+      "word": "el",
+      "start_ms": 59539,
+      "end_ms": 59620,
+      "start_srt": "00:00:59,539",
+      "end_srt": "00:00:59,620",
+      "probability": 0.9958
+    },
+    {
+      "word": "balance",
+      "start_ms": 59620,
+      "end_ms": 59820,
+      "start_srt": "00:00:59,620",
+      "end_srt": "00:00:59,820",
+      "probability": 0.9922
+    },
+    {
+      "word": "de",
+      "start_ms": 59820,
+      "end_ms": 60020,
+      "start_srt": "00:00:59,820",
+      "end_srt": "00:01:00,020",
+      "probability": 0.971
+    },
+    {
+      "word": "potreros",
+      "start_ms": 60020,
+      "end_ms": 60360,
+      "start_srt": "00:01:00,020",
+      "end_srt": "00:01:00,360",
+      "probability": 0.9656
+    },
+    {
+      "word": "en",
+      "start_ms": 60360,
+      "end_ms": 60440,
+      "start_srt": "00:01:00,360",
+      "end_srt": "00:01:00,440",
+      "probability": 0.9941
+    },
+    {
+      "word": "pastoreo",
+      "start_ms": 60440,
+      "end_ms": 60869,
+      "start_srt": "00:01:00,440",
+      "end_srt": "00:01:00,869",
+      "probability": 0.9542
+    },
+    {
+      "word": "y",
+      "start_ms": 60869,
+      "end_ms": 61000,
+      "start_srt": "00:01:00,869",
+      "end_srt": "00:01:01,000",
+      "probability": 0.9886
+    },
+    {
+      "word": "los",
+      "start_ms": 61000,
+      "end_ms": 61100,
+      "start_srt": "00:01:01,000",
+      "end_srt": "00:01:01,100",
+      "probability": 0.9928
+    },
+    {
+      "word": "nacimientos",
+      "start_ms": 61100,
+      "end_ms": 61480,
+      "start_srt": "00:01:01,100",
+      "end_srt": "00:01:01,480",
+      "probability": 0.9731
+    },
+    {
+      "word": "por",
+      "start_ms": 61480,
+      "end_ms": 61787,
+      "start_srt": "00:01:01,480",
+      "end_srt": "00:01:01,787",
+      "probability": 0.9901
+    },
+    {
+      "word": "fecha.",
+      "start_ms": 61787,
+      "end_ms": 61950,
+      "start_srt": "00:01:01,787",
+      "end_srt": "00:01:01,950",
+      "probability": 0.9969
+    },
+    {
+      "word": "Más",
+      "start_ms": 63163,
+      "end_ms": 63310,
+      "start_srt": "00:01:03,163",
+      "end_srt": "00:01:03,310",
+      "probability": 0.926
+    },
+    {
+      "word": "abajo,",
+      "start_ms": 63310,
+      "end_ms": 63602,
+      "start_srt": "00:01:03,310",
+      "end_srt": "00:01:03,602",
+      "probability": 0.9931
+    },
+    {
+      "word": "el",
+      "start_ms": 63850,
+      "end_ms": 63950,
+      "start_srt": "00:01:03,850",
+      "end_srt": "00:01:03,950",
+      "probability": 0.9881
+    },
+    {
+      "word": "resumen",
+      "start_ms": 63950,
+      "end_ms": 64179,
+      "start_srt": "00:01:03,950",
+      "end_srt": "00:01:04,179",
+      "probability": 0.9931
+    },
+    {
+      "word": "financiero",
+      "start_ms": 64179,
+      "end_ms": 64577,
+      "start_srt": "00:01:04,179",
+      "end_srt": "00:01:04,577",
+      "probability": 0.9971
+    },
+    {
+      "word": "trae",
+      "start_ms": 64577,
+      "end_ms": 64810,
+      "start_srt": "00:01:04,577",
+      "end_srt": "00:01:04,810",
+      "probability": 0.9751
+    },
+    {
+      "word": "automáticamente",
+      "start_ms": 64810,
+      "end_ms": 65330,
+      "start_srt": "00:01:04,810",
+      "end_srt": "00:01:05,330",
+      "probability": 0.9727
+    },
+    {
+      "word": "los",
+      "start_ms": 65330,
+      "end_ms": 65510,
+      "start_srt": "00:01:05,330",
+      "end_srt": "00:01:05,510",
+      "probability": 0.9952
+    },
+    {
+      "word": "datos",
+      "start_ms": 65510,
+      "end_ms": 65714,
+      "start_srt": "00:01:05,510",
+      "end_srt": "00:01:05,714",
+      "probability": 0.9993
+    },
+    {
+      "word": "del",
+      "start_ms": 65714,
+      "end_ms": 65870,
+      "start_srt": "00:01:05,714",
+      "end_srt": "00:01:05,870",
+      "probability": 0.9947
+    },
+    {
+      "word": "módulo",
+      "start_ms": 65870,
+      "end_ms": 66050,
+      "start_srt": "00:01:05,870",
+      "end_srt": "00:01:06,050",
+      "probability": 0.9408
+    },
+    {
+      "word": "de",
+      "start_ms": 66050,
+      "end_ms": 66170,
+      "start_srt": "00:01:06,050",
+      "end_srt": "00:01:06,170",
+      "probability": 0.9946
+    },
+    {
+      "word": "finanzas,",
+      "start_ms": 66170,
+      "end_ms": 66634,
+      "start_srt": "00:01:06,170",
+      "end_srt": "00:01:06,634",
+      "probability": 0.9781
+    },
+    {
+      "word": "tus",
+      "start_ms": 66882,
+      "end_ms": 66970,
+      "start_srt": "00:01:06,882",
+      "end_srt": "00:01:06,970",
+      "probability": 0.9941
+    },
+    {
+      "word": "ingresos,",
+      "start_ms": 66970,
+      "end_ms": 67318,
+      "start_srt": "00:01:06,970",
+      "end_srt": "00:01:07,318",
+      "probability": 0.999
+    },
+    {
+      "word": "egresos,",
+      "start_ms": 67318,
+      "end_ms": 68106,
+      "start_srt": "00:01:07,318",
+      "end_srt": "00:01:08,106",
+      "probability": 0.7202
+    },
+    {
+      "word": "el",
+      "start_ms": 68353,
+      "end_ms": 68430,
+      "start_srt": "00:01:08,353",
+      "end_srt": "00:01:08,430",
+      "probability": 0.9573
+    },
+    {
+      "word": "valor",
+      "start_ms": 68430,
+      "end_ms": 68590,
+      "start_srt": "00:01:08,430",
+      "end_srt": "00:01:08,590",
+      "probability": 0.9985
+    },
+    {
+      "word": "actual",
+      "start_ms": 68590,
+      "end_ms": 68824,
+      "start_srt": "00:01:08,590",
+      "end_srt": "00:01:08,824",
+      "probability": 0.997
+    },
+    {
+      "word": "de",
+      "start_ms": 68824,
+      "end_ms": 68949,
+      "start_srt": "00:01:08,824",
+      "end_srt": "00:01:08,949",
+      "probability": 0.998
+    },
+    {
+      "word": "tu",
+      "start_ms": 68949,
+      "end_ms": 69110,
+      "start_srt": "00:01:08,949",
+      "end_srt": "00:01:09,110",
+      "probability": 0.9924
+    },
+    {
+      "word": "vega",
+      "start_ms": 69110,
+      "end_ms": 69292,
+      "start_srt": "00:01:09,110",
+      "end_srt": "00:01:09,292",
+      "probability": 0.5963
+    },
+    {
+      "word": "inventario",
+      "start_ms": 69292,
+      "end_ms": 69702,
+      "start_srt": "00:01:09,292",
+      "end_srt": "00:01:09,702",
+      "probability": 0.6443
+    },
+    {
+      "word": "cuanto",
+      "start_ms": 69702,
+      "end_ms": 69930,
+      "start_srt": "00:01:09,702",
+      "end_srt": "00:01:09,930",
+      "probability": 0.5217
+    },
+    {
+      "word": "vale",
+      "start_ms": 69930,
+      "end_ms": 70150,
+      "start_srt": "00:01:09,930",
+      "end_srt": "00:01:10,150",
+      "probability": 0.9442
+    },
+    {
+      "word": "o",
+      "start_ms": 70150,
+      "end_ms": 70205,
+      "start_srt": "00:01:10,150",
+      "end_srt": "00:01:10,205",
+      "probability": 0.5699
+    },
+    {
+      "word": "y",
+      "start_ms": 70205,
+      "end_ms": 70337,
+      "start_srt": "00:01:10,205",
+      "end_srt": "00:01:10,337",
+      "probability": 0.9151
+    },
+    {
+      "word": "todo",
+      "start_ms": 70337,
+      "end_ms": 70395,
+      "start_srt": "00:01:10,337",
+      "end_srt": "00:01:10,395",
+      "probability": 0.9672
+    },
+    {
+      "word": "tu",
+      "start_ms": 70395,
+      "end_ms": 70517,
+      "start_srt": "00:01:10,395",
+      "end_srt": "00:01:10,517",
+      "probability": 0.9568
+    },
+    {
+      "word": "ganado",
+      "start_ms": 70517,
+      "end_ms": 70730,
+      "start_srt": "00:01:10,517",
+      "end_srt": "00:01:10,730",
+      "probability": 0.8861
+    },
+    {
+      "word": "sumado.",
+      "start_ms": 70730,
+      "end_ms": 70974,
+      "start_srt": "00:01:10,730",
+      "end_srt": "00:01:10,974",
+      "probability": 0.9916
+    },
+    {
+      "word": "Incluso",
+      "start_ms": 72200,
+      "end_ms": 72600,
+      "start_srt": "00:01:12,200",
+      "end_srt": "00:01:12,600",
+      "probability": 0.9767
+    },
+    {
+      "word": "cruza",
+      "start_ms": 72600,
+      "end_ms": 72864,
+      "start_srt": "00:01:12,600",
+      "end_srt": "00:01:12,864",
+      "probability": 0.975
+    },
+    {
+      "word": "tus",
+      "start_ms": 72864,
+      "end_ms": 73020,
+      "start_srt": "00:01:12,864",
+      "end_srt": "00:01:13,020",
+      "probability": 0.9933
+    },
+    {
+      "word": "gastos",
+      "start_ms": 73020,
+      "end_ms": 73388,
+      "start_srt": "00:01:13,020",
+      "end_srt": "00:01:13,388",
+      "probability": 0.9982
+    },
+    {
+      "word": "contra",
+      "start_ms": 73388,
+      "end_ms": 73685,
+      "start_srt": "00:01:13,388",
+      "end_srt": "00:01:13,685",
+      "probability": 0.9746
+    },
+    {
+      "word": "los",
+      "start_ms": 73685,
+      "end_ms": 73860,
+      "start_srt": "00:01:13,685",
+      "end_srt": "00:01:13,860",
+      "probability": 0.9753
+    },
+    {
+      "word": "litros",
+      "start_ms": 73860,
+      "end_ms": 74180,
+      "start_srt": "00:01:13,860",
+      "end_srt": "00:01:14,180",
+      "probability": 0.9805
+    },
+    {
+      "word": "ordeños",
+      "start_ms": 74180,
+      "end_ms": 74600,
+      "start_srt": "00:01:14,180",
+      "end_srt": "00:01:14,600",
+      "probability": 0.5893
+    },
+    {
+      "word": "para",
+      "start_ms": 74600,
+      "end_ms": 74880,
+      "start_srt": "00:01:14,600",
+      "end_srt": "00:01:14,880",
+      "probability": 0.9774
+    },
+    {
+      "word": "decirte",
+      "start_ms": 74880,
+      "end_ms": 75282,
+      "start_srt": "00:01:14,880",
+      "end_srt": "00:01:15,282",
+      "probability": 0.9782
+    },
+    {
+      "word": "cuántos",
+      "start_ms": 75282,
+      "end_ms": 75649,
+      "start_srt": "00:01:15,282",
+      "end_srt": "00:01:15,649",
+      "probability": 0.8646
+    },
+    {
+      "word": "pesos",
+      "start_ms": 75649,
+      "end_ms": 75860,
+      "start_srt": "00:01:15,649",
+      "end_srt": "00:01:15,860",
+      "probability": 0.9873
+    },
+    {
+      "word": "te",
+      "start_ms": 75860,
+      "end_ms": 76070,
+      "start_srt": "00:01:15,860",
+      "end_srt": "00:01:16,070",
+      "probability": 0.9936
+    },
+    {
+      "word": "cuesta",
+      "start_ms": 76070,
+      "end_ms": 76375,
+      "start_srt": "00:01:16,070",
+      "end_srt": "00:01:16,375",
+      "probability": 0.994
+    },
+    {
+      "word": "producir",
+      "start_ms": 76375,
+      "end_ms": 76864,
+      "start_srt": "00:01:16,375",
+      "end_srt": "00:01:16,864",
+      "probability": 0.9917
+    },
+    {
+      "word": "cada",
+      "start_ms": 76864,
+      "end_ms": 76980,
+      "start_srt": "00:01:16,864",
+      "end_srt": "00:01:16,980",
+      "probability": 0.9975
+    },
+    {
+      "word": "litro",
+      "start_ms": 76980,
+      "end_ms": 77301,
+      "start_srt": "00:01:16,980",
+      "end_srt": "00:01:17,301",
+      "probability": 0.9877
+    },
+    {
+      "word": "de",
+      "start_ms": 77301,
+      "end_ms": 77380,
+      "start_srt": "00:01:17,301",
+      "end_srt": "00:01:17,380",
+      "probability": 0.9701
+    },
+    {
+      "word": "leche,",
+      "start_ms": 77380,
+      "end_ms": 77739,
+      "start_srt": "00:01:17,380",
+      "end_srt": "00:01:17,739",
+      "probability": 0.9947
+    },
+    {
+      "word": "graficando",
+      "start_ms": 78104,
+      "end_ms": 78601,
+      "start_srt": "00:01:18,104",
+      "end_srt": "00:01:18,601",
+      "probability": 0.9653
+    },
+    {
+      "word": "a",
+      "start_ms": 78601,
+      "end_ms": 78680,
+      "start_srt": "00:01:18,601",
+      "end_srt": "00:01:18,680",
+      "probability": 0.9919
+    },
+    {
+      "word": "la",
+      "start_ms": 78680,
+      "end_ms": 78740,
+      "start_srt": "00:01:18,680",
+      "end_srt": "00:01:18,740",
+      "probability": 0.9984
+    },
+    {
+      "word": "derecha",
+      "start_ms": 78740,
+      "end_ms": 79060,
+      "start_srt": "00:01:18,740",
+      "end_srt": "00:01:19,060",
+      "probability": 0.9986
+    },
+    {
+      "word": "el",
+      "start_ms": 79060,
+      "end_ms": 79107,
+      "start_srt": "00:01:19,060",
+      "end_srt": "00:01:19,107",
+      "probability": 0.9584
+    },
+    {
+      "word": "flujo",
+      "start_ms": 79107,
+      "end_ms": 79478,
+      "start_srt": "00:01:19,107",
+      "end_srt": "00:01:19,478",
+      "probability": 0.9954
+    },
+    {
+      "word": "de",
+      "start_ms": 79478,
+      "end_ms": 79560,
+      "start_srt": "00:01:19,478",
+      "end_srt": "00:01:19,560",
+      "probability": 0.9958
+    },
+    {
+      "word": "caja",
+      "start_ms": 79560,
+      "end_ms": 79778,
+      "start_srt": "00:01:19,560",
+      "end_srt": "00:01:19,778",
+      "probability": 0.9648
+    },
+    {
+      "word": "mes",
+      "start_ms": 79778,
+      "end_ms": 79940,
+      "start_srt": "00:01:19,778",
+      "end_srt": "00:01:19,940",
+      "probability": 0.5118
+    },
+    {
+      "word": "a",
+      "start_ms": 79940,
+      "end_ms": 80060,
+      "start_srt": "00:01:19,940",
+      "end_srt": "00:01:20,060",
+      "probability": 0.9879
+    },
+    {
+      "word": "mes.",
+      "start_ms": 80060,
+      "end_ms": 80285,
+      "start_srt": "00:01:20,060",
+      "end_srt": "00:01:20,285",
+      "probability": 0.9984
+    },
+    {
+      "word": "Finalmente,",
+      "start_ms": 89210,
+      "end_ms": 89866,
+      "start_srt": "00:01:29,210",
+      "end_srt": "00:01:29,866",
+      "probability": 0.9915
+    },
+    {
+      "word": "en",
+      "start_ms": 90170,
+      "end_ms": 90270,
+      "start_srt": "00:01:30,170",
+      "end_srt": "00:01:30,270",
+      "probability": 0.9873
+    },
+    {
+      "word": "la",
+      "start_ms": 90270,
+      "end_ms": 90370,
+      "start_srt": "00:01:30,270",
+      "end_srt": "00:01:30,370",
+      "probability": 0.9895
+    },
+    {
+      "word": "base",
+      "start_ms": 90370,
+      "end_ms": 90530,
+      "start_srt": "00:01:30,370",
+      "end_srt": "00:01:30,530",
+      "probability": 0.9925
+    },
+    {
+      "word": "tienes",
+      "start_ms": 90530,
+      "end_ms": 90770,
+      "start_srt": "00:01:30,530",
+      "end_srt": "00:01:30,770",
+      "probability": 0.9705
+    },
+    {
+      "word": "el",
+      "start_ms": 90770,
+      "end_ms": 90944,
+      "start_srt": "00:01:30,770",
+      "end_srt": "00:01:30,944",
+      "probability": 0.9965
+    },
+    {
+      "word": "comparativo",
+      "start_ms": 90944,
+      "end_ms": 91490,
+      "start_srt": "00:01:30,944",
+      "end_srt": "00:01:31,490",
+      "probability": 0.9908
+    },
+    {
+      "word": "automático",
+      "start_ms": 91490,
+      "end_ms": 92072,
+      "start_srt": "00:01:31,490",
+      "end_srt": "00:01:32,072",
+      "probability": 0.9945
+    },
+    {
+      "word": "frente",
+      "start_ms": 92072,
+      "end_ms": 92290,
+      "start_srt": "00:01:32,072",
+      "end_srt": "00:01:32,290",
+      "probability": 0.9993
+    },
+    {
+      "word": "a",
+      "start_ms": 92290,
+      "end_ms": 92510,
+      "start_srt": "00:01:32,290",
+      "end_srt": "00:01:32,510",
+      "probability": 0.9962
+    },
+    {
+      "word": "los",
+      "start_ms": 92510,
+      "end_ms": 92610,
+      "start_srt": "00:01:32,510",
+      "end_srt": "00:01:32,610",
+      "probability": 0.9959
+    },
+    {
+      "word": "estándares",
+      "start_ms": 92610,
+      "end_ms": 93070,
+      "start_srt": "00:01:32,610",
+      "end_srt": "00:01:33,070",
+      "probability": 0.9422
+    },
+    {
+      "word": "ideales",
+      "start_ms": 93070,
+      "end_ms": 93510,
+      "start_srt": "00:01:33,070",
+      "end_srt": "00:01:33,510",
+      "probability": 0.574
+    },
+    {
+      "word": "de",
+      "start_ms": 93510,
+      "end_ms": 93579,
+      "start_srt": "00:01:33,510",
+      "end_srt": "00:01:33,579",
+      "probability": 0.9977
+    },
+    {
+      "word": "tu",
+      "start_ms": 93579,
+      "end_ms": 93704,
+      "start_srt": "00:01:33,579",
+      "end_srt": "00:01:33,704",
+      "probability": 0.9972
+    },
+    {
+      "word": "tipo",
+      "start_ms": 93704,
+      "end_ms": 93973,
+      "start_srt": "00:01:33,704",
+      "end_srt": "00:01:33,973",
+      "probability": 0.9966
+    },
+    {
+      "word": "de",
+      "start_ms": 93973,
+      "end_ms": 94050,
+      "start_srt": "00:01:33,973",
+      "end_srt": "00:01:34,050",
+      "probability": 0.999
+    },
+    {
+      "word": "ganadería,",
+      "start_ms": 94050,
+      "end_ms": 94550,
+      "start_srt": "00:01:34,050",
+      "end_srt": "00:01:34,550",
+      "probability": 0.9551
+    },
+    {
+      "word": "indicándote",
+      "start_ms": 94884,
+      "end_ms": 95466,
+      "start_srt": "00:01:34,884",
+      "end_srt": "00:01:35,466",
+      "probability": 0.9837
+    },
+    {
+      "word": "en",
+      "start_ms": 95466,
+      "end_ms": 95542,
+      "start_srt": "00:01:35,466",
+      "end_srt": "00:01:35,542",
+      "probability": 0.9894
+    },
+    {
+      "word": "que",
+      "start_ms": 95542,
+      "end_ms": 95630,
+      "start_srt": "00:01:35,542",
+      "end_srt": "00:01:35,630",
+      "probability": 0.5755
+    },
+    {
+      "word": "métricas",
+      "start_ms": 95630,
+      "end_ms": 96106,
+      "start_srt": "00:01:35,630",
+      "end_srt": "00:01:36,106",
+      "probability": 0.9043
+    },
+    {
+      "word": "superas",
+      "start_ms": 96106,
+      "end_ms": 96510,
+      "start_srt": "00:01:36,106",
+      "end_srt": "00:01:36,510",
+      "probability": 0.9746
+    },
+    {
+      "word": "el",
+      "start_ms": 96510,
+      "end_ms": 96591,
+      "start_srt": "00:01:36,510",
+      "end_srt": "00:01:36,591",
+      "probability": 0.9976
+    },
+    {
+      "word": "promedio",
+      "start_ms": 96591,
+      "end_ms": 97060,
+      "start_srt": "00:01:36,591",
+      "end_srt": "00:01:37,060",
+      "probability": 0.997
+    },
+    {
+      "word": "y",
+      "start_ms": 97060,
+      "end_ms": 97150,
+      "start_srt": "00:01:37,060",
+      "end_srt": "00:01:37,150",
+      "probability": 0.9831
+    },
+    {
+      "word": "cuáles",
+      "start_ms": 97150,
+      "end_ms": 97391,
+      "start_srt": "00:01:37,150",
+      "end_srt": "00:01:37,391",
+      "probability": 0.7987
+    },
+    {
+      "word": "debes",
+      "start_ms": 97391,
+      "end_ms": 97630,
+      "start_srt": "00:01:37,391",
+      "end_srt": "00:01:37,630",
+      "probability": 0.9859
+    },
+    {
+      "word": "optimizar.",
+      "start_ms": 97630,
+      "end_ms": 98149,
+      "start_srt": "00:01:37,630",
+      "end_srt": "00:01:38,149",
+      "probability": 0.9922
+    }
+  ]
+}

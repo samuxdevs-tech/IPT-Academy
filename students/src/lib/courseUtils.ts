@@ -198,7 +198,8 @@ export function normalizeCourse(raw: any): Course {
       title: modTitle,
       description: modDescription,
       order: modOrder,
-      lessons
+      lessons,
+      resources: Array.isArray(m?.resources) ? m.resources : []
     };
   });
 
@@ -224,6 +225,8 @@ export function normalizeCourse(raw: any): Course {
     phase2Visible,
     phase3Visible,
     phase3Mode,
+    courseType: source.courseType === 'static' ? 'static' : 'dynamic',
+    licenseHash: String(source.licenseHash || source.licenseToken || '').trim(),
     modules
   };
 }
@@ -267,7 +270,7 @@ export function exportCourseAsJson(course: Course) {
   const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(normalized, null, 2));
   const downloadAnchor = document.createElement('a');
   downloadAnchor.setAttribute('href', dataStr);
-  downloadAnchor.setAttribute('download', `${normalized.slug || 'datagan-course'}.json`);
+  downloadAnchor.setAttribute('download', `${normalized.slug || 'ipt-course'}.json`);
   document.body.appendChild(downloadAnchor);
   downloadAnchor.click();
   downloadAnchor.remove();

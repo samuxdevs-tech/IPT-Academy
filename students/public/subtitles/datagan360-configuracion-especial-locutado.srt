@@ -1,0 +1,371 @@
+1
+00:00:00,000 --> 00:00:00,030
+[...]
+
+2
+00:00:00,030 --> 00:00:00,305
+Hola,
+
+3
+00:00:00,305 --> 00:00:01,060
+[...]
+
+4
+00:00:01,060 --> 00:00:03,111
+bienvenido al tour modular de DataGan 360.
+
+5
+00:00:03,111 --> 00:00:04,159
+[...]
+
+6
+00:00:04,159 --> 00:00:06,981
+Comenzamos en el icono de engranaje superior para abrir la configuración del sistema,
+
+7
+00:00:06,981 --> 00:00:07,262
+[...]
+
+8
+00:00:07,262 --> 00:00:10,280
+donde definirás las reglas globales que afectarán a todos los módulos que veremos más adelante.
+
+9
+00:00:10,280 --> 00:00:11,036
+[...]
+
+10
+00:00:11,036 --> 00:00:11,962
+Entramos primero a mi perfil.
+
+11
+00:00:11,962 --> 00:00:12,952
+[...]
+
+12
+00:00:12,952 --> 00:00:15,441
+En esta ficha registrarás tus datos reales de titular o administrador,
+
+13
+00:00:15,441 --> 00:00:15,731
+[...]
+
+14
+00:00:15,731 --> 00:00:16,294
+tu fotografía,
+
+15
+00:00:16,294 --> 00:00:16,522
+[...]
+
+16
+00:00:16,522 --> 00:00:17,324
+documento de identidad,
+
+17
+00:00:17,324 --> 00:00:17,588
+[...]
+
+18
+00:00:17,588 --> 00:00:18,321
+teléfono y municipio.
+
+19
+00:00:18,321 --> 00:00:19,095
+[...]
+
+20
+00:00:19,095 --> 00:00:22,446
+Es fundamental que pongas tu correo y celular verdaderos porque allí llegarán los avisos de seguridad.
+
+21
+00:00:22,446 --> 00:00:23,454
+[...]
+
+22
+00:00:23,454 --> 00:00:24,746
+Cada vez que modifiques un dato personal,
+
+23
+00:00:24,746 --> 00:00:25,019
+[...]
+
+24
+00:00:25,019 --> 00:00:27,441
+presionas guardar cambios y el sistema actualizará tu ficha al instante.
+
+25
+00:00:27,441 --> 00:00:28,427
+[...]
+
+26
+00:00:28,427 --> 00:00:34,573
+Observa que si por error intentas digitar números en campos de texto como tu nombre, el validador inteligente los bloqueará en tiempo real para mantener limpia tu base de datos.
+
+27
+00:00:34,573 --> 00:00:35,293
+[...]
+
+28
+00:00:35,293 --> 00:00:35,929
+Volvemos atrás.
+
+29
+00:00:35,929 --> 00:00:36,895
+[...]
+
+30
+00:00:36,895 --> 00:00:39,588
+En alertas y notificaciones encenderás los avisos automáticos de tu finca.
+
+31
+00:00:39,588 --> 00:00:39,815
+[...]
+
+32
+00:00:39,815 --> 00:00:41,156
+Cuando más adelante registremos celos,
+
+33
+00:00:41,156 --> 00:00:41,358
+[...]
+
+34
+00:00:41,358 --> 00:00:41,865
+servicios,
+
+35
+00:00:41,865 --> 00:00:42,100
+[...]
+
+36
+00:00:42,100 --> 00:00:42,902
+medicamentos o leche.
+
+37
+00:00:42,902 --> 00:00:43,128
+[...]
+
+38
+00:00:43,128 --> 00:00:45,622
+Estos interruptores harán que el sistema te avise si hay partos próximos,
+
+39
+00:00:45,622 --> 00:00:45,861
+[...]
+
+40
+00:00:45,861 --> 00:00:46,956
+stock bajo o atraso de ordeño.
+
+41
+00:00:46,956 --> 00:00:47,963
+[...]
+
+42
+00:00:47,963 --> 00:00:48,843
+Pasamos a carga masiva,
+
+43
+00:00:48,843 --> 00:00:49,098
+[...]
+
+44
+00:00:49,098 --> 00:00:50,911
+diseñada por si deseas subir tu ganadería desde Excel.
+
+45
+00:00:50,911 --> 00:00:51,657
+[...]
+
+46
+00:00:51,657 --> 00:00:52,794
+Presta mucha atención a esta regla.
+
+47
+00:00:52,794 --> 00:00:53,046
+[...]
+
+48
+00:00:53,046 --> 00:00:55,187
+Siempre debes descargar y subir primero la plantilla del paso 1,
+
+49
+00:00:55,187 --> 00:00:55,467
+[...]
+
+50
+00:00:55,467 --> 00:00:57,137
+donde irán tus datos independientes como la finca,
+
+51
+00:00:57,137 --> 00:00:57,390
+[...]
+
+52
+00:00:57,390 --> 00:00:58,027
+terceros y potreros.
+
+53
+00:00:58,027 --> 00:00:59,133
+[...]
+
+54
+00:00:59,133 --> 00:01:00,650
+Sólo cuando esa estructura exista en el sistema,
+
+55
+00:01:00,650 --> 00:01:00,896
+[...]
+
+56
+00:01:00,896 --> 00:01:02,973
+subirás aquí abajo la plantilla del paso 2 con tus animales,
+
+57
+00:01:02,973 --> 00:01:03,233
+[...]
+
+58
+00:01:03,233 --> 00:01:04,572
+lotes, pesajes y finanzas.
+
+59
+00:01:04,572 --> 00:01:04,842
+[...]
+
+60
+00:01:04,842 --> 00:01:06,577
+Así cada animal encontrará su potrero sin dar error.
+
+61
+00:01:06,577 --> 00:01:07,359
+[...]
+
+62
+00:01:07,359 --> 00:01:09,752
+Arriba siempre tendrás el historial por si necesitas revertir un cargue.
+
+63
+00:01:09,752 --> 00:01:10,485
+[...]
+
+64
+00:01:10,485 --> 00:01:11,139
+Volvemos al panel.
+
+65
+00:01:11,139 --> 00:01:12,130
+[...]
+
+66
+00:01:12,130 --> 00:01:15,170
+En unidades de medida elegirás si en tu región trabajas la tierra en hectáreas o cuadras.
+
+67
+00:01:15,170 --> 00:01:15,415
+[...]
+
+68
+00:01:15,415 --> 00:01:16,749
+El ganado en kilos y la leche en litros.
+
+69
+00:01:16,749 --> 00:01:16,976
+[...]
+
+70
+00:01:16,976 --> 00:01:18,838
+Todo el dashboard convertirá las cifras automáticamente.
+
+71
+00:01:18,838 --> 00:01:19,790
+[...]
+
+72
+00:01:19,790 --> 00:01:21,756
+Abajo encontrarás un campo clave para toda la plataforma.
+
+73
+00:01:21,756 --> 00:01:22,004
+[...]
+
+74
+00:01:22,004 --> 00:01:23,067
+El precio de referencia por kilo.
+
+75
+00:01:23,067 --> 00:01:23,841
+[...]
+
+76
+00:01:23,841 --> 00:01:26,260
+Cuando más adelante registres animales sin ponerles un precio individual.
+
+77
+00:01:26,260 --> 00:01:26,545
+[...]
+
+78
+00:01:26,545 --> 00:01:28,693
+El sistema multiplicará su peso por el valor que coloques aquí.
+
+79
+00:01:28,693 --> 00:01:29,663
+[...]
+
+80
+00:01:29,663 --> 00:01:31,706
+Aquí colocamos 10.000 pesos a modo de ejemplo y guardamos.
+
+81
+00:01:31,706 --> 00:01:32,000
+[...]
+
+82
+00:01:32,000 --> 00:01:35,408
+Este número irá directo a calcular el valor patrimonial de tu hato en el dashboard y en el módulo de cuentas.
+
+83
+00:01:35,408 --> 00:01:36,380
+[...]
+
+84
+00:01:36,380 --> 00:01:45,184
+En mis datos y respaldo podrás descargar cuando quieras toda tu información dividida en los mismos archivos del paso 1 y paso 2 por si deseas migrar o editar tus datos o exportar abajo tu copia legal completa protegida por la ley 1581.
+
+85
+00:01:45,184 --> 00:01:46,272
+[...]
+
+86
+00:01:46,272 --> 00:01:46,865
+Por último,
+
+87
+00:01:46,865 --> 00:01:47,186
+[...]
+
+88
+00:01:47,186 --> 00:01:51,547
+en la tarjeta eliminar cuenta tendrás disponible el protocolo de baja definitiva de tu suscripción.
+
+89
+00:01:51,547 --> 00:01:52,565
+[...]
+
+90
+00:01:52,565 --> 00:01:53,180
+Por seguridad,
+
+91
+00:01:53,180 --> 00:01:53,536
+[...]
+
+92
+00:01:53,536 --> 00:01:59,492
+el sistema te pedirá escribir la frase de confirmación y conservará únicamente el historial sanitario exigido por normativas del ICA.
+
+93
+00:01:59,492 --> 00:02:03,890
+[...]

@@ -1,12 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Lock, Unlock, Plus, Trash2, CheckCircle2, Shield, Eye, RefreshCw, AlertCircle } from "lucide-react";
+import { Lock, Unlock, Plus, Trash2, CheckCircle2, Eye, RefreshCw, BookOpen } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
 import { ref, onValue, set } from "firebase/database";
 import { ConditionalRule } from "@/lib/mockStudent";
 
+interface CourseItem {
+  slug: string;
+  title: string;
+  modules: { id: string; title: string }[];
+}
+
 export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () => void }) {
+  const [courses, setCourses] = useState<CourseItem[]>([]);
+  const [courseSlug, setCourseSlug] = useState<string>("ipt-master-fullstack");
   const [rules, setRules] = useState<ConditionalRule[]>([]);
   const [progressionMode, setProgressionMode] = useState<"free" | "lesson_strict" | "module_strict">("free");
   const [loading, setLoading] = useState<boolean>(true);
@@ -16,22 +24,50 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
   const [minScore, setMinScore] = useState<number>(4.0);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
-  const courseSlug = "datagan-360-certificacion-maestra";
-
-  // Cargar reglas condicionales y modo de progresión reales desde RTDB
+  // Cargar lista de cursos y módulos reales desde RTDB
   useEffect(() => {
+    const coursesRef = ref(rtdb, "courses");
+    const unsubCourses = onValue(coursesRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        const rawList = Array.isArray(val) ? val.filter(Boolean) : Object.values(val);
+        const parsed: CourseItem[] = rawList.map((c: any) => {
+          const mods = Array.isArray(c?.modules)
+            ? c.modules.filter(Boolean)
+            : c?.modules && typeof c.modules === "object"
+            ? Object.values(c.modules)
+            : [];
+          return {
+            slug: c.slug || "ipt-master-fullstack",
+            title: c.title || c.slug || "Curso IPT",
+            modules: mods.map((m: any, i: number) => ({
+              id: m?.id || `mod-${i + 1}`,
+              title: m?.title || `Módulo ${i + 1}`,
+            })),
+          };
+        });
+        setCourses(parsed);
+        if (parsed.length > 0 && !parsed.some((p) => p.slug === courseSlug)) {
+          setCourseSlug(parsed[0].slug);
+        }
+      }
+    });
+    return () => unsubCourses();
+  }, []);
+
+  // Cargar reglas condicionales y modo de progresión reales desde RTDB para el curso seleccionado
+  useEffect(() => {
+    setLoading(true);
     const courseRef = ref(rtdb, `courses/${courseSlug}`);
     const unsubscribe = onValue(
       courseRef,
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          if (data.progressionMode) {
-            setProgressionMode(data.progressionMode);
-          }
+          setProgressionMode(data.progressionMode || "free");
           if (Array.isArray(data.conditionals)) {
             setRules(data.conditionals);
-          } else if (typeof data.conditionals === "object") {
+          } else if (typeof data.conditionals === "object" && data.conditionals !== null) {
             setRules(Object.values(data.conditionals));
           } else {
             setRules([]);
@@ -48,7 +84,9 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [courseSlug]);
+
+  const currentCourseObj = courses.find((c) => c.slug === courseSlug);
 
   // Guardar modo de progresión en Firebase RTDB
   const handleUpdateProgressionMode = async (mode: "free" | "lesson_strict" | "module_strict") => {
@@ -72,14 +110,14 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
       setRules(updated);
       setSaveStatus("Candados Sincronizados");
       setTimeout(() => setSaveStatus(null), 3000);
-    } catch (err: any) {
+    } catch {
       setSaveStatus("Error al guardar en Firebase");
     }
   };
 
   const handleAddRule = async () => {
     if (!targetTitle.trim() || !requiredTitle.trim()) {
-      alert("Por favor completa el nombre del contenido a bloquear y la evaluación requerida.");
+      alert("Por favor completa el nombre del módulo/lección a bloquear y la evaluación requerida.");
       return;
     }
 
@@ -110,7 +148,9 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
       <div className="bg-[#121217] rounded-2xl p-5 border border-white/10 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-400">Control Pedagógico</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-400">
+              Control Pedagógico por Curso & Módulo
+            </span>
             {saveStatus && (
               <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
                 {saveStatus}
@@ -121,18 +161,34 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
             Condicionales de Desbloqueo y Avance
           </h2>
           <p className="text-xs text-zinc-400 mt-1 max-w-xl">
-            Establece candados obligatorios para que ningún estudiante acceda a módulos avanzados sin aprobar las evaluaciones requeridas.
+            Establece candados obligatorios sobre los módulos reales de cada curso en la base de datos.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {courses.length > 0 && (
+            <div className="flex items-center gap-2 bg-[#181820] border border-white/10 rounded-xl px-3 py-1.5">
+              <BookOpen className="w-3.5 h-3.5 text-violet-400" />
+              <select
+                value={courseSlug}
+                onChange={(e) => setCourseSlug(e.target.value)}
+                className="bg-transparent text-xs font-semibold text-white focus:outline-none"
+              >
+                {courses.map((c) => (
+                  <option key={c.slug} value={c.slug} className="bg-[#121217]">
+                    {c.title} ({c.modules.length} mód.)
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <button
             onClick={onOpenPreview}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#181820] hover:bg-[#20202c] border border-white/10 text-zinc-300 hover:text-white text-xs font-semibold transition-all active:scale-[0.97]"
-            title="Prueba estos bloqueos como un alumno real con el Estudiante Mock"
           >
             <Eye className="w-3.5 h-3.5 text-amber-400" />
-            <span>Modo Estudiante (?preview=true)</span>
+            <span>Modo Alumno</span>
           </button>
 
           <button
@@ -149,7 +205,7 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
       <div className="bg-[#121217] rounded-2xl p-5 border border-white/10 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-violet-400">
-            Política de Progresión Académica (Transmitida a ipt-course-students)
+            Política de Progresión Académica ({courseSlug})
           </span>
           <span className="text-xs text-zinc-400 font-mono">Modo activo: {progressionMode}</span>
         </div>
@@ -200,7 +256,7 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
                 <Lock className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold text-white uppercase tracking-wide">
-                Configurar Nuevo Candado de Progreso
+                Configurar Nuevo Candado sobre Módulos de {courseSlug}
               </span>
             </div>
             <button
@@ -211,6 +267,22 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
             </button>
           </div>
 
+          {currentCourseObj && currentCourseObj.modules.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] text-zinc-400">Seleccionar módulo existente:</span>
+              {currentCourseObj.modules.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setTargetTitle(m.title)}
+                  className="px-2.5 py-1 rounded-lg bg-[#181820] hover:bg-violet-600/20 border border-white/10 hover:border-violet-500/40 text-[11px] text-zinc-200 transition-colors"
+                >
+                  {m.title}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">
@@ -220,7 +292,7 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
                 type="text"
                 value={targetTitle}
                 onChange={(e) => setTargetTitle(e.target.value)}
-                placeholder="Ej: Módulo 2 · Gestión de Forrajes"
+                placeholder="Ej: Módulo 2 · Arquitectura Cloud"
                 className="w-full text-xs border border-white/10 rounded-xl p-3 bg-[#181820] text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500"
               />
             </div>
@@ -232,7 +304,7 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
                 type="text"
                 value={requiredTitle}
                 onChange={(e) => setRequiredTitle(e.target.value)}
-                placeholder="Ej: Examen de Certificación · Módulo 1"
+                placeholder="Ej: Examen Práctico · Módulo 1"
                 className="w-full text-xs border border-white/10 rounded-xl p-3 bg-[#181820] text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500"
               />
             </div>
@@ -267,7 +339,7 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
       <div className="bg-[#121217] rounded-2xl border border-white/10 shadow-lg overflow-hidden">
         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-[#181820]">
           <span className="text-xs font-bold text-white tracking-tight">
-            Candados Activos Registrados en Tiempo Real ({rules.length})
+            Candados Activos en {courseSlug} ({rules.length})
           </span>
           <span className="text-[11px] text-zinc-400 font-mono">
             Firebase RTDB
@@ -286,7 +358,7 @@ export function CourseConditionalsView({ onOpenPreview }: { onOpenPreview: () =>
             </div>
             <h3 className="text-sm font-bold text-white">Sin condicionales activas</h3>
             <p className="text-xs text-zinc-400 max-w-sm mx-auto mt-1 mb-4">
-              Actualmente los estudiantes pueden navegar libremente por todos los módulos. Agrega una regla para exigir aprobación escalonada.
+              Actualmente los estudiantes pueden navegar por los módulos según la política de progresión elegida.
             </p>
             <button
               onClick={() => setIsAdding(true)}

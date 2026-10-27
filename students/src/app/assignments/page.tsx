@@ -11,21 +11,19 @@ import {
   AlertCircle,
   BookOpen,
   Award,
-  ShieldCheck,
   FileCheck2,
-  Volume2,
   Paperclip,
   Home,
   Trash2,
   Music,
-  Code2,
-  FileSpreadsheet,
-  Sparkles,
+  Lock,
+  RefreshCw,
 } from 'lucide-react';
 import { useLms } from '@/context/LmsContext';
 import { useAuth } from '@/context/AuthContext';
+import { useSubscription } from '@/context/SubscriptionContext';
 import { formatUtcInTimeZone } from '@/lib/lmsData';
-import UnifiedDeliveryViewer, { InlineAnnotationItem } from '@/components/UnifiedDeliveryViewer';
+import UnifiedDeliveryViewer from '@/components/UnifiedDeliveryViewer';
 import {
   fetchSubmissions,
   uploadFileToR2,
@@ -49,6 +47,12 @@ function StudentAssignmentsContent() {
 
   const { assignments, timeZone } = useLms();
   const { user } = useAuth();
+  const {
+    entitlements,
+    subscription,
+    openPricingModal,
+    activateDynamicCourse,
+  } = useSubscription();
 
   const [cloudAssignments, setCloudAssignments] = useState<any[]>([]);
 
@@ -62,9 +66,7 @@ function StudentAssignmentsContent() {
 
   const allAssignments = useMemo(() => {
     const map = new Map<string, any>();
-    // Cargar tareas locales
     assignments.forEach((a) => map.set(a.id, a));
-    // Complementar con tareas en Cloudflare D1
     cloudAssignments.forEach((a) => map.set(a.id, a));
     return Array.from(map.values());
   }, [assignments, cloudAssignments]);
@@ -94,21 +96,17 @@ function StudentAssignmentsContent() {
     [allAssignments, filteredList, selectedAssignmentId]
   );
 
-  // Estado de sincronización en tiempo real con Cloudflare Worker / Local
   const [submissionsList, setSubmissionsList] = useState<FullSubmissionItem[]>([]);
-  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
+  const [, setIsLoadingSubmissions] = useState(false);
 
-  // Formulario multiarchivo del estudiante
   const [stagedFiles, setStagedFiles] = useState<StagedFileItem[]>([]);
   const [studentExcerpt, setStudentExcerpt] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Selector responsivo móvil
   const [mobileTab, setMobileTab] = useState<'list' | 'detail'>('list');
 
-  // Cargar entregas del estudiante al seleccionar tarea
   const loadSubmissions = async () => {
     if (!activeAssignment) return;
     setIsLoadingSubmissions(true);
@@ -116,7 +114,7 @@ function StudentAssignmentsContent() {
       const data = await fetchSubmissions(activeAssignment.id);
       setSubmissionsList(data);
     } catch {
-      // Ignorar error de red si estamos en modo offline
+      // Offline mode
     } finally {
       setIsLoadingSubmissions(false);
     }
@@ -129,7 +127,6 @@ function StudentAssignmentsContent() {
     return () => window.removeEventListener('ipt-task-sync-update', handleSync);
   }, [activeAssignment?.id]);
 
-  // Entrega más reciente del estudiante para la tarea activa
   const currentSubmission = useMemo(() => {
     return submissionsList.find((s) => s.assignmentId === activeAssignment?.id);
   }, [submissionsList, activeAssignment?.id]);
@@ -143,7 +140,6 @@ function StudentAssignmentsContent() {
     setStagedFiles([]);
   };
 
-  // Selector Multiarchivo (acepta cualquier formato: Audio, PDF, Word, Markdown, TXT, etc.)
   const handleMultipleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -167,20 +163,56 @@ function StudentAssignmentsContent() {
     setStagedFiles((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  // Verificar si el curso de la tarea activa está dentro del cupo de cursos dinámicos activos
+  const isCourseActiveInDynamicSlot = useMemo(() => {
+    if (!activeAssignment?.courseSlug) return entitlements.canSubmitAssignments;
+    if (entitlements.effectiveActiveCourseSlugs.includes(activeAssignment.courseSlug)) {
+      return true;
+    }
+    return false;
+  }, [activeAssignment?.courseSlug, entitlements]);
+
+  const isCourseFrozen = useMemo(() => {
+    if (!activeAssignment?.courseSlug) return false;
+    return (subscription?.frozenDynamicCourseSlugs || []).includes(activeAssignment.courseSlug);
+  }, [activeAssignment?.courseSlug, subscription?.frozenDynamicCourseSlugs]);
+
+  const canDeliverForActiveCourse =
+    entitlements.canSubmitAssignments &&
+    (isCourseActiveInDynamicSlot ||
+      entitlements.effectiveActiveCourseSlugs.length < entitlements.maxDynamicCourses);
+
   const handleStudentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeAssignment) return;
     setUploadError(null);
     setUploadSuccess(null);
 
+    if (!entitlements.canSubmitAssignments) {
+      setUploadError(
+        'La entrega y evaluación docente de tareas requiere un Plan Pro o Pro+ activo.'
+      );
+      return;
+    }
+
     if (stagedFiles.length === 0 && !studentExcerpt.trim()) {
-      setUploadError('Por favor adjunta al menos un archivo o redacta tus respuestas en el campo de texto.');
+      setUploadError(
+        'Por favor adjunta al menos un archivo o redacta tus respuestas en el campo de texto.'
+      );
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // 1. Subir cada archivo a Cloudflare R2
+      // Si el estudiante tiene cupo libre y el curso aún no estaba en su lista activa, activarlo automáticamente
+      if (
+        activeAssignment.courseSlug &&
+        !isCourseActiveInDynamicSlot &&
+        entitlements.effectiveActiveCourseSlugs.length < entitlements.maxDynamicCourses
+      ) {
+        await activateDynamicCourse(activeAssignment.courseSlug);
+      }
+
       const uploadedFilesResult: SubmissionFileItem[] = [];
       const subId = `sub-${activeAssignment.id}-${Date.now()}`;
 
@@ -189,7 +221,6 @@ function StudentAssignmentsContent() {
         uploadedFilesResult.push(uploaded);
       }
 
-      // 2. Registrar la entrega en Cloudflare Worker (D1) y almacenamiento local
       await sendStudentSubmission({
         id: subId,
         assignmentId: activeAssignment.id,
@@ -206,8 +237,10 @@ function StudentAssignmentsContent() {
       setStagedFiles([]);
       setStudentExcerpt('');
       loadSubmissions();
-    } catch {
-      setUploadError('Ocurrió un error al registrar la entrega. Intenta nuevamente.');
+    } catch (err: any) {
+      setUploadError(
+        err?.message || 'Ocurrió un error al registrar la entrega. Intenta nuevamente.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -219,7 +252,10 @@ function StudentAssignmentsContent() {
   return (
     <div className="flex-1 bg-white text-neutral-900 pb-20">
       <main className="max-w-[1300px] mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-8">
-        <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-neutral-500">
+        <nav
+          aria-label="Ruta de navegación"
+          className="flex items-center gap-2 text-xs text-neutral-500"
+        >
           <Link href="/" className="hover:text-neutral-900 flex items-center gap-1 font-medium">
             <Home className="w-3.5 h-3.5" />
             <span>Inicio</span>
@@ -239,7 +275,7 @@ function StudentAssignmentsContent() {
               Mis Tareas y Evaluaciones
             </h1>
             <p className="text-sm text-neutral-600 leading-relaxed">
-              Sistema multiarchivo: entrega documentos (PDF, Word), audios explicativos, notas en texto o código. Revisa en tiempo real las calificaciones, rúbricas y anotaciones in-situ de tu profesor.
+              Sistema multiarchivo: entrega documentos (PDF, Word), audios explicativos, notas en texto o código. Revisa en tiempo real las calificaciones, rúbricas y anotaciones de tu profesor.
             </p>
           </div>
 
@@ -382,7 +418,6 @@ function StudentAssignmentsContent() {
                   mobileTab === 'detail' ? 'block' : 'hidden lg:block'
                 }`}
               >
-                {/* Botón contextual de retorno móvil */}
                 <button
                   type="button"
                   onClick={() => setMobileTab('list')}
@@ -396,7 +431,8 @@ function StudentAssignmentsContent() {
                   <div className="border-b border-neutral-100 pb-5 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <span className="px-3 py-1 rounded-full bg-neutral-100 text-[11px] font-bold text-neutral-900">
-                        {activeAssignment.courseTitle} · {activeAssignment.moduleTitle || 'Módulo Principal'}
+                        {activeAssignment.courseTitle} ·{' '}
+                        {activeAssignment.moduleTitle || 'Módulo Principal'}
                       </span>
                       <div className="flex items-center gap-1.5 text-xs text-neutral-600 font-semibold">
                         <Clock className="w-4 h-4 text-blue-600" />
@@ -474,12 +510,12 @@ function StudentAssignmentsContent() {
                           Nota Final
                         </span>
                         <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700">
-                          {currentSubmission.finalGrade?.toFixed(1) || '5.0'} <span className="text-sm font-normal text-neutral-500">/ 5.0</span>
+                          {currentSubmission.finalGrade?.toFixed(1) || '5.0'}{' '}
+                          <span className="text-sm font-normal text-neutral-500">/ 5.0</span>
                         </span>
                       </div>
                     </div>
 
-                    {/* Justificación libre redactada por el docente */}
                     {currentSubmission.teacherJustification && (
                       <div className="space-y-1.5">
                         <span className="text-xs font-bold text-neutral-700">
@@ -491,203 +527,278 @@ function StudentAssignmentsContent() {
                       </div>
                     )}
 
-                    {/* Desglose de Rúbrica */}
-                    {currentSubmission.rubricEvaluations && currentSubmission.rubricEvaluations.length > 0 && (
-                      <div className="space-y-2 pt-2">
-                        <span className="text-xs font-bold text-neutral-700">
-                          Evaluación Criterio por Criterio:
-                        </span>
-                        <div className="grid grid-cols-1 gap-2.5">
-                          {currentSubmission.rubricEvaluations.map((item) => (
-                            <div key={item.criterionId} className="p-3 rounded-xl bg-white border border-emerald-100 flex items-center justify-between gap-3 text-xs">
-                              <div>
-                                <span className="font-bold text-neutral-900 block">{item.criterionTitle}</span>
-                                {item.teacherComment && (
-                                  <span className="text-[11px] text-neutral-600 italic block mt-0.5">
-                                    "{item.teacherComment}"
+                    {currentSubmission.rubricEvaluations &&
+                      currentSubmission.rubricEvaluations.length > 0 && (
+                        <div className="space-y-2 pt-2">
+                          <span className="text-xs font-bold text-neutral-700">
+                            Evaluación Criterio por Criterio:
+                          </span>
+                          <div className="grid grid-cols-1 gap-2.5">
+                            {currentSubmission.rubricEvaluations.map((item) => (
+                              <div
+                                key={item.criterionId}
+                                className="p-3 rounded-xl bg-white border border-emerald-100 flex items-center justify-between gap-3 text-xs"
+                              >
+                                <div>
+                                  <span className="font-bold text-neutral-900 block">
+                                    {item.criterionTitle}
                                   </span>
-                                )}
+                                  {item.teacherComment && (
+                                    <span className="text-[11px] text-neutral-600 italic block mt-0.5">
+                                      "{item.teacherComment}"
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="font-bold text-emerald-700 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 shrink-0">
+                                  {item.points?.toFixed(1)} / 5.0
+                                </span>
                               </div>
-                              <span className="font-bold text-emerald-700 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 shrink-0">
-                                {item.points?.toFixed(1)} / 5.0
-                              </span>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </section>
                 )}
 
                 {/* VISOR UNIFICADO DE ARCHIVOS ENTREGADOS Y ANOTACIONES IN-SITU */}
-                {currentSubmission && currentSubmission.files && currentSubmission.files.length > 0 && (
-                  <section className="bg-white rounded-3xl border border-neutral-200 p-6 lg:p-8 space-y-4 shadow-2xs">
-                    <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
-                      <div>
-                        <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
-                          <Paperclip className="w-4 h-4 text-blue-600" />
-                          <span>Archivos Entregados ({currentSubmission.files.length})</span>
+                {currentSubmission &&
+                  currentSubmission.files &&
+                  currentSubmission.files.length > 0 && (
+                    <section className="bg-white rounded-3xl border border-neutral-200 p-6 lg:p-8 space-y-4 shadow-2xs">
+                      <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
+                        <div>
+                          <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
+                            <Paperclip className="w-4 h-4 text-blue-600" />
+                            <span>
+                              Archivos Entregados ({currentSubmission.files.length})
+                            </span>
+                          </h3>
+                          <p className="text-xs text-neutral-500 mt-0.5">
+                            Haz clic en cada archivo para previsualizarlo y leer las anotaciones ancladas de tu profesor.
+                          </p>
+                        </div>
+                        <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Recibido</span>
+                        </span>
+                      </div>
+
+                      <div className="space-y-4">
+                        {currentSubmission.files.map((file, idx) => {
+                          const fileAnnotations = (
+                            currentSubmission.inlineAnnotations || []
+                          ).filter((ann) => !ann.fileId || ann.fileId === file.fileName);
+
+                          return (
+                            <UnifiedDeliveryViewer
+                              key={file.id || idx}
+                              fileName={file.fileName}
+                              fileUrl={file.downloadUrl}
+                              fileSizeMb={
+                                file.fileSize
+                                  ? Number((file.fileSize / (1024 * 1024)).toFixed(2))
+                                  : undefined
+                              }
+                              uploadedAtUtc={
+                                file.uploadedAt || currentSubmission.submittedAt
+                              }
+                              annotations={fileAnnotations}
+                              canAnnotate={false}
+                              defaultExpanded={idx === 0}
+                            />
+                          );
+                        })}
+                      </div>
+
+                      {currentSubmission.submissionTextContent && (
+                        <div className="mt-4 pt-4 border-t border-neutral-100 space-y-1.5">
+                          <span className="text-xs font-bold text-neutral-700">
+                            Comentario del estudiante al entregar:
+                          </span>
+                          <div className="p-3 rounded-xl bg-neutral-50 text-xs text-neutral-700">
+                            {currentSubmission.submissionTextContent}
+                          </div>
+                        </div>
+                      )}
+                    </section>
+                  )}
+
+                {/* FORMULARIO DE ENTREGA O COMPUERTA SEGÚN PLAN Y ESTADO */}
+                {!canDeliverForActiveCourse ? (
+                  <section className="bg-[#f6f7f9] rounded-3xl border border-[#e9eaf2] p-6 lg:p-8 space-y-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-white border border-[#d1d2e0] flex items-center justify-center text-[#6d28d2] shrink-0">
+                        <Lock className="w-5 h-5" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="text-base font-bold text-[#202230]">
+                          {entitlements.isReadOnly
+                            ? 'Modo Archivo · Consulta de Entregas Históricas'
+                            : isCourseFrozen
+                            ? 'Este curso dinámico se encuentra en pausa'
+                            : !entitlements.canSubmitAssignments
+                            ? 'Entrega y Corrección Docente disponible en Pro y Pro+'
+                            : 'Cupo de Cursos Dinámicos lleno'}
                         </h3>
-                        <p className="text-xs text-neutral-500 mt-0.5">
-                          Haz clic en cada archivo para previsualizarlo y leer las anotaciones ancladas de tu profesor.
+                        <p className="text-xs text-[#2a2b3f] leading-relaxed">
+                          {entitlements.isReadOnly
+                            ? 'Puedes revisar todas tus calificaciones, rúbricas y archivos entregados anteriormente sin límite de tiempo. Para enviar nuevas tareas a revisión docente, reactiva tu suscripción.'
+                            : isCourseFrozen
+                            ? 'Tu progreso y calificaciones están guardados. Para volver a enviar tareas en este curso, actívalo en tu cupo mensual o sube al Plan Pro+ (hasta 3 cursos dinámicos simultáneos).'
+                            : 'Los cursos dinámicos incluyen revisión personalizada por parte de un docente con rúbrica y anotaciones sobre tus archivos. Activa tu prueba gratuita de 20 días en Pro o 15 días en Pro+.'}
                         </p>
                       </div>
-                      <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Recibido</span>
-                      </span>
                     </div>
 
-                    <div className="space-y-4">
-                      {currentSubmission.files.map((file, idx) => {
-                        const fileAnnotations = (currentSubmission.inlineAnnotations || []).filter(
-                          (ann) => !ann.fileId || ann.fileId === file.fileName
-                        );
-
-                        return (
-                          <UnifiedDeliveryViewer
-                            key={file.id || idx}
-                            fileName={file.fileName}
-                            fileUrl={file.downloadUrl}
-                            fileSizeMb={file.fileSize ? Number((file.fileSize / (1024 * 1024)).toFixed(2)) : undefined}
-                            uploadedAtUtc={file.uploadedAt || currentSubmission.submittedAt}
-                            annotations={fileAnnotations}
-                            canAnnotate={false} // El estudiante solo lee las notas
-                            defaultExpanded={idx === 0}
-                          />
-                        );
-                      })}
+                    <div className="flex flex-wrap items-center gap-3 pt-1">
+                      {entitlements.maxDynamicCourses > 0 && activeAssignment?.courseSlug ? (
+                        <button
+                          type="button"
+                          onClick={() => openPricingModal('pro_plus')}
+                          className="px-4 py-2.5 rounded-xl bg-[#202230] hover:bg-[#2a2b3f] text-white text-xs font-bold inline-flex items-center gap-2 cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Ampliar cupo a 3 cursos dinámicos con Pro+</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => openPricingModal('pro')}
+                          className="px-4 py-2.5 rounded-xl border border-[#6d28d2] text-[#6d28d2] hover:bg-[#6d28d2]/5 text-xs font-bold inline-flex items-center gap-2 cursor-pointer"
+                        >
+                          <span>Activar Prueba Gratuita Pro (20 días)</span>
+                        </button>
+                      )}
+                    </div>
+                  </section>
+                ) : (
+                  <section className="bg-white rounded-3xl border border-neutral-200 p-6 lg:p-8 space-y-6 shadow-2xs">
+                    <div className="border-b border-neutral-100 pb-4">
+                      <h3 className="text-base font-bold text-neutral-900">
+                        {isSubmitted
+                          ? 'Entregar una nueva versión'
+                          : 'Realizar Entrega de la Tarea'}
+                      </h3>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Se permite cualquier tipo de archivo (Audios .mp3/.wav, documentos PDF, Word, Excel, texto, código, imágenes o comprimidos).
+                      </p>
                     </div>
 
-                    {currentSubmission.submissionTextContent && (
-                      <div className="mt-4 pt-4 border-t border-neutral-100 space-y-1.5">
-                        <span className="text-xs font-bold text-neutral-700">Comentario del estudiante al entregar:</span>
-                        <div className="p-3 rounded-xl bg-neutral-50 text-xs text-neutral-700">
-                          {currentSubmission.submissionTextContent}
-                        </div>
+                    {uploadError && (
+                      <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800 flex items-center gap-2.5">
+                        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                        <span>{uploadError}</span>
                       </div>
                     )}
+
+                    {uploadSuccess && (
+                      <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800 flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>{uploadSuccess}</span>
+                      </div>
+                    )}
+
+                    <form onSubmit={handleStudentSubmit} className="space-y-5">
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-neutral-900">
+                          1. Adjunta tus archivos (puedes seleccionar varios a la vez)
+                        </label>
+                        <label className="border-2 border-dashed border-neutral-300 hover:border-blue-600 rounded-2xl p-6 text-center block cursor-pointer transition-colors bg-neutral-50/50 hover:bg-white group">
+                          <Upload className="w-8 h-8 text-neutral-400 group-hover:text-blue-600 mx-auto mb-2 transition-colors" />
+                          <span className="text-xs font-bold text-neutral-900 block">
+                            Haz clic para explorar o arrastra tus archivos aquí
+                          </span>
+                          <span className="text-[11px] text-neutral-500 mt-1 block">
+                            Audios, PDFs, DOCX, TXT, Markdown, código, etc. Sin restricciones de formato.
+                          </span>
+                          <input
+                            type="file"
+                            multiple
+                            onChange={handleMultipleFilesChange}
+                            className="sr-only"
+                          />
+                        </label>
+                      </div>
+
+                      {stagedFiles.length > 0 && (
+                        <div className="space-y-2">
+                          <span className="text-xs font-bold text-neutral-700">
+                            Archivos seleccionados ({stagedFiles.length}):
+                          </span>
+                          <div className="divide-y divide-neutral-100 rounded-2xl border border-neutral-200 bg-neutral-50/30 overflow-hidden">
+                            {stagedFiles.map((sf, idx) => (
+                              <div
+                                key={idx}
+                                className="p-3 flex items-center justify-between gap-3 text-xs"
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div className="w-7 h-7 rounded-lg bg-white border border-neutral-200 flex items-center justify-center shrink-0">
+                                    {['mp3', 'wav', 'ogg', 'm4a'].includes(sf.ext) ? (
+                                      <Music className="w-3.5 h-3.5 text-purple-600" />
+                                    ) : sf.ext === 'pdf' ? (
+                                      <FileText className="w-3.5 h-3.5 text-rose-600" />
+                                    ) : (
+                                      <FileText className="w-3.5 h-3.5 text-blue-600" />
+                                    )}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="font-semibold text-neutral-900 truncate max-w-xs">
+                                      {sf.name}
+                                    </p>
+                                    <span className="text-[10px] text-neutral-400 uppercase font-mono">
+                                      {sf.ext || 'archivo'} • {sf.sizeMb} MB
+                                    </span>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeStagedFile(idx)}
+                                  className="text-neutral-400 hover:text-rose-600 p-1.5 transition-colors"
+                                  title="Quitar archivo"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-bold text-neutral-900">
+                          2. Comentarios, desarrollo o notas de tu entrega (opcional)
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={studentExcerpt}
+                          onChange={(e) => setStudentExcerpt(e.target.value)}
+                          placeholder="Escribe aquí un resumen breve, respuestas en texto o aclaraciones sobre tu entrega..."
+                          className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={
+                          isSubmitting ||
+                          (stagedFiles.length === 0 && !studentExcerpt.trim())
+                        }
+                        className={`w-full py-3.5 px-6 rounded-2xl text-xs font-bold inline-flex items-center justify-center gap-2 transition-all min-h-[48px] ${
+                          stagedFiles.length > 0 || studentExcerpt.trim()
+                            ? 'bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white shadow-sm cursor-pointer'
+                            : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                        }`}
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>
+                          {isSubmitting
+                            ? 'Subiendo archivos a Cloudflare R2...'
+                            : 'Confirmar y Enviar Entrega'}
+                        </span>
+                      </button>
+                    </form>
                   </section>
                 )}
-
-                {/* FORMULARIO DE ENTREGA MULTIARCHIVOS (Permite cualquier archivo) */}
-                <section className="bg-white rounded-3xl border border-neutral-200 p-6 lg:p-8 space-y-6 shadow-2xs">
-                  <div className="border-b border-neutral-100 pb-4">
-                    <h3 className="text-base font-bold text-neutral-900">
-                      {isSubmitted ? 'Entregar una nueva versión' : 'Realizar Entrega de la Tarea'}
-                    </h3>
-                    <p className="text-xs text-neutral-500 mt-1">
-                      Se permite cualquier tipo de archivo (Audios .mp3/.wav, documentos PDF, Word, Excel, texto, código, imágenes o comprimidos).
-                    </p>
-                  </div>
-
-                  {uploadError && (
-                    <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800 flex items-center gap-2.5">
-                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                      <span>{uploadError}</span>
-                    </div>
-                  )}
-
-                  {uploadSuccess && (
-                    <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800 flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>{uploadSuccess}</span>
-                    </div>
-                  )}
-
-                  <form onSubmit={handleStudentSubmit} className="space-y-5">
-                    {/* Zona de Arrastrar / Cargar Múltiples Archivos */}
-                    <div className="space-y-2">
-                      <label className="block text-xs font-bold text-neutral-900">
-                        1. Adjunta tus archivos (puedes seleccionar varios a la vez)
-                      </label>
-                      <label className="border-2 border-dashed border-neutral-300 hover:border-blue-600 rounded-2xl p-6 text-center block cursor-pointer transition-colors bg-neutral-50/50 hover:bg-white group">
-                        <Upload className="w-8 h-8 text-neutral-400 group-hover:text-blue-600 mx-auto mb-2 transition-colors" />
-                        <span className="text-xs font-bold text-neutral-900 block">
-                          Haz clic para explorar o arrastra tus archivos aquí
-                        </span>
-                        <span className="text-[11px] text-neutral-500 mt-1 block">
-                          Audios, PDFs, DOCX, TXT, Markdown, código, etc. Sin restricciones de formato.
-                        </span>
-                        <input
-                          type="file"
-                          multiple
-                          onChange={handleMultipleFilesChange}
-                          className="sr-only"
-                        />
-                      </label>
-                    </div>
-
-                    {/* Lista de Archivos Preparados para Entrega */}
-                    {stagedFiles.length > 0 && (
-                      <div className="space-y-2">
-                        <span className="text-xs font-bold text-neutral-700">
-                          Archivos seleccionados ({stagedFiles.length}):
-                        </span>
-                        <div className="divide-y divide-neutral-100 rounded-2xl border border-neutral-200 bg-neutral-50/30 overflow-hidden">
-                          {stagedFiles.map((sf, idx) => (
-                            <div key={idx} className="p-3 flex items-center justify-between gap-3 text-xs">
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <div className="w-7 h-7 rounded-lg bg-white border border-neutral-200 flex items-center justify-center shrink-0">
-                                  {['mp3', 'wav', 'ogg', 'm4a'].includes(sf.ext) ? (
-                                    <Music className="w-3.5 h-3.5 text-purple-600" />
-                                  ) : sf.ext === 'pdf' ? (
-                                    <FileText className="w-3.5 h-3.5 text-rose-600" />
-                                  ) : (
-                                    <FileText className="w-3.5 h-3.5 text-blue-600" />
-                                  )}
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="font-semibold text-neutral-900 truncate max-w-xs">{sf.name}</p>
-                                  <span className="text-[10px] text-neutral-400 uppercase font-mono">{sf.ext || 'archivo'} • {sf.sizeMb} MB</span>
-                                </div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => removeStagedFile(idx)}
-                                className="text-neutral-400 hover:text-rose-600 p-1.5 transition-colors"
-                                title="Quitar archivo"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Texto o Resumen del Estudiante */}
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-bold text-neutral-900">
-                        2. Comentarios, desarrollo o notas de tu entrega (opcional)
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={studentExcerpt}
-                        onChange={(e) => setStudentExcerpt(e.target.value)}
-                        placeholder="Escribe aquí un resumen breve, respuestas en texto o aclaraciones sobre tu entrega..."
-                        className="w-full px-4 py-3 rounded-2xl border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:border-blue-600 transition-colors"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || (stagedFiles.length === 0 && !studentExcerpt.trim())}
-                      className={`w-full py-3.5 px-6 rounded-2xl text-xs font-bold inline-flex items-center justify-center gap-2 transition-all min-h-[48px] ${
-                        stagedFiles.length > 0 || studentExcerpt.trim()
-                          ? 'bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white shadow-sm cursor-pointer'
-                          : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
-                      }`}
-                    >
-                      <Upload className="w-4 h-4" />
-                      <span>
-                        {isSubmitting
-                          ? 'Subiendo archivos a Cloudflare R2...'
-                          : 'Confirmar y Enviar Entrega'}
-                      </span>
-                    </button>
-                  </form>
-                </section>
               </div>
             </div>
           </div>

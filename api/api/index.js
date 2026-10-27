@@ -25822,6 +25822,1830 @@ var LiveClassService = class {
   }
 };
 
+// src/services/subscriptionEngine.ts
+var DEFAULT_PLAN_CONFIGS = {
+  free: {
+    id: "free",
+    name: "Plan Free",
+    priceMonthly: 0,
+    taxRatePercent: 0,
+    currency: "COP",
+    trialDays: 0,
+    trialLiveCredits: 0,
+    maxDynamicCourses: 0,
+    monthlyLiveCredits: 0,
+    allowsLiveAccess: false,
+    allowsAllStatic: false
+  },
+  pro: {
+    id: "pro",
+    name: "Plan Pro",
+    priceMonthly: 89e3,
+    taxRatePercent: 19,
+    currency: "COP",
+    trialDays: 20,
+    trialLiveCredits: 0,
+    maxDynamicCourses: 1,
+    monthlyLiveCredits: 0,
+    allowsLiveAccess: false,
+    allowsAllStatic: true
+  },
+  pro_plus: {
+    id: "pro_plus",
+    name: "Plan Pro+",
+    priceMonthly: 189e3,
+    taxRatePercent: 19,
+    currency: "COP",
+    trialDays: 15,
+    trialLiveCredits: 1,
+    // 1 sesión en vivo de cortesía durante el trial de 15 días
+    maxDynamicCourses: 3,
+    monthlyLiveCredits: 8,
+    allowsLiveAccess: true,
+    allowsAllStatic: true
+  }
+};
+var SystemClockService = class {
+  virtualNow = null;
+  allowManipulation;
+  constructor(initialTime, forceAllowManipulation = false) {
+    const isProd = typeof process !== "undefined" && process.env?.NODE_ENV === "production";
+    this.allowManipulation = forceAllowManipulation || !isProd;
+    if (initialTime && this.allowManipulation) {
+      this.virtualNow = new Date(initialTime).getTime();
+    }
+  }
+  now() {
+    if (this.allowManipulation && this.virtualNow !== null) {
+      return new Date(this.virtualNow);
+    }
+    return /* @__PURE__ */ new Date();
+  }
+  setNow(date5) {
+    if (!this.allowManipulation) {
+      throw new Error("CLOCK_MANIPULATION_FORBIDDEN_IN_PRODUCTION");
+    }
+    this.virtualNow = new Date(date5).getTime();
+  }
+  advanceMs(ms) {
+    if (!this.allowManipulation) {
+      throw new Error("CLOCK_MANIPULATION_FORBIDDEN_IN_PRODUCTION");
+    }
+    const base = this.virtualNow ?? Date.now();
+    this.virtualNow = base + ms;
+  }
+  advanceHours(hours) {
+    this.advanceMs(hours * 60 * 60 * 1e3);
+  }
+  advanceDays(days) {
+    this.advanceMs(days * 24 * 60 * 60 * 1e3);
+  }
+};
+function addDaysUtc(date5, days) {
+  const d = new Date(date5);
+  return new Date(d.getTime() + days * 24 * 60 * 60 * 1e3);
+}
+function advanceCalendarMonth(fromDateIso, billingAnchorDay) {
+  const d = new Date(fromDateIso);
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth();
+  const targetMonthIndex = month + 1;
+  const targetYear = year + Math.floor(targetMonthIndex / 12);
+  const normalizedTargetMonth = targetMonthIndex % 12;
+  const daysInTargetMonth = new Date(Date.UTC(targetYear, normalizedTargetMonth + 1, 0)).getUTCDate();
+  const clampedDay = Math.min(Math.max(1, billingAnchorDay), daysInTargetMonth);
+  return new Date(
+    Date.UTC(
+      targetYear,
+      normalizedTargetMonth,
+      clampedDay,
+      d.getUTCHours(),
+      d.getUTCMinutes(),
+      d.getUTCSeconds(),
+      d.getUTCMilliseconds()
+    )
+  );
+}
+var DISPOSABLE_EMAIL_DOMAINS = /* @__PURE__ */ new Set([
+  "10minutemail.com",
+  "tempmail.com",
+  "temp-mail.org",
+  "guerrillamail.com",
+  "mailinator.com",
+  "yopmail.com",
+  "trashmail.com",
+  "sharklasers.com",
+  "getnada.com",
+  "maildrop.cc",
+  "dispostable.com",
+  "fakeinbox.com",
+  "throwawaymail.com"
+]);
+function normalizeEmailByDomain(rawEmail) {
+  const cleaned = (rawEmail || "").trim().toLowerCase();
+  const parts = cleaned.split("@");
+  if (parts.length !== 2)
+    return cleaned;
+  let [local, domain2] = parts;
+  if (domain2 === "gmail.com" || domain2 === "googlemail.com") {
+    const plusIndex = local.indexOf("+");
+    if (plusIndex !== -1) {
+      local = local.slice(0, plusIndex);
+    }
+    local = local.replace(/\./g, "");
+    domain2 = "gmail.com";
+  }
+  return `${local}@${domain2}`;
+}
+function isDisposableEmail(rawEmail) {
+  const cleaned = (rawEmail || "").trim().toLowerCase();
+  const parts = cleaned.split("@");
+  if (parts.length !== 2)
+    return true;
+  return DISPOSABLE_EMAIL_DOMAINS.has(parts[1]);
+}
+function isCardExpired(pm, now) {
+  const currentYear = now.getUTCFullYear();
+  const currentMonth = now.getUTCMonth() + 1;
+  if (pm.expYear < currentYear)
+    return true;
+  if (pm.expYear === currentYear && pm.expMonth < currentMonth)
+    return true;
+  return false;
+}
+function freeEntitlements() {
+  return {
+    canAccessStaticCatalog: true,
+    canAccessAllStatic: false,
+    maxDynamicCourses: 0,
+    effectiveActiveCourseSlugs: [],
+    canJoinLiveClasses: false,
+    availableLiveCredits: 0,
+    canSubmitAssignments: false,
+    canViewCertificates: true,
+    canClaimCertificates: false,
+    certificateRequiresConversion: false,
+    campusTheme: "campus-free",
+    isReadOnly: false
+  };
+}
+function readOnlyEntitlements(reason) {
+  return {
+    ...freeEntitlements(),
+    isReadOnly: true,
+    readOnlyReason: reason
+  };
+}
+function selectMostRecentCourses(activeSlugs, activityMap, maxAllowed, preferredSlug) {
+  if (maxAllowed <= 0 || !Array.isArray(activeSlugs) || activeSlugs.length === 0) {
+    return [];
+  }
+  if (activeSlugs.length <= maxAllowed) {
+    return [...activeSlugs];
+  }
+  if (preferredSlug && activeSlugs.includes(preferredSlug) && maxAllowed === 1) {
+    return [preferredSlug];
+  }
+  return [...activeSlugs].sort((a, b) => (activityMap?.[b] ?? "").localeCompare(activityMap?.[a] ?? "")).slice(0, maxAllowed);
+}
+function computeEntitlements(sub, org, orgMember, isWithinPurchasedSeatLimit, planConfigs, now) {
+  if (!sub || sub.planId === "free") {
+    return freeEntitlements();
+  }
+  if (sub.status === "read_only") {
+    return readOnlyEntitlements(sub.readOnlyReason ?? "expired");
+  }
+  const trialEnded = sub.trialEnd ? new Date(sub.trialEnd).getTime() <= now.getTime() : false;
+  const periodEndDate = new Date(sub.currentPeriodEnd);
+  const periodEnded = periodEndDate.getTime() <= now.getTime();
+  const graceEnded = sub.graceEndsAt ? new Date(sub.graceEndsAt).getTime() <= now.getTime() : false;
+  if (sub.status === "trial" && trialEnded && sub.cancelAtPeriodEnd) {
+    return readOnlyEntitlements("trial_ended_cancelled");
+  }
+  if (sub.status === "past_due" && graceEnded) {
+    return readOnlyEntitlements("past_due_grace_ended");
+  }
+  if (sub.status === "active" && periodEnded && sub.cancelAtPeriodEnd) {
+    return readOnlyEntitlements("expired");
+  }
+  const cronLagLimitMs = periodEndDate.getTime() + 48 * 60 * 60 * 1e3;
+  if (sub.status === "active" && !sub.cancelAtPeriodEnd && now.getTime() > cronLagLimitMs) {
+    return readOnlyEntitlements("renewal_overdue");
+  }
+  let effectivePlanId = sub.planId;
+  let preferredDowngradeSlug;
+  if (sub.pendingDowngrade && new Date(sub.pendingDowngrade.effectiveAt).getTime() <= now.getTime()) {
+    effectivePlanId = sub.pendingDowngrade.targetPlanId;
+    preferredDowngradeSlug = sub.pendingDowngrade.selectedDynamicCourseSlug;
+    if (effectivePlanId === "free") {
+      return freeEntitlements();
+    }
+  }
+  if (effectivePlanId === "your_plan") {
+    const customExpiry = sub.adminOverrides?.customExpiryDate;
+    const effectiveOrgEnd = customExpiry || org?.currentPeriodEnd;
+    const orgExpired = effectiveOrgEnd ? new Date(effectiveOrgEnd).getTime() <= now.getTime() : true;
+    if (!org || org.status !== "active" || orgExpired || !isWithinPurchasedSeatLimit || !orgMember || orgMember.status !== "active") {
+      return readOnlyEntitlements("organization_invalid");
+    }
+    const orgInTrial = org.trialEnd ? new Date(org.trialEnd).getTime() > now.getTime() : false;
+    const maxDyn2 = sub.adminOverrides?.maxDynamicCourses ?? org.customTerms.maxDynamicCoursesPerSeat;
+    const liveAllowed2 = sub.adminOverrides?.allowLiveAccess ?? org.customTerms.allowLiveAccess;
+    const effectiveSlugs2 = selectMostRecentCourses(
+      sub.activeDynamicCourseSlugs,
+      sub.courseLastActivityAt,
+      maxDyn2
+    );
+    return {
+      canAccessStaticCatalog: true,
+      canAccessAllStatic: true,
+      maxDynamicCourses: maxDyn2,
+      effectiveActiveCourseSlugs: effectiveSlugs2,
+      canJoinLiveClasses: liveAllowed2,
+      availableLiveCredits: liveAllowed2 ? sub.remainingCredits : 0,
+      canSubmitAssignments: true,
+      canViewCertificates: true,
+      canClaimCertificates: !orgInTrial,
+      certificateRequiresConversion: orgInTrial,
+      campusTheme: "campus-enterprise",
+      isReadOnly: false
+    };
+  }
+  const config3 = planConfigs[effectivePlanId];
+  if (!config3) {
+    return freeEntitlements();
+  }
+  const inActiveTrial = sub.status === "trial" && !trialEnded;
+  const trialPendingCharge = sub.status === "trial" && trialEnded && !sub.cancelAtPeriodEnd;
+  const maxDyn = sub.adminOverrides?.maxDynamicCourses ?? config3.maxDynamicCourses;
+  const defaultLiveAllowed = inActiveTrial ? config3.allowsLiveAccess && config3.trialLiveCredits > 0 : config3.allowsLiveAccess;
+  const liveAllowed = sub.adminOverrides?.allowLiveAccess ?? defaultLiveAllowed;
+  const effectiveSlugs = selectMostRecentCourses(
+    sub.activeDynamicCourseSlugs,
+    sub.courseLastActivityAt,
+    maxDyn,
+    preferredDowngradeSlug
+  );
+  return {
+    canAccessStaticCatalog: true,
+    canAccessAllStatic: config3.allowsAllStatic,
+    maxDynamicCourses: maxDyn,
+    effectiveActiveCourseSlugs: effectiveSlugs,
+    canJoinLiveClasses: liveAllowed,
+    availableLiveCredits: liveAllowed ? sub.remainingCredits : 0,
+    canSubmitAssignments: true,
+    canViewCertificates: true,
+    canClaimCertificates: !inActiveTrial && !trialPendingCharge && sub.status === "active",
+    certificateRequiresConversion: inActiveTrial || trialPendingCharge,
+    campusTheme: effectivePlanId === "pro_plus" ? "campus-pro-plus" : "campus-pro",
+    isReadOnly: false
+  };
+}
+var MockPaymentGateway = class {
+  idempotencyStore = /* @__PURE__ */ new Map();
+  failingTokens = /* @__PURE__ */ new Set(["tok_fail_always", "tok_declined"]);
+  failOnceTokens = /* @__PURE__ */ new Set(["tok_fail_once"]);
+  chargeCounter = 0;
+  /**
+   * Simula el Hosted Field / Tokenizador de la pasarela:
+   * El PAN nunca llega a la lógica de negocio; el tokenizador devuelve token y cardFingerprint.
+   */
+  tokenizeCard(input2) {
+    const cleanId = (input2.rawCardIdentifierForFingerprint || `${input2.brand}_${input2.panLast4}_${input2.expMonth}_${input2.expYear}`).trim().toLowerCase();
+    let hash3 = 5381;
+    for (let i = 0; i < cleanId.length; i++) {
+      hash3 = hash3 * 33 ^ cleanId.charCodeAt(i);
+    }
+    const fp = `fp_gw_${(hash3 >>> 0).toString(16)}_${input2.panLast4}`;
+    const token = input2.customToken || `tok_${input2.brand}_${input2.panLast4}_${Math.random().toString(36).slice(2, 8)}`;
+    return {
+      token,
+      cardFingerprint: fp,
+      brand: input2.brand,
+      last4: input2.panLast4,
+      expMonth: input2.expMonth,
+      expYear: input2.expYear,
+      cardholderName: input2.cardholderName
+    };
+  }
+  setTokenFailureMode(token, mode) {
+    this.failingTokens.delete(token);
+    this.failOnceTokens.delete(token);
+    if (mode === "always_fail")
+      this.failingTokens.add(token);
+    if (mode === "fail_once")
+      this.failOnceTokens.add(token);
+  }
+  async charge(req, now = /* @__PURE__ */ new Date()) {
+    if (!req.idempotencyKey) {
+      throw new Error("IDEMPOTENCY_KEY_REQUIRED");
+    }
+    const existing = this.idempotencyStore.get(req.idempotencyKey);
+    if (existing) {
+      if (existing.amount !== req.amount || existing.token !== req.token) {
+        throw new Error("IDEMPOTENCY_PARAMETER_MISMATCH");
+      }
+      return existing.response;
+    }
+    let response;
+    if (this.failingTokens.has(req.token)) {
+      response = {
+        success: false,
+        errorCode: "CARD_DECLINED",
+        processedAt: now.toISOString()
+      };
+    } else if (this.failOnceTokens.has(req.token)) {
+      this.failOnceTokens.delete(req.token);
+      response = {
+        success: false,
+        errorCode: "INSUFFICIENT_FUNDS_TEMPORARY",
+        processedAt: now.toISOString()
+      };
+    } else {
+      this.chargeCounter += 1;
+      response = {
+        success: true,
+        transactionId: `ch_ipt_${this.chargeCounter}_${now.getTime()}`,
+        processedAt: now.toISOString()
+      };
+    }
+    this.idempotencyStore.set(req.idempotencyKey, {
+      amount: req.amount,
+      token: req.token,
+      response
+    });
+    return response;
+  }
+  getTotalSuccessfulCharges() {
+    let count = 0;
+    for (const item of this.idempotencyStore.values()) {
+      if (item.response.success)
+        count++;
+    }
+    return count;
+  }
+};
+var SubscriptionPlatformService = class {
+  constructor(clock = new SystemClockService(), gateway = new MockPaymentGateway()) {
+    this.clock = clock;
+    this.gateway = gateway;
+  }
+  planConfigs = structuredClone(DEFAULT_PLAN_CONFIGS);
+  users = /* @__PURE__ */ new Map();
+  subscriptions = /* @__PURE__ */ new Map();
+  organizations = /* @__PURE__ */ new Map();
+  organizationMembers = /* @__PURE__ */ new Map();
+  cardFingerprints = /* @__PURE__ */ new Map();
+  liveSessions = /* @__PURE__ */ new Map();
+  liveBookings = /* @__PURE__ */ new Map();
+  paymentAttempts = /* @__PURE__ */ new Map();
+  invoices = /* @__PURE__ */ new Map();
+  notifications = /* @__PURE__ */ new Map();
+  allowedDynamicCourseSlugs = /* @__PURE__ */ new Set([
+    "ipt-master-fullstack",
+    "arquitectura-software-ia-ipt",
+    "arquitectura-cloud-ipt",
+    "sistemas-distribuidos-ipt"
+  ]);
+  freeStaticCourseSlugs = /* @__PURE__ */ new Set(["introduccion-ingenieria-ipt"]);
+  mutexQueue = Promise.resolve();
+  invoiceSeq = 1;
+  /**
+   * Ejecuta un bloque de forma estrictamente serializada y atómica (ACID en memoria / transacción).
+   * Si el callback lanza un error, se hace rollback automático del snapshot previo.
+   */
+  async runTransaction(fn) {
+    const prev = this.mutexQueue;
+    let release;
+    this.mutexQueue = new Promise((resolve) => {
+      release = resolve;
+    });
+    await prev;
+    const snapshot = {
+      users: structuredClone(this.users),
+      subscriptions: structuredClone(this.subscriptions),
+      organizations: structuredClone(this.organizations),
+      organizationMembers: structuredClone(this.organizationMembers),
+      cardFingerprints: structuredClone(this.cardFingerprints),
+      liveSessions: structuredClone(this.liveSessions),
+      liveBookings: structuredClone(this.liveBookings),
+      paymentAttempts: structuredClone(this.paymentAttempts),
+      invoices: structuredClone(this.invoices),
+      notifications: structuredClone(this.notifications),
+      invoiceSeq: this.invoiceSeq
+    };
+    try {
+      const result = await fn();
+      return result;
+    } catch (err) {
+      this.users = snapshot.users;
+      this.subscriptions = snapshot.subscriptions;
+      this.organizations = snapshot.organizations;
+      this.organizationMembers = snapshot.organizationMembers;
+      this.cardFingerprints = snapshot.cardFingerprints;
+      this.liveSessions = snapshot.liveSessions;
+      this.liveBookings = snapshot.liveBookings;
+      this.paymentAttempts = snapshot.paymentAttempts;
+      this.invoices = snapshot.invoices;
+      this.notifications = snapshot.notifications;
+      this.invoiceSeq = snapshot.invoiceSeq;
+      throw err;
+    } finally {
+      release();
+    }
+  }
+  // --------------------------------------------------------------------------
+  // Helpers de Organización y Entitlements
+  // --------------------------------------------------------------------------
+  getActiveOrgMembersSorted(orgId) {
+    return Array.from(this.organizationMembers.values()).filter((m) => m.organizationId === orgId && m.status === "active").sort((a, b) => a.assignedAt.localeCompare(b.assignedAt));
+  }
+  isMemberWithinSeatLimit(org, member) {
+    if (!org || !member || member.status !== "active")
+      return false;
+    const sorted = this.getActiveOrgMembersSorted(org.id);
+    const idx = sorted.findIndex((m) => m.id === member.id);
+    return idx !== -1 && idx < org.totalSeatsPurchased;
+  }
+  getEntitlementsForSubscription(sub, nowOverride) {
+    const now = nowOverride ?? this.clock.now();
+    if (!sub)
+      return freeEntitlements();
+    const org = sub.organizationId ? this.organizations.get(sub.organizationId) ?? null : null;
+    const member = sub.organizationId ? Array.from(this.organizationMembers.values()).find(
+      (m) => m.organizationId === sub.organizationId && m.userId === sub.userId
+    ) ?? null : null;
+    const withinLimit = this.isMemberWithinSeatLimit(org, member);
+    return computeEntitlements(sub, org, member, withinLimit, this.planConfigs, now);
+  }
+  // --------------------------------------------------------------------------
+  // Notificaciones Idempotentes (Bandeja In-App + Cola Email)
+  // --------------------------------------------------------------------------
+  emitNotification(params) {
+    const existing = this.notifications.get(params.idempotencyKey);
+    if (existing)
+      return existing;
+    const notif = {
+      id: params.idempotencyKey,
+      userId: params.userId,
+      type: params.type,
+      title: params.title,
+      message: params.message,
+      actionUrl: params.actionUrl,
+      read: false,
+      emailDispatchStatus: "sent",
+      createdAt: params.now.toISOString()
+    };
+    this.notifications.set(notif.id, notif);
+    return notif;
+  }
+  // --------------------------------------------------------------------------
+  // Patrón Outbox de Cobros + Emisión de Factura con Desglose IVA / DIAN
+  // --------------------------------------------------------------------------
+  async executeOutboxCharge(params) {
+    const { idempotencyKey, subscription, operation, planIdForInvoice, subtotalAmount, taxRatePercent, now } = params;
+    if (!subscription.paymentMethod?.token) {
+      throw new Error("PAYMENT_METHOD_REQUIRED");
+    }
+    const taxAmount = Math.round(subtotalAmount * (taxRatePercent / 100));
+    const totalAmount = subtotalAmount + taxAmount;
+    const attempt = {
+      idempotencyKey,
+      subscriptionId: subscription.id,
+      userId: subscription.userId,
+      operation,
+      amountSubtotal: subtotalAmount,
+      taxRatePercent,
+      amountTax: taxAmount,
+      amountTotal: totalAmount,
+      token: subscription.paymentMethod.token,
+      status: "pending",
+      createdAt: now.toISOString()
+    };
+    this.paymentAttempts.set(idempotencyKey, attempt);
+    const chargeRes = await this.gateway.charge(
+      {
+        token: subscription.paymentMethod.token,
+        amount: totalAmount,
+        idempotencyKey
+      },
+      now
+    );
+    if (chargeRes.success) {
+      const user = this.users.get(subscription.userId);
+      const existingInvoice = Array.from(this.invoices.values()).find(
+        (inv) => inv.idempotencyKey === idempotencyKey
+      );
+      let invoice = existingInvoice;
+      if (!invoice) {
+        const invNum = `IPT-${now.getUTCFullYear()}-${String(this.invoiceSeq++).padStart(6, "0")}`;
+        invoice = {
+          id: `inv_${idempotencyKey}`,
+          invoiceNumber: invNum,
+          idempotencyKey,
+          userId: subscription.userId,
+          subscriptionId: subscription.id,
+          organizationId: subscription.organizationId,
+          planId: planIdForInvoice,
+          subtotal: subtotalAmount,
+          taxRatePercent,
+          taxAmount,
+          total: totalAmount,
+          currency: "COP",
+          taxProfileSnapshot: user?.taxProfile ? structuredClone(user.taxProfile) : void 0,
+          dianStatus: user?.taxProfile ? "pending_emission" : "not_applicable",
+          createdAt: now.toISOString()
+        };
+        this.invoices.set(invoice.id, invoice);
+      }
+      attempt.status = "succeeded";
+      attempt.resolvedAt = now.toISOString();
+      attempt.invoiceId = invoice.id;
+      this.paymentAttempts.set(idempotencyKey, attempt);
+      return { success: true, invoice };
+    } else {
+      attempt.status = "failed";
+      attempt.resolvedAt = now.toISOString();
+      attempt.errorCode = chargeRes.errorCode || "PAYMENT_FAILED";
+      this.paymentAttempts.set(idempotencyKey, attempt);
+      return { success: false, errorCode: attempt.errorCode };
+    }
+  }
+  // --------------------------------------------------------------------------
+  // Limpieza de Reservas Futuras al pasar a Read-Only o Sin Acceso Live
+  // --------------------------------------------------------------------------
+  cancelFutureBookingsForSubscription(subId, now) {
+    for (const booking of this.liveBookings.values()) {
+      if (booking.subscriptionId === subId && booking.status === "confirmed") {
+        const session = this.liveSessions.get(booking.sessionId);
+        if (session && new Date(session.startTime).getTime() > now.getTime()) {
+          booking.status = "cancelled_subscription_inactive";
+          booking.cancelledOrRefundedAt = now.toISOString();
+          this.liveBookings.set(booking.id, booking);
+          if (session.bookedCount > 0) {
+            session.bookedCount -= 1;
+            this.liveSessions.set(session.id, session);
+          }
+        }
+      }
+    }
+  }
+  // --------------------------------------------------------------------------
+  // Registro de Usuario y Migración de Existentes a Free
+  // --------------------------------------------------------------------------
+  registerUser(params) {
+    if (isDisposableEmail(params.email)) {
+      throw new Error("DISPOSABLE_EMAIL_FORBIDDEN");
+    }
+    const canonical = normalizeEmailByDomain(params.email);
+    for (const u of this.users.values()) {
+      if (u.canonicalEmail === canonical && u.uid !== params.uid) {
+        throw new Error("EMAIL_ALREADY_REGISTERED");
+      }
+    }
+    const now = this.clock.now();
+    const profile = {
+      uid: params.uid,
+      email: params.email.trim().toLowerCase(),
+      canonicalEmail: canonical,
+      displayName: params.displayName.trim(),
+      phoneVerified: params.phoneVerified ?? true,
+      hasUsedTrial: false,
+      taxProfile: params.taxProfile,
+      createdAt: now.toISOString()
+    };
+    this.users.set(profile.uid, profile);
+    return profile;
+  }
+  /**
+   * Migración directa e idempotente de usuarios existentes al Plan Free:
+   * Conserva sus certificados y notas previas y mantiene hasUsedTrial = false.
+   */
+  migrateExistingUsersToFree(existingUsers) {
+    const now = this.clock.now();
+    let migratedCount = 0;
+    for (const raw2 of existingUsers) {
+      if (!this.users.has(raw2.uid)) {
+        const canonical = normalizeEmailByDomain(raw2.email);
+        this.users.set(raw2.uid, {
+          uid: raw2.uid,
+          email: raw2.email.trim().toLowerCase(),
+          canonicalEmail: canonical,
+          displayName: raw2.displayName,
+          phoneVerified: true,
+          hasUsedTrial: false,
+          createdAt: now.toISOString()
+        });
+      }
+      const hasSub = Array.from(this.subscriptions.values()).some((s) => s.userId === raw2.uid);
+      if (!hasSub) {
+        const subId = `sub_free_${raw2.uid}`;
+        const anchor2 = now.getUTCDate();
+        const nextPeriod = advanceCalendarMonth(now, anchor2);
+        this.subscriptions.set(subId, {
+          id: subId,
+          userId: raw2.uid,
+          planId: "free",
+          status: "active",
+          cancelAtPeriodEnd: false,
+          billingAnchorDay: anchor2,
+          currentPeriodStart: now.toISOString(),
+          currentPeriodEnd: nextPeriod.toISOString(),
+          paymentRetryCount: 0,
+          activeDynamicCourseSlugs: [],
+          frozenDynamicCourseSlugs: [],
+          courseLastActivityAt: {},
+          monthlyCreditsAllowance: 0,
+          remainingCredits: 0,
+          creditsConsumedInCycle: 0,
+          creditsResetAt: nextPeriod.toISOString()
+        });
+        migratedCount++;
+      }
+    }
+    return { migratedCount };
+  }
+  // --------------------------------------------------------------------------
+  // Inicio de Trial con Blindaje Antifraude Atómico
+  // --------------------------------------------------------------------------
+  async startTrial(params) {
+    return this.runTransaction(async () => {
+      const now = this.clock.now();
+      const user = this.users.get(params.userId);
+      if (!user)
+        throw new Error("USER_NOT_FOUND");
+      if (isDisposableEmail(user.email)) {
+        throw new Error("DISPOSABLE_EMAIL_FORBIDDEN");
+      }
+      if (!user.phoneVerified) {
+        throw new Error("PHONE_VERIFICATION_REQUIRED");
+      }
+      if (user.hasUsedTrial) {
+        throw new Error("TRIAL_ALREADY_USED");
+      }
+      if (isCardExpired(params.paymentMethod, now)) {
+        throw new Error("PAYMENT_METHOD_EXPIRED");
+      }
+      const fp = params.paymentMethod.cardFingerprint;
+      const existingFp = this.cardFingerprints.get(fp);
+      if (existingFp && existingFp.firstUsedByUid !== user.uid && !existingFp.allowedExemptionByAdmin) {
+        throw new Error("CARD_FINGERPRINT_ALREADY_USED_FOR_TRIAL");
+      }
+      const config3 = this.planConfigs[params.planId];
+      if (!config3 || config3.trialDays <= 0) {
+        throw new Error("INVALID_TRIAL_PLAN");
+      }
+      const trialEnd = addDaysUtc(now, config3.trialDays);
+      const anchor2 = trialEnd.getUTCDate();
+      const initialCourses = [];
+      const activityMap = {};
+      if (params.initialDynamicCourseSlug) {
+        if (!this.allowedDynamicCourseSlugs.has(params.initialDynamicCourseSlug)) {
+          throw new Error("COURSE_NOT_ALLOWED_AS_DYNAMIC");
+        }
+        initialCourses.push(params.initialDynamicCourseSlug);
+        activityMap[params.initialDynamicCourseSlug] = now.toISOString();
+      }
+      user.hasUsedTrial = true;
+      user.trialUsedAt = now.toISOString();
+      user.trialPlanId = params.planId;
+      this.users.set(user.uid, user);
+      if (!existingFp) {
+        this.cardFingerprints.set(fp, {
+          fingerprint: fp,
+          firstUsedByUid: user.uid,
+          firstUsedAt: now.toISOString()
+        });
+      }
+      const existingSub = Array.from(this.subscriptions.values()).find((s) => s.userId === user.uid);
+      const subId = existingSub ? existingSub.id : `sub_${user.uid}`;
+      const sub = {
+        id: subId,
+        userId: user.uid,
+        planId: params.planId,
+        status: "trial",
+        cancelAtPeriodEnd: false,
+        readOnlyReason: null,
+        billingAnchorDay: anchor2,
+        currentPeriodStart: now.toISOString(),
+        currentPeriodEnd: trialEnd.toISOString(),
+        trialStart: now.toISOString(),
+        trialEnd: trialEnd.toISOString(),
+        paymentRetryCount: 0,
+        activeDynamicCourseSlugs: initialCourses,
+        frozenDynamicCourseSlugs: existingSub?.frozenDynamicCourseSlugs ?? [],
+        courseLastActivityAt: activityMap,
+        dynamicCourseLastChangedAt: initialCourses.length > 0 ? now.toISOString() : null,
+        // Crédito de cortesía explícito desde config.trialLiveCredits (1 en Pro+, 0 en Pro)
+        monthlyCreditsAllowance: config3.trialLiveCredits,
+        remainingCredits: config3.trialLiveCredits,
+        creditsConsumedInCycle: 0,
+        creditsResetAt: trialEnd.toISOString(),
+        paymentMethod: structuredClone(params.paymentMethod)
+      };
+      this.subscriptions.set(sub.id, sub);
+      return structuredClone(sub);
+    });
+  }
+  approveCardFingerprintExemption(params) {
+    const existing = this.cardFingerprints.get(params.fingerprint);
+    if (!existing) {
+      throw new Error("FINGERPRINT_NOT_FOUND");
+    }
+    existing.allowedExemptionByAdmin = true;
+    existing.exemptionApprovedBy = params.adminEmail;
+    existing.exemptionNotes = params.notes;
+    this.cardFingerprints.set(params.fingerprint, existing);
+    return structuredClone(existing);
+  }
+  // --------------------------------------------------------------------------
+  // Certificación Anticipada en Trial (Conversión Inmediata a Active)
+  // --------------------------------------------------------------------------
+  async convertTrialForCertificate(subId) {
+    return this.runTransaction(async () => {
+      const now = this.clock.now();
+      const sub = this.subscriptions.get(subId);
+      if (!sub)
+        throw new Error("SUBSCRIPTION_NOT_FOUND");
+      if (sub.status !== "trial") {
+        throw new Error("SUBSCRIPTION_NOT_IN_TRIAL");
+      }
+      if (sub.planId === "free" || sub.planId === "your_plan") {
+        throw new Error("INVALID_PLAN_FOR_TRIAL_CONVERSION");
+      }
+      const config3 = this.planConfigs[sub.planId];
+      const idempotencyKey = `early_cert_${sub.id}_${sub.trialStart}_${now.getTime()}`;
+      const chargeResult = await this.executeOutboxCharge({
+        idempotencyKey,
+        subscription: sub,
+        operation: "early_cert",
+        planIdForInvoice: sub.planId,
+        subtotalAmount: config3.priceMonthly,
+        taxRatePercent: config3.taxRatePercent,
+        now
+      });
+      if (!chargeResult.success || !chargeResult.invoice) {
+        throw new Error(`EARLY_CONVERSION_PAYMENT_FAILED:${chargeResult.errorCode}`);
+      }
+      const anchor2 = now.getUTCDate();
+      const nextPeriodEnd = advanceCalendarMonth(now, anchor2);
+      sub.status = "active";
+      sub.cancelAtPeriodEnd = false;
+      sub.billingAnchorDay = anchor2;
+      sub.currentPeriodStart = now.toISOString();
+      sub.currentPeriodEnd = nextPeriodEnd.toISOString();
+      sub.monthlyCreditsAllowance = config3.monthlyLiveCredits;
+      sub.remainingCredits = config3.monthlyLiveCredits;
+      sub.creditsConsumedInCycle = 0;
+      sub.creditsResetAt = nextPeriodEnd.toISOString();
+      sub.lastProcessedPeriodStart = now.toISOString();
+      this.subscriptions.set(sub.id, sub);
+      return {
+        subscription: structuredClone(sub),
+        invoice: structuredClone(chargeResult.invoice)
+      };
+    });
+  }
+  // --------------------------------------------------------------------------
+  // Upgrade (Desde Trial o Prorrateado a Mitad de Ciclo con Anti-Arbitraje)
+  // --------------------------------------------------------------------------
+  async upgradeSubscription(params) {
+    return this.runTransaction(async () => {
+      const now = this.clock.now();
+      const sub = this.subscriptions.get(params.subId);
+      if (!sub)
+        throw new Error("SUBSCRIPTION_NOT_FOUND");
+      const targetConfig = this.planConfigs[params.targetPlanId];
+      if (!targetConfig)
+        throw new Error("TARGET_PLAN_INVALID");
+      if (sub.planId === params.targetPlanId && sub.status === "active") {
+        throw new Error("ALREADY_ON_TARGET_PLAN");
+      }
+      if (sub.planId === "pro_plus" && params.targetPlanId === "pro") {
+        throw new Error("USE_SCHEDULE_DOWNGRADE_FOR_LOWER_PLAN");
+      }
+      if (sub.status === "trial") {
+        const idempotencyKey2 = `upgrade_trial_${sub.id}_${sub.trialStart}_${params.targetPlanId}`;
+        const chargeResult2 = await this.executeOutboxCharge({
+          idempotencyKey: idempotencyKey2,
+          subscription: sub,
+          operation: "upgrade",
+          planIdForInvoice: params.targetPlanId,
+          subtotalAmount: targetConfig.priceMonthly,
+          taxRatePercent: targetConfig.taxRatePercent,
+          now
+        });
+        if (!chargeResult2.success || !chargeResult2.invoice) {
+          throw new Error(`UPGRADE_PAYMENT_FAILED:${chargeResult2.errorCode}`);
+        }
+        const anchor2 = now.getUTCDate();
+        const nextEnd = advanceCalendarMonth(now, anchor2);
+        sub.planId = params.targetPlanId;
+        sub.status = "active";
+        sub.cancelAtPeriodEnd = false;
+        sub.pendingDowngrade = null;
+        sub.billingAnchorDay = anchor2;
+        sub.currentPeriodStart = now.toISOString();
+        sub.currentPeriodEnd = nextEnd.toISOString();
+        sub.monthlyCreditsAllowance = targetConfig.monthlyLiveCredits;
+        sub.remainingCredits = targetConfig.monthlyLiveCredits;
+        sub.creditsConsumedInCycle = 0;
+        sub.creditsResetAt = nextEnd.toISOString();
+        this.unfreezeCoursesUpToLimit(sub, targetConfig.maxDynamicCourses);
+        this.subscriptions.set(sub.id, sub);
+        return {
+          subscription: structuredClone(sub),
+          invoice: structuredClone(chargeResult2.invoice)
+        };
+      }
+      if (sub.status !== "active") {
+        throw new Error("UPGRADE_REQUIRES_ACTIVE_OR_TRIAL_STATUS");
+      }
+      const currentConfig = this.planConfigs[sub.planId];
+      const startMs = new Date(sub.currentPeriodStart).getTime();
+      const endMs = new Date(sub.currentPeriodEnd).getTime();
+      const totalCycleMs = Math.max(1, endMs - startMs);
+      const remainingMs = Math.max(0, endMs - now.getTime());
+      const fractionRemaining = Math.min(1, remainingMs / totalCycleMs);
+      const priceDiff = Math.max(0, targetConfig.priceMonthly - (currentConfig?.priceMonthly ?? 0));
+      const proratedSubtotal = Math.max(0, Math.round(priceDiff * fractionRemaining));
+      const idempotencyKey = `upgrade_${sub.id}_${sub.currentPeriodStart}_${params.targetPlanId}`;
+      const chargeResult = await this.executeOutboxCharge({
+        idempotencyKey,
+        subscription: sub,
+        operation: "upgrade",
+        planIdForInvoice: params.targetPlanId,
+        subtotalAmount: proratedSubtotal,
+        taxRatePercent: targetConfig.taxRatePercent,
+        now
+      });
+      if (!chargeResult.success || !chargeResult.invoice) {
+        throw new Error(`UPGRADE_PAYMENT_FAILED:${chargeResult.errorCode}`);
+      }
+      const proportionalAllowance = Math.floor(targetConfig.monthlyLiveCredits * fractionRemaining);
+      const newRemainingCredits = Math.max(0, proportionalAllowance - sub.creditsConsumedInCycle);
+      sub.planId = params.targetPlanId;
+      sub.pendingDowngrade = null;
+      sub.monthlyCreditsAllowance = proportionalAllowance;
+      sub.remainingCredits = newRemainingCredits;
+      this.unfreezeCoursesUpToLimit(sub, targetConfig.maxDynamicCourses);
+      this.subscriptions.set(sub.id, sub);
+      return {
+        subscription: structuredClone(sub),
+        invoice: structuredClone(chargeResult.invoice)
+      };
+    });
+  }
+  unfreezeCoursesUpToLimit(sub, maxAllowed) {
+    if (sub.frozenDynamicCourseSlugs.length === 0)
+      return;
+    const sortedFrozen = [...sub.frozenDynamicCourseSlugs].sort(
+      (a, b) => (sub.courseLastActivityAt[b] ?? "").localeCompare(sub.courseLastActivityAt[a] ?? "")
+    );
+    while (sub.activeDynamicCourseSlugs.length < maxAllowed && sortedFrozen.length > 0) {
+      const nextCourse = sortedFrozen.shift();
+      if (!sub.activeDynamicCourseSlugs.includes(nextCourse)) {
+        sub.activeDynamicCourseSlugs.push(nextCourse);
+      }
+    }
+    sub.frozenDynamicCourseSlugs = sortedFrozen;
+  }
+  // --------------------------------------------------------------------------
+  // Downgrade Diferido, Cancelación, Deshacer Cancelación y Reactivación
+  // --------------------------------------------------------------------------
+  scheduleDowngrade(params) {
+    const sub = this.subscriptions.get(params.subId);
+    if (!sub)
+      throw new Error("SUBSCRIPTION_NOT_FOUND");
+    if (sub.status !== "active" && sub.status !== "trial") {
+      throw new Error("CANNOT_DOWNGRADE_INACTIVE_SUBSCRIPTION");
+    }
+    const effectiveAt = sub.status === "trial" ? sub.trialEnd : sub.currentPeriodEnd;
+    sub.pendingDowngrade = {
+      targetPlanId: params.targetPlanId,
+      effectiveAt,
+      selectedDynamicCourseSlug: params.selectedDynamicCourseSlug
+    };
+    this.subscriptions.set(sub.id, sub);
+    return structuredClone(sub);
+  }
+  cancelSubscription(subId) {
+    const sub = this.subscriptions.get(subId);
+    if (!sub)
+      throw new Error("SUBSCRIPTION_NOT_FOUND");
+    sub.cancelAtPeriodEnd = true;
+    this.subscriptions.set(sub.id, sub);
+    return structuredClone(sub);
+  }
+  /**
+   * Caso inverso a cancelar: Deshacer la cancelación antes de la fecha de corte sin cobro.
+   */
+  resumeSubscription(subId) {
+    const now = this.clock.now();
+    const sub = this.subscriptions.get(subId);
+    if (!sub)
+      throw new Error("SUBSCRIPTION_NOT_FOUND");
+    if (sub.status === "read_only") {
+      throw new Error("USE_REACTIVATE_FOR_READ_ONLY_SUBSCRIPTION");
+    }
+    const cutoff = sub.status === "trial" ? new Date(sub.trialEnd) : new Date(sub.currentPeriodEnd);
+    if (now.getTime() >= cutoff.getTime()) {
+      throw new Error("PERIOD_ALREADY_ENDED_USE_REACTIVATE");
+    }
+    sub.cancelAtPeriodEnd = false;
+    this.subscriptions.set(sub.id, sub);
+    return structuredClone(sub);
+  }
+  /**
+   * Reactivación limpia desde read_only:
+   * Reutiliza la suscripción, verifica que la tarjeta no esté vencida, cobra el nuevo ciclo,
+   * limpia las banderas de mora/lectura y descongela los cursos previos.
+   */
+  async reactivateSubscription(params) {
+    return this.runTransaction(async () => {
+      const now = this.clock.now();
+      const sub = this.subscriptions.get(params.subId);
+      if (!sub)
+        throw new Error("SUBSCRIPTION_NOT_FOUND");
+      if (sub.status !== "read_only") {
+        throw new Error("SUBSCRIPTION_IS_NOT_READ_ONLY");
+      }
+      if (params.newPaymentMethod) {
+        sub.paymentMethod = structuredClone(params.newPaymentMethod);
+      }
+      if (!sub.paymentMethod) {
+        throw new Error("PAYMENT_METHOD_REQUIRED");
+      }
+      if (isCardExpired(sub.paymentMethod, now)) {
+        throw new Error("PAYMENT_METHOD_EXPIRED");
+      }
+      const planToActivate = params.targetPlanId ?? (sub.planId === "pro_plus" ? "pro_plus" : "pro");
+      const config3 = this.planConfigs[planToActivate];
+      const idempotencyKey = `reactivate_${sub.id}_${now.toISOString()}`;
+      const chargeResult = await this.executeOutboxCharge({
+        idempotencyKey,
+        subscription: sub,
+        operation: "reactivate",
+        planIdForInvoice: planToActivate,
+        subtotalAmount: config3.priceMonthly,
+        taxRatePercent: config3.taxRatePercent,
+        now
+      });
+      if (!chargeResult.success || !chargeResult.invoice) {
+        throw new Error(`REACTIVATION_PAYMENT_FAILED:${chargeResult.errorCode}`);
+      }
+      const anchor2 = now.getUTCDate();
+      const nextEnd = advanceCalendarMonth(now, anchor2);
+      sub.planId = planToActivate;
+      sub.status = "active";
+      sub.cancelAtPeriodEnd = false;
+      sub.readOnlyReason = null;
+      sub.graceStartedAt = null;
+      sub.graceEndsAt = null;
+      sub.nextRetryAt = null;
+      sub.paymentRetryCount = 0;
+      sub.pendingDowngrade = null;
+      sub.billingAnchorDay = anchor2;
+      sub.currentPeriodStart = now.toISOString();
+      sub.currentPeriodEnd = nextEnd.toISOString();
+      sub.lastProcessedPeriodStart = now.toISOString();
+      sub.monthlyCreditsAllowance = config3.monthlyLiveCredits;
+      sub.remainingCredits = config3.monthlyLiveCredits;
+      sub.creditsConsumedInCycle = 0;
+      sub.creditsResetAt = nextEnd.toISOString();
+      this.unfreezeCoursesUpToLimit(sub, config3.maxDynamicCourses);
+      this.subscriptions.set(sub.id, sub);
+      return {
+        subscription: structuredClone(sub),
+        invoice: structuredClone(chargeResult.invoice)
+      };
+    });
+  }
+  // --------------------------------------------------------------------------
+  // Selección y Rotación de Cursos Dinámicos
+  // --------------------------------------------------------------------------
+  activateDynamicCourse(params) {
+    const now = this.clock.now();
+    const sub = this.subscriptions.get(params.subId);
+    if (!sub)
+      throw new Error("SUBSCRIPTION_NOT_FOUND");
+    if (!this.allowedDynamicCourseSlugs.has(params.courseSlug)) {
+      throw new Error("COURSE_NOT_IN_DYNAMIC_CATALOG");
+    }
+    const ent = this.getEntitlementsForSubscription(sub, now);
+    if (ent.isReadOnly || ent.maxDynamicCourses <= 0) {
+      throw new Error("NO_DYNAMIC_COURSE_ENTITLEMENT");
+    }
+    if (sub.activeDynamicCourseSlugs.includes(params.courseSlug)) {
+      sub.courseLastActivityAt[params.courseSlug] = now.toISOString();
+      this.subscriptions.set(sub.id, sub);
+      return structuredClone(sub);
+    }
+    if (sub.activeDynamicCourseSlugs.length < ent.maxDynamicCourses) {
+      sub.activeDynamicCourseSlugs.push(params.courseSlug);
+      sub.frozenDynamicCourseSlugs = sub.frozenDynamicCourseSlugs.filter((s) => s !== params.courseSlug);
+      sub.courseLastActivityAt[params.courseSlug] = now.toISOString();
+      sub.dynamicCourseLastChangedAt = now.toISOString();
+      this.subscriptions.set(sub.id, sub);
+      return structuredClone(sub);
+    }
+    if (!params.replaceCourseSlug || !sub.activeDynamicCourseSlugs.includes(params.replaceCourseSlug)) {
+      throw new Error("MAX_DYNAMIC_COURSES_REACHED");
+    }
+    if (sub.dynamicCourseLastChangedAt) {
+      const daysSinceChange = (now.getTime() - new Date(sub.dynamicCourseLastChangedAt).getTime()) / (1e3 * 60 * 60 * 24);
+      if (daysSinceChange < 30) {
+        throw new Error("DYNAMIC_COURSE_SWAP_COOLDOWN_ACTIVE");
+      }
+    }
+    sub.activeDynamicCourseSlugs = sub.activeDynamicCourseSlugs.map(
+      (slug) => slug === params.replaceCourseSlug ? params.courseSlug : slug
+    );
+    if (!sub.frozenDynamicCourseSlugs.includes(params.replaceCourseSlug)) {
+      sub.frozenDynamicCourseSlugs.push(params.replaceCourseSlug);
+    }
+    sub.frozenDynamicCourseSlugs = sub.frozenDynamicCourseSlugs.filter((s) => s !== params.courseSlug);
+    sub.courseLastActivityAt[params.courseSlug] = now.toISOString();
+    sub.dynamicCourseLastChangedAt = now.toISOString();
+    this.subscriptions.set(sub.id, sub);
+    return structuredClone(sub);
+  }
+  recordCourseActivity(subId, courseSlug) {
+    const now = this.clock.now();
+    const sub = this.subscriptions.get(subId);
+    if (!sub)
+      return;
+    sub.courseLastActivityAt[courseSlug] = now.toISOString();
+    this.subscriptions.set(sub.id, sub);
+  }
+  // --------------------------------------------------------------------------
+  // Clases en Vivo: Reserva Atómica, Cancelación (4h) y Quórum (3h)
+  // --------------------------------------------------------------------------
+  async bookLiveSession(subId, sessionId) {
+    return this.runTransaction(async () => {
+      const now = this.clock.now();
+      const sub = this.subscriptions.get(subId);
+      if (!sub)
+        throw new Error("SUBSCRIPTION_NOT_FOUND");
+      const session = this.liveSessions.get(sessionId);
+      if (!session)
+        throw new Error("LIVE_SESSION_NOT_FOUND");
+      if (session.status === "cancelled") {
+        throw new Error("LIVE_SESSION_CANCELLED");
+      }
+      const ent = this.getEntitlementsForSubscription(sub, now);
+      if (ent.isReadOnly || !ent.canJoinLiveClasses) {
+        throw new Error("LIVE_ACCESS_FORBIDDEN");
+      }
+      if (ent.availableLiveCredits <= 0 || sub.remainingCredits <= 0) {
+        throw new Error("INSUFFICIENT_LIVE_CREDITS");
+      }
+      const sessionStartMs = new Date(session.startTime).getTime();
+      const fourHoursMs = 4 * 60 * 60 * 1e3;
+      if (sessionStartMs - now.getTime() < fourHoursMs) {
+        throw new Error("BOOKING_DEADLINE_PASSED_4H");
+      }
+      const currentCycleLimitIso = sub.status === "trial" ? sub.trialEnd : sub.currentPeriodEnd;
+      if (sessionStartMs > new Date(currentCycleLimitIso).getTime()) {
+        throw new Error("SESSION_BEYOND_CURRENT_BILLING_PERIOD");
+      }
+      if (session.bookedCount >= session.maxCapacity) {
+        throw new Error("SESSION_CAPACITY_FULL");
+      }
+      const duplicate = Array.from(this.liveBookings.values()).find(
+        (b) => b.sessionId === sessionId && b.userId === sub.userId && b.status === "confirmed"
+      );
+      if (duplicate) {
+        throw new Error("ALREADY_BOOKED_THIS_SESSION");
+      }
+      sub.remainingCredits -= 1;
+      sub.creditsConsumedInCycle += 1;
+      session.bookedCount += 1;
+      const booking = {
+        id: `bkg_${sessionId}_${sub.userId}_${now.getTime()}`,
+        sessionId,
+        userId: sub.userId,
+        subscriptionId: sub.id,
+        status: "confirmed",
+        bookedAt: now.toISOString()
+      };
+      this.subscriptions.set(sub.id, sub);
+      this.liveSessions.set(session.id, session);
+      this.liveBookings.set(booking.id, booking);
+      return structuredClone(booking);
+    });
+  }
+  async cancelLiveBooking(bookingId, requestingUserId) {
+    return this.runTransaction(async () => {
+      const now = this.clock.now();
+      const booking = this.liveBookings.get(bookingId);
+      if (!booking)
+        throw new Error("BOOKING_NOT_FOUND");
+      if (booking.userId !== requestingUserId) {
+        throw new Error("FORBIDDEN_BOOKING_OWNER");
+      }
+      if (booking.status !== "confirmed") {
+        throw new Error("BOOKING_NOT_ACTIVE");
+      }
+      const session = this.liveSessions.get(booking.sessionId);
+      if (!session)
+        throw new Error("LIVE_SESSION_NOT_FOUND");
+      const sessionStartMs = new Date(session.startTime).getTime();
+      const fourHoursMs = 4 * 60 * 60 * 1e3;
+      if (sessionStartMs - now.getTime() < fourHoursMs) {
+        throw new Error("CANCELLATION_WINDOW_CLOSED_4H");
+      }
+      const sub = this.subscriptions.get(booking.subscriptionId);
+      if (sub && sub.status !== "read_only") {
+        sub.remainingCredits += 1;
+        sub.creditsConsumedInCycle = Math.max(0, sub.creditsConsumedInCycle - 1);
+        this.subscriptions.set(sub.id, sub);
+      }
+      if (session.bookedCount > 0) {
+        session.bookedCount -= 1;
+        this.liveSessions.set(session.id, session);
+      }
+      booking.status = "cancelled_by_user";
+      booking.cancelledOrRefundedAt = now.toISOString();
+      this.liveBookings.set(booking.id, booking);
+      return structuredClone(booking);
+    });
+  }
+  /**
+   * Evalúa el quórum de una sesión cuando faltan <= 3 horas.
+   * 100% idempotente: las devoluciones cambian cada booking de 'confirmed' a 'refunded_quorum'
+   * dentro de la transacción, impidiendo dobles reintegros en ejecuciones repetidas.
+   */
+  async evaluateSessionQuorum(sessionId) {
+    return this.runTransaction(async () => {
+      const now = this.clock.now();
+      const session = this.liveSessions.get(sessionId);
+      if (!session)
+        throw new Error("LIVE_SESSION_NOT_FOUND");
+      const sessionStartMs = new Date(session.startTime).getTime();
+      const threeHoursMs = 3 * 60 * 60 * 1e3;
+      if (sessionStartMs - now.getTime() > threeHoursMs) {
+        throw new Error("QUORUM_EVALUATION_TOO_EARLY_WAIT_UNTIL_3H");
+      }
+      if (session.quorumStatus !== "pending") {
+        return { session: structuredClone(session), refundedBookingsCount: 0 };
+      }
+      const activeBookings = Array.from(this.liveBookings.values()).filter(
+        (b) => b.sessionId === sessionId && b.status === "confirmed"
+      );
+      if (session.attendanceModel === "credits" || session.bookedCount >= session.quorumRequired) {
+        session.quorumStatus = "confirmed";
+        session.status = "confirmed";
+        this.liveSessions.set(session.id, session);
+        for (const b of activeBookings) {
+          this.emitNotification({
+            idempotencyKey: `notif_quorum_ok_${session.id}_${b.userId}`,
+            userId: b.userId,
+            type: "quorum_confirmed",
+            title: "Clase en vivo confirmada",
+            message: `La sesi\xF3n "${session.title}" alcanz\xF3 el cupo requerido y est\xE1 confirmada.`,
+            actionUrl: "/live",
+            now
+          });
+        }
+        return { session: structuredClone(session), refundedBookingsCount: 0 };
+      }
+      session.quorumStatus = "failed";
+      session.status = "cancelled";
+      this.liveSessions.set(session.id, session);
+      let refundedCount = 0;
+      for (const b of activeBookings) {
+        if (b.status === "confirmed") {
+          b.status = "refunded_quorum";
+          b.cancelledOrRefundedAt = now.toISOString();
+          this.liveBookings.set(b.id, b);
+          const sub = this.subscriptions.get(b.subscriptionId);
+          if (sub && sub.status !== "read_only") {
+            sub.remainingCredits += 1;
+            sub.creditsConsumedInCycle = Math.max(0, sub.creditsConsumedInCycle - 1);
+            this.subscriptions.set(sub.id, sub);
+          }
+          this.emitNotification({
+            idempotencyKey: `notif_quorum_cancel_${session.id}_${b.userId}`,
+            userId: b.userId,
+            type: "quorum_cancelled",
+            title: "Sesi\xF3n reprogramada y cr\xE9dito devuelto",
+            message: `La sesi\xF3n "${session.title}" no alcanz\xF3 el qu\xF3rum m\xEDnimo. Tu cr\xE9dito ha sido reintegrado autom\xE1ticamente.`,
+            actionUrl: "/live",
+            now
+          });
+          refundedCount++;
+        }
+      }
+      return { session: structuredClone(session), refundedBookingsCount: refundedCount };
+    });
+  }
+  // --------------------------------------------------------------------------
+  // Cron Worker Idempotente con Catch-Up Multi-Periodo y Reintentos (Días 1, 3 y 5)
+  // --------------------------------------------------------------------------
+  async processSubscriptionsCron() {
+    return this.runTransaction(async () => {
+      const now = this.clock.now();
+      let processedCount = 0;
+      for (const sub of this.subscriptions.values()) {
+        if (sub.planId === "free") {
+          continue;
+        }
+        if (sub.planId === "your_plan") {
+          if (sub.status !== "read_only") {
+            const org = sub.organizationId ? this.organizations.get(sub.organizationId) : null;
+            const customExpiry = sub.adminOverrides?.customExpiryDate;
+            const effectiveEnd = customExpiry || org?.currentPeriodEnd || sub.currentPeriodEnd;
+            if (!org || org.status !== "active" || new Date(effectiveEnd).getTime() <= now.getTime()) {
+              sub.status = "read_only";
+              sub.readOnlyReason = !org || org.status !== "active" ? "organization_invalid" : "expired";
+              sub.remainingCredits = 0;
+              this.cancelFutureBookingsForSubscription(sub.id, now);
+              this.subscriptions.set(sub.id, sub);
+              processedCount++;
+            }
+          }
+          continue;
+        }
+        if (sub.status === "trial" && sub.trialEnd && !sub.cancelAtPeriodEnd) {
+          const msLeft = new Date(sub.trialEnd).getTime() - now.getTime();
+          const threeDaysMs = 3 * 24 * 60 * 60 * 1e3;
+          if (msLeft > 0 && msLeft <= threeDaysMs) {
+            this.emitNotification({
+              idempotencyKey: `notif_trial_ending_${sub.id}_${sub.trialEnd}`,
+              userId: sub.userId,
+              type: "trial_ending_soon",
+              title: "Tu periodo de prueba finaliza pronto",
+              message: "Quedan menos de 3 d\xEDas de tu prueba gratuita. Revisa tu plan o m\xE9todo de pago.",
+              actionUrl: "/course",
+              now
+            });
+          }
+        }
+        if (sub.status === "trial" && sub.trialEnd && new Date(sub.trialEnd).getTime() <= now.getTime()) {
+          if (sub.cancelAtPeriodEnd) {
+            sub.status = "read_only";
+            sub.readOnlyReason = "trial_ended_cancelled";
+            sub.remainingCredits = 0;
+            sub.frozenDynamicCourseSlugs = [
+              .../* @__PURE__ */ new Set([...sub.frozenDynamicCourseSlugs, ...sub.activeDynamicCourseSlugs])
+            ];
+            sub.activeDynamicCourseSlugs = [];
+            this.cancelFutureBookingsForSubscription(sub.id, now);
+            this.subscriptions.set(sub.id, sub);
+            processedCount++;
+            continue;
+          }
+          const config3 = this.planConfigs[sub.planId];
+          const idempotencyKey = `first_charge_${sub.id}_${sub.trialEnd}`;
+          const chargeRes = await this.executeOutboxCharge({
+            idempotencyKey,
+            subscription: sub,
+            operation: "first_charge",
+            planIdForInvoice: sub.planId,
+            subtotalAmount: config3.priceMonthly,
+            taxRatePercent: config3.taxRatePercent,
+            now
+          });
+          if (chargeRes.success) {
+            const trialEndDate = new Date(sub.trialEnd);
+            const anchor2 = sub.billingAnchorDay || trialEndDate.getUTCDate();
+            const nextEnd = advanceCalendarMonth(trialEndDate, anchor2);
+            sub.status = "active";
+            sub.billingAnchorDay = anchor2;
+            sub.currentPeriodStart = trialEndDate.toISOString();
+            sub.currentPeriodEnd = nextEnd.toISOString();
+            sub.lastProcessedPeriodStart = trialEndDate.toISOString();
+            sub.monthlyCreditsAllowance = config3.monthlyLiveCredits;
+            sub.remainingCredits = config3.monthlyLiveCredits;
+            sub.creditsConsumedInCycle = 0;
+            sub.creditsResetAt = nextEnd.toISOString();
+            sub.paymentRetryCount = 0;
+            this.subscriptions.set(sub.id, sub);
+            processedCount++;
+          } else {
+            const graceStart = now;
+            sub.status = "past_due";
+            sub.graceStartedAt = graceStart.toISOString();
+            sub.graceEndsAt = addDaysUtc(graceStart, 5).toISOString();
+            sub.nextRetryAt = addDaysUtc(graceStart, 1).toISOString();
+            sub.paymentRetryCount = 0;
+            this.subscriptions.set(sub.id, sub);
+            this.emitNotification({
+              idempotencyKey: `notif_pay_fail_${sub.id}_${sub.trialEnd}_0`,
+              userId: sub.userId,
+              type: "payment_failed",
+              title: "No pudimos procesar tu pago",
+              message: "Tienes 5 d\xEDas de gracia mientras reintentamos el cobro.",
+              actionUrl: "/course",
+              now
+            });
+            processedCount++;
+            continue;
+          }
+        }
+        while (sub.status === "active" && (sub.planId === "pro" || sub.planId === "pro_plus") && new Date(sub.currentPeriodEnd).getTime() <= now.getTime()) {
+          const periodEndIso = sub.currentPeriodEnd;
+          const periodEndDate = new Date(periodEndIso);
+          if (sub.lastProcessedPeriodStart === periodEndIso) {
+            break;
+          }
+          if (sub.cancelAtPeriodEnd) {
+            sub.status = "read_only";
+            sub.readOnlyReason = "expired";
+            sub.remainingCredits = 0;
+            sub.frozenDynamicCourseSlugs = [
+              .../* @__PURE__ */ new Set([...sub.frozenDynamicCourseSlugs, ...sub.activeDynamicCourseSlugs])
+            ];
+            sub.activeDynamicCourseSlugs = [];
+            this.cancelFutureBookingsForSubscription(sub.id, now);
+            this.subscriptions.set(sub.id, sub);
+            processedCount++;
+            break;
+          }
+          if (sub.pendingDowngrade && new Date(sub.pendingDowngrade.effectiveAt).getTime() <= periodEndDate.getTime()) {
+            const targetPlan = sub.pendingDowngrade.targetPlanId;
+            const preferredSlug = sub.pendingDowngrade.selectedDynamicCourseSlug;
+            if (targetPlan === "free") {
+              sub.planId = "free";
+              sub.pendingDowngrade = null;
+              sub.frozenDynamicCourseSlugs = [
+                .../* @__PURE__ */ new Set([...sub.frozenDynamicCourseSlugs, ...sub.activeDynamicCourseSlugs])
+              ];
+              sub.activeDynamicCourseSlugs = [];
+              sub.monthlyCreditsAllowance = 0;
+              sub.remainingCredits = 0;
+              sub.creditsConsumedInCycle = 0;
+              this.cancelFutureBookingsForSubscription(sub.id, now);
+              this.subscriptions.set(sub.id, sub);
+              processedCount++;
+              break;
+            }
+            const targetConfig = this.planConfigs[targetPlan];
+            const keptCourses = selectMostRecentCourses(
+              sub.activeDynamicCourseSlugs,
+              sub.courseLastActivityAt,
+              targetConfig.maxDynamicCourses,
+              preferredSlug
+            );
+            const newlyFrozen = sub.activeDynamicCourseSlugs.filter((s) => !keptCourses.includes(s));
+            sub.planId = targetPlan;
+            sub.pendingDowngrade = null;
+            sub.activeDynamicCourseSlugs = keptCourses;
+            sub.frozenDynamicCourseSlugs = [
+              .../* @__PURE__ */ new Set([...sub.frozenDynamicCourseSlugs, ...newlyFrozen])
+            ];
+            if (!targetConfig.allowsLiveAccess) {
+              this.cancelFutureBookingsForSubscription(sub.id, now);
+            }
+          }
+          const activeConfig = this.planConfigs[sub.planId];
+          const idempotencyKey = `renew_${sub.id}_${periodEndIso}`;
+          const chargeRes = await this.executeOutboxCharge({
+            idempotencyKey,
+            subscription: sub,
+            operation: "renew",
+            planIdForInvoice: sub.planId,
+            subtotalAmount: activeConfig.priceMonthly,
+            taxRatePercent: activeConfig.taxRatePercent,
+            now
+          });
+          if (chargeRes.success) {
+            const nextEnd = advanceCalendarMonth(periodEndDate, sub.billingAnchorDay);
+            sub.currentPeriodStart = periodEndIso;
+            sub.currentPeriodEnd = nextEnd.toISOString();
+            sub.lastProcessedPeriodStart = periodEndIso;
+            sub.monthlyCreditsAllowance = activeConfig.monthlyLiveCredits;
+            sub.remainingCredits = activeConfig.monthlyLiveCredits;
+            sub.creditsConsumedInCycle = 0;
+            sub.creditsResetAt = nextEnd.toISOString();
+            sub.paymentRetryCount = 0;
+            this.subscriptions.set(sub.id, sub);
+            processedCount++;
+          } else {
+            const graceStart = now;
+            sub.status = "past_due";
+            sub.graceStartedAt = graceStart.toISOString();
+            sub.graceEndsAt = addDaysUtc(graceStart, 5).toISOString();
+            sub.nextRetryAt = addDaysUtc(graceStart, 1).toISOString();
+            sub.paymentRetryCount = 0;
+            this.subscriptions.set(sub.id, sub);
+            this.emitNotification({
+              idempotencyKey: `notif_pay_fail_${sub.id}_${periodEndIso}_0`,
+              userId: sub.userId,
+              type: "payment_failed",
+              title: "Fallo en la renovaci\xF3n de tu suscripci\xF3n",
+              message: "Reintentaremos el cobro en los pr\xF3ximos 5 d\xEDas.",
+              actionUrl: "/course",
+              now
+            });
+            processedCount++;
+            break;
+          }
+        }
+        if (sub.status === "past_due") {
+          if (sub.paymentRetryCount < 3 && sub.nextRetryAt && new Date(sub.nextRetryAt).getTime() <= now.getTime()) {
+            const attemptNum = sub.paymentRetryCount + 1;
+            const config3 = this.planConfigs[sub.planId];
+            const idempotencyKey = `retry_${sub.id}_${sub.currentPeriodEnd}_attempt_${attemptNum}`;
+            const retryRes = await this.executeOutboxCharge({
+              idempotencyKey,
+              subscription: sub,
+              operation: "retry",
+              planIdForInvoice: sub.planId,
+              subtotalAmount: config3.priceMonthly,
+              taxRatePercent: config3.taxRatePercent,
+              now
+            });
+            if (retryRes.success) {
+              const baseDate = new Date(sub.currentPeriodEnd);
+              const anchor2 = sub.billingAnchorDay || baseDate.getUTCDate();
+              const nextEnd = advanceCalendarMonth(baseDate, anchor2);
+              sub.status = "active";
+              sub.graceStartedAt = null;
+              sub.graceEndsAt = null;
+              sub.nextRetryAt = null;
+              sub.paymentRetryCount = 0;
+              sub.currentPeriodStart = baseDate.toISOString();
+              sub.currentPeriodEnd = nextEnd.toISOString();
+              sub.lastProcessedPeriodStart = baseDate.toISOString();
+              sub.monthlyCreditsAllowance = config3.monthlyLiveCredits;
+              sub.remainingCredits = config3.monthlyLiveCredits;
+              sub.creditsConsumedInCycle = 0;
+              sub.creditsResetAt = nextEnd.toISOString();
+              this.subscriptions.set(sub.id, sub);
+              processedCount++;
+              continue;
+            } else {
+              sub.paymentRetryCount = attemptNum;
+              const graceStart = new Date(sub.graceStartedAt || now);
+              if (attemptNum === 1) {
+                sub.nextRetryAt = addDaysUtc(graceStart, 3).toISOString();
+              } else if (attemptNum === 2) {
+                sub.nextRetryAt = addDaysUtc(graceStart, 5).toISOString();
+              } else {
+                sub.nextRetryAt = null;
+                sub.status = "read_only";
+                sub.readOnlyReason = "past_due_grace_ended";
+                sub.remainingCredits = 0;
+                sub.frozenDynamicCourseSlugs = [
+                  .../* @__PURE__ */ new Set([...sub.frozenDynamicCourseSlugs, ...sub.activeDynamicCourseSlugs])
+                ];
+                sub.activeDynamicCourseSlugs = [];
+                this.cancelFutureBookingsForSubscription(sub.id, now);
+              }
+              this.emitNotification({
+                idempotencyKey: `notif_pay_fail_${sub.id}_${sub.currentPeriodEnd}_${attemptNum}`,
+                userId: sub.userId,
+                type: "payment_failed",
+                title: `Intento de cobro ${attemptNum}/3 fallido`,
+                message: sub.status === "read_only" ? "Tu periodo de gracia ha finalizado. Tu cuenta pas\xF3 a modo consulta." : "Por favor actualiza tu m\xE9todo de pago para mantener tu plan activo.",
+                actionUrl: "/course",
+                now
+              });
+              this.subscriptions.set(sub.id, sub);
+              processedCount++;
+              continue;
+            }
+          }
+          if (sub.graceEndsAt && new Date(sub.graceEndsAt).getTime() <= now.getTime()) {
+            sub.status = "read_only";
+            sub.readOnlyReason = "past_due_grace_ended";
+            sub.remainingCredits = 0;
+            sub.nextRetryAt = null;
+            sub.frozenDynamicCourseSlugs = [
+              .../* @__PURE__ */ new Set([...sub.frozenDynamicCourseSlugs, ...sub.activeDynamicCourseSlugs])
+            ];
+            sub.activeDynamicCourseSlugs = [];
+            this.cancelFutureBookingsForSubscription(sub.id, now);
+            this.subscriptions.set(sub.id, sub);
+            processedCount++;
+          }
+        }
+      }
+      return { processedCount };
+    });
+  }
+};
+
+// src/services/subscriptionRoutes.ts
+var subscriptionPlatform = new SubscriptionPlatformService();
+function registerSubscriptionRoutes(app2) {
+  app2.get("/api/subscriptions/plans", (c) => {
+    return c.json({
+      success: true,
+      plans: subscriptionPlatform.planConfigs,
+      serverTime: subscriptionPlatform.clock.now().toISOString()
+    });
+  });
+  app2.get("/api/subscriptions/user/:userId", (c) => {
+    const userId = c.req.param("userId");
+    const now = subscriptionPlatform.clock.now();
+    const user = subscriptionPlatform.users.get(userId) || null;
+    const sub = Array.from(subscriptionPlatform.subscriptions.values()).find((s) => s.userId === userId) || null;
+    const entitlements = subscriptionPlatform.getEntitlementsForSubscription(sub, now);
+    const invoices = Array.from(subscriptionPlatform.invoices.values()).filter(
+      (i) => i.userId === userId
+    );
+    const notifications = Array.from(subscriptionPlatform.notifications.values()).filter(
+      (n) => n.userId === userId
+    );
+    return c.json({
+      success: true,
+      serverTime: now.toISOString(),
+      user,
+      subscription: sub,
+      entitlements,
+      invoices,
+      notifications
+    });
+  });
+  app2.post("/api/subscriptions/register-user", async (c) => {
+    try {
+      const body = await c.req.json();
+      const profile = subscriptionPlatform.registerUser({
+        uid: body.uid,
+        email: body.email,
+        displayName: body.displayName,
+        phoneVerified: body.phoneVerified ?? true,
+        taxProfile: body.taxProfile
+      });
+      return c.json({ success: true, user: profile }, 201);
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/subscriptions/tokenize-card", async (c) => {
+    try {
+      const body = await c.req.json();
+      const tokenized = subscriptionPlatform.gateway.tokenizeCard({
+        panLast4: String(body.panLast4 || "4242").slice(-4),
+        brand: body.brand || "visa",
+        expMonth: Number(body.expMonth || 12),
+        expYear: Number(body.expYear || 2028),
+        cardholderName: body.cardholderName || "Titular IPT",
+        rawCardIdentifierForFingerprint: body.rawCardIdentifierForFingerprint
+      });
+      return c.json({ success: true, paymentMethod: tokenized });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/subscriptions/start-trial", async (c) => {
+    try {
+      const body = await c.req.json();
+      const sub = await subscriptionPlatform.startTrial({
+        userId: body.userId,
+        planId: body.planId,
+        paymentMethod: body.paymentMethod,
+        initialDynamicCourseSlug: body.initialDynamicCourseSlug
+      });
+      const entitlements = subscriptionPlatform.getEntitlementsForSubscription(sub);
+      return c.json({ success: true, subscription: sub, entitlements }, 201);
+    } catch (err) {
+      const status = err.message.includes("ALREADY_USED") ? 403 : 400;
+      return c.json({ success: false, error: err.message }, status);
+    }
+  });
+  app2.post("/api/subscriptions/:subId/convert-early-certificate", async (c) => {
+    try {
+      const subId = c.req.param("subId");
+      const res = await subscriptionPlatform.convertTrialForCertificate(subId);
+      const entitlements = subscriptionPlatform.getEntitlementsForSubscription(res.subscription);
+      return c.json({
+        success: true,
+        subscription: res.subscription,
+        invoice: res.invoice,
+        entitlements
+      });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/subscriptions/:subId/upgrade", async (c) => {
+    try {
+      const subId = c.req.param("subId");
+      const body = await c.req.json();
+      const res = await subscriptionPlatform.upgradeSubscription({
+        subId,
+        targetPlanId: body.targetPlanId
+      });
+      const entitlements = subscriptionPlatform.getEntitlementsForSubscription(res.subscription);
+      return c.json({
+        success: true,
+        subscription: res.subscription,
+        invoice: res.invoice,
+        entitlements
+      });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/subscriptions/:subId/downgrade", async (c) => {
+    try {
+      const subId = c.req.param("subId");
+      const body = await c.req.json();
+      const sub = subscriptionPlatform.scheduleDowngrade({
+        subId,
+        targetPlanId: body.targetPlanId,
+        selectedDynamicCourseSlug: body.selectedDynamicCourseSlug
+      });
+      const entitlements = subscriptionPlatform.getEntitlementsForSubscription(sub);
+      return c.json({ success: true, subscription: sub, entitlements });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/subscriptions/:subId/cancel", (c) => {
+    try {
+      const subId = c.req.param("subId");
+      const sub = subscriptionPlatform.cancelSubscription(subId);
+      const entitlements = subscriptionPlatform.getEntitlementsForSubscription(sub);
+      return c.json({ success: true, subscription: sub, entitlements });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/subscriptions/:subId/resume", (c) => {
+    try {
+      const subId = c.req.param("subId");
+      const sub = subscriptionPlatform.resumeSubscription(subId);
+      const entitlements = subscriptionPlatform.getEntitlementsForSubscription(sub);
+      return c.json({ success: true, subscription: sub, entitlements });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/subscriptions/:subId/reactivate", async (c) => {
+    try {
+      const subId = c.req.param("subId");
+      const body = await c.req.json().catch(() => ({}));
+      const res = await subscriptionPlatform.reactivateSubscription({
+        subId,
+        targetPlanId: body.targetPlanId,
+        newPaymentMethod: body.newPaymentMethod
+      });
+      const entitlements = subscriptionPlatform.getEntitlementsForSubscription(res.subscription);
+      return c.json({
+        success: true,
+        subscription: res.subscription,
+        invoice: res.invoice,
+        entitlements
+      });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/subscriptions/:subId/dynamic-course", async (c) => {
+    try {
+      const subId = c.req.param("subId");
+      const body = await c.req.json();
+      const sub = subscriptionPlatform.activateDynamicCourse({
+        subId,
+        courseSlug: body.courseSlug,
+        replaceCourseSlug: body.replaceCourseSlug
+      });
+      const entitlements = subscriptionPlatform.getEntitlementsForSubscription(sub);
+      return c.json({ success: true, subscription: sub, entitlements });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 403);
+    }
+  });
+  app2.post("/api/live-sessions/:sessionId/book", async (c) => {
+    try {
+      const sessionId = c.req.param("sessionId");
+      const body = await c.req.json();
+      const booking = await subscriptionPlatform.bookLiveSession(body.subId, sessionId);
+      return c.json({ success: true, booking }, 201);
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 403);
+    }
+  });
+  app2.post("/api/live-sessions/bookings/:bookingId/cancel", async (c) => {
+    try {
+      const bookingId = c.req.param("bookingId");
+      const body = await c.req.json();
+      const booking = await subscriptionPlatform.cancelLiveBooking(bookingId, body.userId);
+      return c.json({ success: true, booking });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/live-sessions/:sessionId/evaluate-quorum", async (c) => {
+    try {
+      const sessionId = c.req.param("sessionId");
+      const res = await subscriptionPlatform.evaluateSessionQuorum(sessionId);
+      return c.json({ success: true, ...res });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/cron/process-subscriptions", async (c) => {
+    try {
+      const res = await subscriptionPlatform.processSubscriptionsCron();
+      return c.json({
+        success: true,
+        ...res,
+        serverTime: subscriptionPlatform.clock.now().toISOString()
+      });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 500);
+    }
+  });
+  app2.put("/api/admin/subscriptions/plans/:planId", async (c) => {
+    try {
+      const planId = c.req.param("planId");
+      const existing = subscriptionPlatform.planConfigs[planId];
+      if (!existing) {
+        return c.json({ success: false, error: "Plan no encontrado." }, 404);
+      }
+      const body = await c.req.json();
+      subscriptionPlatform.planConfigs[planId] = {
+        ...existing,
+        ...body,
+        id: planId
+      };
+      return c.json({
+        success: true,
+        plan: subscriptionPlatform.planConfigs[planId]
+      });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/admin/organizations", async (c) => {
+    try {
+      const body = await c.req.json();
+      const now = subscriptionPlatform.clock.now().toISOString();
+      const org = {
+        id: body.id || `org_${Date.now()}`,
+        name: body.name,
+        ownerUserId: body.ownerUserId,
+        status: body.status || "active",
+        totalSeatsPurchased: Number(body.totalSeatsPurchased || 5),
+        currentPeriodEnd: body.currentPeriodEnd,
+        trialEnd: body.trialEnd || null,
+        customTerms: {
+          maxDynamicCoursesPerSeat: Number(body.maxDynamicCoursesPerSeat ?? 4),
+          monthlyLiveCreditsPerSeat: Number(body.monthlyLiveCreditsPerSeat ?? 10),
+          allowLiveAccess: Boolean(body.allowLiveAccess ?? true)
+        },
+        taxProfile: body.taxProfile,
+        createdAt: now
+      };
+      subscriptionPlatform.organizations.set(org.id, org);
+      return c.json({ success: true, organization: org }, 201);
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/admin/organizations/:orgId/members", async (c) => {
+    try {
+      const orgId = c.req.param("orgId");
+      const org = subscriptionPlatform.organizations.get(orgId);
+      if (!org)
+        return c.json({ success: false, error: "Organizaci\xF3n no encontrada." }, 404);
+      const activeMembers = subscriptionPlatform.getActiveOrgMembersSorted(orgId);
+      if (activeMembers.length >= org.totalSeatsPurchased) {
+        return c.json(
+          {
+            success: false,
+            error: "SEATS_LIMIT_REACHED: Se alcanz\xF3 el m\xE1ximo de asientos contratados."
+          },
+          403
+        );
+      }
+      const body = await c.req.json();
+      const now = subscriptionPlatform.clock.now().toISOString();
+      const member = {
+        id: `mem_${orgId}_${body.userId}`,
+        organizationId: orgId,
+        userId: body.userId,
+        role: body.role || "member",
+        status: "active",
+        assignedAt: now
+      };
+      subscriptionPlatform.organizationMembers.set(member.id, member);
+      return c.json({ success: true, member }, 201);
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+  app2.post("/api/admin/antifraud/exempt-fingerprint", async (c) => {
+    try {
+      const body = await c.req.json();
+      const rec = subscriptionPlatform.approveCardFingerprintExemption({
+        fingerprint: body.fingerprint,
+        adminEmail: body.adminEmail || "administrator@ivanperez.tech",
+        notes: body.notes || "Excepci\xF3n aprobada manualmente"
+      });
+      return c.json({ success: true, record: rec });
+    } catch (err) {
+      return c.json({ success: false, error: err.message }, 400);
+    }
+  });
+}
+
 // src/index.ts
 var app = new Hono3();
 var InMemoryD1Shim = class {
@@ -25900,7 +27724,8 @@ app.use("*", async (c, next) => {
   const userRole = (c.req.header("x-user-role") || "").toLowerCase();
   const isStudentOrigin = origin.includes("ipt-course-students") || origin.includes("ipt-course.web.app") || referer.includes("ipt-course-students") || referer.includes("ipt-course.web.app") || origin.includes("localhost:3000") && !origin.includes("3005") || referer.includes("localhost:3000") && !referer.includes("3005");
   const isStudentRole = clientType === "student" || userRole === "student";
-  if (isStudentOrigin || isStudentRole) {
+  const isSubRoute = c.req.path.startsWith("/api/subscriptions") || c.req.path.startsWith("/api/live-sessions");
+  if ((isStudentOrigin || isStudentRole) && !isSubRoute) {
     return c.json({
       success: false,
       error: "ACCESO DENEGADO: El portal de estudiantes tiene estrictamente prohibido realizar solicitudes a la API operativa de IPT Course. Esta API est\xE1 blindada y reservada exclusivamente para operadores docentes y administrativos.",
@@ -25910,7 +27735,7 @@ app.use("*", async (c, next) => {
     }, 403);
   }
   if (c.req.path !== "/health" && ["POST", "PUT", "DELETE", "PATCH"].includes(c.req.method)) {
-    if (userRole === "student") {
+    if (userRole === "student" && !isSubRoute) {
       return c.json({
         success: false,
         error: "ACCESO DENEGADO: Intento de mutaci\xF3n denegado para credenciales no autorizadas.",
@@ -26925,6 +28750,7 @@ app.post("/api/live/quotas/manual-refund", async (c) => {
     return c.json({ success: false, error: err.message }, 403);
   }
 });
+registerSubscriptionRoutes(app);
 var src_default = app;
 
 // src/server.ts

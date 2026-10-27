@@ -24,9 +24,9 @@ export const DEFAULT_OWNER_EMAILS = [
   'ivan@iptapps.com',
   'ivan@ipt.edu.co',
   'ivan.perez@ipt.edu.co',
-  'admin@datagan.com',
-  'admin@tecnogan.com',
-  'soporte@tecnogan.com',
+  'administrator@ivanperez.tech',
+
+
 ];
 
 export function encodeEmailKey(email: string): string {

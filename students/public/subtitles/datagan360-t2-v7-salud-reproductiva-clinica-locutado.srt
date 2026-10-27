@@ -1,0 +1,227 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,032
+[...]
+
+4
+00:00:05,032 --> 00:00:07,167
+bienvenido a un nuevo tutorial de DataGan 360.
+
+5
+00:00:07,167 --> 00:00:07,919
+[...]
+
+6
+00:00:07,919 --> 00:00:09,748
+Exploraremos el módulo reproductivo y clínico de salud.
+
+7
+00:00:09,748 --> 00:00:10,776
+[...]
+
+8
+00:00:10,776 --> 00:00:13,066
+El ciclo reproductivo inicia en la sección celo.
+
+9
+00:00:13,066 --> 00:00:13,444
+[...]
+
+10
+00:00:13,444 --> 00:00:19,275
+Al presionar Crear celo seleccionas la vaca o novilla que entró en calor y eliges en Acción qué comportamiento observaste en campo.
+
+11
+00:00:19,275 --> 00:00:28,209
+[...]
+
+12
+00:00:28,209 --> 00:00:33,012
+En observaciones anotas la hora en que fue vista para programar la inseminación o monta y presionas guardar.
+
+13
+00:00:33,012 --> 00:00:33,427
+[...]
+
+14
+00:00:33,427 --> 00:00:36,248
+Recuerda que esto activará las alertas de seguimiento reproductivo.
+
+15
+00:00:36,248 --> 00:00:44,209
+[...]
+
+16
+00:00:44,209 --> 00:00:45,311
+Una vez servida la hembra,
+
+17
+00:00:45,311 --> 00:00:45,642
+[...]
+
+18
+00:00:45,642 --> 00:00:48,747
+entras en el menú lateral a servicio y presionas Crear servicio.
+
+19
+00:00:48,747 --> 00:00:49,757
+[...]
+
+20
+00:00:49,757 --> 00:00:53,485
+Aquí eliges primero si realizaste monta natural o inseminación artificial.
+
+21
+00:00:53,485 --> 00:01:01,208
+[...]
+
+22
+00:01:01,208 --> 00:01:06,313
+En hembra seleccionas a la vaca que acabas de reportar en celo y en macho vinculas al toro o pajilla utilizada.
+
+23
+00:01:06,313 --> 00:01:10,206
+[...]
+
+24
+00:01:10,206 --> 00:01:12,675
+Anotas los detalles del servicio y presionas guardar,
+
+25
+00:01:12,675 --> 00:01:13,008
+[...]
+
+26
+00:01:13,008 --> 00:01:18,214
+automáticamente DataGan cambia el estado de esa hembra a servida y empieza a contar los días para su chequeo de preñez.
+
+27
+00:01:18,214 --> 00:01:28,188
+[...]
+
+28
+00:01:28,188 --> 00:01:29,447
+Pasamos ahora a veterinaria.
+
+29
+00:01:29,447 --> 00:01:29,810
+[...]
+
+30
+00:01:29,810 --> 00:01:35,710
+Mira cómo al buscar a esa misma hembra su ficha ya dice servida y abajo nos resume sus últimas palpaciones o chequeos realizados.
+
+31
+00:01:35,710 --> 00:01:47,203
+[...]
+
+32
+00:01:47,203 --> 00:01:49,504
+Para días de chequeo reproductivo con el veterinario,
+
+33
+00:01:49,504 --> 00:01:49,874
+[...]
+
+34
+00:01:49,874 --> 00:01:51,363
+puedes filtrar por lote a la derecha,
+
+35
+00:01:51,363 --> 00:01:51,699
+[...]
+
+36
+00:01:51,699 --> 00:01:55,454
+marcar una o varias hembras de la lista y presionar el botón registrar actividades.
+
+37
+00:01:55,454 --> 00:02:04,205
+[...]
+
+38
+00:02:04,205 --> 00:02:06,118
+Se abrirán cinco herramientas clínicas,
+
+39
+00:02:06,118 --> 00:02:06,447
+[...]
+
+40
+00:02:06,447 --> 00:02:09,292
+en Palpación registras si la hembra resultó preñada o vacía,
+
+41
+00:02:09,292 --> 00:02:09,675
+[...]
+
+42
+00:02:09,675 --> 00:02:14,352
+lo que alimenta la tasa de preñez del dashboard y detallas estructuras del ovario izquierdo y derecho.
+
+43
+00:02:14,352 --> 00:02:23,207
+[...]
+
+44
+00:02:23,207 --> 00:02:25,166
+En Procedimiento registras cirugías,
+
+45
+00:02:25,166 --> 00:02:25,498
+[...]
+
+46
+00:02:25,498 --> 00:02:26,853
+descornes o curaciones,
+
+47
+00:02:26,853 --> 00:02:27,217
+[...]
+
+48
+00:02:27,217 --> 00:02:32,363
+en síntomas anotas signos clínicos generales y en la última pestaña reportas abortos si llegaran a ocurrir.
+
+49
+00:02:32,363 --> 00:02:41,208
+[...]
+
+50
+00:02:41,208 --> 00:02:45,219
+Y en la pestaña mastitis cuentas con un diagrama interactivo para el test de California.
+
+51
+00:02:45,219 --> 00:02:45,566
+[...]
+
+52
+00:02:45,566 --> 00:02:50,688
+En cada uno de los cuatro pezones eliges el grado de afectación viendo como cambia de color en el dibujo de la ure
+
+53
+00:02:50,688 --> 00:02:51,023
+[...]
+
+54
+00:02:51,023 --> 00:02:52,504
+o marca si es un pezón perdido,
+
+55
+00:02:52,504 --> 00:02:53,564
+[...]
+
+56
+00:02:53,564 --> 00:02:55,992
+presionas guardar y todo queda en la hoja de vida del animal.
+
+57
+00:02:55,992 --> 00:03:09,760
+[...]

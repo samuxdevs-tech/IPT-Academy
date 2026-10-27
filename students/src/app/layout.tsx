@@ -3,9 +3,11 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { LmsProvider } from "@/context/LmsContext";
+import { SubscriptionProvider } from "@/context/SubscriptionContext";
 import LocalAiTutorWidget from "@/components/LocalAiTutorWidget";
 import LegalComplianceSystem from "@/components/LegalComplianceSystem";
 import StudentPortalShell from "@/components/StudentPortalShell";
+import SubscriptionCheckoutModal from "@/components/SubscriptionCheckoutModal";
 import IdentityVerificationPrompt from "@/components/IdentityVerificationPrompt";
 import MinimalistPreloader from "@/components/MinimalistPreloader";
 
@@ -23,16 +25,16 @@ export const viewport: Viewport = {
 };
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://ipt-course.web.app";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://ipt-course-students.web.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "IPT Course | Tus Clases, Tareas y Notas",
+    default: "IPT Course | Campus Virtual, Cursos y Clases en Vivo",
     template: "%s | IPT Course",
   },
   description:
-    "Portal de clases en línea de IPT. Mira tus clases en video, consulta el calendario de entregas, envía tus tareas y revisa tus calificaciones.",
+    "Portal de formación de Ivan Perez Tech (IPT). Cursos estáticos, cursos dinámicos con evaluación docente y sesiones de clases en vivo.",
   authors: [{ name: "IPT (Ivan Perez Tech)", url: siteUrl }],
   creator: "IPT (Ivan Perez Tech)",
   publisher: "IPT (Ivan Perez Tech)",
@@ -45,9 +47,9 @@ export const metadata: Metadata = {
     locale: "es_CO",
     url: siteUrl,
     siteName: "IPT Course",
-    title: "IPT Course | Tus Clases, Tareas y Notas",
+    title: "IPT Course | Campus Virtual, Cursos y Clases en Vivo",
     description:
-      "Mira tus clases en video, consulta el calendario de entregas, envía tus tareas y revisa tus calificaciones.",
+      "Cursos estáticos, cursos dinámicos con evaluación docente y sesiones de clases en vivo.",
   },
   appleWebApp: {
     capable: true,
@@ -72,10 +74,13 @@ export default function RootLayout({
         <MinimalistPreloader />
         <AuthProvider>
           <LmsProvider>
-            <StudentPortalShell>{children}</StudentPortalShell>
-            <IdentityVerificationPrompt />
-            <LegalComplianceSystem />
-            <LocalAiTutorWidget />
+            <SubscriptionProvider>
+              <StudentPortalShell>{children}</StudentPortalShell>
+              <SubscriptionCheckoutModal />
+              <IdentityVerificationPrompt />
+              <LegalComplianceSystem />
+              <LocalAiTutorWidget />
+            </SubscriptionProvider>
           </LmsProvider>
         </AuthProvider>
       </body>

@@ -14,6 +14,7 @@ import {
 } from './schemas/liveClasses';
 import { LiveClassService } from './services/liveClassService';
 import { QuotaLedgerService } from './services/quotaLedgerService';
+import { registerSubscriptionRoutes } from './services/subscriptionRoutes';
 
 export interface Env {
   DB: D1Database;
@@ -128,7 +129,8 @@ app.use('*', async (c, next) => {
 
   const isStudentRole = clientType === 'student' || userRole === 'student';
 
-  if (isStudentOrigin || isStudentRole) {
+  const isSubRoute = c.req.path.startsWith('/api/subscriptions') || c.req.path.startsWith('/api/live-sessions');
+  if ((isStudentOrigin || isStudentRole) && !isSubRoute) {
     return c.json({
       success: false,
       error: 'ACCESO DENEGADO: El portal de estudiantes tiene estrictamente prohibido realizar solicitudes a la API operativa de IPT Course. Esta API está blindada y reservada exclusivamente para operadores docentes y administrativos.',
@@ -140,7 +142,7 @@ app.use('*', async (c, next) => {
 
   // Si no es petición de salud y es mutación, asegurar que no sea rol no verificado
   if (c.req.path !== '/health' && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(c.req.method)) {
-    if (userRole === 'student') {
+    if (userRole === 'student' && !isSubRoute) {
       return c.json({
         success: false,
         error: 'ACCESO DENEGADO: Intento de mutación denegado para credenciales no autorizadas.',
@@ -1383,5 +1385,7 @@ app.post('/api/live/quotas/manual-refund', async (c) => {
     return c.json({ success: false, error: err.message }, 403);
   }
 });
+
+registerSubscriptionRoutes(app);
 
 export default app;

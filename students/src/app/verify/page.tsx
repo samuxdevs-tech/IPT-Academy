@@ -186,7 +186,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="Código del certificado (ej. IPT-CERT-2026-DATAGAN-PRO)"
+                placeholder="Código del certificado (ej. IPT-CERT-2026-MASTER-PRO)"
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e5e5e5] text-xs md:text-sm font-mono font-bold uppercase focus:outline-none focus:border-[#065fd4] focus:ring-1 focus:ring-[#065fd4]"
                 required
               />
@@ -316,7 +316,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-[#505050]">
                   <div>
                     <strong className="text-[#0f0f0f] block mb-0.5">Entidad Emisora:</strong>
-                    Ivan Perez Tech (IPT) en alianza académica con TecnoGan & DataGan 360.
+                    Ivan Perez Tech (IPT) · Campus Virtual de Formación Profesional.
                   </div>
                   <div>
                     <strong className="text-[#0f0f0f] block mb-0.5">Instructor y Acreditador:</strong>
@@ -386,14 +386,14 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
               No se encontró ninguna credencial con el código "{searchedCode}"
             </h2>
             <p className="text-xs md:text-sm text-[#606060] max-w-md mx-auto leading-relaxed">
-              Verifica haber escrito correctamente el código del diploma tal como aparece bajo el código QR (ejemplo: <span className="font-mono font-bold text-[#0f0f0f]">IPT-CERT-2026-DATAGAN-PRO</span>).
+              Verifica haber escrito correctamente el código del diploma tal como aparece bajo el código QR (ejemplo: <span className="font-mono font-bold text-[#0f0f0f]">IPT-CERT-2026-MASTER-PRO</span>).
             </p>
             <div className="pt-2">
               <button
                 type="button"
                 onClick={() => {
-                  setCode('IPT-CERT-2026-DATAGAN-PRO');
-                  resolveCertificate('IPT-CERT-2026-DATAGAN-PRO');
+                  setCode('IPT-CERT-2026-MASTER-PRO');
+                  resolveCertificate('IPT-CERT-2026-MASTER-PRO');
                 }}
                 className="px-4 py-2 rounded-xl bg-[#065fd4] hover:bg-[#054db2] text-white text-xs font-bold transition-all cursor-pointer"
               >

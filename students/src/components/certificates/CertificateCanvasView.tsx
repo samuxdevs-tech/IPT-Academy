@@ -102,7 +102,7 @@ export default function CertificateCanvasView({
 
           <div className="text-center sm:text-right">
             <p className="text-[11px] sm:text-[13px] font-black uppercase tracking-[0.2em] text-[#161c2d]">
-              TecnoGan & IPT
+              IPT (Ivan Perez Tech)
             </p>
             <p className="text-[8px] sm:text-[9.5px] font-semibold text-[#66635a] tracking-wider uppercase">
               Certificación Oficial
@@ -136,7 +136,7 @@ export default function CertificateCanvasView({
             {cert.courseTitle}
           </p>
           <p className="text-[10px] sm:text-[11.5px] text-[#66635a] leading-relaxed pt-1">
-            Certificación técnica expedida conjuntamente por IPT Course y TecnoGan como parte del programa oficial de formación técnica y zootécnica de Ivan Perez Tech (IPT).
+            Certificación técnica expedida por IPT Course como parte del programa oficial de formación técnica de Ivan Perez Tech (IPT).
           </p>
         </div>
 

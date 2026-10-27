@@ -1,0 +1,6851 @@
+{
+  "file": "datagan360-t2-v3-finanzas-compras-ventas-locutado.mp3",
+  "duration_ms": 187830,
+  "duration_srt": "00:03:07,830",
+  "language": "es",
+  "total_segments": 71,
+  "speech_segments": 35,
+  "silence_segments": 36,
+  "total_words": 359,
+  "full_text": "Hola, bienvenido a un nuevo tutorial de DataGan 360, en los módulos de compras y ventas alimentamos el inventario y movemos el dinero de nuestras cuentas. Al presionar crear compra, usa Seleccionar artículo existente si vas a reabastecer un insumo que ya tienes en bodega. O haz clic en crear nuevo artículo si estás comprando algo por primera vez, aquí escribes el nombre del producto. Eliges a qué categoría pertenece y en qué unidad se mide. Digitas cuántas unidades compraste y el costo por unidad. Nota que si reabasteces un producto existente también puedes activar el interruptor actualizar precio. Aquí conectamos con otros dos módulos, primero eliges de cuál de tus cuentas financieras sale el dinero y en proveedor seleccionas al almacén o empresa que registraste previamente en el módulo de terceros. Verifica la fecha de compra y abajo redactas una descripción de respaldo, como el número de factura o lote del producto. En fecha de expiración colocarás el vencimiento del medicamento o garantía, el sistema valida que sea una fecha futura y la usará para avisarte en la campana de alertas antes de que el producto venza. Presionamos guardar compra. Al guardar ocurre una triple acción automática, queda el registro en compras, se crea el producto con su stock en inventario y se descuenta la plata en cuentas. Con los iconos de la derecha puedes ver su detalle, editarlo o borrar. Ahora entramos en el menú lateral a ventas, ideal cuando vendes insumos, equipos o subproductos de bodega. Al abrir el buscador ves todos tus artículos con stock disponible, incluyendo el que acabamos de comprar y eliges qué vas a vender. Indicas cuántas unidades vas a entregar y en precio por unidad colocas el valor al que se lo estás vendiendo a tu cliente. Eliges a cuál de tus cuentas de finanzas entrará ese pago. Seleccionas a tu comprador desde el directorio de terceros y presionas Registrar venta. De inmediato el sistema resta esa unidad de tu inventario. Suma el dinero como ingreso en tu cuenta y en el dashboard. Y te deja la transacción lista con sus botones de detalle. Edición, borrado y exportación a Excel.",
+  "full_text_with_silences": "[...] Hola, [...] bienvenido a un nuevo tutorial de DataGan 360, [...] en los módulos de compras y ventas alimentamos el inventario y movemos el dinero de nuestras cuentas. [...] Al presionar crear compra, [...] usa Seleccionar artículo existente si vas a reabastecer un insumo que ya tienes en bodega. [...] O haz clic en crear nuevo artículo si estás comprando algo por primera vez, [...] aquí escribes el nombre del producto. [...] Eliges a qué categoría pertenece y en qué unidad se mide. [...] Digitas cuántas unidades compraste y el costo por unidad. [...] Nota que si reabasteces un producto existente también puedes activar el interruptor actualizar precio. Aquí [...] conectamos con otros dos módulos, [...] primero eliges de cuál de tus cuentas financieras sale el dinero y en proveedor seleccionas al almacén o empresa que registraste previamente en el módulo de terceros. [...] Verifica la fecha de compra y abajo redactas una descripción de respaldo, [...] como el número de factura o lote del producto. [...] En fecha de expiración colocarás el vencimiento del medicamento o garantía, [...] el sistema valida que sea una fecha futura y la usará para avisarte en la campana de alertas antes de que el producto venza. [...] Presionamos guardar compra. [...] Al guardar ocurre una triple acción automática, [...] queda el registro en compras, [...] se crea el producto con su stock en inventario y se descuenta la plata en cuentas. [...] Con los iconos de la derecha puedes ver su detalle, [...] editarlo o borrar. [...] Ahora entramos en el menú lateral a ventas, [...] ideal cuando vende sin sumos, [...] equipos o su producto de bodega. [...] Al abrir el buscador ves todos tus artículos con stock disponible, [...] incluyendo el que acabamos de comprar y eliges qué vas a vender. [...] Indicas cuántas unidades vas a entregar y en precio por unidad colocas el valor al que se lo estás vendiendo a tu cliente. [...] Eliges a cuál de tus cuentas de finanzas entrará ese pago. [...] Seleccionas a tu comprador desde el directorio de terceros y presionas Registrar venta. [...] De inmediato el sistema resta esa unidad de tu inventario. [...] Suma el dinero como ingreso en tu cuenta y en el dashboard. [...] Y te deja la transacción lista con sus botones de detalle. [...] Edición, [...] borrado y exportación a Excel. [...]",
+  "acoustic_silences_ms": [
+    {
+      "start_ms": 0,
+      "end_ms": 1005,
+      "duration_ms": 1005,
+      "start_srt": "00:00:00,000",
+      "end_srt": "00:00:01,005"
+    },
+    {
+      "start_ms": 4297,
+      "end_ms": 5035,
+      "duration_ms": 738,
+      "start_srt": "00:00:04,297",
+      "end_srt": "00:00:05,035"
+    },
+    {
+      "start_ms": 7163,
+      "end_ms": 8142,
+      "duration_ms": 979,
+      "start_srt": "00:00:07,163",
+      "end_srt": "00:00:08,142"
+    },
+    {
+      "start_ms": 11593,
+      "end_ms": 12568,
+      "duration_ms": 975,
+      "start_srt": "00:00:11,593",
+      "end_srt": "00:00:12,568"
+    },
+    {
+      "start_ms": 13564,
+      "end_ms": 13798,
+      "duration_ms": 234,
+      "start_srt": "00:00:13,564",
+      "end_srt": "00:00:13,798"
+    },
+    {
+      "start_ms": 16969,
+      "end_ms": 18198,
+      "duration_ms": 1229,
+      "start_srt": "00:00:16,969",
+      "end_srt": "00:00:18,198"
+    },
+    {
+      "start_ms": 21564,
+      "end_ms": 21894,
+      "duration_ms": 330,
+      "start_srt": "00:00:21,564",
+      "end_srt": "00:00:21,894"
+    },
+    {
+      "start_ms": 23442,
+      "end_ms": 23823,
+      "duration_ms": 381,
+      "start_srt": "00:00:23,442",
+      "end_srt": "00:00:23,823"
+    },
+    {
+      "start_ms": 26421,
+      "end_ms": 32206,
+      "duration_ms": 5785,
+      "start_srt": "00:00:26,421",
+      "end_srt": "00:00:32,206"
+    },
+    {
+      "start_ms": 34924,
+      "end_ms": 35335,
+      "duration_ms": 411,
+      "start_srt": "00:00:34,924",
+      "end_srt": "00:00:35,335"
+    },
+    {
+      "start_ms": 39821,
+      "end_ms": 46208,
+      "duration_ms": 6387,
+      "start_srt": "00:00:39,821",
+      "end_srt": "00:00:46,208"
+    },
+    {
+      "start_ms": 48071,
+      "end_ms": 48424,
+      "duration_ms": 353,
+      "start_srt": "00:00:48,071",
+      "end_srt": "00:00:48,424"
+    },
+    {
+      "start_ms": 51031,
+      "end_ms": 51327,
+      "duration_ms": 296,
+      "start_srt": "00:00:51,031",
+      "end_srt": "00:00:51,327"
+    },
+    {
+      "start_ms": 55933,
+      "end_ms": 64208,
+      "duration_ms": 8275,
+      "start_srt": "00:00:55,933",
+      "end_srt": "00:01:04,208"
+    },
+    {
+      "start_ms": 67479,
+      "end_ms": 67794,
+      "duration_ms": 315,
+      "start_srt": "00:01:07,479",
+      "end_srt": "00:01:07,794"
+    },
+    {
+      "start_ms": 69630,
+      "end_ms": 88190,
+      "duration_ms": 18560,
+      "start_srt": "00:01:09,630",
+      "end_srt": "00:01:28,190"
+    },
+    {
+      "start_ms": 91535,
+      "end_ms": 91876,
+      "duration_ms": 341,
+      "start_srt": "00:01:31,535",
+      "end_srt": "00:01:31,876"
+    },
+    {
+      "start_ms": 96977,
+      "end_ms": 97893,
+      "duration_ms": 916,
+      "start_srt": "00:01:36,977",
+      "end_srt": "00:01:37,893"
+    },
+    {
+      "start_ms": 99059,
+      "end_ms": 101203,
+      "duration_ms": 2144,
+      "start_srt": "00:01:39,059",
+      "end_srt": "00:01:41,203"
+    },
+    {
+      "start_ms": 103421,
+      "end_ms": 103750,
+      "duration_ms": 329,
+      "start_srt": "00:01:43,421",
+      "end_srt": "00:01:43,750"
+    },
+    {
+      "start_ms": 104975,
+      "end_ms": 105262,
+      "duration_ms": 287,
+      "start_srt": "00:01:44,975",
+      "end_srt": "00:01:45,262"
+    },
+    {
+      "start_ms": 108676,
+      "end_ms": 109678,
+      "duration_ms": 1002,
+      "start_srt": "00:01:48,676",
+      "end_srt": "00:01:49,678"
+    },
+    {
+      "start_ms": 111789,
+      "end_ms": 112131,
+      "duration_ms": 342,
+      "start_srt": "00:01:51,789",
+      "end_srt": "00:01:52,131"
+    },
+    {
+      "start_ms": 113003,
+      "end_ms": 121203,
+      "duration_ms": 8200,
+      "start_srt": "00:01:53,003",
+      "end_srt": "00:02:01,203"
+    },
+    {
+      "start_ms": 123177,
+      "end_ms": 123438,
+      "duration_ms": 261,
+      "start_srt": "00:02:03,177",
+      "end_srt": "00:02:03,438"
+    },
+    {
+      "start_ms": 124784,
+      "end_ms": 125102,
+      "duration_ms": 318,
+      "start_srt": "00:02:04,784",
+      "end_srt": "00:02:05,102"
+    },
+    {
+      "start_ms": 126574,
+      "end_ms": 127590,
+      "duration_ms": 1016,
+      "start_srt": "00:02:06,574",
+      "end_srt": "00:02:07,590"
+    },
+    {
+      "start_ms": 130613,
+      "end_ms": 130919,
+      "duration_ms": 306,
+      "start_srt": "00:02:10,613",
+      "end_srt": "00:02:10,919"
+    },
+    {
+      "start_ms": 132424,
+      "end_ms": 132706,
+      "duration_ms": 282,
+      "start_srt": "00:02:12,424",
+      "end_srt": "00:02:12,706"
+    },
+    {
+      "start_ms": 133707,
+      "end_ms": 138208,
+      "duration_ms": 4501,
+      "start_srt": "00:02:13,707",
+      "end_srt": "00:02:18,208"
+    },
+    {
+      "start_ms": 143483,
+      "end_ms": 152205,
+      "duration_ms": 8722,
+      "start_srt": "00:02:23,483",
+      "end_srt": "00:02:32,205"
+    },
+    {
+      "start_ms": 154889,
+      "end_ms": 155224,
+      "duration_ms": 335,
+      "start_srt": "00:02:34,889",
+      "end_srt": "00:02:35,224"
+    },
+    {
+      "start_ms": 159082,
+      "end_ms": 169211,
+      "duration_ms": 10129,
+      "start_srt": "00:02:39,082",
+      "end_srt": "00:02:49,211"
+    },
+    {
+      "start_ms": 171754,
+      "end_ms": 172137,
+      "duration_ms": 383,
+      "start_srt": "00:02:51,754",
+      "end_srt": "00:02:52,137"
+    },
+    {
+      "start_ms": 174679,
+      "end_ms": 175011,
+      "duration_ms": 332,
+      "start_srt": "00:02:54,679",
+      "end_srt": "00:02:55,011"
+    },
+    {
+      "start_ms": 177610,
+      "end_ms": 177941,
+      "duration_ms": 331,
+      "start_srt": "00:02:57,610",
+      "end_srt": "00:02:57,941"
+    },
+    {
+      "start_ms": 178453,
+      "end_ms": 178676,
+      "duration_ms": 223,
+      "start_srt": "00:02:58,453",
+      "end_srt": "00:02:58,676"
+    },
+    {
+      "start_ms": 180283,
+      "end_ms": 184429,
+      "duration_ms": 4146,
+      "start_srt": "00:03:00,283",
+      "end_srt": "00:03:04,429"
+    },
+    {
+      "start_ms": 186964,
+      "end_ms": 187827,
+      "duration_ms": 863,
+      "start_srt": "00:03:06,964",
+      "end_srt": "00:03:07,827"
+    }
+  ],
+  "timeline": [
+    {
+      "index": 1,
+      "type": "silence",
+      "start_ms": 0,
+      "end_ms": 4030,
+      "duration_ms": 4030,
+      "start_srt": "00:00:00,000",
+      "end_srt": "00:00:04,030",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 2,
+      "type": "speech",
+      "start_ms": 4030,
+      "end_ms": 4297,
+      "duration_ms": 267,
+      "start_srt": "00:00:04,030",
+      "end_srt": "00:00:04,297",
+      "text": "Hola,",
+      "words": [
+        {
+          "word": "Hola,",
+          "start_ms": 4030,
+          "end_ms": 4297,
+          "start_srt": "00:00:04,030",
+          "end_srt": "00:00:04,297",
+          "probability": 0.8873
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "type": "silence",
+      "start_ms": 4297,
+      "end_ms": 5035,
+      "duration_ms": 738,
+      "start_srt": "00:00:04,297",
+      "end_srt": "00:00:05,035",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 4,
+      "type": "speech",
+      "start_ms": 5035,
+      "end_ms": 7163,
+      "duration_ms": 2128,
+      "start_srt": "00:00:05,035",
+      "end_srt": "00:00:07,163",
+      "text": "bienvenido a un nuevo tutorial de DataGan 360,",
+      "words": [
+        {
+          "word": "bienvenido",
+          "start_ms": 5035,
+          "end_ms": 5410,
+          "start_srt": "00:00:05,035",
+          "end_srt": "00:00:05,410",
+          "probability": 0.9465
+        },
+        {
+          "word": "a",
+          "start_ms": 5410,
+          "end_ms": 5510,
+          "start_srt": "00:00:05,410",
+          "end_srt": "00:00:05,510",
+          "probability": 0.9126
+        },
+        {
+          "word": "un",
+          "start_ms": 5510,
+          "end_ms": 5530,
+          "start_srt": "00:00:05,510",
+          "end_srt": "00:00:05,530",
+          "probability": 0.9036
+        },
+        {
+          "word": "nuevo",
+          "start_ms": 5530,
+          "end_ms": 5643,
+          "start_srt": "00:00:05,530",
+          "end_srt": "00:00:05,643",
+          "probability": 0.9974
+        },
+        {
+          "word": "tutorial",
+          "start_ms": 5643,
+          "end_ms": 5910,
+          "start_srt": "00:00:05,643",
+          "end_srt": "00:00:05,910",
+          "probability": 0.9855
+        },
+        {
+          "word": "de",
+          "start_ms": 5910,
+          "end_ms": 6090,
+          "start_srt": "00:00:05,910",
+          "end_srt": "00:00:06,090",
+          "probability": 0.996
+        },
+        {
+          "word": "DataGun360,",
+          "start_ms": 6090,
+          "end_ms": 7163,
+          "start_srt": "00:00:06,090",
+          "end_srt": "00:00:07,163",
+          "probability": 0.4083
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "type": "silence",
+      "start_ms": 7163,
+      "end_ms": 8142,
+      "duration_ms": 979,
+      "start_srt": "00:00:07,163",
+      "end_srt": "00:00:08,142",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 6,
+      "type": "speech",
+      "start_ms": 8142,
+      "end_ms": 11593,
+      "duration_ms": 3451,
+      "start_srt": "00:00:08,142",
+      "end_srt": "00:00:11,593",
+      "text": "en los módulos de compras y ventas alimentamos el inventario y movemos el dinero de nuestras cuentas.",
+      "words": [
+        {
+          "word": "en",
+          "start_ms": 8142,
+          "end_ms": 8220,
+          "start_srt": "00:00:08,142",
+          "end_srt": "00:00:08,220",
+          "probability": 0.9618
+        },
+        {
+          "word": "los",
+          "start_ms": 8220,
+          "end_ms": 8320,
+          "start_srt": "00:00:08,220",
+          "end_srt": "00:00:08,320",
+          "probability": 0.9903
+        },
+        {
+          "word": "módulos",
+          "start_ms": 8320,
+          "end_ms": 8560,
+          "start_srt": "00:00:08,320",
+          "end_srt": "00:00:08,560",
+          "probability": 0.9893
+        },
+        {
+          "word": "de",
+          "start_ms": 8560,
+          "end_ms": 8700,
+          "start_srt": "00:00:08,560",
+          "end_srt": "00:00:08,700",
+          "probability": 0.9953
+        },
+        {
+          "word": "compras",
+          "start_ms": 8700,
+          "end_ms": 8980,
+          "start_srt": "00:00:08,700",
+          "end_srt": "00:00:08,980",
+          "probability": 0.9125
+        },
+        {
+          "word": "y",
+          "start_ms": 8980,
+          "end_ms": 9080,
+          "start_srt": "00:00:08,980",
+          "end_srt": "00:00:09,080",
+          "probability": 0.896
+        },
+        {
+          "word": "ventas",
+          "start_ms": 9080,
+          "end_ms": 9300,
+          "start_srt": "00:00:09,080",
+          "end_srt": "00:00:09,300",
+          "probability": 0.9877
+        },
+        {
+          "word": "alimentamos",
+          "start_ms": 9300,
+          "end_ms": 9700,
+          "start_srt": "00:00:09,300",
+          "end_srt": "00:00:09,700",
+          "probability": 0.897
+        },
+        {
+          "word": "el",
+          "start_ms": 9700,
+          "end_ms": 9860,
+          "start_srt": "00:00:09,700",
+          "end_srt": "00:00:09,860",
+          "probability": 0.9609
+        },
+        {
+          "word": "inventario",
+          "start_ms": 9860,
+          "end_ms": 10200,
+          "start_srt": "00:00:09,860",
+          "end_srt": "00:00:10,200",
+          "probability": 0.9783
+        },
+        {
+          "word": "y",
+          "start_ms": 10200,
+          "end_ms": 10340,
+          "start_srt": "00:00:10,200",
+          "end_srt": "00:00:10,340",
+          "probability": 0.894
+        },
+        {
+          "word": "movemos",
+          "start_ms": 10340,
+          "end_ms": 10540,
+          "start_srt": "00:00:10,340",
+          "end_srt": "00:00:10,540",
+          "probability": 0.8848
+        },
+        {
+          "word": "el",
+          "start_ms": 10540,
+          "end_ms": 10640,
+          "start_srt": "00:00:10,540",
+          "end_srt": "00:00:10,640",
+          "probability": 0.9985
+        },
+        {
+          "word": "dinero",
+          "start_ms": 10640,
+          "end_ms": 10820,
+          "start_srt": "00:00:10,640",
+          "end_srt": "00:00:10,820",
+          "probability": 0.9985
+        },
+        {
+          "word": "de",
+          "start_ms": 10820,
+          "end_ms": 10960,
+          "start_srt": "00:00:10,820",
+          "end_srt": "00:00:10,960",
+          "probability": 0.9891
+        },
+        {
+          "word": "nuestras",
+          "start_ms": 10960,
+          "end_ms": 11157,
+          "start_srt": "00:00:10,960",
+          "end_srt": "00:00:11,157",
+          "probability": 0.9957
+        },
+        {
+          "word": "cuentas.",
+          "start_ms": 11157,
+          "end_ms": 11593,
+          "start_srt": "00:00:11,157",
+          "end_srt": "00:00:11,593",
+          "probability": 0.9954
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "type": "silence",
+      "start_ms": 11593,
+      "end_ms": 12568,
+      "duration_ms": 975,
+      "start_srt": "00:00:11,593",
+      "end_srt": "00:00:12,568",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 8,
+      "type": "speech",
+      "start_ms": 12568,
+      "end_ms": 13564,
+      "duration_ms": 996,
+      "start_srt": "00:00:12,568",
+      "end_srt": "00:00:13,564",
+      "text": "Al presionar crear compra,",
+      "words": [
+        {
+          "word": "Al",
+          "start_ms": 12568,
+          "end_ms": 12630,
+          "start_srt": "00:00:12,568",
+          "end_srt": "00:00:12,630",
+          "probability": 0.9785
+        },
+        {
+          "word": "presionar",
+          "start_ms": 12630,
+          "end_ms": 12930,
+          "start_srt": "00:00:12,630",
+          "end_srt": "00:00:12,930",
+          "probability": 0.9598
+        },
+        {
+          "word": "crear",
+          "start_ms": 12930,
+          "end_ms": 13170,
+          "start_srt": "00:00:12,930",
+          "end_srt": "00:00:13,170",
+          "probability": 0.6043
+        },
+        {
+          "word": "compra,",
+          "start_ms": 13170,
+          "end_ms": 13564,
+          "start_srt": "00:00:13,170",
+          "end_srt": "00:00:13,564",
+          "probability": 0.7436
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "type": "silence",
+      "start_ms": 13564,
+      "end_ms": 13798,
+      "duration_ms": 234,
+      "start_srt": "00:00:13,564",
+      "end_srt": "00:00:13,798",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 10,
+      "type": "speech",
+      "start_ms": 13798,
+      "end_ms": 16969,
+      "duration_ms": 3171,
+      "start_srt": "00:00:13,798",
+      "end_srt": "00:00:16,969",
+      "text": "usa Seleccionar artículo existente si vas a reabastecer un insumo que ya tienes en bodega.",
+      "words": [
+        {
+          "word": "usa",
+          "start_ms": 13798,
+          "end_ms": 13930,
+          "start_srt": "00:00:13,798",
+          "end_srt": "00:00:13,930",
+          "probability": 0.9674
+        },
+        {
+          "word": "seleccionar",
+          "start_ms": 13930,
+          "end_ms": 14330,
+          "start_srt": "00:00:13,930",
+          "end_srt": "00:00:14,330",
+          "probability": 0.8918
+        },
+        {
+          "word": "artículo",
+          "start_ms": 14330,
+          "end_ms": 14677,
+          "start_srt": "00:00:14,330",
+          "end_srt": "00:00:14,677",
+          "probability": 0.9668
+        },
+        {
+          "word": "existentes",
+          "start_ms": 14677,
+          "end_ms": 15107,
+          "start_srt": "00:00:14,677",
+          "end_srt": "00:00:15,107",
+          "probability": 0.8475
+        },
+        {
+          "word": "y",
+          "start_ms": 15107,
+          "end_ms": 15230,
+          "start_srt": "00:00:15,107",
+          "end_srt": "00:00:15,230",
+          "probability": 0.8097
+        },
+        {
+          "word": "vas",
+          "start_ms": 15230,
+          "end_ms": 15350,
+          "start_srt": "00:00:15,230",
+          "end_srt": "00:00:15,350",
+          "probability": 0.9353
+        },
+        {
+          "word": "a",
+          "start_ms": 15350,
+          "end_ms": 15410,
+          "start_srt": "00:00:15,350",
+          "end_srt": "00:00:15,410",
+          "probability": 0.9951
+        },
+        {
+          "word": "rebastecer",
+          "start_ms": 15410,
+          "end_ms": 15830,
+          "start_srt": "00:00:15,410",
+          "end_srt": "00:00:15,830",
+          "probability": 0.6594
+        },
+        {
+          "word": "un",
+          "start_ms": 15830,
+          "end_ms": 15950,
+          "start_srt": "00:00:15,830",
+          "end_srt": "00:00:15,950",
+          "probability": 0.9879
+        },
+        {
+          "word": "insumo",
+          "start_ms": 15950,
+          "end_ms": 16123,
+          "start_srt": "00:00:15,950",
+          "end_srt": "00:00:16,123",
+          "probability": 0.9728
+        },
+        {
+          "word": "que",
+          "start_ms": 16123,
+          "end_ms": 16256,
+          "start_srt": "00:00:16,123",
+          "end_srt": "00:00:16,256",
+          "probability": 0.9938
+        },
+        {
+          "word": "ya",
+          "start_ms": 16256,
+          "end_ms": 16342,
+          "start_srt": "00:00:16,256",
+          "end_srt": "00:00:16,342",
+          "probability": 0.9964
+        },
+        {
+          "word": "tienes",
+          "start_ms": 16342,
+          "end_ms": 16570,
+          "start_srt": "00:00:16,342",
+          "end_srt": "00:00:16,570",
+          "probability": 0.9803
+        },
+        {
+          "word": "en",
+          "start_ms": 16570,
+          "end_ms": 16710,
+          "start_srt": "00:00:16,570",
+          "end_srt": "00:00:16,710",
+          "probability": 0.996
+        },
+        {
+          "word": "bodega.",
+          "start_ms": 16710,
+          "end_ms": 16969,
+          "start_srt": "00:00:16,710",
+          "end_srt": "00:00:16,969",
+          "probability": 0.6789
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "type": "silence",
+      "start_ms": 16969,
+      "end_ms": 18198,
+      "duration_ms": 1229,
+      "start_srt": "00:00:16,969",
+      "end_srt": "00:00:18,198",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 12,
+      "type": "speech",
+      "start_ms": 18198,
+      "end_ms": 21564,
+      "duration_ms": 3366,
+      "start_srt": "00:00:18,198",
+      "end_srt": "00:00:21,564",
+      "text": "O haz clic en crear nuevo artículo si estás comprando algo por primera vez,",
+      "words": [
+        {
+          "word": "O",
+          "start_ms": 18198,
+          "end_ms": 18290,
+          "start_srt": "00:00:18,198",
+          "end_srt": "00:00:18,290",
+          "probability": 0.8027
+        },
+        {
+          "word": "haz",
+          "start_ms": 18290,
+          "end_ms": 18424,
+          "start_srt": "00:00:18,290",
+          "end_srt": "00:00:18,424",
+          "probability": 0.8352
+        },
+        {
+          "word": "clic",
+          "start_ms": 18424,
+          "end_ms": 18593,
+          "start_srt": "00:00:18,424",
+          "end_srt": "00:00:18,593",
+          "probability": 0.9162
+        },
+        {
+          "word": "en",
+          "start_ms": 18593,
+          "end_ms": 18809,
+          "start_srt": "00:00:18,593",
+          "end_srt": "00:00:18,809",
+          "probability": 0.9933
+        },
+        {
+          "word": "crear",
+          "start_ms": 18809,
+          "end_ms": 18990,
+          "start_srt": "00:00:18,809",
+          "end_srt": "00:00:18,990",
+          "probability": 0.97
+        },
+        {
+          "word": "nuevo",
+          "start_ms": 18990,
+          "end_ms": 19210,
+          "start_srt": "00:00:18,990",
+          "end_srt": "00:00:19,210",
+          "probability": 0.9404
+        },
+        {
+          "word": "artículo",
+          "start_ms": 19210,
+          "end_ms": 19670,
+          "start_srt": "00:00:19,210",
+          "end_srt": "00:00:19,670",
+          "probability": 0.9938
+        },
+        {
+          "word": "si",
+          "start_ms": 19670,
+          "end_ms": 19870,
+          "start_srt": "00:00:19,670",
+          "end_srt": "00:00:19,870",
+          "probability": 0.8273
+        },
+        {
+          "word": "estás",
+          "start_ms": 19870,
+          "end_ms": 20070,
+          "start_srt": "00:00:19,870",
+          "end_srt": "00:00:20,070",
+          "probability": 0.988
+        },
+        {
+          "word": "comprando",
+          "start_ms": 20070,
+          "end_ms": 20470,
+          "start_srt": "00:00:20,070",
+          "end_srt": "00:00:20,470",
+          "probability": 0.9954
+        },
+        {
+          "word": "algo",
+          "start_ms": 20470,
+          "end_ms": 20710,
+          "start_srt": "00:00:20,470",
+          "end_srt": "00:00:20,710",
+          "probability": 0.9996
+        },
+        {
+          "word": "por",
+          "start_ms": 20710,
+          "end_ms": 20913,
+          "start_srt": "00:00:20,710",
+          "end_srt": "00:00:20,913",
+          "probability": 0.9833
+        },
+        {
+          "word": "primera",
+          "start_ms": 20913,
+          "end_ms": 21190,
+          "start_srt": "00:00:20,913",
+          "end_srt": "00:00:21,190",
+          "probability": 0.9977
+        },
+        {
+          "word": "vez,",
+          "start_ms": 21190,
+          "end_ms": 21564,
+          "start_srt": "00:00:21,190",
+          "end_srt": "00:00:21,564",
+          "probability": 0.9978
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "type": "silence",
+      "start_ms": 21564,
+      "end_ms": 21894,
+      "duration_ms": 330,
+      "start_srt": "00:00:21,564",
+      "end_srt": "00:00:21,894",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 14,
+      "type": "speech",
+      "start_ms": 21894,
+      "end_ms": 23442,
+      "duration_ms": 1548,
+      "start_srt": "00:00:21,894",
+      "end_srt": "00:00:23,442",
+      "text": "aquí escribes el nombre del producto.",
+      "words": [
+        {
+          "word": "aquí",
+          "start_ms": 21894,
+          "end_ms": 22076,
+          "start_srt": "00:00:21,894",
+          "end_srt": "00:00:22,076",
+          "probability": 0.9758
+        },
+        {
+          "word": "escribes",
+          "start_ms": 22076,
+          "end_ms": 22440,
+          "start_srt": "00:00:22,076",
+          "end_srt": "00:00:22,440",
+          "probability": 0.8721
+        },
+        {
+          "word": "el",
+          "start_ms": 22440,
+          "end_ms": 22620,
+          "start_srt": "00:00:22,440",
+          "end_srt": "00:00:22,620",
+          "probability": 0.9984
+        },
+        {
+          "word": "nombre",
+          "start_ms": 22620,
+          "end_ms": 22820,
+          "start_srt": "00:00:22,620",
+          "end_srt": "00:00:22,820",
+          "probability": 0.9994
+        },
+        {
+          "word": "del",
+          "start_ms": 22820,
+          "end_ms": 22941,
+          "start_srt": "00:00:22,820",
+          "end_srt": "00:00:22,941",
+          "probability": 0.8246
+        },
+        {
+          "word": "producto.",
+          "start_ms": 22941,
+          "end_ms": 23442,
+          "start_srt": "00:00:22,941",
+          "end_srt": "00:00:23,442",
+          "probability": 0.9969
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "type": "silence",
+      "start_ms": 23442,
+      "end_ms": 23823,
+      "duration_ms": 381,
+      "start_srt": "00:00:23,442",
+      "end_srt": "00:00:23,823",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 16,
+      "type": "speech",
+      "start_ms": 23823,
+      "end_ms": 26421,
+      "duration_ms": 2598,
+      "start_srt": "00:00:23,823",
+      "end_srt": "00:00:26,421",
+      "text": "Eliges a qué categoría pertenece y en qué unidad se mide.",
+      "words": [
+        {
+          "word": "Eliges",
+          "start_ms": 23823,
+          "end_ms": 24070,
+          "start_srt": "00:00:23,823",
+          "end_srt": "00:00:24,070",
+          "probability": 0.8435
+        },
+        {
+          "word": "a",
+          "start_ms": 24070,
+          "end_ms": 24270,
+          "start_srt": "00:00:24,070",
+          "end_srt": "00:00:24,270",
+          "probability": 0.9781
+        },
+        {
+          "word": "qué",
+          "start_ms": 24270,
+          "end_ms": 24354,
+          "start_srt": "00:00:24,270",
+          "end_srt": "00:00:24,354",
+          "probability": 0.9454
+        },
+        {
+          "word": "categoría",
+          "start_ms": 24354,
+          "end_ms": 24812,
+          "start_srt": "00:00:24,354",
+          "end_srt": "00:00:24,812",
+          "probability": 0.9928
+        },
+        {
+          "word": "pertenece",
+          "start_ms": 24812,
+          "end_ms": 25390,
+          "start_srt": "00:00:24,812",
+          "end_srt": "00:00:25,390",
+          "probability": 0.9924
+        },
+        {
+          "word": "y",
+          "start_ms": 25390,
+          "end_ms": 25590,
+          "start_srt": "00:00:25,390",
+          "end_srt": "00:00:25,590",
+          "probability": 0.9866
+        },
+        {
+          "word": "en",
+          "start_ms": 25590,
+          "end_ms": 25675,
+          "start_srt": "00:00:25,590",
+          "end_srt": "00:00:25,675",
+          "probability": 0.987
+        },
+        {
+          "word": "qué",
+          "start_ms": 25675,
+          "end_ms": 25812,
+          "start_srt": "00:00:25,675",
+          "end_srt": "00:00:25,812",
+          "probability": 0.9113
+        },
+        {
+          "word": "unidad",
+          "start_ms": 25812,
+          "end_ms": 26030,
+          "start_srt": "00:00:25,812",
+          "end_srt": "00:00:26,030",
+          "probability": 0.9781
+        },
+        {
+          "word": "se",
+          "start_ms": 26030,
+          "end_ms": 26198,
+          "start_srt": "00:00:26,030",
+          "end_srt": "00:00:26,198",
+          "probability": 0.997
+        },
+        {
+          "word": "mide.",
+          "start_ms": 26198,
+          "end_ms": 26421,
+          "start_srt": "00:00:26,198",
+          "end_srt": "00:00:26,421",
+          "probability": 0.9199
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "type": "silence",
+      "start_ms": 26421,
+      "end_ms": 32206,
+      "duration_ms": 5785,
+      "start_srt": "00:00:26,421",
+      "end_srt": "00:00:32,206",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 18,
+      "type": "speech",
+      "start_ms": 32206,
+      "end_ms": 34924,
+      "duration_ms": 2718,
+      "start_srt": "00:00:32,206",
+      "end_srt": "00:00:34,924",
+      "text": "Digitas cuántas unidades compraste y el costo por unidad.",
+      "words": [
+        {
+          "word": "Dijitas",
+          "start_ms": 32206,
+          "end_ms": 32570,
+          "start_srt": "00:00:32,206",
+          "end_srt": "00:00:32,570",
+          "probability": 0.6842
+        },
+        {
+          "word": "cuántas",
+          "start_ms": 32570,
+          "end_ms": 32950,
+          "start_srt": "00:00:32,570",
+          "end_srt": "00:00:32,950",
+          "probability": 0.7852
+        },
+        {
+          "word": "unidades",
+          "start_ms": 32950,
+          "end_ms": 33250,
+          "start_srt": "00:00:32,950",
+          "end_srt": "00:00:33,250",
+          "probability": 0.9921
+        },
+        {
+          "word": "compraste",
+          "start_ms": 33250,
+          "end_ms": 33902,
+          "start_srt": "00:00:33,250",
+          "end_srt": "00:00:33,902",
+          "probability": 0.9758
+        },
+        {
+          "word": "y",
+          "start_ms": 33902,
+          "end_ms": 34010,
+          "start_srt": "00:00:33,902",
+          "end_srt": "00:00:34,010",
+          "probability": 0.9895
+        },
+        {
+          "word": "el",
+          "start_ms": 34010,
+          "end_ms": 34076,
+          "start_srt": "00:00:34,010",
+          "end_srt": "00:00:34,076",
+          "probability": 0.9982
+        },
+        {
+          "word": "costo",
+          "start_ms": 34076,
+          "end_ms": 34414,
+          "start_srt": "00:00:34,076",
+          "end_srt": "00:00:34,414",
+          "probability": 0.9981
+        },
+        {
+          "word": "por",
+          "start_ms": 34414,
+          "end_ms": 34590,
+          "start_srt": "00:00:34,414",
+          "end_srt": "00:00:34,590",
+          "probability": 0.997
+        },
+        {
+          "word": "unidad.",
+          "start_ms": 34590,
+          "end_ms": 34924,
+          "start_srt": "00:00:34,590",
+          "end_srt": "00:00:34,924",
+          "probability": 0.9923
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "type": "silence",
+      "start_ms": 34924,
+      "end_ms": 35335,
+      "duration_ms": 411,
+      "start_srt": "00:00:34,924",
+      "end_srt": "00:00:35,335",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 20,
+      "type": "speech",
+      "start_ms": 35335,
+      "end_ms": 39821,
+      "duration_ms": 4486,
+      "start_srt": "00:00:35,335",
+      "end_srt": "00:00:39,821",
+      "text": "Nota que si reabasteces un producto existente también puedes activar el interruptor actualizar precio. Aquí",
+      "words": [
+        {
+          "word": "Nota",
+          "start_ms": 35335,
+          "end_ms": 35542,
+          "start_srt": "00:00:35,335",
+          "end_srt": "00:00:35,542",
+          "probability": 0.9625
+        },
+        {
+          "word": "que",
+          "start_ms": 35542,
+          "end_ms": 35680,
+          "start_srt": "00:00:35,542",
+          "end_srt": "00:00:35,680",
+          "probability": 0.998
+        },
+        {
+          "word": "si",
+          "start_ms": 35680,
+          "end_ms": 35800,
+          "start_srt": "00:00:35,680",
+          "end_srt": "00:00:35,800",
+          "probability": 0.9645
+        },
+        {
+          "word": "rebasteces",
+          "start_ms": 35800,
+          "end_ms": 36300,
+          "start_srt": "00:00:35,800",
+          "end_srt": "00:00:36,300",
+          "probability": 0.7474
+        },
+        {
+          "word": "un",
+          "start_ms": 36300,
+          "end_ms": 36457,
+          "start_srt": "00:00:36,300",
+          "end_srt": "00:00:36,457",
+          "probability": 0.9945
+        },
+        {
+          "word": "producto",
+          "start_ms": 36457,
+          "end_ms": 36708,
+          "start_srt": "00:00:36,457",
+          "end_srt": "00:00:36,708",
+          "probability": 0.9966
+        },
+        {
+          "word": "existente",
+          "start_ms": 36708,
+          "end_ms": 37280,
+          "start_srt": "00:00:36,708",
+          "end_srt": "00:00:37,280",
+          "probability": 0.9967
+        },
+        {
+          "word": "también",
+          "start_ms": 37280,
+          "end_ms": 37560,
+          "start_srt": "00:00:37,280",
+          "end_srt": "00:00:37,560",
+          "probability": 0.8473
+        },
+        {
+          "word": "puedes",
+          "start_ms": 37560,
+          "end_ms": 37820,
+          "start_srt": "00:00:37,560",
+          "end_srt": "00:00:37,820",
+          "probability": 0.989
+        },
+        {
+          "word": "activar",
+          "start_ms": 37820,
+          "end_ms": 38260,
+          "start_srt": "00:00:37,820",
+          "end_srt": "00:00:38,260",
+          "probability": 0.9971
+        },
+        {
+          "word": "el",
+          "start_ms": 38260,
+          "end_ms": 38380,
+          "start_srt": "00:00:38,260",
+          "end_srt": "00:00:38,380",
+          "probability": 0.9959
+        },
+        {
+          "word": "interruptor",
+          "start_ms": 38380,
+          "end_ms": 38903,
+          "start_srt": "00:00:38,380",
+          "end_srt": "00:00:38,903",
+          "probability": 0.9761
+        },
+        {
+          "word": "actualizar",
+          "start_ms": 38903,
+          "end_ms": 39429,
+          "start_srt": "00:00:38,903",
+          "end_srt": "00:00:39,429",
+          "probability": 0.882
+        },
+        {
+          "word": "precio.",
+          "start_ms": 39429,
+          "end_ms": 39700,
+          "start_srt": "00:00:39,429",
+          "end_srt": "00:00:39,700",
+          "probability": 0.9648
+        },
+        {
+          "word": "Aquí",
+          "start_ms": 39700,
+          "end_ms": 39821,
+          "start_srt": "00:00:39,700",
+          "end_srt": "00:00:39,821",
+          "probability": 0.3966
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "type": "silence",
+      "start_ms": 39821,
+      "end_ms": 46208,
+      "duration_ms": 6387,
+      "start_srt": "00:00:39,821",
+      "end_srt": "00:00:46,208",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 22,
+      "type": "speech",
+      "start_ms": 46208,
+      "end_ms": 48071,
+      "duration_ms": 1863,
+      "start_srt": "00:00:46,208",
+      "end_srt": "00:00:48,071",
+      "text": "conectamos con otros dos módulos,",
+      "words": [
+        {
+          "word": "conectamos",
+          "start_ms": 46208,
+          "end_ms": 46880,
+          "start_srt": "00:00:46,208",
+          "end_srt": "00:00:46,880",
+          "probability": 0.9956
+        },
+        {
+          "word": "con",
+          "start_ms": 46880,
+          "end_ms": 47120,
+          "start_srt": "00:00:46,880",
+          "end_srt": "00:00:47,120",
+          "probability": 0.9989
+        },
+        {
+          "word": "otros",
+          "start_ms": 47120,
+          "end_ms": 47340,
+          "start_srt": "00:00:47,120",
+          "end_srt": "00:00:47,340",
+          "probability": 0.8996
+        },
+        {
+          "word": "dos",
+          "start_ms": 47340,
+          "end_ms": 47540,
+          "start_srt": "00:00:47,340",
+          "end_srt": "00:00:47,540",
+          "probability": 0.9228
+        },
+        {
+          "word": "módulos,",
+          "start_ms": 47540,
+          "end_ms": 48071,
+          "start_srt": "00:00:47,540",
+          "end_srt": "00:00:48,071",
+          "probability": 0.9776
+        }
+      ]
+    },
+    {
+      "index": 23,
+      "type": "silence",
+      "start_ms": 48071,
+      "end_ms": 48424,
+      "duration_ms": 353,
+      "start_srt": "00:00:48,071",
+      "end_srt": "00:00:48,424",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 24,
+      "type": "speech",
+      "start_ms": 48424,
+      "end_ms": 55933,
+      "duration_ms": 7509,
+      "start_srt": "00:00:48,424",
+      "end_srt": "00:00:55,933",
+      "text": "primero eliges de cuál de tus cuentas financieras sale el dinero y en proveedor seleccionas al almacén o empresa que registraste previamente en el módulo de terceros.",
+      "words": [
+        {
+          "word": "primero",
+          "start_ms": 48424,
+          "end_ms": 48630,
+          "start_srt": "00:00:48,424",
+          "end_srt": "00:00:48,630",
+          "probability": 0.9865
+        },
+        {
+          "word": "eliges",
+          "start_ms": 48630,
+          "end_ms": 48870,
+          "start_srt": "00:00:48,630",
+          "end_srt": "00:00:48,870",
+          "probability": 0.9092
+        },
+        {
+          "word": "de",
+          "start_ms": 48870,
+          "end_ms": 49024,
+          "start_srt": "00:00:48,870",
+          "end_srt": "00:00:49,024",
+          "probability": 0.9825
+        },
+        {
+          "word": "cuál",
+          "start_ms": 49024,
+          "end_ms": 49190,
+          "start_srt": "00:00:49,024",
+          "end_srt": "00:00:49,190",
+          "probability": 0.5146
+        },
+        {
+          "word": "de",
+          "start_ms": 49190,
+          "end_ms": 49349,
+          "start_srt": "00:00:49,190",
+          "end_srt": "00:00:49,349",
+          "probability": 0.9969
+        },
+        {
+          "word": "tus",
+          "start_ms": 49349,
+          "end_ms": 49479,
+          "start_srt": "00:00:49,349",
+          "end_srt": "00:00:49,479",
+          "probability": 0.9919
+        },
+        {
+          "word": "cuentas",
+          "start_ms": 49479,
+          "end_ms": 49827,
+          "start_srt": "00:00:49,479",
+          "end_srt": "00:00:49,827",
+          "probability": 0.9951
+        },
+        {
+          "word": "financieras",
+          "start_ms": 49827,
+          "end_ms": 50290,
+          "start_srt": "00:00:49,827",
+          "end_srt": "00:00:50,290",
+          "probability": 0.8574
+        },
+        {
+          "word": "sale",
+          "start_ms": 50290,
+          "end_ms": 50530,
+          "start_srt": "00:00:50,290",
+          "end_srt": "00:00:50,530",
+          "probability": 0.9913
+        },
+        {
+          "word": "el",
+          "start_ms": 50530,
+          "end_ms": 50670,
+          "start_srt": "00:00:50,530",
+          "end_srt": "00:00:50,670",
+          "probability": 0.9958
+        },
+        {
+          "word": "dinero",
+          "start_ms": 50670,
+          "end_ms": 50979,
+          "start_srt": "00:00:50,670",
+          "end_srt": "00:00:50,979",
+          "probability": 0.9979
+        },
+        {
+          "word": "y",
+          "start_ms": 50979,
+          "end_ms": 51355,
+          "start_srt": "00:00:50,979",
+          "end_srt": "00:00:51,355",
+          "probability": 0.4843
+        },
+        {
+          "word": "en",
+          "start_ms": 51355,
+          "end_ms": 51520,
+          "start_srt": "00:00:51,355",
+          "end_srt": "00:00:51,520",
+          "probability": 0.8451
+        },
+        {
+          "word": "proveedor",
+          "start_ms": 51520,
+          "end_ms": 51860,
+          "start_srt": "00:00:51,520",
+          "end_srt": "00:00:51,860",
+          "probability": 0.8742
+        },
+        {
+          "word": "seleccionas",
+          "start_ms": 51860,
+          "end_ms": 52480,
+          "start_srt": "00:00:51,860",
+          "end_srt": "00:00:52,480",
+          "probability": 0.9323
+        },
+        {
+          "word": "al",
+          "start_ms": 52480,
+          "end_ms": 52620,
+          "start_srt": "00:00:52,480",
+          "end_srt": "00:00:52,620",
+          "probability": 0.9519
+        },
+        {
+          "word": "almacén",
+          "start_ms": 52620,
+          "end_ms": 53020,
+          "start_srt": "00:00:52,620",
+          "end_srt": "00:00:53,020",
+          "probability": 0.7611
+        },
+        {
+          "word": "o",
+          "start_ms": 53020,
+          "end_ms": 53140,
+          "start_srt": "00:00:53,020",
+          "end_srt": "00:00:53,140",
+          "probability": 0.9943
+        },
+        {
+          "word": "empresa",
+          "start_ms": 53140,
+          "end_ms": 53438,
+          "start_srt": "00:00:53,140",
+          "end_srt": "00:00:53,438",
+          "probability": 0.9978
+        },
+        {
+          "word": "que",
+          "start_ms": 53438,
+          "end_ms": 53654,
+          "start_srt": "00:00:53,438",
+          "end_srt": "00:00:53,654",
+          "probability": 0.9937
+        },
+        {
+          "word": "registraste",
+          "start_ms": 53654,
+          "end_ms": 54297,
+          "start_srt": "00:00:53,654",
+          "end_srt": "00:00:54,297",
+          "probability": 0.9886
+        },
+        {
+          "word": "previamente",
+          "start_ms": 54297,
+          "end_ms": 54710,
+          "start_srt": "00:00:54,297",
+          "end_srt": "00:00:54,710",
+          "probability": 0.9986
+        },
+        {
+          "word": "en",
+          "start_ms": 54710,
+          "end_ms": 54940,
+          "start_srt": "00:00:54,710",
+          "end_srt": "00:00:54,940",
+          "probability": 0.988
+        },
+        {
+          "word": "el",
+          "start_ms": 54940,
+          "end_ms": 55019,
+          "start_srt": "00:00:54,940",
+          "end_srt": "00:00:55,019",
+          "probability": 0.9982
+        },
+        {
+          "word": "módulo",
+          "start_ms": 55019,
+          "end_ms": 55340,
+          "start_srt": "00:00:55,019",
+          "end_srt": "00:00:55,340",
+          "probability": 0.9951
+        },
+        {
+          "word": "de",
+          "start_ms": 55340,
+          "end_ms": 55462,
+          "start_srt": "00:00:55,340",
+          "end_srt": "00:00:55,462",
+          "probability": 0.9814
+        },
+        {
+          "word": "terceros.",
+          "start_ms": 55462,
+          "end_ms": 55933,
+          "start_srt": "00:00:55,462",
+          "end_srt": "00:00:55,933",
+          "probability": 0.987
+        }
+      ]
+    },
+    {
+      "index": 25,
+      "type": "silence",
+      "start_ms": 55933,
+      "end_ms": 64208,
+      "duration_ms": 8275,
+      "start_srt": "00:00:55,933",
+      "end_srt": "00:01:04,208",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 26,
+      "type": "speech",
+      "start_ms": 64208,
+      "end_ms": 67479,
+      "duration_ms": 3271,
+      "start_srt": "00:01:04,208",
+      "end_srt": "00:01:07,479",
+      "text": "Verifica la fecha de compra y abajo redactas una descripción de respaldo,",
+      "words": [
+        {
+          "word": "Verifica",
+          "start_ms": 64208,
+          "end_ms": 64586,
+          "start_srt": "00:01:04,208",
+          "end_srt": "00:01:04,586",
+          "probability": 0.8706
+        },
+        {
+          "word": "la",
+          "start_ms": 64586,
+          "end_ms": 64730,
+          "start_srt": "00:01:04,586",
+          "end_srt": "00:01:04,730",
+          "probability": 0.9955
+        },
+        {
+          "word": "fecha",
+          "start_ms": 64730,
+          "end_ms": 65030,
+          "start_srt": "00:01:04,730",
+          "end_srt": "00:01:05,030",
+          "probability": 0.9982
+        },
+        {
+          "word": "de",
+          "start_ms": 65030,
+          "end_ms": 65150,
+          "start_srt": "00:01:05,030",
+          "end_srt": "00:01:05,150",
+          "probability": 0.998
+        },
+        {
+          "word": "compra",
+          "start_ms": 65150,
+          "end_ms": 65382,
+          "start_srt": "00:01:05,150",
+          "end_srt": "00:01:05,382",
+          "probability": 0.9889
+        },
+        {
+          "word": "y",
+          "start_ms": 65382,
+          "end_ms": 65530,
+          "start_srt": "00:01:05,382",
+          "end_srt": "00:01:05,530",
+          "probability": 0.9664
+        },
+        {
+          "word": "abajo",
+          "start_ms": 65530,
+          "end_ms": 65710,
+          "start_srt": "00:01:05,530",
+          "end_srt": "00:01:05,710",
+          "probability": 0.9909
+        },
+        {
+          "word": "reactas",
+          "start_ms": 65710,
+          "end_ms": 66181,
+          "start_srt": "00:01:05,710",
+          "end_srt": "00:01:06,181",
+          "probability": 0.6917
+        },
+        {
+          "word": "una",
+          "start_ms": 66181,
+          "end_ms": 66370,
+          "start_srt": "00:01:06,181",
+          "end_srt": "00:01:06,370",
+          "probability": 0.985
+        },
+        {
+          "word": "descripción",
+          "start_ms": 66370,
+          "end_ms": 66830,
+          "start_srt": "00:01:06,370",
+          "end_srt": "00:01:06,830",
+          "probability": 0.9971
+        },
+        {
+          "word": "de",
+          "start_ms": 66830,
+          "end_ms": 66970,
+          "start_srt": "00:01:06,830",
+          "end_srt": "00:01:06,970",
+          "probability": 0.9272
+        },
+        {
+          "word": "respaldo,",
+          "start_ms": 66970,
+          "end_ms": 67479,
+          "start_srt": "00:01:06,970",
+          "end_srt": "00:01:07,479",
+          "probability": 0.9901
+        }
+      ]
+    },
+    {
+      "index": 27,
+      "type": "silence",
+      "start_ms": 67479,
+      "end_ms": 67794,
+      "duration_ms": 315,
+      "start_srt": "00:01:07,479",
+      "end_srt": "00:01:07,794",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 28,
+      "type": "speech",
+      "start_ms": 67794,
+      "end_ms": 69630,
+      "duration_ms": 1836,
+      "start_srt": "00:01:07,794",
+      "end_srt": "00:01:09,630",
+      "text": "como el número de factura o lote del producto.",
+      "words": [
+        {
+          "word": "como",
+          "start_ms": 67794,
+          "end_ms": 67920,
+          "start_srt": "00:01:07,794",
+          "end_srt": "00:01:07,920",
+          "probability": 0.9843
+        },
+        {
+          "word": "el",
+          "start_ms": 67920,
+          "end_ms": 68020,
+          "start_srt": "00:01:07,920",
+          "end_srt": "00:01:08,020",
+          "probability": 0.9923
+        },
+        {
+          "word": "número",
+          "start_ms": 68020,
+          "end_ms": 68180,
+          "start_srt": "00:01:08,020",
+          "end_srt": "00:01:08,180",
+          "probability": 0.995
+        },
+        {
+          "word": "de",
+          "start_ms": 68180,
+          "end_ms": 68380,
+          "start_srt": "00:01:08,180",
+          "end_srt": "00:01:08,380",
+          "probability": 0.999
+        },
+        {
+          "word": "factura",
+          "start_ms": 68380,
+          "end_ms": 68780,
+          "start_srt": "00:01:08,380",
+          "end_srt": "00:01:08,780",
+          "probability": 0.9942
+        },
+        {
+          "word": "o",
+          "start_ms": 68780,
+          "end_ms": 68920,
+          "start_srt": "00:01:08,780",
+          "end_srt": "00:01:08,920",
+          "probability": 0.9874
+        },
+        {
+          "word": "lote",
+          "start_ms": 68920,
+          "end_ms": 69120,
+          "start_srt": "00:01:08,920",
+          "end_srt": "00:01:09,120",
+          "probability": 0.7255
+        },
+        {
+          "word": "del",
+          "start_ms": 69120,
+          "end_ms": 69277,
+          "start_srt": "00:01:09,120",
+          "end_srt": "00:01:09,277",
+          "probability": 0.9432
+        },
+        {
+          "word": "producto.",
+          "start_ms": 69277,
+          "end_ms": 69630,
+          "start_srt": "00:01:09,277",
+          "end_srt": "00:01:09,630",
+          "probability": 0.9947
+        }
+      ]
+    },
+    {
+      "index": 29,
+      "type": "silence",
+      "start_ms": 69630,
+      "end_ms": 88190,
+      "duration_ms": 18560,
+      "start_srt": "00:01:09,630",
+      "end_srt": "00:01:28,190",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 30,
+      "type": "speech",
+      "start_ms": 88190,
+      "end_ms": 91535,
+      "duration_ms": 3345,
+      "start_srt": "00:01:28,190",
+      "end_srt": "00:01:31,535",
+      "text": "En fecha de expiración colocarás el vencimiento del medicamento o garantía,",
+      "words": [
+        {
+          "word": "En",
+          "start_ms": 88190,
+          "end_ms": 88300,
+          "start_srt": "00:01:28,190",
+          "end_srt": "00:01:28,300",
+          "probability": 0.9911
+        },
+        {
+          "word": "fecha",
+          "start_ms": 88300,
+          "end_ms": 88580,
+          "start_srt": "00:01:28,300",
+          "end_srt": "00:01:28,580",
+          "probability": 0.994
+        },
+        {
+          "word": "de",
+          "start_ms": 88580,
+          "end_ms": 88680,
+          "start_srt": "00:01:28,580",
+          "end_srt": "00:01:28,680",
+          "probability": 0.9937
+        },
+        {
+          "word": "expiración",
+          "start_ms": 88680,
+          "end_ms": 89100,
+          "start_srt": "00:01:28,680",
+          "end_srt": "00:01:29,100",
+          "probability": 0.9247
+        },
+        {
+          "word": "colocarás",
+          "start_ms": 89100,
+          "end_ms": 89620,
+          "start_srt": "00:01:29,100",
+          "end_srt": "00:01:29,620",
+          "probability": 0.9829
+        },
+        {
+          "word": "el",
+          "start_ms": 89620,
+          "end_ms": 89720,
+          "start_srt": "00:01:29,620",
+          "end_srt": "00:01:29,720",
+          "probability": 0.9966
+        },
+        {
+          "word": "vencimiento",
+          "start_ms": 89720,
+          "end_ms": 90180,
+          "start_srt": "00:01:29,720",
+          "end_srt": "00:01:30,180",
+          "probability": 0.9824
+        },
+        {
+          "word": "del",
+          "start_ms": 90180,
+          "end_ms": 90360,
+          "start_srt": "00:01:30,180",
+          "end_srt": "00:01:30,360",
+          "probability": 0.9654
+        },
+        {
+          "word": "medicamento",
+          "start_ms": 90360,
+          "end_ms": 90838,
+          "start_srt": "00:01:30,360",
+          "end_srt": "00:01:30,838",
+          "probability": 0.9918
+        },
+        {
+          "word": "o",
+          "start_ms": 90838,
+          "end_ms": 91020,
+          "start_srt": "00:01:30,838",
+          "end_srt": "00:01:31,020",
+          "probability": 0.9869
+        },
+        {
+          "word": "garantía,",
+          "start_ms": 91020,
+          "end_ms": 91535,
+          "start_srt": "00:01:31,020",
+          "end_srt": "00:01:31,535",
+          "probability": 0.9883
+        }
+      ]
+    },
+    {
+      "index": 31,
+      "type": "silence",
+      "start_ms": 91535,
+      "end_ms": 91876,
+      "duration_ms": 341,
+      "start_srt": "00:01:31,535",
+      "end_srt": "00:01:31,876",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 32,
+      "type": "speech",
+      "start_ms": 91876,
+      "end_ms": 96977,
+      "duration_ms": 5101,
+      "start_srt": "00:01:31,876",
+      "end_srt": "00:01:36,977",
+      "text": "el sistema valida que sea una fecha futura y la usará para avisarte en la campana de alertas antes de que el producto venza.",
+      "words": [
+        {
+          "word": "el",
+          "start_ms": 91876,
+          "end_ms": 91990,
+          "start_srt": "00:01:31,876",
+          "end_srt": "00:01:31,990",
+          "probability": 0.9923
+        },
+        {
+          "word": "sistema",
+          "start_ms": 91990,
+          "end_ms": 92290,
+          "start_srt": "00:01:31,990",
+          "end_srt": "00:01:32,290",
+          "probability": 0.9773
+        },
+        {
+          "word": "valía",
+          "start_ms": 92290,
+          "end_ms": 92608,
+          "start_srt": "00:01:32,290",
+          "end_srt": "00:01:32,608",
+          "probability": 0.8037
+        },
+        {
+          "word": "que",
+          "start_ms": 92608,
+          "end_ms": 92750,
+          "start_srt": "00:01:32,608",
+          "end_srt": "00:01:32,750",
+          "probability": 0.9865
+        },
+        {
+          "word": "sea",
+          "start_ms": 92750,
+          "end_ms": 92910,
+          "start_srt": "00:01:32,750",
+          "end_srt": "00:01:32,910",
+          "probability": 0.9945
+        },
+        {
+          "word": "una",
+          "start_ms": 92910,
+          "end_ms": 93070,
+          "start_srt": "00:01:32,910",
+          "end_srt": "00:01:33,070",
+          "probability": 0.9971
+        },
+        {
+          "word": "fecha",
+          "start_ms": 93070,
+          "end_ms": 93355,
+          "start_srt": "00:01:33,070",
+          "end_srt": "00:01:33,355",
+          "probability": 0.9975
+        },
+        {
+          "word": "futura",
+          "start_ms": 93355,
+          "end_ms": 93770,
+          "start_srt": "00:01:33,355",
+          "end_srt": "00:01:33,770",
+          "probability": 0.9656
+        },
+        {
+          "word": "y",
+          "start_ms": 93770,
+          "end_ms": 93830,
+          "start_srt": "00:01:33,770",
+          "end_srt": "00:01:33,830",
+          "probability": 0.9798
+        },
+        {
+          "word": "la",
+          "start_ms": 93830,
+          "end_ms": 93910,
+          "start_srt": "00:01:33,830",
+          "end_srt": "00:01:33,910",
+          "probability": 0.97
+        },
+        {
+          "word": "usará",
+          "start_ms": 93910,
+          "end_ms": 94163,
+          "start_srt": "00:01:33,910",
+          "end_srt": "00:01:34,163",
+          "probability": 0.9013
+        },
+        {
+          "word": "para",
+          "start_ms": 94163,
+          "end_ms": 94330,
+          "start_srt": "00:01:34,163",
+          "end_srt": "00:01:34,330",
+          "probability": 0.9991
+        },
+        {
+          "word": "avisarte",
+          "start_ms": 94330,
+          "end_ms": 94775,
+          "start_srt": "00:01:34,330",
+          "end_srt": "00:01:34,775",
+          "probability": 0.9872
+        },
+        {
+          "word": "en",
+          "start_ms": 94775,
+          "end_ms": 94850,
+          "start_srt": "00:01:34,775",
+          "end_srt": "00:01:34,850",
+          "probability": 0.9922
+        },
+        {
+          "word": "la",
+          "start_ms": 94850,
+          "end_ms": 94905,
+          "start_srt": "00:01:34,850",
+          "end_srt": "00:01:34,905",
+          "probability": 0.9983
+        },
+        {
+          "word": "campana",
+          "start_ms": 94905,
+          "end_ms": 95290,
+          "start_srt": "00:01:34,905",
+          "end_srt": "00:01:35,290",
+          "probability": 0.9934
+        },
+        {
+          "word": "de",
+          "start_ms": 95290,
+          "end_ms": 95410,
+          "start_srt": "00:01:35,290",
+          "end_srt": "00:01:35,410",
+          "probability": 0.9987
+        },
+        {
+          "word": "alertas",
+          "start_ms": 95410,
+          "end_ms": 95750,
+          "start_srt": "00:01:35,410",
+          "end_srt": "00:01:35,750",
+          "probability": 0.9771
+        },
+        {
+          "word": "antes",
+          "start_ms": 95750,
+          "end_ms": 95978,
+          "start_srt": "00:01:35,750",
+          "end_srt": "00:01:35,978",
+          "probability": 0.993
+        },
+        {
+          "word": "de",
+          "start_ms": 95978,
+          "end_ms": 96103,
+          "start_srt": "00:01:35,978",
+          "end_srt": "00:01:36,103",
+          "probability": 0.9907
+        },
+        {
+          "word": "que",
+          "start_ms": 96103,
+          "end_ms": 96242,
+          "start_srt": "00:01:36,103",
+          "end_srt": "00:01:36,242",
+          "probability": 0.9926
+        },
+        {
+          "word": "el",
+          "start_ms": 96242,
+          "end_ms": 96384,
+          "start_srt": "00:01:36,242",
+          "end_srt": "00:01:36,384",
+          "probability": 0.5757
+        },
+        {
+          "word": "producto",
+          "start_ms": 96384,
+          "end_ms": 96530,
+          "start_srt": "00:01:36,384",
+          "end_srt": "00:01:36,530",
+          "probability": 0.9965
+        },
+        {
+          "word": "venza.",
+          "start_ms": 96530,
+          "end_ms": 96977,
+          "start_srt": "00:01:36,530",
+          "end_srt": "00:01:36,977",
+          "probability": 0.9557
+        }
+      ]
+    },
+    {
+      "index": 33,
+      "type": "silence",
+      "start_ms": 96977,
+      "end_ms": 97893,
+      "duration_ms": 916,
+      "start_srt": "00:01:36,977",
+      "end_srt": "00:01:37,893",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 34,
+      "type": "speech",
+      "start_ms": 97893,
+      "end_ms": 99059,
+      "duration_ms": 1166,
+      "start_srt": "00:01:37,893",
+      "end_srt": "00:01:39,059",
+      "text": "Presionamos guardar compra.",
+      "words": [
+        {
+          "word": "Presionamos",
+          "start_ms": 97893,
+          "end_ms": 98300,
+          "start_srt": "00:01:37,893",
+          "end_srt": "00:01:38,300",
+          "probability": 0.8233
+        },
+        {
+          "word": "guardar",
+          "start_ms": 98300,
+          "end_ms": 98653,
+          "start_srt": "00:01:38,300",
+          "end_srt": "00:01:38,653",
+          "probability": 0.892
+        },
+        {
+          "word": "compra.",
+          "start_ms": 98653,
+          "end_ms": 99059,
+          "start_srt": "00:01:38,653",
+          "end_srt": "00:01:39,059",
+          "probability": 0.9515
+        }
+      ]
+    },
+    {
+      "index": 35,
+      "type": "silence",
+      "start_ms": 99059,
+      "end_ms": 101203,
+      "duration_ms": 2144,
+      "start_srt": "00:01:39,059",
+      "end_srt": "00:01:41,203",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 36,
+      "type": "speech",
+      "start_ms": 101203,
+      "end_ms": 103421,
+      "duration_ms": 2218,
+      "start_srt": "00:01:41,203",
+      "end_srt": "00:01:43,421",
+      "text": "Al guardar ocurre una triple acción automática,",
+      "words": [
+        {
+          "word": "Al",
+          "start_ms": 101203,
+          "end_ms": 101320,
+          "start_srt": "00:01:41,203",
+          "end_srt": "00:01:41,320",
+          "probability": 0.9912
+        },
+        {
+          "word": "guardar",
+          "start_ms": 101320,
+          "end_ms": 101620,
+          "start_srt": "00:01:41,320",
+          "end_srt": "00:01:41,620",
+          "probability": 0.9974
+        },
+        {
+          "word": "ocurre",
+          "start_ms": 101620,
+          "end_ms": 101940,
+          "start_srt": "00:01:41,620",
+          "end_srt": "00:01:41,940",
+          "probability": 0.4972
+        },
+        {
+          "word": "una",
+          "start_ms": 101940,
+          "end_ms": 102121,
+          "start_srt": "00:01:41,940",
+          "end_srt": "00:01:42,121",
+          "probability": 0.9452
+        },
+        {
+          "word": "triple",
+          "start_ms": 102121,
+          "end_ms": 102360,
+          "start_srt": "00:01:42,121",
+          "end_srt": "00:01:42,360",
+          "probability": 0.831
+        },
+        {
+          "word": "acción",
+          "start_ms": 102360,
+          "end_ms": 102720,
+          "start_srt": "00:01:42,360",
+          "end_srt": "00:01:42,720",
+          "probability": 0.7352
+        },
+        {
+          "word": "automática,",
+          "start_ms": 102720,
+          "end_ms": 103421,
+          "start_srt": "00:01:42,720",
+          "end_srt": "00:01:43,421",
+          "probability": 0.9905
+        }
+      ]
+    },
+    {
+      "index": 37,
+      "type": "silence",
+      "start_ms": 103421,
+      "end_ms": 103750,
+      "duration_ms": 329,
+      "start_srt": "00:01:43,421",
+      "end_srt": "00:01:43,750",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 38,
+      "type": "speech",
+      "start_ms": 103750,
+      "end_ms": 104975,
+      "duration_ms": 1225,
+      "start_srt": "00:01:43,750",
+      "end_srt": "00:01:44,975",
+      "text": "queda el registro en compras,",
+      "words": [
+        {
+          "word": "queda",
+          "start_ms": 103750,
+          "end_ms": 103860,
+          "start_srt": "00:01:43,750",
+          "end_srt": "00:01:43,860",
+          "probability": 0.9197
+        },
+        {
+          "word": "el",
+          "start_ms": 103860,
+          "end_ms": 103980,
+          "start_srt": "00:01:43,860",
+          "end_srt": "00:01:43,980",
+          "probability": 0.9501
+        },
+        {
+          "word": "registro",
+          "start_ms": 103980,
+          "end_ms": 104341,
+          "start_srt": "00:01:43,980",
+          "end_srt": "00:01:44,341",
+          "probability": 0.9974
+        },
+        {
+          "word": "en",
+          "start_ms": 104341,
+          "end_ms": 104457,
+          "start_srt": "00:01:44,341",
+          "end_srt": "00:01:44,457",
+          "probability": 0.9857
+        },
+        {
+          "word": "compras,",
+          "start_ms": 104457,
+          "end_ms": 104975,
+          "start_srt": "00:01:44,457",
+          "end_srt": "00:01:44,975",
+          "probability": 0.9844
+        }
+      ]
+    },
+    {
+      "index": 39,
+      "type": "silence",
+      "start_ms": 104975,
+      "end_ms": 105262,
+      "duration_ms": 287,
+      "start_srt": "00:01:44,975",
+      "end_srt": "00:01:45,262",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 40,
+      "type": "speech",
+      "start_ms": 105262,
+      "end_ms": 108676,
+      "duration_ms": 3414,
+      "start_srt": "00:01:45,262",
+      "end_srt": "00:01:48,676",
+      "text": "se crea el producto con su stock en inventario y se descuenta la plata en cuentas.",
+      "words": [
+        {
+          "word": "se",
+          "start_ms": 105262,
+          "end_ms": 105390,
+          "start_srt": "00:01:45,262",
+          "end_srt": "00:01:45,390",
+          "probability": 0.9883
+        },
+        {
+          "word": "crea",
+          "start_ms": 105390,
+          "end_ms": 105578,
+          "start_srt": "00:01:45,390",
+          "end_srt": "00:01:45,578",
+          "probability": 0.938
+        },
+        {
+          "word": "el",
+          "start_ms": 105578,
+          "end_ms": 105650,
+          "start_srt": "00:01:45,578",
+          "end_srt": "00:01:45,650",
+          "probability": 0.9944
+        },
+        {
+          "word": "producto",
+          "start_ms": 105650,
+          "end_ms": 105909,
+          "start_srt": "00:01:45,650",
+          "end_srt": "00:01:45,909",
+          "probability": 0.9974
+        },
+        {
+          "word": "con",
+          "start_ms": 105909,
+          "end_ms": 106184,
+          "start_srt": "00:01:45,909",
+          "end_srt": "00:01:46,184",
+          "probability": 0.9939
+        },
+        {
+          "word": "su",
+          "start_ms": 106184,
+          "end_ms": 106298,
+          "start_srt": "00:01:46,184",
+          "end_srt": "00:01:46,298",
+          "probability": 0.9954
+        },
+        {
+          "word": "stock",
+          "start_ms": 106298,
+          "end_ms": 106468,
+          "start_srt": "00:01:46,298",
+          "end_srt": "00:01:46,468",
+          "probability": 0.3633
+        },
+        {
+          "word": "en",
+          "start_ms": 106468,
+          "end_ms": 106670,
+          "start_srt": "00:01:46,468",
+          "end_srt": "00:01:46,670",
+          "probability": 0.989
+        },
+        {
+          "word": "inventario",
+          "start_ms": 106670,
+          "end_ms": 107150,
+          "start_srt": "00:01:46,670",
+          "end_srt": "00:01:47,150",
+          "probability": 0.9884
+        },
+        {
+          "word": "y",
+          "start_ms": 107150,
+          "end_ms": 107290,
+          "start_srt": "00:01:47,150",
+          "end_srt": "00:01:47,290",
+          "probability": 0.9762
+        },
+        {
+          "word": "se",
+          "start_ms": 107290,
+          "end_ms": 107355,
+          "start_srt": "00:01:47,290",
+          "end_srt": "00:01:47,355",
+          "probability": 0.9959
+        },
+        {
+          "word": "descuenta",
+          "start_ms": 107355,
+          "end_ms": 107734,
+          "start_srt": "00:01:47,355",
+          "end_srt": "00:01:47,734",
+          "probability": 0.8945
+        },
+        {
+          "word": "la",
+          "start_ms": 107734,
+          "end_ms": 107824,
+          "start_srt": "00:01:47,734",
+          "end_srt": "00:01:47,824",
+          "probability": 0.9568
+        },
+        {
+          "word": "plata",
+          "start_ms": 107824,
+          "end_ms": 108123,
+          "start_srt": "00:01:47,824",
+          "end_srt": "00:01:48,123",
+          "probability": 0.9941
+        },
+        {
+          "word": "en",
+          "start_ms": 108123,
+          "end_ms": 108193,
+          "start_srt": "00:01:48,123",
+          "end_srt": "00:01:48,193",
+          "probability": 0.9931
+        },
+        {
+          "word": "cuentas.",
+          "start_ms": 108193,
+          "end_ms": 108676,
+          "start_srt": "00:01:48,193",
+          "end_srt": "00:01:48,676",
+          "probability": 0.9908
+        }
+      ]
+    },
+    {
+      "index": 41,
+      "type": "silence",
+      "start_ms": 108676,
+      "end_ms": 109678,
+      "duration_ms": 1002,
+      "start_srt": "00:01:48,676",
+      "end_srt": "00:01:49,678",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 42,
+      "type": "speech",
+      "start_ms": 109678,
+      "end_ms": 111789,
+      "duration_ms": 2111,
+      "start_srt": "00:01:49,678",
+      "end_srt": "00:01:51,789",
+      "text": "Con los iconos de la derecha puedes ver su detalle,",
+      "words": [
+        {
+          "word": "Con",
+          "start_ms": 109678,
+          "end_ms": 109770,
+          "start_srt": "00:01:49,678",
+          "end_srt": "00:01:49,770",
+          "probability": 0.9471
+        },
+        {
+          "word": "los",
+          "start_ms": 109770,
+          "end_ms": 109910,
+          "start_srt": "00:01:49,770",
+          "end_srt": "00:01:49,910",
+          "probability": 0.9933
+        },
+        {
+          "word": "iconos",
+          "start_ms": 109910,
+          "end_ms": 110230,
+          "start_srt": "00:01:49,910",
+          "end_srt": "00:01:50,230",
+          "probability": 0.9919
+        },
+        {
+          "word": "de",
+          "start_ms": 110230,
+          "end_ms": 110330,
+          "start_srt": "00:01:50,230",
+          "end_srt": "00:01:50,330",
+          "probability": 0.9976
+        },
+        {
+          "word": "la",
+          "start_ms": 110330,
+          "end_ms": 110430,
+          "start_srt": "00:01:50,330",
+          "end_srt": "00:01:50,430",
+          "probability": 0.9974
+        },
+        {
+          "word": "derecha",
+          "start_ms": 110430,
+          "end_ms": 110730,
+          "start_srt": "00:01:50,430",
+          "end_srt": "00:01:50,730",
+          "probability": 0.9772
+        },
+        {
+          "word": "puedes",
+          "start_ms": 110730,
+          "end_ms": 110990,
+          "start_srt": "00:01:50,730",
+          "end_srt": "00:01:50,990",
+          "probability": 0.9742
+        },
+        {
+          "word": "ver",
+          "start_ms": 110990,
+          "end_ms": 111170,
+          "start_srt": "00:01:50,990",
+          "end_srt": "00:01:51,170",
+          "probability": 0.9965
+        },
+        {
+          "word": "su",
+          "start_ms": 111170,
+          "end_ms": 111335,
+          "start_srt": "00:01:51,170",
+          "end_srt": "00:01:51,335",
+          "probability": 0.9915
+        },
+        {
+          "word": "detalle,",
+          "start_ms": 111335,
+          "end_ms": 111789,
+          "start_srt": "00:01:51,335",
+          "end_srt": "00:01:51,789",
+          "probability": 0.9935
+        }
+      ]
+    },
+    {
+      "index": 43,
+      "type": "silence",
+      "start_ms": 111789,
+      "end_ms": 112131,
+      "duration_ms": 342,
+      "start_srt": "00:01:51,789",
+      "end_srt": "00:01:52,131",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 44,
+      "type": "speech",
+      "start_ms": 112131,
+      "end_ms": 113003,
+      "duration_ms": 872,
+      "start_srt": "00:01:52,131",
+      "end_srt": "00:01:53,003",
+      "text": "editarlo o borrar.",
+      "words": [
+        {
+          "word": "editarlo",
+          "start_ms": 112131,
+          "end_ms": 112660,
+          "start_srt": "00:01:52,131",
+          "end_srt": "00:01:52,660",
+          "probability": 0.9804
+        },
+        {
+          "word": "o",
+          "start_ms": 112660,
+          "end_ms": 112760,
+          "start_srt": "00:01:52,660",
+          "end_srt": "00:01:52,760",
+          "probability": 0.9074
+        },
+        {
+          "word": "borrar.",
+          "start_ms": 112760,
+          "end_ms": 113003,
+          "start_srt": "00:01:52,760",
+          "end_srt": "00:01:53,003",
+          "probability": 0.9738
+        }
+      ]
+    },
+    {
+      "index": 45,
+      "type": "silence",
+      "start_ms": 113003,
+      "end_ms": 121203,
+      "duration_ms": 8200,
+      "start_srt": "00:01:53,003",
+      "end_srt": "00:02:01,203",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 46,
+      "type": "speech",
+      "start_ms": 121203,
+      "end_ms": 123177,
+      "duration_ms": 1974,
+      "start_srt": "00:02:01,203",
+      "end_srt": "00:02:03,177",
+      "text": "Ahora entramos en el menú lateral a ventas,",
+      "words": [
+        {
+          "word": "Ahora",
+          "start_ms": 121203,
+          "end_ms": 121370,
+          "start_srt": "00:02:01,203",
+          "end_srt": "00:02:01,370",
+          "probability": 0.974
+        },
+        {
+          "word": "entramos",
+          "start_ms": 121370,
+          "end_ms": 121710,
+          "start_srt": "00:02:01,370",
+          "end_srt": "00:02:01,710",
+          "probability": 0.9879
+        },
+        {
+          "word": "en",
+          "start_ms": 121710,
+          "end_ms": 121890,
+          "start_srt": "00:02:01,710",
+          "end_srt": "00:02:01,890",
+          "probability": 0.998
+        },
+        {
+          "word": "el",
+          "start_ms": 121890,
+          "end_ms": 121990,
+          "start_srt": "00:02:01,890",
+          "end_srt": "00:02:01,990",
+          "probability": 0.994
+        },
+        {
+          "word": "menú",
+          "start_ms": 121990,
+          "end_ms": 122210,
+          "start_srt": "00:02:01,990",
+          "end_srt": "00:02:02,210",
+          "probability": 0.9668
+        },
+        {
+          "word": "lateral",
+          "start_ms": 122210,
+          "end_ms": 122470,
+          "start_srt": "00:02:02,210",
+          "end_srt": "00:02:02,470",
+          "probability": 0.9518
+        },
+        {
+          "word": "a",
+          "start_ms": 122470,
+          "end_ms": 122670,
+          "start_srt": "00:02:02,470",
+          "end_srt": "00:02:02,670",
+          "probability": 0.8794
+        },
+        {
+          "word": "ventas,",
+          "start_ms": 122670,
+          "end_ms": 123177,
+          "start_srt": "00:02:02,670",
+          "end_srt": "00:02:03,177",
+          "probability": 0.8933
+        }
+      ]
+    },
+    {
+      "index": 47,
+      "type": "silence",
+      "start_ms": 123177,
+      "end_ms": 123438,
+      "duration_ms": 261,
+      "start_srt": "00:02:03,177",
+      "end_srt": "00:02:03,438",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 48,
+      "type": "speech",
+      "start_ms": 123438,
+      "end_ms": 124784,
+      "duration_ms": 1346,
+      "start_srt": "00:02:03,438",
+      "end_srt": "00:02:04,784",
+      "text": "ideal cuando vende sin sumos,",
+      "words": [
+        {
+          "word": "ideal",
+          "start_ms": 123438,
+          "end_ms": 123670,
+          "start_srt": "00:02:03,438",
+          "end_srt": "00:02:03,670",
+          "probability": 0.9585
+        },
+        {
+          "word": "cuando",
+          "start_ms": 123670,
+          "end_ms": 123870,
+          "start_srt": "00:02:03,670",
+          "end_srt": "00:02:03,870",
+          "probability": 0.9852
+        },
+        {
+          "word": "vende",
+          "start_ms": 123870,
+          "end_ms": 124150,
+          "start_srt": "00:02:03,870",
+          "end_srt": "00:02:04,150",
+          "probability": 0.8167
+        },
+        {
+          "word": "sin",
+          "start_ms": 124150,
+          "end_ms": 124370,
+          "start_srt": "00:02:04,150",
+          "end_srt": "00:02:04,370",
+          "probability": 0.2579
+        },
+        {
+          "word": "sumos,",
+          "start_ms": 124370,
+          "end_ms": 124784,
+          "start_srt": "00:02:04,370",
+          "end_srt": "00:02:04,784",
+          "probability": 0.7967
+        }
+      ]
+    },
+    {
+      "index": 49,
+      "type": "silence",
+      "start_ms": 124784,
+      "end_ms": 125102,
+      "duration_ms": 318,
+      "start_srt": "00:02:04,784",
+      "end_srt": "00:02:05,102",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 50,
+      "type": "speech",
+      "start_ms": 125102,
+      "end_ms": 126574,
+      "duration_ms": 1472,
+      "start_srt": "00:02:05,102",
+      "end_srt": "00:02:06,574",
+      "text": "equipos o su producto de bodega.",
+      "words": [
+        {
+          "word": "equipos",
+          "start_ms": 125102,
+          "end_ms": 125490,
+          "start_srt": "00:02:05,102",
+          "end_srt": "00:02:05,490",
+          "probability": 0.9356
+        },
+        {
+          "word": "o",
+          "start_ms": 125490,
+          "end_ms": 125570,
+          "start_srt": "00:02:05,490",
+          "end_srt": "00:02:05,570",
+          "probability": 0.9972
+        },
+        {
+          "word": "su",
+          "start_ms": 125570,
+          "end_ms": 125682,
+          "start_srt": "00:02:05,570",
+          "end_srt": "00:02:05,682",
+          "probability": 0.9758
+        },
+        {
+          "word": "producto",
+          "start_ms": 125682,
+          "end_ms": 126074,
+          "start_srt": "00:02:05,682",
+          "end_srt": "00:02:06,074",
+          "probability": 0.9965
+        },
+        {
+          "word": "de",
+          "start_ms": 126074,
+          "end_ms": 126250,
+          "start_srt": "00:02:06,074",
+          "end_srt": "00:02:06,250",
+          "probability": 0.9946
+        },
+        {
+          "word": "bodega.",
+          "start_ms": 126250,
+          "end_ms": 126574,
+          "start_srt": "00:02:06,250",
+          "end_srt": "00:02:06,574",
+          "probability": 0.9771
+        }
+      ]
+    },
+    {
+      "index": 51,
+      "type": "silence",
+      "start_ms": 126574,
+      "end_ms": 127590,
+      "duration_ms": 1016,
+      "start_srt": "00:02:06,574",
+      "end_srt": "00:02:07,590",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 52,
+      "type": "speech",
+      "start_ms": 127590,
+      "end_ms": 130613,
+      "duration_ms": 3023,
+      "start_srt": "00:02:07,590",
+      "end_srt": "00:02:10,613",
+      "text": "Al abrir el buscador ves todos tus artículos con stock disponible,",
+      "words": [
+        {
+          "word": "Al",
+          "start_ms": 127590,
+          "end_ms": 127720,
+          "start_srt": "00:02:07,590",
+          "end_srt": "00:02:07,720",
+          "probability": 0.9833
+        },
+        {
+          "word": "abrir",
+          "start_ms": 127720,
+          "end_ms": 127920,
+          "start_srt": "00:02:07,720",
+          "end_srt": "00:02:07,920",
+          "probability": 0.994
+        },
+        {
+          "word": "el",
+          "start_ms": 127920,
+          "end_ms": 128100,
+          "start_srt": "00:02:07,920",
+          "end_srt": "00:02:08,100",
+          "probability": 0.9872
+        },
+        {
+          "word": "buscador",
+          "start_ms": 128100,
+          "end_ms": 128440,
+          "start_srt": "00:02:08,100",
+          "end_srt": "00:02:08,440",
+          "probability": 0.9875
+        },
+        {
+          "word": "ves",
+          "start_ms": 128440,
+          "end_ms": 128664,
+          "start_srt": "00:02:08,440",
+          "end_srt": "00:02:08,664",
+          "probability": 0.8153
+        },
+        {
+          "word": "todos",
+          "start_ms": 128664,
+          "end_ms": 128860,
+          "start_srt": "00:02:08,664",
+          "end_srt": "00:02:08,860",
+          "probability": 0.9956
+        },
+        {
+          "word": "tus",
+          "start_ms": 128860,
+          "end_ms": 129060,
+          "start_srt": "00:02:08,860",
+          "end_srt": "00:02:09,060",
+          "probability": 0.9946
+        },
+        {
+          "word": "artículos",
+          "start_ms": 129060,
+          "end_ms": 129482,
+          "start_srt": "00:02:09,060",
+          "end_srt": "00:02:09,482",
+          "probability": 0.9569
+        },
+        {
+          "word": "con",
+          "start_ms": 129482,
+          "end_ms": 129720,
+          "start_srt": "00:02:09,482",
+          "end_srt": "00:02:09,720",
+          "probability": 0.9948
+        },
+        {
+          "word": "stock",
+          "start_ms": 129720,
+          "end_ms": 129964,
+          "start_srt": "00:02:09,720",
+          "end_srt": "00:02:09,964",
+          "probability": 0.9562
+        },
+        {
+          "word": "disponible,",
+          "start_ms": 129964,
+          "end_ms": 130613,
+          "start_srt": "00:02:09,964",
+          "end_srt": "00:02:10,613",
+          "probability": 0.9887
+        }
+      ]
+    },
+    {
+      "index": 53,
+      "type": "silence",
+      "start_ms": 130613,
+      "end_ms": 130919,
+      "duration_ms": 306,
+      "start_srt": "00:02:10,613",
+      "end_srt": "00:02:10,919",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 54,
+      "type": "speech",
+      "start_ms": 130919,
+      "end_ms": 133707,
+      "duration_ms": 2788,
+      "start_srt": "00:02:10,919",
+      "end_srt": "00:02:13,707",
+      "text": "incluyendo el que acabamos de comprar y eliges qué vas a vender.",
+      "words": [
+        {
+          "word": "incluyendo",
+          "start_ms": 130919,
+          "end_ms": 131380,
+          "start_srt": "00:02:10,919",
+          "end_srt": "00:02:11,380",
+          "probability": 0.9985
+        },
+        {
+          "word": "el",
+          "start_ms": 131380,
+          "end_ms": 131479,
+          "start_srt": "00:02:11,380",
+          "end_srt": "00:02:11,479",
+          "probability": 0.9973
+        },
+        {
+          "word": "que",
+          "start_ms": 131479,
+          "end_ms": 131572,
+          "start_srt": "00:02:11,479",
+          "end_srt": "00:02:11,572",
+          "probability": 0.9988
+        },
+        {
+          "word": "acabamos",
+          "start_ms": 131572,
+          "end_ms": 131880,
+          "start_srt": "00:02:11,572",
+          "end_srt": "00:02:11,880",
+          "probability": 0.9986
+        },
+        {
+          "word": "de",
+          "start_ms": 131880,
+          "end_ms": 132000,
+          "start_srt": "00:02:11,880",
+          "end_srt": "00:02:12,000",
+          "probability": 0.9992
+        },
+        {
+          "word": "comprar",
+          "start_ms": 132000,
+          "end_ms": 132377,
+          "start_srt": "00:02:12,000",
+          "end_srt": "00:02:12,377",
+          "probability": 0.9982
+        },
+        {
+          "word": "y",
+          "start_ms": 132377,
+          "end_ms": 132780,
+          "start_srt": "00:02:12,377",
+          "end_srt": "00:02:12,780",
+          "probability": 0.4648
+        },
+        {
+          "word": "eliges",
+          "start_ms": 132780,
+          "end_ms": 133040,
+          "start_srt": "00:02:12,780",
+          "end_srt": "00:02:13,040",
+          "probability": 0.9583
+        },
+        {
+          "word": "que",
+          "start_ms": 133040,
+          "end_ms": 133233,
+          "start_srt": "00:02:13,040",
+          "end_srt": "00:02:13,233",
+          "probability": 0.8833
+        },
+        {
+          "word": "vas",
+          "start_ms": 133233,
+          "end_ms": 133360,
+          "start_srt": "00:02:13,233",
+          "end_srt": "00:02:13,360",
+          "probability": 0.9965
+        },
+        {
+          "word": "a",
+          "start_ms": 133360,
+          "end_ms": 133460,
+          "start_srt": "00:02:13,360",
+          "end_srt": "00:02:13,460",
+          "probability": 0.9988
+        },
+        {
+          "word": "vender.",
+          "start_ms": 133460,
+          "end_ms": 133707,
+          "start_srt": "00:02:13,460",
+          "end_srt": "00:02:13,707",
+          "probability": 0.9986
+        }
+      ]
+    },
+    {
+      "index": 55,
+      "type": "silence",
+      "start_ms": 133707,
+      "end_ms": 138208,
+      "duration_ms": 4501,
+      "start_srt": "00:02:13,707",
+      "end_srt": "00:02:18,208",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 56,
+      "type": "speech",
+      "start_ms": 138208,
+      "end_ms": 143483,
+      "duration_ms": 5275,
+      "start_srt": "00:02:18,208",
+      "end_srt": "00:02:23,483",
+      "text": "Indicas cuántas unidades vas a entregar y en precio por unidad colocas el valor al que se lo estás vendiendo a tu cliente.",
+      "words": [
+        {
+          "word": "Indicas",
+          "start_ms": 138208,
+          "end_ms": 138560,
+          "start_srt": "00:02:18,208",
+          "end_srt": "00:02:18,560",
+          "probability": 0.9542
+        },
+        {
+          "word": "cuántas",
+          "start_ms": 138560,
+          "end_ms": 138960,
+          "start_srt": "00:02:18,560",
+          "end_srt": "00:02:18,960",
+          "probability": 0.7822
+        },
+        {
+          "word": "unidades",
+          "start_ms": 138960,
+          "end_ms": 139260,
+          "start_srt": "00:02:18,960",
+          "end_srt": "00:02:19,260",
+          "probability": 0.9391
+        },
+        {
+          "word": "vas",
+          "start_ms": 139260,
+          "end_ms": 139480,
+          "start_srt": "00:02:19,260",
+          "end_srt": "00:02:19,480",
+          "probability": 0.9964
+        },
+        {
+          "word": "a",
+          "start_ms": 139480,
+          "end_ms": 139646,
+          "start_srt": "00:02:19,480",
+          "end_srt": "00:02:19,646",
+          "probability": 0.9964
+        },
+        {
+          "word": "entregar",
+          "start_ms": 139646,
+          "end_ms": 140000,
+          "start_srt": "00:02:19,646",
+          "end_srt": "00:02:20,000",
+          "probability": 0.9906
+        },
+        {
+          "word": "y",
+          "start_ms": 140000,
+          "end_ms": 140180,
+          "start_srt": "00:02:20,000",
+          "end_srt": "00:02:20,180",
+          "probability": 0.9913
+        },
+        {
+          "word": "en",
+          "start_ms": 140180,
+          "end_ms": 140300,
+          "start_srt": "00:02:20,180",
+          "end_srt": "00:02:20,300",
+          "probability": 0.9486
+        },
+        {
+          "word": "precio",
+          "start_ms": 140300,
+          "end_ms": 140520,
+          "start_srt": "00:02:20,300",
+          "end_srt": "00:02:20,520",
+          "probability": 0.9901
+        },
+        {
+          "word": "por",
+          "start_ms": 140520,
+          "end_ms": 140760,
+          "start_srt": "00:02:20,520",
+          "end_srt": "00:02:20,760",
+          "probability": 0.9794
+        },
+        {
+          "word": "unidad",
+          "start_ms": 140760,
+          "end_ms": 140968,
+          "start_srt": "00:02:20,760",
+          "end_srt": "00:02:20,968",
+          "probability": 0.875
+        },
+        {
+          "word": "colocas",
+          "start_ms": 140968,
+          "end_ms": 141420,
+          "start_srt": "00:02:20,968",
+          "end_srt": "00:02:21,420",
+          "probability": 0.7941
+        },
+        {
+          "word": "el",
+          "start_ms": 141420,
+          "end_ms": 141560,
+          "start_srt": "00:02:21,420",
+          "end_srt": "00:02:21,560",
+          "probability": 0.998
+        },
+        {
+          "word": "valor",
+          "start_ms": 141560,
+          "end_ms": 141740,
+          "start_srt": "00:02:21,560",
+          "end_srt": "00:02:21,740",
+          "probability": 0.9913
+        },
+        {
+          "word": "al",
+          "start_ms": 141740,
+          "end_ms": 141905,
+          "start_srt": "00:02:21,740",
+          "end_srt": "00:02:21,905",
+          "probability": 0.9867
+        },
+        {
+          "word": "que",
+          "start_ms": 141905,
+          "end_ms": 142071,
+          "start_srt": "00:02:21,905",
+          "end_srt": "00:02:22,071",
+          "probability": 0.9963
+        },
+        {
+          "word": "se",
+          "start_ms": 142071,
+          "end_ms": 142180,
+          "start_srt": "00:02:22,071",
+          "end_srt": "00:02:22,180",
+          "probability": 0.9817
+        },
+        {
+          "word": "lo",
+          "start_ms": 142180,
+          "end_ms": 142278,
+          "start_srt": "00:02:22,180",
+          "end_srt": "00:02:22,278",
+          "probability": 0.9833
+        },
+        {
+          "word": "estás",
+          "start_ms": 142278,
+          "end_ms": 142467,
+          "start_srt": "00:02:22,278",
+          "end_srt": "00:02:22,467",
+          "probability": 0.9683
+        },
+        {
+          "word": "vendiendo",
+          "start_ms": 142467,
+          "end_ms": 142880,
+          "start_srt": "00:02:22,467",
+          "end_srt": "00:02:22,880",
+          "probability": 0.8675
+        },
+        {
+          "word": "a",
+          "start_ms": 142880,
+          "end_ms": 142960,
+          "start_srt": "00:02:22,880",
+          "end_srt": "00:02:22,960",
+          "probability": 0.9978
+        },
+        {
+          "word": "tu",
+          "start_ms": 142960,
+          "end_ms": 143021,
+          "start_srt": "00:02:22,960",
+          "end_srt": "00:02:23,021",
+          "probability": 0.9876
+        },
+        {
+          "word": "cliente.",
+          "start_ms": 143021,
+          "end_ms": 143483,
+          "start_srt": "00:02:23,021",
+          "end_srt": "00:02:23,483",
+          "probability": 0.9946
+        }
+      ]
+    },
+    {
+      "index": 57,
+      "type": "silence",
+      "start_ms": 143483,
+      "end_ms": 152205,
+      "duration_ms": 8722,
+      "start_srt": "00:02:23,483",
+      "end_srt": "00:02:32,205",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 58,
+      "type": "speech",
+      "start_ms": 152205,
+      "end_ms": 154889,
+      "duration_ms": 2684,
+      "start_srt": "00:02:32,205",
+      "end_srt": "00:02:34,889",
+      "text": "Eliges a cuál de tus cuentas de finanzas entrará ese pago.",
+      "words": [
+        {
+          "word": "Eliges",
+          "start_ms": 152205,
+          "end_ms": 152510,
+          "start_srt": "00:02:32,205",
+          "end_srt": "00:02:32,510",
+          "probability": 0.5093
+        },
+        {
+          "word": "a",
+          "start_ms": 152510,
+          "end_ms": 152690,
+          "start_srt": "00:02:32,510",
+          "end_srt": "00:02:32,690",
+          "probability": 0.9749
+        },
+        {
+          "word": "cual",
+          "start_ms": 152690,
+          "end_ms": 152790,
+          "start_srt": "00:02:32,690",
+          "end_srt": "00:02:32,790",
+          "probability": 0.5315
+        },
+        {
+          "word": "de",
+          "start_ms": 152790,
+          "end_ms": 152941,
+          "start_srt": "00:02:32,790",
+          "end_srt": "00:02:32,941",
+          "probability": 0.9966
+        },
+        {
+          "word": "tus",
+          "start_ms": 152941,
+          "end_ms": 153106,
+          "start_srt": "00:02:32,941",
+          "end_srt": "00:02:33,106",
+          "probability": 0.9914
+        },
+        {
+          "word": "cuentas",
+          "start_ms": 153106,
+          "end_ms": 153490,
+          "start_srt": "00:02:33,106",
+          "end_srt": "00:02:33,490",
+          "probability": 0.9945
+        },
+        {
+          "word": "de",
+          "start_ms": 153490,
+          "end_ms": 153555,
+          "start_srt": "00:02:33,490",
+          "end_srt": "00:02:33,555",
+          "probability": 0.9967
+        },
+        {
+          "word": "finanza",
+          "start_ms": 153555,
+          "end_ms": 153950,
+          "start_srt": "00:02:33,555",
+          "end_srt": "00:02:33,950",
+          "probability": 0.6438
+        },
+        {
+          "word": "centrará",
+          "start_ms": 153950,
+          "end_ms": 154450,
+          "start_srt": "00:02:33,950",
+          "end_srt": "00:02:34,450",
+          "probability": 0.8973
+        },
+        {
+          "word": "ese",
+          "start_ms": 154450,
+          "end_ms": 154550,
+          "start_srt": "00:02:34,450",
+          "end_srt": "00:02:34,550",
+          "probability": 0.9842
+        },
+        {
+          "word": "pago.",
+          "start_ms": 154550,
+          "end_ms": 154889,
+          "start_srt": "00:02:34,550",
+          "end_srt": "00:02:34,889",
+          "probability": 0.9911
+        }
+      ]
+    },
+    {
+      "index": 59,
+      "type": "silence",
+      "start_ms": 154889,
+      "end_ms": 155224,
+      "duration_ms": 335,
+      "start_srt": "00:02:34,889",
+      "end_srt": "00:02:35,224",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 60,
+      "type": "speech",
+      "start_ms": 155224,
+      "end_ms": 159082,
+      "duration_ms": 3858,
+      "start_srt": "00:02:35,224",
+      "end_srt": "00:02:39,082",
+      "text": "Seleccionas a tu comprador desde el directorio de terceros y presionas Registrar venta.",
+      "words": [
+        {
+          "word": "Seleccionas",
+          "start_ms": 155224,
+          "end_ms": 155780,
+          "start_srt": "00:02:35,224",
+          "end_srt": "00:02:35,780",
+          "probability": 0.9562
+        },
+        {
+          "word": "a",
+          "start_ms": 155780,
+          "end_ms": 155860,
+          "start_srt": "00:02:35,780",
+          "end_srt": "00:02:35,860",
+          "probability": 0.9976
+        },
+        {
+          "word": "tu",
+          "start_ms": 155860,
+          "end_ms": 155960,
+          "start_srt": "00:02:35,860",
+          "end_srt": "00:02:35,960",
+          "probability": 0.9949
+        },
+        {
+          "word": "comprador",
+          "start_ms": 155960,
+          "end_ms": 156412,
+          "start_srt": "00:02:35,960",
+          "end_srt": "00:02:36,412",
+          "probability": 0.9499
+        },
+        {
+          "word": "desde",
+          "start_ms": 156412,
+          "end_ms": 156580,
+          "start_srt": "00:02:36,412",
+          "end_srt": "00:02:36,580",
+          "probability": 0.9896
+        },
+        {
+          "word": "el",
+          "start_ms": 156580,
+          "end_ms": 156740,
+          "start_srt": "00:02:36,580",
+          "end_srt": "00:02:36,740",
+          "probability": 0.9911
+        },
+        {
+          "word": "directorio",
+          "start_ms": 156740,
+          "end_ms": 157220,
+          "start_srt": "00:02:36,740",
+          "end_srt": "00:02:37,220",
+          "probability": 0.9634
+        },
+        {
+          "word": "de",
+          "start_ms": 157220,
+          "end_ms": 157297,
+          "start_srt": "00:02:37,220",
+          "end_srt": "00:02:37,297",
+          "probability": 0.9666
+        },
+        {
+          "word": "terceros",
+          "start_ms": 157297,
+          "end_ms": 157780,
+          "start_srt": "00:02:37,297",
+          "end_srt": "00:02:37,780",
+          "probability": 0.9623
+        },
+        {
+          "word": "y",
+          "start_ms": 157780,
+          "end_ms": 157880,
+          "start_srt": "00:02:37,780",
+          "end_srt": "00:02:37,880",
+          "probability": 0.9892
+        },
+        {
+          "word": "presiona",
+          "start_ms": 157880,
+          "end_ms": 158220,
+          "start_srt": "00:02:37,880",
+          "end_srt": "00:02:38,220",
+          "probability": 0.7389
+        },
+        {
+          "word": "registrar",
+          "start_ms": 158220,
+          "end_ms": 158780,
+          "start_srt": "00:02:38,220",
+          "end_srt": "00:02:38,780",
+          "probability": 0.7657
+        },
+        {
+          "word": "venta.",
+          "start_ms": 158780,
+          "end_ms": 159082,
+          "start_srt": "00:02:38,780",
+          "end_srt": "00:02:39,082",
+          "probability": 0.9734
+        }
+      ]
+    },
+    {
+      "index": 61,
+      "type": "silence",
+      "start_ms": 159082,
+      "end_ms": 169211,
+      "duration_ms": 10129,
+      "start_srt": "00:02:39,082",
+      "end_srt": "00:02:49,211",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 62,
+      "type": "speech",
+      "start_ms": 169211,
+      "end_ms": 171754,
+      "duration_ms": 2543,
+      "start_srt": "00:02:49,211",
+      "end_srt": "00:02:51,754",
+      "text": "De inmediato el sistema resta esa unidad de tu inventario.",
+      "words": [
+        {
+          "word": "De",
+          "start_ms": 169211,
+          "end_ms": 169330,
+          "start_srt": "00:02:49,211",
+          "end_srt": "00:02:49,330",
+          "probability": 0.9895
+        },
+        {
+          "word": "inmediato",
+          "start_ms": 169330,
+          "end_ms": 169763,
+          "start_srt": "00:02:49,330",
+          "end_srt": "00:02:49,763",
+          "probability": 0.996
+        },
+        {
+          "word": "el",
+          "start_ms": 169763,
+          "end_ms": 169830,
+          "start_srt": "00:02:49,763",
+          "end_srt": "00:02:49,830",
+          "probability": 0.9801
+        },
+        {
+          "word": "sistema",
+          "start_ms": 169830,
+          "end_ms": 170094,
+          "start_srt": "00:02:49,830",
+          "end_srt": "00:02:50,094",
+          "probability": 0.9899
+        },
+        {
+          "word": "resta",
+          "start_ms": 170094,
+          "end_ms": 170550,
+          "start_srt": "00:02:50,094",
+          "end_srt": "00:02:50,550",
+          "probability": 0.7786
+        },
+        {
+          "word": "esa",
+          "start_ms": 170550,
+          "end_ms": 170650,
+          "start_srt": "00:02:50,550",
+          "end_srt": "00:02:50,650",
+          "probability": 0.9925
+        },
+        {
+          "word": "unidad",
+          "start_ms": 170650,
+          "end_ms": 170930,
+          "start_srt": "00:02:50,650",
+          "end_srt": "00:02:50,930",
+          "probability": 0.9827
+        },
+        {
+          "word": "de",
+          "start_ms": 170930,
+          "end_ms": 171044,
+          "start_srt": "00:02:50,930",
+          "end_srt": "00:02:51,044",
+          "probability": 0.9972
+        },
+        {
+          "word": "tu",
+          "start_ms": 171044,
+          "end_ms": 171196,
+          "start_srt": "00:02:51,044",
+          "end_srt": "00:02:51,196",
+          "probability": 0.9955
+        },
+        {
+          "word": "inventario.",
+          "start_ms": 171196,
+          "end_ms": 171754,
+          "start_srt": "00:02:51,196",
+          "end_srt": "00:02:51,754",
+          "probability": 0.9982
+        }
+      ]
+    },
+    {
+      "index": 63,
+      "type": "silence",
+      "start_ms": 171754,
+      "end_ms": 172137,
+      "duration_ms": 383,
+      "start_srt": "00:02:51,754",
+      "end_srt": "00:02:52,137",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 64,
+      "type": "speech",
+      "start_ms": 172137,
+      "end_ms": 174679,
+      "duration_ms": 2542,
+      "start_srt": "00:02:52,137",
+      "end_srt": "00:02:54,679",
+      "text": "Suma el dinero como ingreso en tu cuenta y en el dashboard.",
+      "words": [
+        {
+          "word": "Suma",
+          "start_ms": 172137,
+          "end_ms": 172400,
+          "start_srt": "00:02:52,137",
+          "end_srt": "00:02:52,400",
+          "probability": 0.8839
+        },
+        {
+          "word": "el",
+          "start_ms": 172400,
+          "end_ms": 172440,
+          "start_srt": "00:02:52,400",
+          "end_srt": "00:02:52,440",
+          "probability": 0.9288
+        },
+        {
+          "word": "dinero",
+          "start_ms": 172440,
+          "end_ms": 172660,
+          "start_srt": "00:02:52,440",
+          "end_srt": "00:02:52,660",
+          "probability": 0.999
+        },
+        {
+          "word": "como",
+          "start_ms": 172660,
+          "end_ms": 172920,
+          "start_srt": "00:02:52,660",
+          "end_srt": "00:02:52,920",
+          "probability": 0.9898
+        },
+        {
+          "word": "ingreso",
+          "start_ms": 172920,
+          "end_ms": 173300,
+          "start_srt": "00:02:52,920",
+          "end_srt": "00:02:53,300",
+          "probability": 0.9833
+        },
+        {
+          "word": "en",
+          "start_ms": 173300,
+          "end_ms": 173360,
+          "start_srt": "00:02:53,300",
+          "end_srt": "00:02:53,360",
+          "probability": 0.9968
+        },
+        {
+          "word": "tu",
+          "start_ms": 173360,
+          "end_ms": 173479,
+          "start_srt": "00:02:53,360",
+          "end_srt": "00:02:53,479",
+          "probability": 0.9973
+        },
+        {
+          "word": "cuenta",
+          "start_ms": 173479,
+          "end_ms": 173782,
+          "start_srt": "00:02:53,479",
+          "end_srt": "00:02:53,782",
+          "probability": 0.9817
+        },
+        {
+          "word": "y",
+          "start_ms": 173782,
+          "end_ms": 173960,
+          "start_srt": "00:02:53,782",
+          "end_srt": "00:02:53,960",
+          "probability": 0.9876
+        },
+        {
+          "word": "en",
+          "start_ms": 173960,
+          "end_ms": 174060,
+          "start_srt": "00:02:53,960",
+          "end_srt": "00:02:54,060",
+          "probability": 0.9908
+        },
+        {
+          "word": "el",
+          "start_ms": 174060,
+          "end_ms": 174180,
+          "start_srt": "00:02:54,060",
+          "end_srt": "00:02:54,180",
+          "probability": 0.9962
+        },
+        {
+          "word": "dashboard.",
+          "start_ms": 174180,
+          "end_ms": 174679,
+          "start_srt": "00:02:54,180",
+          "end_srt": "00:02:54,679",
+          "probability": 0.4594
+        }
+      ]
+    },
+    {
+      "index": 65,
+      "type": "silence",
+      "start_ms": 174679,
+      "end_ms": 175011,
+      "duration_ms": 332,
+      "start_srt": "00:02:54,679",
+      "end_srt": "00:02:55,011",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 66,
+      "type": "speech",
+      "start_ms": 175011,
+      "end_ms": 177610,
+      "duration_ms": 2599,
+      "start_srt": "00:02:55,011",
+      "end_srt": "00:02:57,610",
+      "text": "Y te deja la transacción lista con sus botones de detalle.",
+      "words": [
+        {
+          "word": "Y",
+          "start_ms": 175011,
+          "end_ms": 175058,
+          "start_srt": "00:02:55,011",
+          "end_srt": "00:02:55,058",
+          "probability": 0.7717
+        },
+        {
+          "word": "te",
+          "start_ms": 175058,
+          "end_ms": 175220,
+          "start_srt": "00:02:55,058",
+          "end_srt": "00:02:55,220",
+          "probability": 0.996
+        },
+        {
+          "word": "deja",
+          "start_ms": 175220,
+          "end_ms": 175380,
+          "start_srt": "00:02:55,220",
+          "end_srt": "00:02:55,380",
+          "probability": 0.8396
+        },
+        {
+          "word": "la",
+          "start_ms": 175380,
+          "end_ms": 175478,
+          "start_srt": "00:02:55,380",
+          "end_srt": "00:02:55,478",
+          "probability": 0.9852
+        },
+        {
+          "word": "transacción",
+          "start_ms": 175478,
+          "end_ms": 176040,
+          "start_srt": "00:02:55,478",
+          "end_srt": "00:02:56,040",
+          "probability": 0.9911
+        },
+        {
+          "word": "lista",
+          "start_ms": 176040,
+          "end_ms": 176229,
+          "start_srt": "00:02:56,040",
+          "end_srt": "00:02:56,229",
+          "probability": 0.9986
+        },
+        {
+          "word": "con",
+          "start_ms": 176229,
+          "end_ms": 176519,
+          "start_srt": "00:02:56,229",
+          "end_srt": "00:02:56,519",
+          "probability": 0.994
+        },
+        {
+          "word": "sus",
+          "start_ms": 176519,
+          "end_ms": 176667,
+          "start_srt": "00:02:56,519",
+          "end_srt": "00:02:56,667",
+          "probability": 0.982
+        },
+        {
+          "word": "botones",
+          "start_ms": 176667,
+          "end_ms": 177041,
+          "start_srt": "00:02:56,667",
+          "end_srt": "00:02:57,041",
+          "probability": 0.9964
+        },
+        {
+          "word": "de",
+          "start_ms": 177041,
+          "end_ms": 177200,
+          "start_srt": "00:02:57,041",
+          "end_srt": "00:02:57,200",
+          "probability": 0.9959
+        },
+        {
+          "word": "detalle.",
+          "start_ms": 177200,
+          "end_ms": 177610,
+          "start_srt": "00:02:57,200",
+          "end_srt": "00:02:57,610",
+          "probability": 0.9836
+        }
+      ]
+    },
+    {
+      "index": 67,
+      "type": "silence",
+      "start_ms": 177610,
+      "end_ms": 177941,
+      "duration_ms": 331,
+      "start_srt": "00:02:57,610",
+      "end_srt": "00:02:57,941",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 68,
+      "type": "speech",
+      "start_ms": 177941,
+      "end_ms": 178453,
+      "duration_ms": 512,
+      "start_srt": "00:02:57,941",
+      "end_srt": "00:02:58,453",
+      "text": "Edición,",
+      "words": [
+        {
+          "word": "Edición,",
+          "start_ms": 177941,
+          "end_ms": 178453,
+          "start_srt": "00:02:57,941",
+          "end_srt": "00:02:58,453",
+          "probability": 0.9389
+        }
+      ]
+    },
+    {
+      "index": 69,
+      "type": "silence",
+      "start_ms": 178453,
+      "end_ms": 178676,
+      "duration_ms": 223,
+      "start_srt": "00:02:58,453",
+      "end_srt": "00:02:58,676",
+      "text": "[...]",
+      "words": []
+    },
+    {
+      "index": 70,
+      "type": "speech",
+      "start_ms": 178676,
+      "end_ms": 180262,
+      "duration_ms": 1586,
+      "start_srt": "00:02:58,676",
+      "end_srt": "00:03:00,262",
+      "text": "borrado y exportación a Excel.",
+      "words": [
+        {
+          "word": "borrado",
+          "start_ms": 178676,
+          "end_ms": 179130,
+          "start_srt": "00:02:58,676",
+          "end_srt": "00:02:59,130",
+          "probability": 0.9802
+        },
+        {
+          "word": "y",
+          "start_ms": 179130,
+          "end_ms": 179240,
+          "start_srt": "00:02:59,130",
+          "end_srt": "00:02:59,240",
+          "probability": 0.9848
+        },
+        {
+          "word": "exportación",
+          "start_ms": 179240,
+          "end_ms": 179868,
+          "start_srt": "00:02:59,240",
+          "end_srt": "00:02:59,868",
+          "probability": 0.9886
+        },
+        {
+          "word": "a",
+          "start_ms": 179868,
+          "end_ms": 180000,
+          "start_srt": "00:02:59,868",
+          "end_srt": "00:03:00,000",
+          "probability": 0.9767
+        },
+        {
+          "word": "Excel.",
+          "start_ms": 180000,
+          "end_ms": 180262,
+          "start_srt": "00:03:00,000",
+          "end_srt": "00:03:00,262",
+          "probability": 0.7762
+        }
+      ]
+    },
+    {
+      "index": 71,
+      "type": "silence",
+      "start_ms": 180262,
+      "end_ms": 187830,
+      "duration_ms": 7568,
+      "start_srt": "00:03:00,262",
+      "end_srt": "00:03:07,830",
+      "text": "[...]",
+      "words": []
+    }
+  ],
+  "words": [
+    {
+      "word": "Hola,",
+      "start_ms": 4030,
+      "end_ms": 4297,
+      "start_srt": "00:00:04,030",
+      "end_srt": "00:00:04,297",
+      "probability": 0.8873
+    },
+    {
+      "word": "bienvenido",
+      "start_ms": 5035,
+      "end_ms": 5410,
+      "start_srt": "00:00:05,035",
+      "end_srt": "00:00:05,410",
+      "probability": 0.9465
+    },
+    {
+      "word": "a",
+      "start_ms": 5410,
+      "end_ms": 5510,
+      "start_srt": "00:00:05,410",
+      "end_srt": "00:00:05,510",
+      "probability": 0.9126
+    },
+    {
+      "word": "un",
+      "start_ms": 5510,
+      "end_ms": 5530,
+      "start_srt": "00:00:05,510",
+      "end_srt": "00:00:05,530",
+      "probability": 0.9036
+    },
+    {
+      "word": "nuevo",
+      "start_ms": 5530,
+      "end_ms": 5643,
+      "start_srt": "00:00:05,530",
+      "end_srt": "00:00:05,643",
+      "probability": 0.9974
+    },
+    {
+      "word": "tutorial",
+      "start_ms": 5643,
+      "end_ms": 5910,
+      "start_srt": "00:00:05,643",
+      "end_srt": "00:00:05,910",
+      "probability": 0.9855
+    },
+    {
+      "word": "de",
+      "start_ms": 5910,
+      "end_ms": 6090,
+      "start_srt": "00:00:05,910",
+      "end_srt": "00:00:06,090",
+      "probability": 0.996
+    },
+    {
+      "word": "DataGun360,",
+      "start_ms": 6090,
+      "end_ms": 7163,
+      "start_srt": "00:00:06,090",
+      "end_srt": "00:00:07,163",
+      "probability": 0.4083
+    },
+    {
+      "word": "en",
+      "start_ms": 8142,
+      "end_ms": 8220,
+      "start_srt": "00:00:08,142",
+      "end_srt": "00:00:08,220",
+      "probability": 0.9618
+    },
+    {
+      "word": "los",
+      "start_ms": 8220,
+      "end_ms": 8320,
+      "start_srt": "00:00:08,220",
+      "end_srt": "00:00:08,320",
+      "probability": 0.9903
+    },
+    {
+      "word": "módulos",
+      "start_ms": 8320,
+      "end_ms": 8560,
+      "start_srt": "00:00:08,320",
+      "end_srt": "00:00:08,560",
+      "probability": 0.9893
+    },
+    {
+      "word": "de",
+      "start_ms": 8560,
+      "end_ms": 8700,
+      "start_srt": "00:00:08,560",
+      "end_srt": "00:00:08,700",
+      "probability": 0.9953
+    },
+    {
+      "word": "compras",
+      "start_ms": 8700,
+      "end_ms": 8980,
+      "start_srt": "00:00:08,700",
+      "end_srt": "00:00:08,980",
+      "probability": 0.9125
+    },
+    {
+      "word": "y",
+      "start_ms": 8980,
+      "end_ms": 9080,
+      "start_srt": "00:00:08,980",
+      "end_srt": "00:00:09,080",
+      "probability": 0.896
+    },
+    {
+      "word": "ventas",
+      "start_ms": 9080,
+      "end_ms": 9300,
+      "start_srt": "00:00:09,080",
+      "end_srt": "00:00:09,300",
+      "probability": 0.9877
+    },
+    {
+      "word": "alimentamos",
+      "start_ms": 9300,
+      "end_ms": 9700,
+      "start_srt": "00:00:09,300",
+      "end_srt": "00:00:09,700",
+      "probability": 0.897
+    },
+    {
+      "word": "el",
+      "start_ms": 9700,
+      "end_ms": 9860,
+      "start_srt": "00:00:09,700",
+      "end_srt": "00:00:09,860",
+      "probability": 0.9609
+    },
+    {
+      "word": "inventario",
+      "start_ms": 9860,
+      "end_ms": 10200,
+      "start_srt": "00:00:09,860",
+      "end_srt": "00:00:10,200",
+      "probability": 0.9783
+    },
+    {
+      "word": "y",
+      "start_ms": 10200,
+      "end_ms": 10340,
+      "start_srt": "00:00:10,200",
+      "end_srt": "00:00:10,340",
+      "probability": 0.894
+    },
+    {
+      "word": "movemos",
+      "start_ms": 10340,
+      "end_ms": 10540,
+      "start_srt": "00:00:10,340",
+      "end_srt": "00:00:10,540",
+      "probability": 0.8848
+    },
+    {
+      "word": "el",
+      "start_ms": 10540,
+      "end_ms": 10640,
+      "start_srt": "00:00:10,540",
+      "end_srt": "00:00:10,640",
+      "probability": 0.9985
+    },
+    {
+      "word": "dinero",
+      "start_ms": 10640,
+      "end_ms": 10820,
+      "start_srt": "00:00:10,640",
+      "end_srt": "00:00:10,820",
+      "probability": 0.9985
+    },
+    {
+      "word": "de",
+      "start_ms": 10820,
+      "end_ms": 10960,
+      "start_srt": "00:00:10,820",
+      "end_srt": "00:00:10,960",
+      "probability": 0.9891
+    },
+    {
+      "word": "nuestras",
+      "start_ms": 10960,
+      "end_ms": 11157,
+      "start_srt": "00:00:10,960",
+      "end_srt": "00:00:11,157",
+      "probability": 0.9957
+    },
+    {
+      "word": "cuentas.",
+      "start_ms": 11157,
+      "end_ms": 11593,
+      "start_srt": "00:00:11,157",
+      "end_srt": "00:00:11,593",
+      "probability": 0.9954
+    },
+    {
+      "word": "Al",
+      "start_ms": 12568,
+      "end_ms": 12630,
+      "start_srt": "00:00:12,568",
+      "end_srt": "00:00:12,630",
+      "probability": 0.9785
+    },
+    {
+      "word": "presionar",
+      "start_ms": 12630,
+      "end_ms": 12930,
+      "start_srt": "00:00:12,630",
+      "end_srt": "00:00:12,930",
+      "probability": 0.9598
+    },
+    {
+      "word": "crear",
+      "start_ms": 12930,
+      "end_ms": 13170,
+      "start_srt": "00:00:12,930",
+      "end_srt": "00:00:13,170",
+      "probability": 0.6043
+    },
+    {
+      "word": "compra,",
+      "start_ms": 13170,
+      "end_ms": 13564,
+      "start_srt": "00:00:13,170",
+      "end_srt": "00:00:13,564",
+      "probability": 0.7436
+    },
+    {
+      "word": "usa",
+      "start_ms": 13798,
+      "end_ms": 13930,
+      "start_srt": "00:00:13,798",
+      "end_srt": "00:00:13,930",
+      "probability": 0.9674
+    },
+    {
+      "word": "seleccionar",
+      "start_ms": 13930,
+      "end_ms": 14330,
+      "start_srt": "00:00:13,930",
+      "end_srt": "00:00:14,330",
+      "probability": 0.8918
+    },
+    {
+      "word": "artículo",
+      "start_ms": 14330,
+      "end_ms": 14677,
+      "start_srt": "00:00:14,330",
+      "end_srt": "00:00:14,677",
+      "probability": 0.9668
+    },
+    {
+      "word": "existentes",
+      "start_ms": 14677,
+      "end_ms": 15107,
+      "start_srt": "00:00:14,677",
+      "end_srt": "00:00:15,107",
+      "probability": 0.8475
+    },
+    {
+      "word": "y",
+      "start_ms": 15107,
+      "end_ms": 15230,
+      "start_srt": "00:00:15,107",
+      "end_srt": "00:00:15,230",
+      "probability": 0.8097
+    },
+    {
+      "word": "vas",
+      "start_ms": 15230,
+      "end_ms": 15350,
+      "start_srt": "00:00:15,230",
+      "end_srt": "00:00:15,350",
+      "probability": 0.9353
+    },
+    {
+      "word": "a",
+      "start_ms": 15350,
+      "end_ms": 15410,
+      "start_srt": "00:00:15,350",
+      "end_srt": "00:00:15,410",
+      "probability": 0.9951
+    },
+    {
+      "word": "rebastecer",
+      "start_ms": 15410,
+      "end_ms": 15830,
+      "start_srt": "00:00:15,410",
+      "end_srt": "00:00:15,830",
+      "probability": 0.6594
+    },
+    {
+      "word": "un",
+      "start_ms": 15830,
+      "end_ms": 15950,
+      "start_srt": "00:00:15,830",
+      "end_srt": "00:00:15,950",
+      "probability": 0.9879
+    },
+    {
+      "word": "insumo",
+      "start_ms": 15950,
+      "end_ms": 16123,
+      "start_srt": "00:00:15,950",
+      "end_srt": "00:00:16,123",
+      "probability": 0.9728
+    },
+    {
+      "word": "que",
+      "start_ms": 16123,
+      "end_ms": 16256,
+      "start_srt": "00:00:16,123",
+      "end_srt": "00:00:16,256",
+      "probability": 0.9938
+    },
+    {
+      "word": "ya",
+      "start_ms": 16256,
+      "end_ms": 16342,
+      "start_srt": "00:00:16,256",
+      "end_srt": "00:00:16,342",
+      "probability": 0.9964
+    },
+    {
+      "word": "tienes",
+      "start_ms": 16342,
+      "end_ms": 16570,
+      "start_srt": "00:00:16,342",
+      "end_srt": "00:00:16,570",
+      "probability": 0.9803
+    },
+    {
+      "word": "en",
+      "start_ms": 16570,
+      "end_ms": 16710,
+      "start_srt": "00:00:16,570",
+      "end_srt": "00:00:16,710",
+      "probability": 0.996
+    },
+    {
+      "word": "bodega.",
+      "start_ms": 16710,
+      "end_ms": 16969,
+      "start_srt": "00:00:16,710",
+      "end_srt": "00:00:16,969",
+      "probability": 0.6789
+    },
+    {
+      "word": "O",
+      "start_ms": 18198,
+      "end_ms": 18290,
+      "start_srt": "00:00:18,198",
+      "end_srt": "00:00:18,290",
+      "probability": 0.8027
+    },
+    {
+      "word": "haz",
+      "start_ms": 18290,
+      "end_ms": 18424,
+      "start_srt": "00:00:18,290",
+      "end_srt": "00:00:18,424",
+      "probability": 0.8352
+    },
+    {
+      "word": "clic",
+      "start_ms": 18424,
+      "end_ms": 18593,
+      "start_srt": "00:00:18,424",
+      "end_srt": "00:00:18,593",
+      "probability": 0.9162
+    },
+    {
+      "word": "en",
+      "start_ms": 18593,
+      "end_ms": 18809,
+      "start_srt": "00:00:18,593",
+      "end_srt": "00:00:18,809",
+      "probability": 0.9933
+    },
+    {
+      "word": "crear",
+      "start_ms": 18809,
+      "end_ms": 18990,
+      "start_srt": "00:00:18,809",
+      "end_srt": "00:00:18,990",
+      "probability": 0.97
+    },
+    {
+      "word": "nuevo",
+      "start_ms": 18990,
+      "end_ms": 19210,
+      "start_srt": "00:00:18,990",
+      "end_srt": "00:00:19,210",
+      "probability": 0.9404
+    },
+    {
+      "word": "artículo",
+      "start_ms": 19210,
+      "end_ms": 19670,
+      "start_srt": "00:00:19,210",
+      "end_srt": "00:00:19,670",
+      "probability": 0.9938
+    },
+    {
+      "word": "si",
+      "start_ms": 19670,
+      "end_ms": 19870,
+      "start_srt": "00:00:19,670",
+      "end_srt": "00:00:19,870",
+      "probability": 0.8273
+    },
+    {
+      "word": "estás",
+      "start_ms": 19870,
+      "end_ms": 20070,
+      "start_srt": "00:00:19,870",
+      "end_srt": "00:00:20,070",
+      "probability": 0.988
+    },
+    {
+      "word": "comprando",
+      "start_ms": 20070,
+      "end_ms": 20470,
+      "start_srt": "00:00:20,070",
+      "end_srt": "00:00:20,470",
+      "probability": 0.9954
+    },
+    {
+      "word": "algo",
+      "start_ms": 20470,
+      "end_ms": 20710,
+      "start_srt": "00:00:20,470",
+      "end_srt": "00:00:20,710",
+      "probability": 0.9996
+    },
+    {
+      "word": "por",
+      "start_ms": 20710,
+      "end_ms": 20913,
+      "start_srt": "00:00:20,710",
+      "end_srt": "00:00:20,913",
+      "probability": 0.9833
+    },
+    {
+      "word": "primera",
+      "start_ms": 20913,
+      "end_ms": 21190,
+      "start_srt": "00:00:20,913",
+      "end_srt": "00:00:21,190",
+      "probability": 0.9977
+    },
+    {
+      "word": "vez,",
+      "start_ms": 21190,
+      "end_ms": 21564,
+      "start_srt": "00:00:21,190",
+      "end_srt": "00:00:21,564",
+      "probability": 0.9978
+    },
+    {
+      "word": "aquí",
+      "start_ms": 21894,
+      "end_ms": 22076,
+      "start_srt": "00:00:21,894",
+      "end_srt": "00:00:22,076",
+      "probability": 0.9758
+    },
+    {
+      "word": "escribes",
+      "start_ms": 22076,
+      "end_ms": 22440,
+      "start_srt": "00:00:22,076",
+      "end_srt": "00:00:22,440",
+      "probability": 0.8721
+    },
+    {
+      "word": "el",
+      "start_ms": 22440,
+      "end_ms": 22620,
+      "start_srt": "00:00:22,440",
+      "end_srt": "00:00:22,620",
+      "probability": 0.9984
+    },
+    {
+      "word": "nombre",
+      "start_ms": 22620,
+      "end_ms": 22820,
+      "start_srt": "00:00:22,620",
+      "end_srt": "00:00:22,820",
+      "probability": 0.9994
+    },
+    {
+      "word": "del",
+      "start_ms": 22820,
+      "end_ms": 22941,
+      "start_srt": "00:00:22,820",
+      "end_srt": "00:00:22,941",
+      "probability": 0.8246
+    },
+    {
+      "word": "producto.",
+      "start_ms": 22941,
+      "end_ms": 23442,
+      "start_srt": "00:00:22,941",
+      "end_srt": "00:00:23,442",
+      "probability": 0.9969
+    },
+    {
+      "word": "Eliges",
+      "start_ms": 23823,
+      "end_ms": 24070,
+      "start_srt": "00:00:23,823",
+      "end_srt": "00:00:24,070",
+      "probability": 0.8435
+    },
+    {
+      "word": "a",
+      "start_ms": 24070,
+      "end_ms": 24270,
+      "start_srt": "00:00:24,070",
+      "end_srt": "00:00:24,270",
+      "probability": 0.9781
+    },
+    {
+      "word": "qué",
+      "start_ms": 24270,
+      "end_ms": 24354,
+      "start_srt": "00:00:24,270",
+      "end_srt": "00:00:24,354",
+      "probability": 0.9454
+    },
+    {
+      "word": "categoría",
+      "start_ms": 24354,
+      "end_ms": 24812,
+      "start_srt": "00:00:24,354",
+      "end_srt": "00:00:24,812",
+      "probability": 0.9928
+    },
+    {
+      "word": "pertenece",
+      "start_ms": 24812,
+      "end_ms": 25390,
+      "start_srt": "00:00:24,812",
+      "end_srt": "00:00:25,390",
+      "probability": 0.9924
+    },
+    {
+      "word": "y",
+      "start_ms": 25390,
+      "end_ms": 25590,
+      "start_srt": "00:00:25,390",
+      "end_srt": "00:00:25,590",
+      "probability": 0.9866
+    },
+    {
+      "word": "en",
+      "start_ms": 25590,
+      "end_ms": 25675,
+      "start_srt": "00:00:25,590",
+      "end_srt": "00:00:25,675",
+      "probability": 0.987
+    },
+    {
+      "word": "qué",
+      "start_ms": 25675,
+      "end_ms": 25812,
+      "start_srt": "00:00:25,675",
+      "end_srt": "00:00:25,812",
+      "probability": 0.9113
+    },
+    {
+      "word": "unidad",
+      "start_ms": 25812,
+      "end_ms": 26030,
+      "start_srt": "00:00:25,812",
+      "end_srt": "00:00:26,030",
+      "probability": 0.9781
+    },
+    {
+      "word": "se",
+      "start_ms": 26030,
+      "end_ms": 26198,
+      "start_srt": "00:00:26,030",
+      "end_srt": "00:00:26,198",
+      "probability": 0.997
+    },
+    {
+      "word": "mide.",
+      "start_ms": 26198,
+      "end_ms": 26421,
+      "start_srt": "00:00:26,198",
+      "end_srt": "00:00:26,421",
+      "probability": 0.9199
+    },
+    {
+      "word": "Dijitas",
+      "start_ms": 32206,
+      "end_ms": 32570,
+      "start_srt": "00:00:32,206",
+      "end_srt": "00:00:32,570",
+      "probability": 0.6842
+    },
+    {
+      "word": "cuántas",
+      "start_ms": 32570,
+      "end_ms": 32950,
+      "start_srt": "00:00:32,570",
+      "end_srt": "00:00:32,950",
+      "probability": 0.7852
+    },
+    {
+      "word": "unidades",
+      "start_ms": 32950,
+      "end_ms": 33250,
+      "start_srt": "00:00:32,950",
+      "end_srt": "00:00:33,250",
+      "probability": 0.9921
+    },
+    {
+      "word": "compraste",
+      "start_ms": 33250,
+      "end_ms": 33902,
+      "start_srt": "00:00:33,250",
+      "end_srt": "00:00:33,902",
+      "probability": 0.9758
+    },
+    {
+      "word": "y",
+      "start_ms": 33902,
+      "end_ms": 34010,
+      "start_srt": "00:00:33,902",
+      "end_srt": "00:00:34,010",
+      "probability": 0.9895
+    },
+    {
+      "word": "el",
+      "start_ms": 34010,
+      "end_ms": 34076,
+      "start_srt": "00:00:34,010",
+      "end_srt": "00:00:34,076",
+      "probability": 0.9982
+    },
+    {
+      "word": "costo",
+      "start_ms": 34076,
+      "end_ms": 34414,
+      "start_srt": "00:00:34,076",
+      "end_srt": "00:00:34,414",
+      "probability": 0.9981
+    },
+    {
+      "word": "por",
+      "start_ms": 34414,
+      "end_ms": 34590,
+      "start_srt": "00:00:34,414",
+      "end_srt": "00:00:34,590",
+      "probability": 0.997
+    },
+    {
+      "word": "unidad.",
+      "start_ms": 34590,
+      "end_ms": 34924,
+      "start_srt": "00:00:34,590",
+      "end_srt": "00:00:34,924",
+      "probability": 0.9923
+    },
+    {
+      "word": "Nota",
+      "start_ms": 35335,
+      "end_ms": 35542,
+      "start_srt": "00:00:35,335",
+      "end_srt": "00:00:35,542",
+      "probability": 0.9625
+    },
+    {
+      "word": "que",
+      "start_ms": 35542,
+      "end_ms": 35680,
+      "start_srt": "00:00:35,542",
+      "end_srt": "00:00:35,680",
+      "probability": 0.998
+    },
+    {
+      "word": "si",
+      "start_ms": 35680,
+      "end_ms": 35800,
+      "start_srt": "00:00:35,680",
+      "end_srt": "00:00:35,800",
+      "probability": 0.9645
+    },
+    {
+      "word": "rebasteces",
+      "start_ms": 35800,
+      "end_ms": 36300,
+      "start_srt": "00:00:35,800",
+      "end_srt": "00:00:36,300",
+      "probability": 0.7474
+    },
+    {
+      "word": "un",
+      "start_ms": 36300,
+      "end_ms": 36457,
+      "start_srt": "00:00:36,300",
+      "end_srt": "00:00:36,457",
+      "probability": 0.9945
+    },
+    {
+      "word": "producto",
+      "start_ms": 36457,
+      "end_ms": 36708,
+      "start_srt": "00:00:36,457",
+      "end_srt": "00:00:36,708",
+      "probability": 0.9966
+    },
+    {
+      "word": "existente",
+      "start_ms": 36708,
+      "end_ms": 37280,
+      "start_srt": "00:00:36,708",
+      "end_srt": "00:00:37,280",
+      "probability": 0.9967
+    },
+    {
+      "word": "también",
+      "start_ms": 37280,
+      "end_ms": 37560,
+      "start_srt": "00:00:37,280",
+      "end_srt": "00:00:37,560",
+      "probability": 0.8473
+    },
+    {
+      "word": "puedes",
+      "start_ms": 37560,
+      "end_ms": 37820,
+      "start_srt": "00:00:37,560",
+      "end_srt": "00:00:37,820",
+      "probability": 0.989
+    },
+    {
+      "word": "activar",
+      "start_ms": 37820,
+      "end_ms": 38260,
+      "start_srt": "00:00:37,820",
+      "end_srt": "00:00:38,260",
+      "probability": 0.9971
+    },
+    {
+      "word": "el",
+      "start_ms": 38260,
+      "end_ms": 38380,
+      "start_srt": "00:00:38,260",
+      "end_srt": "00:00:38,380",
+      "probability": 0.9959
+    },
+    {
+      "word": "interruptor",
+      "start_ms": 38380,
+      "end_ms": 38903,
+      "start_srt": "00:00:38,380",
+      "end_srt": "00:00:38,903",
+      "probability": 0.9761
+    },
+    {
+      "word": "actualizar",
+      "start_ms": 38903,
+      "end_ms": 39429,
+      "start_srt": "00:00:38,903",
+      "end_srt": "00:00:39,429",
+      "probability": 0.882
+    },
+    {
+      "word": "precio.",
+      "start_ms": 39429,
+      "end_ms": 39700,
+      "start_srt": "00:00:39,429",
+      "end_srt": "00:00:39,700",
+      "probability": 0.9648
+    },
+    {
+      "word": "Aquí",
+      "start_ms": 39700,
+      "end_ms": 39821,
+      "start_srt": "00:00:39,700",
+      "end_srt": "00:00:39,821",
+      "probability": 0.3966
+    },
+    {
+      "word": "conectamos",
+      "start_ms": 46208,
+      "end_ms": 46880,
+      "start_srt": "00:00:46,208",
+      "end_srt": "00:00:46,880",
+      "probability": 0.9956
+    },
+    {
+      "word": "con",
+      "start_ms": 46880,
+      "end_ms": 47120,
+      "start_srt": "00:00:46,880",
+      "end_srt": "00:00:47,120",
+      "probability": 0.9989
+    },
+    {
+      "word": "otros",
+      "start_ms": 47120,
+      "end_ms": 47340,
+      "start_srt": "00:00:47,120",
+      "end_srt": "00:00:47,340",
+      "probability": 0.8996
+    },
+    {
+      "word": "dos",
+      "start_ms": 47340,
+      "end_ms": 47540,
+      "start_srt": "00:00:47,340",
+      "end_srt": "00:00:47,540",
+      "probability": 0.9228
+    },
+    {
+      "word": "módulos,",
+      "start_ms": 47540,
+      "end_ms": 48071,
+      "start_srt": "00:00:47,540",
+      "end_srt": "00:00:48,071",
+      "probability": 0.9776
+    },
+    {
+      "word": "primero",
+      "start_ms": 48424,
+      "end_ms": 48630,
+      "start_srt": "00:00:48,424",
+      "end_srt": "00:00:48,630",
+      "probability": 0.9865
+    },
+    {
+      "word": "eliges",
+      "start_ms": 48630,
+      "end_ms": 48870,
+      "start_srt": "00:00:48,630",
+      "end_srt": "00:00:48,870",
+      "probability": 0.9092
+    },
+    {
+      "word": "de",
+      "start_ms": 48870,
+      "end_ms": 49024,
+      "start_srt": "00:00:48,870",
+      "end_srt": "00:00:49,024",
+      "probability": 0.9825
+    },
+    {
+      "word": "cuál",
+      "start_ms": 49024,
+      "end_ms": 49190,
+      "start_srt": "00:00:49,024",
+      "end_srt": "00:00:49,190",
+      "probability": 0.5146
+    },
+    {
+      "word": "de",
+      "start_ms": 49190,
+      "end_ms": 49349,
+      "start_srt": "00:00:49,190",
+      "end_srt": "00:00:49,349",
+      "probability": 0.9969
+    },
+    {
+      "word": "tus",
+      "start_ms": 49349,
+      "end_ms": 49479,
+      "start_srt": "00:00:49,349",
+      "end_srt": "00:00:49,479",
+      "probability": 0.9919
+    },
+    {
+      "word": "cuentas",
+      "start_ms": 49479,
+      "end_ms": 49827,
+      "start_srt": "00:00:49,479",
+      "end_srt": "00:00:49,827",
+      "probability": 0.9951
+    },
+    {
+      "word": "financieras",
+      "start_ms": 49827,
+      "end_ms": 50290,
+      "start_srt": "00:00:49,827",
+      "end_srt": "00:00:50,290",
+      "probability": 0.8574
+    },
+    {
+      "word": "sale",
+      "start_ms": 50290,
+      "end_ms": 50530,
+      "start_srt": "00:00:50,290",
+      "end_srt": "00:00:50,530",
+      "probability": 0.9913
+    },
+    {
+      "word": "el",
+      "start_ms": 50530,
+      "end_ms": 50670,
+      "start_srt": "00:00:50,530",
+      "end_srt": "00:00:50,670",
+      "probability": 0.9958
+    },
+    {
+      "word": "dinero",
+      "start_ms": 50670,
+      "end_ms": 50979,
+      "start_srt": "00:00:50,670",
+      "end_srt": "00:00:50,979",
+      "probability": 0.9979
+    },
+    {
+      "word": "y",
+      "start_ms": 50979,
+      "end_ms": 51355,
+      "start_srt": "00:00:50,979",
+      "end_srt": "00:00:51,355",
+      "probability": 0.4843
+    },
+    {
+      "word": "en",
+      "start_ms": 51355,
+      "end_ms": 51520,
+      "start_srt": "00:00:51,355",
+      "end_srt": "00:00:51,520",
+      "probability": 0.8451
+    },
+    {
+      "word": "proveedor",
+      "start_ms": 51520,
+      "end_ms": 51860,
+      "start_srt": "00:00:51,520",
+      "end_srt": "00:00:51,860",
+      "probability": 0.8742
+    },
+    {
+      "word": "seleccionas",
+      "start_ms": 51860,
+      "end_ms": 52480,
+      "start_srt": "00:00:51,860",
+      "end_srt": "00:00:52,480",
+      "probability": 0.9323
+    },
+    {
+      "word": "al",
+      "start_ms": 52480,
+      "end_ms": 52620,
+      "start_srt": "00:00:52,480",
+      "end_srt": "00:00:52,620",
+      "probability": 0.9519
+    },
+    {
+      "word": "almacén",
+      "start_ms": 52620,
+      "end_ms": 53020,
+      "start_srt": "00:00:52,620",
+      "end_srt": "00:00:53,020",
+      "probability": 0.7611
+    },
+    {
+      "word": "o",
+      "start_ms": 53020,
+      "end_ms": 53140,
+      "start_srt": "00:00:53,020",
+      "end_srt": "00:00:53,140",
+      "probability": 0.9943
+    },
+    {
+      "word": "empresa",
+      "start_ms": 53140,
+      "end_ms": 53438,
+      "start_srt": "00:00:53,140",
+      "end_srt": "00:00:53,438",
+      "probability": 0.9978
+    },
+    {
+      "word": "que",
+      "start_ms": 53438,
+      "end_ms": 53654,
+      "start_srt": "00:00:53,438",
+      "end_srt": "00:00:53,654",
+      "probability": 0.9937
+    },
+    {
+      "word": "registraste",
+      "start_ms": 53654,
+      "end_ms": 54297,
+      "start_srt": "00:00:53,654",
+      "end_srt": "00:00:54,297",
+      "probability": 0.9886
+    },
+    {
+      "word": "previamente",
+      "start_ms": 54297,
+      "end_ms": 54710,
+      "start_srt": "00:00:54,297",
+      "end_srt": "00:00:54,710",
+      "probability": 0.9986
+    },
+    {
+      "word": "en",
+      "start_ms": 54710,
+      "end_ms": 54940,
+      "start_srt": "00:00:54,710",
+      "end_srt": "00:00:54,940",
+      "probability": 0.988
+    },
+    {
+      "word": "el",
+      "start_ms": 54940,
+      "end_ms": 55019,
+      "start_srt": "00:00:54,940",
+      "end_srt": "00:00:55,019",
+      "probability": 0.9982
+    },
+    {
+      "word": "módulo",
+      "start_ms": 55019,
+      "end_ms": 55340,
+      "start_srt": "00:00:55,019",
+      "end_srt": "00:00:55,340",
+      "probability": 0.9951
+    },
+    {
+      "word": "de",
+      "start_ms": 55340,
+      "end_ms": 55462,
+      "start_srt": "00:00:55,340",
+      "end_srt": "00:00:55,462",
+      "probability": 0.9814
+    },
+    {
+      "word": "terceros.",
+      "start_ms": 55462,
+      "end_ms": 55933,
+      "start_srt": "00:00:55,462",
+      "end_srt": "00:00:55,933",
+      "probability": 0.987
+    },
+    {
+      "word": "Verifica",
+      "start_ms": 64208,
+      "end_ms": 64586,
+      "start_srt": "00:01:04,208",
+      "end_srt": "00:01:04,586",
+      "probability": 0.8706
+    },
+    {
+      "word": "la",
+      "start_ms": 64586,
+      "end_ms": 64730,
+      "start_srt": "00:01:04,586",
+      "end_srt": "00:01:04,730",
+      "probability": 0.9955
+    },
+    {
+      "word": "fecha",
+      "start_ms": 64730,
+      "end_ms": 65030,
+      "start_srt": "00:01:04,730",
+      "end_srt": "00:01:05,030",
+      "probability": 0.9982
+    },
+    {
+      "word": "de",
+      "start_ms": 65030,
+      "end_ms": 65150,
+      "start_srt": "00:01:05,030",
+      "end_srt": "00:01:05,150",
+      "probability": 0.998
+    },
+    {
+      "word": "compra",
+      "start_ms": 65150,
+      "end_ms": 65382,
+      "start_srt": "00:01:05,150",
+      "end_srt": "00:01:05,382",
+      "probability": 0.9889
+    },
+    {
+      "word": "y",
+      "start_ms": 65382,
+      "end_ms": 65530,
+      "start_srt": "00:01:05,382",
+      "end_srt": "00:01:05,530",
+      "probability": 0.9664
+    },
+    {
+      "word": "abajo",
+      "start_ms": 65530,
+      "end_ms": 65710,
+      "start_srt": "00:01:05,530",
+      "end_srt": "00:01:05,710",
+      "probability": 0.9909
+    },
+    {
+      "word": "reactas",
+      "start_ms": 65710,
+      "end_ms": 66181,
+      "start_srt": "00:01:05,710",
+      "end_srt": "00:01:06,181",
+      "probability": 0.6917
+    },
+    {
+      "word": "una",
+      "start_ms": 66181,
+      "end_ms": 66370,
+      "start_srt": "00:01:06,181",
+      "end_srt": "00:01:06,370",
+      "probability": 0.985
+    },
+    {
+      "word": "descripción",
+      "start_ms": 66370,
+      "end_ms": 66830,
+      "start_srt": "00:01:06,370",
+      "end_srt": "00:01:06,830",
+      "probability": 0.9971
+    },
+    {
+      "word": "de",
+      "start_ms": 66830,
+      "end_ms": 66970,
+      "start_srt": "00:01:06,830",
+      "end_srt": "00:01:06,970",
+      "probability": 0.9272
+    },
+    {
+      "word": "respaldo,",
+      "start_ms": 66970,
+      "end_ms": 67479,
+      "start_srt": "00:01:06,970",
+      "end_srt": "00:01:07,479",
+      "probability": 0.9901
+    },
+    {
+      "word": "como",
+      "start_ms": 67794,
+      "end_ms": 67920,
+      "start_srt": "00:01:07,794",
+      "end_srt": "00:01:07,920",
+      "probability": 0.9843
+    },
+    {
+      "word": "el",
+      "start_ms": 67920,
+      "end_ms": 68020,
+      "start_srt": "00:01:07,920",
+      "end_srt": "00:01:08,020",
+      "probability": 0.9923
+    },
+    {
+      "word": "número",
+      "start_ms": 68020,
+      "end_ms": 68180,
+      "start_srt": "00:01:08,020",
+      "end_srt": "00:01:08,180",
+      "probability": 0.995
+    },
+    {
+      "word": "de",
+      "start_ms": 68180,
+      "end_ms": 68380,
+      "start_srt": "00:01:08,180",
+      "end_srt": "00:01:08,380",
+      "probability": 0.999
+    },
+    {
+      "word": "factura",
+      "start_ms": 68380,
+      "end_ms": 68780,
+      "start_srt": "00:01:08,380",
+      "end_srt": "00:01:08,780",
+      "probability": 0.9942
+    },
+    {
+      "word": "o",
+      "start_ms": 68780,
+      "end_ms": 68920,
+      "start_srt": "00:01:08,780",
+      "end_srt": "00:01:08,920",
+      "probability": 0.9874
+    },
+    {
+      "word": "lote",
+      "start_ms": 68920,
+      "end_ms": 69120,
+      "start_srt": "00:01:08,920",
+      "end_srt": "00:01:09,120",
+      "probability": 0.7255
+    },
+    {
+      "word": "del",
+      "start_ms": 69120,
+      "end_ms": 69277,
+      "start_srt": "00:01:09,120",
+      "end_srt": "00:01:09,277",
+      "probability": 0.9432
+    },
+    {
+      "word": "producto.",
+      "start_ms": 69277,
+      "end_ms": 69630,
+      "start_srt": "00:01:09,277",
+      "end_srt": "00:01:09,630",
+      "probability": 0.9947
+    },
+    {
+      "word": "En",
+      "start_ms": 88190,
+      "end_ms": 88300,
+      "start_srt": "00:01:28,190",
+      "end_srt": "00:01:28,300",
+      "probability": 0.9911
+    },
+    {
+      "word": "fecha",
+      "start_ms": 88300,
+      "end_ms": 88580,
+      "start_srt": "00:01:28,300",
+      "end_srt": "00:01:28,580",
+      "probability": 0.994
+    },
+    {
+      "word": "de",
+      "start_ms": 88580,
+      "end_ms": 88680,
+      "start_srt": "00:01:28,580",
+      "end_srt": "00:01:28,680",
+      "probability": 0.9937
+    },
+    {
+      "word": "expiración",
+      "start_ms": 88680,
+      "end_ms": 89100,
+      "start_srt": "00:01:28,680",
+      "end_srt": "00:01:29,100",
+      "probability": 0.9247
+    },
+    {
+      "word": "colocarás",
+      "start_ms": 89100,
+      "end_ms": 89620,
+      "start_srt": "00:01:29,100",
+      "end_srt": "00:01:29,620",
+      "probability": 0.9829
+    },
+    {
+      "word": "el",
+      "start_ms": 89620,
+      "end_ms": 89720,
+      "start_srt": "00:01:29,620",
+      "end_srt": "00:01:29,720",
+      "probability": 0.9966
+    },
+    {
+      "word": "vencimiento",
+      "start_ms": 89720,
+      "end_ms": 90180,
+      "start_srt": "00:01:29,720",
+      "end_srt": "00:01:30,180",
+      "probability": 0.9824
+    },
+    {
+      "word": "del",
+      "start_ms": 90180,
+      "end_ms": 90360,
+      "start_srt": "00:01:30,180",
+      "end_srt": "00:01:30,360",
+      "probability": 0.9654
+    },
+    {
+      "word": "medicamento",
+      "start_ms": 90360,
+      "end_ms": 90838,
+      "start_srt": "00:01:30,360",
+      "end_srt": "00:01:30,838",
+      "probability": 0.9918
+    },
+    {
+      "word": "o",
+      "start_ms": 90838,
+      "end_ms": 91020,
+      "start_srt": "00:01:30,838",
+      "end_srt": "00:01:31,020",
+      "probability": 0.9869
+    },
+    {
+      "word": "garantía,",
+      "start_ms": 91020,
+      "end_ms": 91535,
+      "start_srt": "00:01:31,020",
+      "end_srt": "00:01:31,535",
+      "probability": 0.9883
+    },
+    {
+      "word": "el",
+      "start_ms": 91876,
+      "end_ms": 91990,
+      "start_srt": "00:01:31,876",
+      "end_srt": "00:01:31,990",
+      "probability": 0.9923
+    },
+    {
+      "word": "sistema",
+      "start_ms": 91990,
+      "end_ms": 92290,
+      "start_srt": "00:01:31,990",
+      "end_srt": "00:01:32,290",
+      "probability": 0.9773
+    },
+    {
+      "word": "valía",
+      "start_ms": 92290,
+      "end_ms": 92608,
+      "start_srt": "00:01:32,290",
+      "end_srt": "00:01:32,608",
+      "probability": 0.8037
+    },
+    {
+      "word": "que",
+      "start_ms": 92608,
+      "end_ms": 92750,
+      "start_srt": "00:01:32,608",
+      "end_srt": "00:01:32,750",
+      "probability": 0.9865
+    },
+    {
+      "word": "sea",
+      "start_ms": 92750,
+      "end_ms": 92910,
+      "start_srt": "00:01:32,750",
+      "end_srt": "00:01:32,910",
+      "probability": 0.9945
+    },
+    {
+      "word": "una",
+      "start_ms": 92910,
+      "end_ms": 93070,
+      "start_srt": "00:01:32,910",
+      "end_srt": "00:01:33,070",
+      "probability": 0.9971
+    },
+    {
+      "word": "fecha",
+      "start_ms": 93070,
+      "end_ms": 93355,
+      "start_srt": "00:01:33,070",
+      "end_srt": "00:01:33,355",
+      "probability": 0.9975
+    },
+    {
+      "word": "futura",
+      "start_ms": 93355,
+      "end_ms": 93770,
+      "start_srt": "00:01:33,355",
+      "end_srt": "00:01:33,770",
+      "probability": 0.9656
+    },
+    {
+      "word": "y",
+      "start_ms": 93770,
+      "end_ms": 93830,
+      "start_srt": "00:01:33,770",
+      "end_srt": "00:01:33,830",
+      "probability": 0.9798
+    },
+    {
+      "word": "la",
+      "start_ms": 93830,
+      "end_ms": 93910,
+      "start_srt": "00:01:33,830",
+      "end_srt": "00:01:33,910",
+      "probability": 0.97
+    },
+    {
+      "word": "usará",
+      "start_ms": 93910,
+      "end_ms": 94163,
+      "start_srt": "00:01:33,910",
+      "end_srt": "00:01:34,163",
+      "probability": 0.9013
+    },
+    {
+      "word": "para",
+      "start_ms": 94163,
+      "end_ms": 94330,
+      "start_srt": "00:01:34,163",
+      "end_srt": "00:01:34,330",
+      "probability": 0.9991
+    },
+    {
+      "word": "avisarte",
+      "start_ms": 94330,
+      "end_ms": 94775,
+      "start_srt": "00:01:34,330",
+      "end_srt": "00:01:34,775",
+      "probability": 0.9872
+    },
+    {
+      "word": "en",
+      "start_ms": 94775,
+      "end_ms": 94850,
+      "start_srt": "00:01:34,775",
+      "end_srt": "00:01:34,850",
+      "probability": 0.9922
+    },
+    {
+      "word": "la",
+      "start_ms": 94850,
+      "end_ms": 94905,
+      "start_srt": "00:01:34,850",
+      "end_srt": "00:01:34,905",
+      "probability": 0.9983
+    },
+    {
+      "word": "campana",
+      "start_ms": 94905,
+      "end_ms": 95290,
+      "start_srt": "00:01:34,905",
+      "end_srt": "00:01:35,290",
+      "probability": 0.9934
+    },
+    {
+      "word": "de",
+      "start_ms": 95290,
+      "end_ms": 95410,
+      "start_srt": "00:01:35,290",
+      "end_srt": "00:01:35,410",
+      "probability": 0.9987
+    },
+    {
+      "word": "alertas",
+      "start_ms": 95410,
+      "end_ms": 95750,
+      "start_srt": "00:01:35,410",
+      "end_srt": "00:01:35,750",
+      "probability": 0.9771
+    },
+    {
+      "word": "antes",
+      "start_ms": 95750,
+      "end_ms": 95978,
+      "start_srt": "00:01:35,750",
+      "end_srt": "00:01:35,978",
+      "probability": 0.993
+    },
+    {
+      "word": "de",
+      "start_ms": 95978,
+      "end_ms": 96103,
+      "start_srt": "00:01:35,978",
+      "end_srt": "00:01:36,103",
+      "probability": 0.9907
+    },
+    {
+      "word": "que",
+      "start_ms": 96103,
+      "end_ms": 96242,
+      "start_srt": "00:01:36,103",
+      "end_srt": "00:01:36,242",
+      "probability": 0.9926
+    },
+    {
+      "word": "el",
+      "start_ms": 96242,
+      "end_ms": 96384,
+      "start_srt": "00:01:36,242",
+      "end_srt": "00:01:36,384",
+      "probability": 0.5757
+    },
+    {
+      "word": "producto",
+      "start_ms": 96384,
+      "end_ms": 96530,
+      "start_srt": "00:01:36,384",
+      "end_srt": "00:01:36,530",
+      "probability": 0.9965
+    },
+    {
+      "word": "venza.",
+      "start_ms": 96530,
+      "end_ms": 96977,
+      "start_srt": "00:01:36,530",
+      "end_srt": "00:01:36,977",
+      "probability": 0.9557
+    },
+    {
+      "word": "Presionamos",
+      "start_ms": 97893,
+      "end_ms": 98300,
+      "start_srt": "00:01:37,893",
+      "end_srt": "00:01:38,300",
+      "probability": 0.8233
+    },
+    {
+      "word": "guardar",
+      "start_ms": 98300,
+      "end_ms": 98653,
+      "start_srt": "00:01:38,300",
+      "end_srt": "00:01:38,653",
+      "probability": 0.892
+    },
+    {
+      "word": "compra.",
+      "start_ms": 98653,
+      "end_ms": 99059,
+      "start_srt": "00:01:38,653",
+      "end_srt": "00:01:39,059",
+      "probability": 0.9515
+    },
+    {
+      "word": "Al",
+      "start_ms": 101203,
+      "end_ms": 101320,
+      "start_srt": "00:01:41,203",
+      "end_srt": "00:01:41,320",
+      "probability": 0.9912
+    },
+    {
+      "word": "guardar",
+      "start_ms": 101320,
+      "end_ms": 101620,
+      "start_srt": "00:01:41,320",
+      "end_srt": "00:01:41,620",
+      "probability": 0.9974
+    },
+    {
+      "word": "ocurre",
+      "start_ms": 101620,
+      "end_ms": 101940,
+      "start_srt": "00:01:41,620",
+      "end_srt": "00:01:41,940",
+      "probability": 0.4972
+    },
+    {
+      "word": "una",
+      "start_ms": 101940,
+      "end_ms": 102121,
+      "start_srt": "00:01:41,940",
+      "end_srt": "00:01:42,121",
+      "probability": 0.9452
+    },
+    {
+      "word": "triple",
+      "start_ms": 102121,
+      "end_ms": 102360,
+      "start_srt": "00:01:42,121",
+      "end_srt": "00:01:42,360",
+      "probability": 0.831
+    },
+    {
+      "word": "acción",
+      "start_ms": 102360,
+      "end_ms": 102720,
+      "start_srt": "00:01:42,360",
+      "end_srt": "00:01:42,720",
+      "probability": 0.7352
+    },
+    {
+      "word": "automática,",
+      "start_ms": 102720,
+      "end_ms": 103421,
+      "start_srt": "00:01:42,720",
+      "end_srt": "00:01:43,421",
+      "probability": 0.9905
+    },
+    {
+      "word": "queda",
+      "start_ms": 103750,
+      "end_ms": 103860,
+      "start_srt": "00:01:43,750",
+      "end_srt": "00:01:43,860",
+      "probability": 0.9197
+    },
+    {
+      "word": "el",
+      "start_ms": 103860,
+      "end_ms": 103980,
+      "start_srt": "00:01:43,860",
+      "end_srt": "00:01:43,980",
+      "probability": 0.9501
+    },
+    {
+      "word": "registro",
+      "start_ms": 103980,
+      "end_ms": 104341,
+      "start_srt": "00:01:43,980",
+      "end_srt": "00:01:44,341",
+      "probability": 0.9974
+    },
+    {
+      "word": "en",
+      "start_ms": 104341,
+      "end_ms": 104457,
+      "start_srt": "00:01:44,341",
+      "end_srt": "00:01:44,457",
+      "probability": 0.9857
+    },
+    {
+      "word": "compras,",
+      "start_ms": 104457,
+      "end_ms": 104975,
+      "start_srt": "00:01:44,457",
+      "end_srt": "00:01:44,975",
+      "probability": 0.9844
+    },
+    {
+      "word": "se",
+      "start_ms": 105262,
+      "end_ms": 105390,
+      "start_srt": "00:01:45,262",
+      "end_srt": "00:01:45,390",
+      "probability": 0.9883
+    },
+    {
+      "word": "crea",
+      "start_ms": 105390,
+      "end_ms": 105578,
+      "start_srt": "00:01:45,390",
+      "end_srt": "00:01:45,578",
+      "probability": 0.938
+    },
+    {
+      "word": "el",
+      "start_ms": 105578,
+      "end_ms": 105650,
+      "start_srt": "00:01:45,578",
+      "end_srt": "00:01:45,650",
+      "probability": 0.9944
+    },
+    {
+      "word": "producto",
+      "start_ms": 105650,
+      "end_ms": 105909,
+      "start_srt": "00:01:45,650",
+      "end_srt": "00:01:45,909",
+      "probability": 0.9974
+    },
+    {
+      "word": "con",
+      "start_ms": 105909,
+      "end_ms": 106184,
+      "start_srt": "00:01:45,909",
+      "end_srt": "00:01:46,184",
+      "probability": 0.9939
+    },
+    {
+      "word": "su",
+      "start_ms": 106184,
+      "end_ms": 106298,
+      "start_srt": "00:01:46,184",
+      "end_srt": "00:01:46,298",
+      "probability": 0.9954
+    },
+    {
+      "word": "stock",
+      "start_ms": 106298,
+      "end_ms": 106468,
+      "start_srt": "00:01:46,298",
+      "end_srt": "00:01:46,468",
+      "probability": 0.3633
+    },
+    {
+      "word": "en",
+      "start_ms": 106468,
+      "end_ms": 106670,
+      "start_srt": "00:01:46,468",
+      "end_srt": "00:01:46,670",
+      "probability": 0.989
+    },
+    {
+      "word": "inventario",
+      "start_ms": 106670,
+      "end_ms": 107150,
+      "start_srt": "00:01:46,670",
+      "end_srt": "00:01:47,150",
+      "probability": 0.9884
+    },
+    {
+      "word": "y",
+      "start_ms": 107150,
+      "end_ms": 107290,
+      "start_srt": "00:01:47,150",
+      "end_srt": "00:01:47,290",
+      "probability": 0.9762
+    },
+    {
+      "word": "se",
+      "start_ms": 107290,
+      "end_ms": 107355,
+      "start_srt": "00:01:47,290",
+      "end_srt": "00:01:47,355",
+      "probability": 0.9959
+    },
+    {
+      "word": "descuenta",
+      "start_ms": 107355,
+      "end_ms": 107734,
+      "start_srt": "00:01:47,355",
+      "end_srt": "00:01:47,734",
+      "probability": 0.8945
+    },
+    {
+      "word": "la",
+      "start_ms": 107734,
+      "end_ms": 107824,
+      "start_srt": "00:01:47,734",
+      "end_srt": "00:01:47,824",
+      "probability": 0.9568
+    },
+    {
+      "word": "plata",
+      "start_ms": 107824,
+      "end_ms": 108123,
+      "start_srt": "00:01:47,824",
+      "end_srt": "00:01:48,123",
+      "probability": 0.9941
+    },
+    {
+      "word": "en",
+      "start_ms": 108123,
+      "end_ms": 108193,
+      "start_srt": "00:01:48,123",
+      "end_srt": "00:01:48,193",
+      "probability": 0.9931
+    },
+    {
+      "word": "cuentas.",
+      "start_ms": 108193,
+      "end_ms": 108676,
+      "start_srt": "00:01:48,193",
+      "end_srt": "00:01:48,676",
+      "probability": 0.9908
+    },
+    {
+      "word": "Con",
+      "start_ms": 109678,
+      "end_ms": 109770,
+      "start_srt": "00:01:49,678",
+      "end_srt": "00:01:49,770",
+      "probability": 0.9471
+    },
+    {
+      "word": "los",
+      "start_ms": 109770,
+      "end_ms": 109910,
+      "start_srt": "00:01:49,770",
+      "end_srt": "00:01:49,910",
+      "probability": 0.9933
+    },
+    {
+      "word": "iconos",
+      "start_ms": 109910,
+      "end_ms": 110230,
+      "start_srt": "00:01:49,910",
+      "end_srt": "00:01:50,230",
+      "probability": 0.9919
+    },
+    {
+      "word": "de",
+      "start_ms": 110230,
+      "end_ms": 110330,
+      "start_srt": "00:01:50,230",
+      "end_srt": "00:01:50,330",
+      "probability": 0.9976
+    },
+    {
+      "word": "la",
+      "start_ms": 110330,
+      "end_ms": 110430,
+      "start_srt": "00:01:50,330",
+      "end_srt": "00:01:50,430",
+      "probability": 0.9974
+    },
+    {
+      "word": "derecha",
+      "start_ms": 110430,
+      "end_ms": 110730,
+      "start_srt": "00:01:50,430",
+      "end_srt": "00:01:50,730",
+      "probability": 0.9772
+    },
+    {
+      "word": "puedes",
+      "start_ms": 110730,
+      "end_ms": 110990,
+      "start_srt": "00:01:50,730",
+      "end_srt": "00:01:50,990",
+      "probability": 0.9742
+    },
+    {
+      "word": "ver",
+      "start_ms": 110990,
+      "end_ms": 111170,
+      "start_srt": "00:01:50,990",
+      "end_srt": "00:01:51,170",
+      "probability": 0.9965
+    },
+    {
+      "word": "su",
+      "start_ms": 111170,
+      "end_ms": 111335,
+      "start_srt": "00:01:51,170",
+      "end_srt": "00:01:51,335",
+      "probability": 0.9915
+    },
+    {
+      "word": "detalle,",
+      "start_ms": 111335,
+      "end_ms": 111789,
+      "start_srt": "00:01:51,335",
+      "end_srt": "00:01:51,789",
+      "probability": 0.9935
+    },
+    {
+      "word": "editarlo",
+      "start_ms": 112131,
+      "end_ms": 112660,
+      "start_srt": "00:01:52,131",
+      "end_srt": "00:01:52,660",
+      "probability": 0.9804
+    },
+    {
+      "word": "o",
+      "start_ms": 112660,
+      "end_ms": 112760,
+      "start_srt": "00:01:52,660",
+      "end_srt": "00:01:52,760",
+      "probability": 0.9074
+    },
+    {
+      "word": "borrar.",
+      "start_ms": 112760,
+      "end_ms": 113003,
+      "start_srt": "00:01:52,760",
+      "end_srt": "00:01:53,003",
+      "probability": 0.9738
+    },
+    {
+      "word": "Ahora",
+      "start_ms": 121203,
+      "end_ms": 121370,
+      "start_srt": "00:02:01,203",
+      "end_srt": "00:02:01,370",
+      "probability": 0.974
+    },
+    {
+      "word": "entramos",
+      "start_ms": 121370,
+      "end_ms": 121710,
+      "start_srt": "00:02:01,370",
+      "end_srt": "00:02:01,710",
+      "probability": 0.9879
+    },
+    {
+      "word": "en",
+      "start_ms": 121710,
+      "end_ms": 121890,
+      "start_srt": "00:02:01,710",
+      "end_srt": "00:02:01,890",
+      "probability": 0.998
+    },
+    {
+      "word": "el",
+      "start_ms": 121890,
+      "end_ms": 121990,
+      "start_srt": "00:02:01,890",
+      "end_srt": "00:02:01,990",
+      "probability": 0.994
+    },
+    {
+      "word": "menú",
+      "start_ms": 121990,
+      "end_ms": 122210,
+      "start_srt": "00:02:01,990",
+      "end_srt": "00:02:02,210",
+      "probability": 0.9668
+    },
+    {
+      "word": "lateral",
+      "start_ms": 122210,
+      "end_ms": 122470,
+      "start_srt": "00:02:02,210",
+      "end_srt": "00:02:02,470",
+      "probability": 0.9518
+    },
+    {
+      "word": "a",
+      "start_ms": 122470,
+      "end_ms": 122670,
+      "start_srt": "00:02:02,470",
+      "end_srt": "00:02:02,670",
+      "probability": 0.8794
+    },
+    {
+      "word": "ventas,",
+      "start_ms": 122670,
+      "end_ms": 123177,
+      "start_srt": "00:02:02,670",
+      "end_srt": "00:02:03,177",
+      "probability": 0.8933
+    },
+    {
+      "word": "ideal",
+      "start_ms": 123438,
+      "end_ms": 123670,
+      "start_srt": "00:02:03,438",
+      "end_srt": "00:02:03,670",
+      "probability": 0.9585
+    },
+    {
+      "word": "cuando",
+      "start_ms": 123670,
+      "end_ms": 123870,
+      "start_srt": "00:02:03,670",
+      "end_srt": "00:02:03,870",
+      "probability": 0.9852
+    },
+    {
+      "word": "vende",
+      "start_ms": 123870,
+      "end_ms": 124150,
+      "start_srt": "00:02:03,870",
+      "end_srt": "00:02:04,150",
+      "probability": 0.8167
+    },
+    {
+      "word": "sin",
+      "start_ms": 124150,
+      "end_ms": 124370,
+      "start_srt": "00:02:04,150",
+      "end_srt": "00:02:04,370",
+      "probability": 0.2579
+    },
+    {
+      "word": "sumos,",
+      "start_ms": 124370,
+      "end_ms": 124784,
+      "start_srt": "00:02:04,370",
+      "end_srt": "00:02:04,784",
+      "probability": 0.7967
+    },
+    {
+      "word": "equipos",
+      "start_ms": 125102,
+      "end_ms": 125490,
+      "start_srt": "00:02:05,102",
+      "end_srt": "00:02:05,490",
+      "probability": 0.9356
+    },
+    {
+      "word": "o",
+      "start_ms": 125490,
+      "end_ms": 125570,
+      "start_srt": "00:02:05,490",
+      "end_srt": "00:02:05,570",
+      "probability": 0.9972
+    },
+    {
+      "word": "su",
+      "start_ms": 125570,
+      "end_ms": 125682,
+      "start_srt": "00:02:05,570",
+      "end_srt": "00:02:05,682",
+      "probability": 0.9758
+    },
+    {
+      "word": "producto",
+      "start_ms": 125682,
+      "end_ms": 126074,
+      "start_srt": "00:02:05,682",
+      "end_srt": "00:02:06,074",
+      "probability": 0.9965
+    },
+    {
+      "word": "de",
+      "start_ms": 126074,
+      "end_ms": 126250,
+      "start_srt": "00:02:06,074",
+      "end_srt": "00:02:06,250",
+      "probability": 0.9946
+    },
+    {
+      "word": "bodega.",
+      "start_ms": 126250,
+      "end_ms": 126574,
+      "start_srt": "00:02:06,250",
+      "end_srt": "00:02:06,574",
+      "probability": 0.9771
+    },
+    {
+      "word": "Al",
+      "start_ms": 127590,
+      "end_ms": 127720,
+      "start_srt": "00:02:07,590",
+      "end_srt": "00:02:07,720",
+      "probability": 0.9833
+    },
+    {
+      "word": "abrir",
+      "start_ms": 127720,
+      "end_ms": 127920,
+      "start_srt": "00:02:07,720",
+      "end_srt": "00:02:07,920",
+      "probability": 0.994
+    },
+    {
+      "word": "el",
+      "start_ms": 127920,
+      "end_ms": 128100,
+      "start_srt": "00:02:07,920",
+      "end_srt": "00:02:08,100",
+      "probability": 0.9872
+    },
+    {
+      "word": "buscador",
+      "start_ms": 128100,
+      "end_ms": 128440,
+      "start_srt": "00:02:08,100",
+      "end_srt": "00:02:08,440",
+      "probability": 0.9875
+    },
+    {
+      "word": "ves",
+      "start_ms": 128440,
+      "end_ms": 128664,
+      "start_srt": "00:02:08,440",
+      "end_srt": "00:02:08,664",
+      "probability": 0.8153
+    },
+    {
+      "word": "todos",
+      "start_ms": 128664,
+      "end_ms": 128860,
+      "start_srt": "00:02:08,664",
+      "end_srt": "00:02:08,860",
+      "probability": 0.9956
+    },
+    {
+      "word": "tus",
+      "start_ms": 128860,
+      "end_ms": 129060,
+      "start_srt": "00:02:08,860",
+      "end_srt": "00:02:09,060",
+      "probability": 0.9946
+    },
+    {
+      "word": "artículos",
+      "start_ms": 129060,
+      "end_ms": 129482,
+      "start_srt": "00:02:09,060",
+      "end_srt": "00:02:09,482",
+      "probability": 0.9569
+    },
+    {
+      "word": "con",
+      "start_ms": 129482,
+      "end_ms": 129720,
+      "start_srt": "00:02:09,482",
+      "end_srt": "00:02:09,720",
+      "probability": 0.9948
+    },
+    {
+      "word": "stock",
+      "start_ms": 129720,
+      "end_ms": 129964,
+      "start_srt": "00:02:09,720",
+      "end_srt": "00:02:09,964",
+      "probability": 0.9562
+    },
+    {
+      "word": "disponible,",
+      "start_ms": 129964,
+      "end_ms": 130613,
+      "start_srt": "00:02:09,964",
+      "end_srt": "00:02:10,613",
+      "probability": 0.9887
+    },
+    {
+      "word": "incluyendo",
+      "start_ms": 130919,
+      "end_ms": 131380,
+      "start_srt": "00:02:10,919",
+      "end_srt": "00:02:11,380",
+      "probability": 0.9985
+    },
+    {
+      "word": "el",
+      "start_ms": 131380,
+      "end_ms": 131479,
+      "start_srt": "00:02:11,380",
+      "end_srt": "00:02:11,479",
+      "probability": 0.9973
+    },
+    {
+      "word": "que",
+      "start_ms": 131479,
+      "end_ms": 131572,
+      "start_srt": "00:02:11,479",
+      "end_srt": "00:02:11,572",
+      "probability": 0.9988
+    },
+    {
+      "word": "acabamos",
+      "start_ms": 131572,
+      "end_ms": 131880,
+      "start_srt": "00:02:11,572",
+      "end_srt": "00:02:11,880",
+      "probability": 0.9986
+    },
+    {
+      "word": "de",
+      "start_ms": 131880,
+      "end_ms": 132000,
+      "start_srt": "00:02:11,880",
+      "end_srt": "00:02:12,000",
+      "probability": 0.9992
+    },
+    {
+      "word": "comprar",
+      "start_ms": 132000,
+      "end_ms": 132377,
+      "start_srt": "00:02:12,000",
+      "end_srt": "00:02:12,377",
+      "probability": 0.9982
+    },
+    {
+      "word": "y",
+      "start_ms": 132377,
+      "end_ms": 132780,
+      "start_srt": "00:02:12,377",
+      "end_srt": "00:02:12,780",
+      "probability": 0.4648
+    },
+    {
+      "word": "eliges",
+      "start_ms": 132780,
+      "end_ms": 133040,
+      "start_srt": "00:02:12,780",
+      "end_srt": "00:02:13,040",
+      "probability": 0.9583
+    },
+    {
+      "word": "que",
+      "start_ms": 133040,
+      "end_ms": 133233,
+      "start_srt": "00:02:13,040",
+      "end_srt": "00:02:13,233",
+      "probability": 0.8833
+    },
+    {
+      "word": "vas",
+      "start_ms": 133233,
+      "end_ms": 133360,
+      "start_srt": "00:02:13,233",
+      "end_srt": "00:02:13,360",
+      "probability": 0.9965
+    },
+    {
+      "word": "a",
+      "start_ms": 133360,
+      "end_ms": 133460,
+      "start_srt": "00:02:13,360",
+      "end_srt": "00:02:13,460",
+      "probability": 0.9988
+    },
+    {
+      "word": "vender.",
+      "start_ms": 133460,
+      "end_ms": 133707,
+      "start_srt": "00:02:13,460",
+      "end_srt": "00:02:13,707",
+      "probability": 0.9986
+    },
+    {
+      "word": "Indicas",
+      "start_ms": 138208,
+      "end_ms": 138560,
+      "start_srt": "00:02:18,208",
+      "end_srt": "00:02:18,560",
+      "probability": 0.9542
+    },
+    {
+      "word": "cuántas",
+      "start_ms": 138560,
+      "end_ms": 138960,
+      "start_srt": "00:02:18,560",
+      "end_srt": "00:02:18,960",
+      "probability": 0.7822
+    },
+    {
+      "word": "unidades",
+      "start_ms": 138960,
+      "end_ms": 139260,
+      "start_srt": "00:02:18,960",
+      "end_srt": "00:02:19,260",
+      "probability": 0.9391
+    },
+    {
+      "word": "vas",
+      "start_ms": 139260,
+      "end_ms": 139480,
+      "start_srt": "00:02:19,260",
+      "end_srt": "00:02:19,480",
+      "probability": 0.9964
+    },
+    {
+      "word": "a",
+      "start_ms": 139480,
+      "end_ms": 139646,
+      "start_srt": "00:02:19,480",
+      "end_srt": "00:02:19,646",
+      "probability": 0.9964
+    },
+    {
+      "word": "entregar",
+      "start_ms": 139646,
+      "end_ms": 140000,
+      "start_srt": "00:02:19,646",
+      "end_srt": "00:02:20,000",
+      "probability": 0.9906
+    },
+    {
+      "word": "y",
+      "start_ms": 140000,
+      "end_ms": 140180,
+      "start_srt": "00:02:20,000",
+      "end_srt": "00:02:20,180",
+      "probability": 0.9913
+    },
+    {
+      "word": "en",
+      "start_ms": 140180,
+      "end_ms": 140300,
+      "start_srt": "00:02:20,180",
+      "end_srt": "00:02:20,300",
+      "probability": 0.9486
+    },
+    {
+      "word": "precio",
+      "start_ms": 140300,
+      "end_ms": 140520,
+      "start_srt": "00:02:20,300",
+      "end_srt": "00:02:20,520",
+      "probability": 0.9901
+    },
+    {
+      "word": "por",
+      "start_ms": 140520,
+      "end_ms": 140760,
+      "start_srt": "00:02:20,520",
+      "end_srt": "00:02:20,760",
+      "probability": 0.9794
+    },
+    {
+      "word": "unidad",
+      "start_ms": 140760,
+      "end_ms": 140968,
+      "start_srt": "00:02:20,760",
+      "end_srt": "00:02:20,968",
+      "probability": 0.875
+    },
+    {
+      "word": "colocas",
+      "start_ms": 140968,
+      "end_ms": 141420,
+      "start_srt": "00:02:20,968",
+      "end_srt": "00:02:21,420",
+      "probability": 0.7941
+    },
+    {
+      "word": "el",
+      "start_ms": 141420,
+      "end_ms": 141560,
+      "start_srt": "00:02:21,420",
+      "end_srt": "00:02:21,560",
+      "probability": 0.998
+    },
+    {
+      "word": "valor",
+      "start_ms": 141560,
+      "end_ms": 141740,
+      "start_srt": "00:02:21,560",
+      "end_srt": "00:02:21,740",
+      "probability": 0.9913
+    },
+    {
+      "word": "al",
+      "start_ms": 141740,
+      "end_ms": 141905,
+      "start_srt": "00:02:21,740",
+      "end_srt": "00:02:21,905",
+      "probability": 0.9867
+    },
+    {
+      "word": "que",
+      "start_ms": 141905,
+      "end_ms": 142071,
+      "start_srt": "00:02:21,905",
+      "end_srt": "00:02:22,071",
+      "probability": 0.9963
+    },
+    {
+      "word": "se",
+      "start_ms": 142071,
+      "end_ms": 142180,
+      "start_srt": "00:02:22,071",
+      "end_srt": "00:02:22,180",
+      "probability": 0.9817
+    },
+    {
+      "word": "lo",
+      "start_ms": 142180,
+      "end_ms": 142278,
+      "start_srt": "00:02:22,180",
+      "end_srt": "00:02:22,278",
+      "probability": 0.9833
+    },
+    {
+      "word": "estás",
+      "start_ms": 142278,
+      "end_ms": 142467,
+      "start_srt": "00:02:22,278",
+      "end_srt": "00:02:22,467",
+      "probability": 0.9683
+    },
+    {
+      "word": "vendiendo",
+      "start_ms": 142467,
+      "end_ms": 142880,
+      "start_srt": "00:02:22,467",
+      "end_srt": "00:02:22,880",
+      "probability": 0.8675
+    },
+    {
+      "word": "a",
+      "start_ms": 142880,
+      "end_ms": 142960,
+      "start_srt": "00:02:22,880",
+      "end_srt": "00:02:22,960",
+      "probability": 0.9978
+    },
+    {
+      "word": "tu",
+      "start_ms": 142960,
+      "end_ms": 143021,
+      "start_srt": "00:02:22,960",
+      "end_srt": "00:02:23,021",
+      "probability": 0.9876
+    },
+    {
+      "word": "cliente.",
+      "start_ms": 143021,
+      "end_ms": 143483,
+      "start_srt": "00:02:23,021",
+      "end_srt": "00:02:23,483",
+      "probability": 0.9946
+    },
+    {
+      "word": "Eliges",
+      "start_ms": 152205,
+      "end_ms": 152510,
+      "start_srt": "00:02:32,205",
+      "end_srt": "00:02:32,510",
+      "probability": 0.5093
+    },
+    {
+      "word": "a",
+      "start_ms": 152510,
+      "end_ms": 152690,
+      "start_srt": "00:02:32,510",
+      "end_srt": "00:02:32,690",
+      "probability": 0.9749
+    },
+    {
+      "word": "cual",
+      "start_ms": 152690,
+      "end_ms": 152790,
+      "start_srt": "00:02:32,690",
+      "end_srt": "00:02:32,790",
+      "probability": 0.5315
+    },
+    {
+      "word": "de",
+      "start_ms": 152790,
+      "end_ms": 152941,
+      "start_srt": "00:02:32,790",
+      "end_srt": "00:02:32,941",
+      "probability": 0.9966
+    },
+    {
+      "word": "tus",
+      "start_ms": 152941,
+      "end_ms": 153106,
+      "start_srt": "00:02:32,941",
+      "end_srt": "00:02:33,106",
+      "probability": 0.9914
+    },
+    {
+      "word": "cuentas",
+      "start_ms": 153106,
+      "end_ms": 153490,
+      "start_srt": "00:02:33,106",
+      "end_srt": "00:02:33,490",
+      "probability": 0.9945
+    },
+    {
+      "word": "de",
+      "start_ms": 153490,
+      "end_ms": 153555,
+      "start_srt": "00:02:33,490",
+      "end_srt": "00:02:33,555",
+      "probability": 0.9967
+    },
+    {
+      "word": "finanza",
+      "start_ms": 153555,
+      "end_ms": 153950,
+      "start_srt": "00:02:33,555",
+      "end_srt": "00:02:33,950",
+      "probability": 0.6438
+    },
+    {
+      "word": "centrará",
+      "start_ms": 153950,
+      "end_ms": 154450,
+      "start_srt": "00:02:33,950",
+      "end_srt": "00:02:34,450",
+      "probability": 0.8973
+    },
+    {
+      "word": "ese",
+      "start_ms": 154450,
+      "end_ms": 154550,
+      "start_srt": "00:02:34,450",
+      "end_srt": "00:02:34,550",
+      "probability": 0.9842
+    },
+    {
+      "word": "pago.",
+      "start_ms": 154550,
+      "end_ms": 154889,
+      "start_srt": "00:02:34,550",
+      "end_srt": "00:02:34,889",
+      "probability": 0.9911
+    },
+    {
+      "word": "Seleccionas",
+      "start_ms": 155224,
+      "end_ms": 155780,
+      "start_srt": "00:02:35,224",
+      "end_srt": "00:02:35,780",
+      "probability": 0.9562
+    },
+    {
+      "word": "a",
+      "start_ms": 155780,
+      "end_ms": 155860,
+      "start_srt": "00:02:35,780",
+      "end_srt": "00:02:35,860",
+      "probability": 0.9976
+    },
+    {
+      "word": "tu",
+      "start_ms": 155860,
+      "end_ms": 155960,
+      "start_srt": "00:02:35,860",
+      "end_srt": "00:02:35,960",
+      "probability": 0.9949
+    },
+    {
+      "word": "comprador",
+      "start_ms": 155960,
+      "end_ms": 156412,
+      "start_srt": "00:02:35,960",
+      "end_srt": "00:02:36,412",
+      "probability": 0.9499
+    },
+    {
+      "word": "desde",
+      "start_ms": 156412,
+      "end_ms": 156580,
+      "start_srt": "00:02:36,412",
+      "end_srt": "00:02:36,580",
+      "probability": 0.9896
+    },
+    {
+      "word": "el",
+      "start_ms": 156580,
+      "end_ms": 156740,
+      "start_srt": "00:02:36,580",
+      "end_srt": "00:02:36,740",
+      "probability": 0.9911
+    },
+    {
+      "word": "directorio",
+      "start_ms": 156740,
+      "end_ms": 157220,
+      "start_srt": "00:02:36,740",
+      "end_srt": "00:02:37,220",
+      "probability": 0.9634
+    },
+    {
+      "word": "de",
+      "start_ms": 157220,
+      "end_ms": 157297,
+      "start_srt": "00:02:37,220",
+      "end_srt": "00:02:37,297",
+      "probability": 0.9666
+    },
+    {
+      "word": "terceros",
+      "start_ms": 157297,
+      "end_ms": 157780,
+      "start_srt": "00:02:37,297",
+      "end_srt": "00:02:37,780",
+      "probability": 0.9623
+    },
+    {
+      "word": "y",
+      "start_ms": 157780,
+      "end_ms": 157880,
+      "start_srt": "00:02:37,780",
+      "end_srt": "00:02:37,880",
+      "probability": 0.9892
+    },
+    {
+      "word": "presiona",
+      "start_ms": 157880,
+      "end_ms": 158220,
+      "start_srt": "00:02:37,880",
+      "end_srt": "00:02:38,220",
+      "probability": 0.7389
+    },
+    {
+      "word": "registrar",
+      "start_ms": 158220,
+      "end_ms": 158780,
+      "start_srt": "00:02:38,220",
+      "end_srt": "00:02:38,780",
+      "probability": 0.7657
+    },
+    {
+      "word": "venta.",
+      "start_ms": 158780,
+      "end_ms": 159082,
+      "start_srt": "00:02:38,780",
+      "end_srt": "00:02:39,082",
+      "probability": 0.9734
+    },
+    {
+      "word": "De",
+      "start_ms": 169211,
+      "end_ms": 169330,
+      "start_srt": "00:02:49,211",
+      "end_srt": "00:02:49,330",
+      "probability": 0.9895
+    },
+    {
+      "word": "inmediato",
+      "start_ms": 169330,
+      "end_ms": 169763,
+      "start_srt": "00:02:49,330",
+      "end_srt": "00:02:49,763",
+      "probability": 0.996
+    },
+    {
+      "word": "el",
+      "start_ms": 169763,
+      "end_ms": 169830,
+      "start_srt": "00:02:49,763",
+      "end_srt": "00:02:49,830",
+      "probability": 0.9801
+    },
+    {
+      "word": "sistema",
+      "start_ms": 169830,
+      "end_ms": 170094,
+      "start_srt": "00:02:49,830",
+      "end_srt": "00:02:50,094",
+      "probability": 0.9899
+    },
+    {
+      "word": "resta",
+      "start_ms": 170094,
+      "end_ms": 170550,
+      "start_srt": "00:02:50,094",
+      "end_srt": "00:02:50,550",
+      "probability": 0.7786
+    },
+    {
+      "word": "esa",
+      "start_ms": 170550,
+      "end_ms": 170650,
+      "start_srt": "00:02:50,550",
+      "end_srt": "00:02:50,650",
+      "probability": 0.9925
+    },
+    {
+      "word": "unidad",
+      "start_ms": 170650,
+      "end_ms": 170930,
+      "start_srt": "00:02:50,650",
+      "end_srt": "00:02:50,930",
+      "probability": 0.9827
+    },
+    {
+      "word": "de",
+      "start_ms": 170930,
+      "end_ms": 171044,
+      "start_srt": "00:02:50,930",
+      "end_srt": "00:02:51,044",
+      "probability": 0.9972
+    },
+    {
+      "word": "tu",
+      "start_ms": 171044,
+      "end_ms": 171196,
+      "start_srt": "00:02:51,044",
+      "end_srt": "00:02:51,196",
+      "probability": 0.9955
+    },
+    {
+      "word": "inventario.",
+      "start_ms": 171196,
+      "end_ms": 171754,
+      "start_srt": "00:02:51,196",
+      "end_srt": "00:02:51,754",
+      "probability": 0.9982
+    },
+    {
+      "word": "Suma",
+      "start_ms": 172137,
+      "end_ms": 172400,
+      "start_srt": "00:02:52,137",
+      "end_srt": "00:02:52,400",
+      "probability": 0.8839
+    },
+    {
+      "word": "el",
+      "start_ms": 172400,
+      "end_ms": 172440,
+      "start_srt": "00:02:52,400",
+      "end_srt": "00:02:52,440",
+      "probability": 0.9288
+    },
+    {
+      "word": "dinero",
+      "start_ms": 172440,
+      "end_ms": 172660,
+      "start_srt": "00:02:52,440",
+      "end_srt": "00:02:52,660",
+      "probability": 0.999
+    },
+    {
+      "word": "como",
+      "start_ms": 172660,
+      "end_ms": 172920,
+      "start_srt": "00:02:52,660",
+      "end_srt": "00:02:52,920",
+      "probability": 0.9898
+    },
+    {
+      "word": "ingreso",
+      "start_ms": 172920,
+      "end_ms": 173300,
+      "start_srt": "00:02:52,920",
+      "end_srt": "00:02:53,300",
+      "probability": 0.9833
+    },
+    {
+      "word": "en",
+      "start_ms": 173300,
+      "end_ms": 173360,
+      "start_srt": "00:02:53,300",
+      "end_srt": "00:02:53,360",
+      "probability": 0.9968
+    },
+    {
+      "word": "tu",
+      "start_ms": 173360,
+      "end_ms": 173479,
+      "start_srt": "00:02:53,360",
+      "end_srt": "00:02:53,479",
+      "probability": 0.9973
+    },
+    {
+      "word": "cuenta",
+      "start_ms": 173479,
+      "end_ms": 173782,
+      "start_srt": "00:02:53,479",
+      "end_srt": "00:02:53,782",
+      "probability": 0.9817
+    },
+    {
+      "word": "y",
+      "start_ms": 173782,
+      "end_ms": 173960,
+      "start_srt": "00:02:53,782",
+      "end_srt": "00:02:53,960",
+      "probability": 0.9876
+    },
+    {
+      "word": "en",
+      "start_ms": 173960,
+      "end_ms": 174060,
+      "start_srt": "00:02:53,960",
+      "end_srt": "00:02:54,060",
+      "probability": 0.9908
+    },
+    {
+      "word": "el",
+      "start_ms": 174060,
+      "end_ms": 174180,
+      "start_srt": "00:02:54,060",
+      "end_srt": "00:02:54,180",
+      "probability": 0.9962
+    },
+    {
+      "word": "dashboard.",
+      "start_ms": 174180,
+      "end_ms": 174679,
+      "start_srt": "00:02:54,180",
+      "end_srt": "00:02:54,679",
+      "probability": 0.4594
+    },
+    {
+      "word": "Y",
+      "start_ms": 175011,
+      "end_ms": 175058,
+      "start_srt": "00:02:55,011",
+      "end_srt": "00:02:55,058",
+      "probability": 0.7717
+    },
+    {
+      "word": "te",
+      "start_ms": 175058,
+      "end_ms": 175220,
+      "start_srt": "00:02:55,058",
+      "end_srt": "00:02:55,220",
+      "probability": 0.996
+    },
+    {
+      "word": "deja",
+      "start_ms": 175220,
+      "end_ms": 175380,
+      "start_srt": "00:02:55,220",
+      "end_srt": "00:02:55,380",
+      "probability": 0.8396
+    },
+    {
+      "word": "la",
+      "start_ms": 175380,
+      "end_ms": 175478,
+      "start_srt": "00:02:55,380",
+      "end_srt": "00:02:55,478",
+      "probability": 0.9852
+    },
+    {
+      "word": "transacción",
+      "start_ms": 175478,
+      "end_ms": 176040,
+      "start_srt": "00:02:55,478",
+      "end_srt": "00:02:56,040",
+      "probability": 0.9911
+    },
+    {
+      "word": "lista",
+      "start_ms": 176040,
+      "end_ms": 176229,
+      "start_srt": "00:02:56,040",
+      "end_srt": "00:02:56,229",
+      "probability": 0.9986
+    },
+    {
+      "word": "con",
+      "start_ms": 176229,
+      "end_ms": 176519,
+      "start_srt": "00:02:56,229",
+      "end_srt": "00:02:56,519",
+      "probability": 0.994
+    },
+    {
+      "word": "sus",
+      "start_ms": 176519,
+      "end_ms": 176667,
+      "start_srt": "00:02:56,519",
+      "end_srt": "00:02:56,667",
+      "probability": 0.982
+    },
+    {
+      "word": "botones",
+      "start_ms": 176667,
+      "end_ms": 177041,
+      "start_srt": "00:02:56,667",
+      "end_srt": "00:02:57,041",
+      "probability": 0.9964
+    },
+    {
+      "word": "de",
+      "start_ms": 177041,
+      "end_ms": 177200,
+      "start_srt": "00:02:57,041",
+      "end_srt": "00:02:57,200",
+      "probability": 0.9959
+    },
+    {
+      "word": "detalle.",
+      "start_ms": 177200,
+      "end_ms": 177610,
+      "start_srt": "00:02:57,200",
+      "end_srt": "00:02:57,610",
+      "probability": 0.9836
+    },
+    {
+      "word": "Edición,",
+      "start_ms": 177941,
+      "end_ms": 178453,
+      "start_srt": "00:02:57,941",
+      "end_srt": "00:02:58,453",
+      "probability": 0.9389
+    },
+    {
+      "word": "borrado",
+      "start_ms": 178676,
+      "end_ms": 179130,
+      "start_srt": "00:02:58,676",
+      "end_srt": "00:02:59,130",
+      "probability": 0.9802
+    },
+    {
+      "word": "y",
+      "start_ms": 179130,
+      "end_ms": 179240,
+      "start_srt": "00:02:59,130",
+      "end_srt": "00:02:59,240",
+      "probability": 0.9848
+    },
+    {
+      "word": "exportación",
+      "start_ms": 179240,
+      "end_ms": 179868,
+      "start_srt": "00:02:59,240",
+      "end_srt": "00:02:59,868",
+      "probability": 0.9886
+    },
+    {
+      "word": "a",
+      "start_ms": 179868,
+      "end_ms": 180000,
+      "start_srt": "00:02:59,868",
+      "end_srt": "00:03:00,000",
+      "probability": 0.9767
+    },
+    {
+      "word": "Excel.",
+      "start_ms": 180000,
+      "end_ms": 180262,
+      "start_srt": "00:03:00,000",
+      "end_srt": "00:03:00,262",
+      "probability": 0.7762
+    }
+  ]
+}

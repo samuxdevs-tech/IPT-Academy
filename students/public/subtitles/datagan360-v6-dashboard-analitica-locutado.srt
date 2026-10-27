@@ -1,0 +1,251 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,039
+[...]
+
+4
+00:00:05,039 --> 00:00:07,162
+bienvenido a un nuevo tutorial de DataGan 360,
+
+5
+00:00:07,162 --> 00:00:08,159
+[...]
+
+6
+00:00:08,159 --> 00:00:09,386
+una vez que has registrado potreros,
+
+7
+00:00:09,386 --> 00:00:09,613
+[...]
+
+8
+00:00:09,613 --> 00:00:09,922
+animales,
+
+9
+00:00:09,922 --> 00:00:10,234
+[...]
+
+10
+00:00:10,234 --> 00:00:11,092
+ordeños y finanzas,
+
+11
+00:00:11,092 --> 00:00:11,365
+[...]
+
+12
+00:00:11,365 --> 00:00:13,097
+así cobra vida la pestaña analítica del Dashboard,
+
+13
+00:00:13,097 --> 00:00:13,433
+[...]
+
+14
+00:00:13,433 --> 00:00:16,833
+arriba ves cuántos potreros tienes ocupados o descansando junto a sus polígonos en el mapa satelital.
+
+15
+00:00:16,833 --> 00:00:17,853
+[...]
+
+16
+00:00:17,853 --> 00:00:24,791
+En la barra de filtros puedes elegir si deseas analizar los últimos 30 días o ver un rango personalizado de fechas para auditar cualquier época del año.
+
+17
+00:00:24,791 --> 00:00:29,184
+[...]
+
+18
+00:00:29,184 --> 00:00:31,653
+Al pasar el mouse por las tarjetas de eficiencia por hectárea,
+
+19
+00:00:31,653 --> 00:00:32,003
+[...]
+
+20
+00:00:32,003 --> 00:00:33,490
+el sistema cruza tus pesajes,
+
+21
+00:00:33,490 --> 00:00:33,774
+[...]
+
+22
+00:00:33,774 --> 00:00:37,564
+ordeños y hectáreas de potreros para mostrarte tu producción de carne y leche por hectárea, tu
+
+23
+00:00:37,564 --> 00:00:37,872
+[...]
+
+24
+00:00:37,872 --> 00:00:40,849
+carga en Unidades Gran Ganado y tu tasa de extracción frente a Fedegán.
+
+25
+00:00:40,849 --> 00:00:42,186
+[...]
+
+26
+00:00:42,186 --> 00:00:44,950
+En el resumen analítico tienes dos indicadores en tiempo real.
+
+27
+00:00:44,950 --> 00:00:45,231
+[...]
+
+28
+00:00:45,231 --> 00:00:46,740
+Cuántas vacas están en lactancia,
+
+29
+00:00:46,740 --> 00:00:47,063
+[...]
+
+30
+00:00:47,063 --> 00:00:48,062
+nacimientos del periodo,
+
+31
+00:00:48,062 --> 00:00:48,378
+[...]
+
+32
+00:00:48,378 --> 00:00:49,089
+toros activos,
+
+33
+00:00:49,089 --> 00:00:49,313
+[...]
+
+34
+00:00:49,313 --> 00:00:50,492
+cuál es tu vaca más productora,
+
+35
+00:00:50,492 --> 00:00:50,754
+[...]
+
+36
+00:00:50,754 --> 00:00:52,886
+el peso promedio del hato y el estado general de salud.
+
+37
+00:00:52,886 --> 00:00:54,173
+[...]
+
+38
+00:00:54,173 --> 00:00:54,547
+Debajo,
+
+39
+00:00:54,547 --> 00:00:54,808
+[...]
+
+40
+00:00:54,808 --> 00:00:57,800
+la sección de producción convierte tus registros diarios en gráficas visuales.
+
+41
+00:00:57,800 --> 00:00:58,135
+[...]
+
+42
+00:00:58,135 --> 00:00:59,269
+La curva de leche día por día,
+
+43
+00:00:59,269 --> 00:00:59,539
+[...]
+
+44
+00:00:59,539 --> 00:01:01,950
+el balance de potreros en pastoreo y los nacimientos por fecha.
+
+45
+00:01:01,950 --> 00:01:03,163
+[...]
+
+46
+00:01:03,163 --> 00:01:03,602
+Más abajo,
+
+47
+00:01:03,602 --> 00:01:03,850
+[...]
+
+48
+00:01:03,850 --> 00:01:06,634
+el resumen financiero trae automáticamente los datos del módulo de finanzas,
+
+49
+00:01:06,634 --> 00:01:06,882
+[...]
+
+50
+00:01:06,882 --> 00:01:08,106
+tus ingresos, egresos,
+
+51
+00:01:08,106 --> 00:01:08,353
+[...]
+
+52
+00:01:08,353 --> 00:01:10,974
+el valor actual de tu bodega de inventario y cuánto vale hoy todo tu ganado sumado.
+
+53
+00:01:10,974 --> 00:01:12,200
+[...]
+
+54
+00:01:12,200 --> 00:01:17,739
+Incluso cruza tus gastos contra los litros ordeñados para decirte cuántos pesos te cuesta producir cada litro de leche,
+
+55
+00:01:17,739 --> 00:01:18,104
+[...]
+
+56
+00:01:18,104 --> 00:01:20,285
+graficando a la derecha el flujo de caja mes a mes.
+
+57
+00:01:20,285 --> 00:01:29,210
+[...]
+
+58
+00:01:29,210 --> 00:01:29,866
+Finalmente,
+
+59
+00:01:29,866 --> 00:01:30,170
+[...]
+
+60
+00:01:30,170 --> 00:01:34,550
+en la base tienes el comparativo automático frente a los estándares ideales de tu tipo de ganadería,
+
+61
+00:01:34,550 --> 00:01:34,884
+[...]
+
+62
+00:01:34,884 --> 00:01:38,149
+indicándote en qué métricas superas el promedio y cuáles debes optimizar.
+
+63
+00:01:38,149 --> 00:01:42,540
+[...]

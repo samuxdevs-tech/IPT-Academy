@@ -1,0 +1,483 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,025
+[...]
+
+4
+00:00:05,025 --> 00:00:07,162
+bienvenido a un nuevo tutorial de DataGan 360,
+
+5
+00:00:07,162 --> 00:00:08,164
+[...]
+
+6
+00:00:08,164 --> 00:00:09,543
+para poblar tu ganadería en orden lógico.
+
+7
+00:00:09,543 --> 00:00:09,787
+[...]
+
+8
+00:00:09,787 --> 00:00:10,775
+Primero creamos los potreros,
+
+9
+00:00:10,775 --> 00:00:11,021
+[...]
+
+10
+00:00:11,021 --> 00:00:12,476
+luego los lotes y finalmente los animales.
+
+11
+00:00:12,476 --> 00:00:13,223
+[...]
+
+12
+00:00:13,223 --> 00:00:14,009
+Entramos a bovinos,
+
+13
+00:00:14,009 --> 00:00:14,217
+[...]
+
+14
+00:00:14,217 --> 00:00:15,810
+abrimos potreros y presionamos crear potrero.
+
+15
+00:00:15,810 --> 00:00:16,859
+[...]
+
+16
+00:00:16,859 --> 00:00:20,904
+Aquí escribirás el nombre o número con el que identificas esa pradera o manga en tu finca.
+
+17
+00:00:20,904 --> 00:00:28,208
+[...]
+
+18
+00:00:28,208 --> 00:00:30,215
+Al digitar las hectáreas que mide ese potrero,
+
+19
+00:00:30,215 --> 00:00:30,579
+[...]
+
+20
+00:00:30,579 --> 00:00:36,299
+mira como la barra superior las descuenta automáticamente del área total de tu finca para que nunca asignes más tierra de la que tienes.
+
+21
+00:00:36,299 --> 00:00:37,312
+[...]
+
+22
+00:00:37,312 --> 00:00:39,435
+Abajo seleccionas qué pastura tienes sembrada allí.
+
+23
+00:00:39,435 --> 00:00:41,197
+[...]
+
+24
+00:00:41,197 --> 00:00:43,842
+Si despliegas mostrar mapa y presionas dibujar potrero,
+
+25
+00:00:43,842 --> 00:00:44,171
+[...]
+
+26
+00:00:44,171 --> 00:00:47,349
+podrás marcar con clics los linderos reales sobre la imagen satelital.
+
+27
+00:00:47,349 --> 00:00:47,730
+[...]
+
+28
+00:00:47,730 --> 00:00:50,640
+Ese polígono se verá reflejado en el mapa interactivo del Dashboard.
+
+29
+00:00:50,640 --> 00:00:51,707
+[...]
+
+30
+00:00:51,707 --> 00:00:54,844
+Con limpiar todo puedes borrar el trazo si deseas ajustarlo después.
+
+31
+00:00:54,844 --> 00:01:01,203
+[...]
+
+32
+00:01:01,203 --> 00:01:03,745
+Guardamos el potrero y verás que nace en estado disponible.
+
+33
+00:01:03,745 --> 00:01:04,792
+[...]
+
+34
+00:01:04,792 --> 00:01:07,316
+Ahora vamos al menú lateral y entramos al segundo eslabón,
+
+35
+00:01:07,316 --> 00:01:07,588
+[...]
+
+36
+00:01:07,588 --> 00:01:08,002
+lotes,
+
+37
+00:01:08,002 --> 00:01:10,190
+[...]
+
+38
+00:01:10,190 --> 00:01:11,266
+presionamos crear lote.
+
+39
+00:01:11,266 --> 00:01:12,279
+[...]
+
+40
+00:01:12,279 --> 00:01:14,302
+Aquí armará los grupos de manejo de tu finca,
+
+41
+00:01:14,302 --> 00:01:14,552
+[...]
+
+42
+00:01:14,552 --> 00:01:15,596
+como vacas en ordeño,
+
+43
+00:01:15,596 --> 00:01:15,948
+[...]
+
+44
+00:01:15,948 --> 00:01:17,511
+novilla de vientre o macho de ceba,
+
+45
+00:01:17,511 --> 00:01:17,822
+[...]
+
+46
+00:01:17,822 --> 00:01:19,761
+escribiendo su nombre y una breve descripción.
+
+47
+00:01:19,761 --> 00:01:30,207
+[...]
+
+48
+00:01:30,207 --> 00:01:34,306
+En propietario vinculamos uno de los titulares que creamos en el módulo de terceros y guardamos.
+
+49
+00:01:34,306 --> 00:01:35,485
+[...]
+
+50
+00:01:35,485 --> 00:01:37,325
+Ya teniendo potreros y lotes listos,
+
+51
+00:01:37,325 --> 00:01:37,635
+[...]
+
+52
+00:01:37,635 --> 00:01:39,377
+entramos en el menú lateral animales.
+
+53
+00:01:39,377 --> 00:01:44,208
+[...]
+
+54
+00:01:44,208 --> 00:01:50,545
+Arriba tienes el bloque de registro rápido por si estás en el corral y quieres meter animales en segundos dejando los detalles para después.
+
+55
+00:01:50,545 --> 00:01:51,565
+[...]
+
+56
+00:01:51,565 --> 00:01:52,808
+Para ver la ficha completa,
+
+57
+00:01:52,808 --> 00:01:53,145
+[...]
+
+58
+00:01:53,145 --> 00:01:54,628
+presionamos el botón crear animal.
+
+59
+00:01:54,628 --> 00:01:57,208
+[...]
+
+60
+00:01:57,208 --> 00:01:59,059
+El formulario se divide en tres pasos.
+
+61
+00:01:59,059 --> 00:01:59,438
+[...]
+
+62
+00:01:59,438 --> 00:02:02,762
+En el paso 1 digitarás el número de chapeta o registro único de tu ejemplar.
+
+63
+00:02:02,762 --> 00:02:03,100
+[...]
+
+64
+00:02:03,100 --> 00:02:06,480
+Seleccionarás su sexo y elegirás su raza dentro del catálogo genético.
+
+65
+00:02:06,480 --> 00:02:24,199
+[...]
+
+66
+00:02:24,199 --> 00:02:26,645
+Indica su fecha real o aproximada de nacimiento,
+
+67
+00:02:26,645 --> 00:02:27,025
+[...]
+
+68
+00:02:27,025 --> 00:02:28,640
+la fecha en que ingresó a la finca y
+
+69
+00:02:28,640 --> 00:02:28,971
+[...]
+
+70
+00:02:28,971 --> 00:02:30,449
+si usas bastón o antena RFID,
+
+71
+00:02:30,449 --> 00:02:30,805
+[...]
+
+72
+00:02:30,805 --> 00:02:32,986
+aquí pegas el código de su microchip electrónico.
+
+73
+00:02:32,986 --> 00:02:34,038
+[...]
+
+74
+00:02:34,038 --> 00:02:35,044
+Presionamos siguiente.
+
+75
+00:02:35,044 --> 00:02:40,208
+[...]
+
+76
+00:02:40,208 --> 00:02:42,633
+En el paso 2 conectamos todo lo que creamos antes.
+
+77
+00:02:42,633 --> 00:02:42,959
+[...]
+
+78
+00:02:42,959 --> 00:02:44,290
+Eliges quién es su propietario.
+
+79
+00:02:44,290 --> 00:02:44,677
+[...]
+
+80
+00:02:44,677 --> 00:02:46,364
+Lo metes en su lote correspondiente,
+
+81
+00:02:46,364 --> 00:02:46,697
+[...]
+
+82
+00:02:46,697 --> 00:02:48,688
+lo que lo ubicará en el potrero donde esté ese lote.
+
+83
+00:02:48,688 --> 00:02:48,982
+[...]
+
+84
+00:02:48,982 --> 00:02:51,430
+Define su etapa o grupo de manejo y su propósito.
+
+85
+00:02:51,430 --> 00:03:08,212
+[...]
+
+86
+00:03:08,212 --> 00:03:10,517
+Si conoces a sus progenitores dentro de la finca,
+
+87
+00:03:10,517 --> 00:03:10,849
+[...]
+
+88
+00:03:10,849 --> 00:03:13,169
+aquí seleccionas el registro de la madre y del padre.
+
+89
+00:03:13,169 --> 00:03:13,522
+[...]
+
+90
+00:03:13,522 --> 00:03:16,458
+Esto armará automáticamente su árbol en el módulo de genealogía.
+
+91
+00:03:16,458 --> 00:03:17,469
+[...]
+
+92
+00:03:17,469 --> 00:03:19,510
+Añadimos notas y damos clic en siguiente. En
+
+93
+00:03:19,510 --> 00:03:27,207
+[...]
+
+94
+00:03:27,207 --> 00:03:31,124
+el paso 3 ingresas cuántos kilos pesó al entrar y su valor comercial por kilo.
+
+95
+00:03:31,124 --> 00:03:32,142
+[...]
+
+96
+00:03:32,142 --> 00:03:34,614
+Si el animal no nació en tu finca sino que lo compraste,
+
+97
+00:03:34,614 --> 00:03:34,940
+[...]
+
+98
+00:03:34,940 --> 00:03:35,756
+marca la casilla,
+
+99
+00:03:35,756 --> 00:03:36,076
+[...]
+
+100
+00:03:36,076 --> 00:03:36,675
+es una compra.
+
+101
+00:03:36,675 --> 00:03:43,206
+[...]
+
+102
+00:03:43,206 --> 00:03:45,161
+Verás que al marcarla se abren campos clave,
+
+103
+00:03:45,161 --> 00:03:45,516
+[...]
+
+104
+00:03:45,516 --> 00:03:46,599
+el municipio de origen,
+
+105
+00:03:46,599 --> 00:03:46,989
+[...]
+
+106
+00:03:46,989 --> 00:03:49,006
+la cuenta de finanzas de donde saldrá el dinero,
+
+107
+00:03:49,006 --> 00:03:49,374
+[...]
+
+108
+00:03:49,374 --> 00:03:52,526
+el número de guía de transporte que te subirá puntos en el semáforo y el
+
+109
+00:03:52,526 --> 00:03:52,748
+[...]
+
+110
+00:03:52,748 --> 00:03:54,307
+tercero al que se lo compraste.
+
+111
+00:03:54,307 --> 00:04:12,697
+[...]
+
+112
+00:04:12,697 --> 00:04:13,175
+Además,
+
+113
+00:04:13,175 --> 00:04:13,499
+[...]
+
+114
+00:04:13,499 --> 00:04:16,052
+si por error escribes un valor por kilo desproporcionado,
+
+115
+00:04:16,052 --> 00:04:16,360
+[...]
+
+116
+00:04:16,360 --> 00:04:18,407
+el validador te avisará en rojo antes de guardar.
+
+117
+00:04:18,407 --> 00:04:19,425
+[...]
+
+118
+00:04:19,425 --> 00:04:21,079
+Lo ajustas al valor real de mercado,
+
+119
+00:04:21,079 --> 00:04:21,409
+[...]
+
+120
+00:04:21,409 --> 00:04:24,229
+presionas guardar animal y el ejemplar quedará activo en tu inventario.
+
+121
+00:04:24,229 --> 00:04:29,260
+[...]

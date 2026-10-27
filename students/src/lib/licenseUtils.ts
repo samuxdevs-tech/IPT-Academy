@@ -1,5 +1,5 @@
 /**
- * Utilidades de licenciamiento y verificación de cursos de TecnoGan Academy.
+ * Utilidades de licenciamiento y verificación de cursos de IPT Course.
  * Implementa funciones criptográficas estándar para firmas de acceso y control de permisos.
  */
 
@@ -103,7 +103,7 @@ const LICENSE_SALT = 'TG-ACADEMY-PRECISION-KEY-2026';
  * Genera de forma transparente y determinista el identificador de licenciamiento para un curso.
  */
 export function generateCourseLicenseToken(courseSlug: string): string {
-  const cleanSlug = String(courseSlug || 'datagan-course').trim().toLowerCase();
+  const cleanSlug = String(courseSlug || 'ipt-course').trim().toLowerCase();
   return computeSHA256(`${cleanSlug}:${LICENSE_SALT}`);
 }
 

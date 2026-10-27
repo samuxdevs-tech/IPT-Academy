@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 196 48" fill="none">
+  <g transform="translate(0, -4) scale(0.85)">
+    <polygon points="6,20 26,30 26,56 6,46" fill="#6d28d2" />
+    <polygon points="13,14 26,27 13,21" fill="#591fb0" />
+    <rect x="28" y="30" width="8" height="26" rx="1" fill="#202230" />
+    <rect x="28" y="20" width="8" height="8" rx="1" fill="#c0c4fc" />
+    <polygon points="38,18 47,18 47,26 38,30" fill="#6d28d2" />
+    <polygon points="49,10 58,10 58,21 49,25" fill="#6d28d2" />
+    <path d="M38 33 L47 29 L47 43 L41 46 L41 54 L38 56 Z M41 35 L41 40 L44 38.5 L44 33.5 Z" fill="#6d28d2" />
+    <path d="M49 28 L58 24 L58 29 L55 30.5 L55 46 L51.5 48 L51.5 32 L49 33 Z" fill="#6d28d2" />
+  </g>
+  <text x="58" y="31" font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="20" fill="#202230" letter-spacing="-0.5">IPT</text>
+  <rect x="98" y="12" width="76" height="24" rx="6" fill="#202230" stroke="#6d28d2" stroke-width="1.5" />
+  <text x="126" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="11" fill="#ffffff" letter-spacing="1">PRO</text>
+  <path d="M156 18 V30 M150 24 H162" stroke="#c0c4fc" stroke-width="2.5" stroke-linecap="round" />
+</svg>

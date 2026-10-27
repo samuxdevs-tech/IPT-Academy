@@ -1,0 +1,179 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,025
+[...]
+
+4
+00:00:05,025 --> 00:00:07,162
+bienvenido a un nuevo tutorial de DataGan 360.
+
+5
+00:00:07,162 --> 00:00:08,151
+[...]
+
+6
+00:00:08,151 --> 00:00:09,350
+En la segunda pestaña del Dashboard,
+
+7
+00:00:09,350 --> 00:00:09,656
+[...]
+
+8
+00:00:09,656 --> 00:00:10,316
+gestión operativa,
+
+9
+00:00:10,316 --> 00:00:10,557
+[...]
+
+10
+00:00:10,557 --> 00:00:12,379
+se reflejan todos los eventos de salud y trazabilidad.
+
+11
+00:00:12,379 --> 00:00:13,118
+[...]
+
+12
+00:00:13,118 --> 00:00:17,638
+Arriba ves la tasa de preñez e interpartos y debajo el monitor de clima y estrés calórico que mide cómo el calor afecta tu ordeño.
+
+13
+00:00:17,638 --> 00:00:18,662
+[...]
+
+14
+00:00:18,662 --> 00:00:19,616
+Al bajar a salud del hato,
+
+15
+00:00:19,616 --> 00:00:19,911
+[...]
+
+16
+00:00:19,911 --> 00:00:23,295
+estas cuatro tarjetas resumen lo ocurrido en los últimos 30 días en el módulo de trazabilidad.
+
+17
+00:00:23,295 --> 00:00:23,542
+[...]
+
+18
+00:00:23,542 --> 00:00:24,800
+¿Cuántos animales siguen enfermos?
+
+19
+00:00:24,800 --> 00:00:25,055
+[...]
+
+20
+00:00:25,055 --> 00:00:26,102
+¿Cuántos están en tratamiento?
+
+21
+00:00:26,102 --> 00:00:26,345
+[...]
+
+22
+00:00:26,345 --> 00:00:28,992
+¿Vacunas aplicadas y el gráfico con las patologías predominantes?
+
+23
+00:00:28,992 --> 00:00:30,174
+[...]
+
+24
+00:00:30,174 --> 00:00:38,909
+Mira lo que ocurre en control sanitario cuando varios animales presentan la misma enfermedad en corto tiempo. El sistema enciende esta alerta de brote epidemiológico indicando el nivel de severidad para que actúes de inmediato.
+
+25
+00:00:38,909 --> 00:00:40,213
+[...]
+
+26
+00:00:40,213 --> 00:00:40,686
+Debajo,
+
+27
+00:00:40,686 --> 00:00:40,977
+[...]
+
+28
+00:00:40,977 --> 00:00:44,912
+el sistema calcula automáticamente tres indicadores críticos con semáforo de color.
+
+29
+00:00:44,912 --> 00:00:45,346
+[...]
+
+30
+00:00:45,346 --> 00:00:47,135
+La mortalidad en crías recién nacidas,
+
+31
+00:00:47,135 --> 00:00:47,505
+[...]
+
+32
+00:00:47,505 --> 00:00:50,499
+la mortalidad general del hato y el porcentaje de animales vacunados.
+
+33
+00:00:50,499 --> 00:00:54,193
+[...]
+
+34
+00:00:54,193 --> 00:00:56,976
+Y al final encontramos el bloque de cumplimiento regulatorio ICA,
+
+35
+00:00:56,976 --> 00:00:57,306
+[...]
+
+36
+00:00:57,306 --> 00:01:01,885
+que evalúa de cero a cien que tan lista está tu finca frente a una visita o auditoría sanitaria oficial.
+
+37
+00:01:01,885 --> 00:01:06,191
+[...]
+
+38
+00:01:06,191 --> 00:01:08,273
+A la derecha te califica tus tres pilares,
+
+39
+00:01:08,273 --> 00:01:08,515
+[...]
+
+40
+00:01:08,515 --> 00:01:09,898
+identificación de animales,
+
+41
+00:01:09,898 --> 00:01:10,236
+[...]
+
+42
+00:01:10,236 --> 00:01:11,945
+vacunas de ley y guías de transporte
+
+43
+00:01:11,945 --> 00:01:12,161
+[...]
+
+44
+00:01:12,161 --> 00:01:17,752
+y abajo en acciones pendientes te dice con número exacto cuántos animales debes chapetear o vacunar para llegar al 100%.
+
+45
+00:01:17,752 --> 00:01:22,520
+[...]

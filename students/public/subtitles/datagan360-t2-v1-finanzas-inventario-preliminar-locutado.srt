@@ -1,0 +1,235 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,035
+[...]
+
+4
+00:00:05,035 --> 00:00:07,162
+bienvenido a un nuevo tutorial de DataGan 360.
+
+5
+00:00:07,162 --> 00:00:08,166
+[...]
+
+6
+00:00:08,166 --> 00:00:10,020
+Entramos al bloque de finanzas empezando por inventario,
+
+7
+00:00:10,020 --> 00:00:10,311
+[...]
+
+8
+00:00:10,311 --> 00:00:12,741
+la bodega central donde se conectan tus compras con el consumo en ordeño,
+
+9
+00:00:12,741 --> 00:00:13,000
+[...]
+
+10
+00:00:13,000 --> 00:00:13,974
+sanidad y actividades.
+
+11
+00:00:13,974 --> 00:00:14,714
+[...]
+
+12
+00:00:14,714 --> 00:00:16,878
+En la primera columna puedes buscar cualquier artículo por su nombre,
+
+13
+00:00:16,878 --> 00:00:17,862
+[...]
+
+14
+00:00:17,862 --> 00:00:19,283
+al lado puedes filtrarlos por tipo de insumo,
+
+15
+00:00:19,283 --> 00:00:19,471
+[...]
+
+16
+00:00:19,471 --> 00:00:20,129
+como medicamentos,
+
+17
+00:00:20,129 --> 00:00:20,399
+[...]
+
+18
+00:00:20,399 --> 00:00:20,848
+vacunas,
+
+19
+00:00:20,848 --> 00:00:21,063
+[...]
+
+20
+00:00:21,063 --> 00:00:25,152
+concentrados o equipos y en cantidad filtras rápidamente qué productos tienen stock disponible o cuáles se agotaron.
+
+21
+00:00:25,152 --> 00:00:26,168
+[...]
+
+22
+00:00:26,168 --> 00:00:27,777
+En cada fila tienes el botón ajustar,
+
+23
+00:00:27,777 --> 00:00:28,053
+[...]
+
+24
+00:00:28,053 --> 00:00:32,840
+úsalo cuando hagas conteo físico en bodega y necesites registrar una entrada o salida manual por pérdidas,
+
+25
+00:00:32,840 --> 00:00:33,103
+[...]
+
+26
+00:00:33,103 --> 00:00:34,190
+daños o consumo interno,
+
+27
+00:00:34,190 --> 00:00:34,462
+[...]
+
+28
+00:00:34,462 --> 00:00:35,856
+indicando el motivo y la cantidad. Al
+
+29
+00:00:35,856 --> 00:00:37,211
+[...]
+
+30
+00:00:37,211 --> 00:00:40,372
+presionar el botón historial verás la auditoría completa de ese insumo.
+
+31
+00:00:40,372 --> 00:00:40,701
+[...]
+
+32
+00:00:40,701 --> 00:00:47,074
+Puedes filtrar por fecha o encargado y abajo verás cada vez que entró stock desde el módulo de compras o salió stock por vacunaciones,
+
+33
+00:00:47,074 --> 00:00:47,341
+[...]
+
+34
+00:00:47,341 --> 00:00:48,543
+ordeños o actividades.
+
+35
+00:00:48,543 --> 00:00:49,528
+[...]
+
+36
+00:00:49,528 --> 00:00:50,473
+Volvemos a la lista.
+
+37
+00:00:50,473 --> 00:01:00,246
+[...]
+
+38
+00:01:00,246 --> 00:01:05,819
+Justo debajo de inventario tenemos actividades donde programas trabajos de la finca consumiendo artículos de esa bodega.
+
+39
+00:01:05,819 --> 00:01:06,909
+[...]
+
+40
+00:01:06,909 --> 00:01:09,246
+Presionamos nueva actividad para ver cómo se conectan.
+
+41
+00:01:09,246 --> 00:01:13,204
+[...]
+
+42
+00:01:13,204 --> 00:01:15,744
+Aquí escribirás el nombre del trabajo a realizar en campo.
+
+43
+00:01:15,744 --> 00:01:16,100
+[...]
+
+44
+00:01:16,100 --> 00:01:22,179
+Define su estado inicial y en responsable eliges a cuál de los trabajadores que registraste en administración se le asignará la tarea.
+
+45
+00:01:22,179 --> 00:01:30,225
+[...]
+
+46
+00:01:30,225 --> 00:01:35,618
+Observa que el sistema te exige detallar la descripción para que el trabajador tenga claras las instrucciones de lo que debe hacer.
+
+47
+00:01:35,618 --> 00:01:44,207
+[...]
+
+48
+00:01:44,207 --> 00:01:50,927
+En información adicional eliges la fecha de finalización y en Aplicar a decides si el gasto irá a toda la finca o a un potrero o lote específico.
+
+49
+00:01:50,927 --> 00:01:53,187
+[...]
+
+50
+00:01:53,187 --> 00:01:59,151
+Mira cómo en artículos utilizados se despliegan los mismos insumos que acabamos de ver en inventario para descontar las unidades que uses en la tarea.
+
+51
+00:01:59,151 --> 00:01:59,395
+[...]
+
+52
+00:01:59,395 --> 00:02:02,180
+O puedes eliminar la fila si no usarás materiales de bodega. Y
+
+53
+00:02:02,180 --> 00:02:03,204
+[...]
+
+54
+00:02:03,204 --> 00:02:06,880
+en el bloque inferior de gastos extras podrás añadir cualquier compra de ferretería,
+
+55
+00:02:06,880 --> 00:02:07,228
+[...]
+
+56
+00:02:07,228 --> 00:02:09,622
+combustible o servicio externo que requiera la actividad.
+
+57
+00:02:09,622 --> 00:02:10,652
+[...]
+
+58
+00:02:10,652 --> 00:02:13,705
+En el siguiente vídeo completaremos todo el ciclo contable de esta tarea.
+
+59
+00:02:13,705 --> 00:02:25,960
+[...]

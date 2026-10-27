@@ -5,39 +5,25 @@ import {
   Video,
   Play,
   Users,
-  CheckCircle2,
   AlertCircle,
-  FileText,
-  Clock,
   Mic,
   MicOff,
   VideoOff,
   Share2,
   Square,
-  Sparkles,
-  Send,
-  Inbox,
-  FileSpreadsheet,
-  Calendar,
-  Radio
+  Radio,
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
-import { ref, get, set, update, onValue } from "firebase/database";
+import { ref, set, update, onValue } from "firebase/database";
 
 interface EnrolledStudent {
   uid: string;
   name: string;
   email: string;
+  planId: string;
   availableQuotas: number;
   hasConfirmedHold: boolean;
   quotaDeducted: boolean;
-}
-
-interface PreparedResource {
-  id: string;
-  name: string;
-  type: string;
-  size: string;
 }
 
 interface LiveVirtualSession {
@@ -51,7 +37,7 @@ interface LiveVirtualSession {
   startTimeUtc: string;
   durationMinutes: number;
   cloudRecordingUrl?: string;
-  cloudRecordingState?: "processing" | "ready" | "none";
+  cloudRecordingState?: "processing" | "ready" | "none" | "scheduled";
 }
 
 export function LiveClassSplitView() {
@@ -59,7 +45,6 @@ export function LiveClassSplitView() {
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const [isLiveActive, setIsLiveActive] = useState<boolean>(false);
   const [enrolledStudents, setEnrolledStudents] = useState<EnrolledStudent[]>([]);
-  const [preparedResources, setPreparedResources] = useState<PreparedResource[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeSideTab, setActiveSideTab] = useState<"resources" | "quizzes" | "attendees">("resources");
   const [micMuted, setMicMuted] = useState<boolean>(false);
@@ -68,10 +53,50 @@ export function LiveClassSplitView() {
   const [quizQuestion, setQuizQuestion] = useState<string>("¿Cuál es el criterio principal de validación para esta lección?");
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
 
-  // Escuchar sesiones en vivo y usuarios reales de RTDB
+  // Escuchar sesiones en vivo, usuarios y suscripciones reales de RTDB
   useEffect(() => {
     const sessionsRef = ref(rtdb, "lms_live_sessions");
     const usersRef = ref(rtdb, "users");
+    const subsRef = ref(rtdb, "lms_subscriptions");
+
+    let rawUsers: Record<string, any> = {};
+    let rawSubs: Record<string, any> = {};
+
+    const recomputeStudents = () => {
+      const list: EnrolledStudent[] = Object.keys(rawUsers)
+        .map((k) => {
+          const u = rawUsers[k] || {};
+          const profile = u.profile || {};
+          const consent = u.legalConsent || {};
+          const sub = rawSubs[k] || {};
+          const userEmail = profile.email || u.email || consent.email || "";
+          const userName =
+            profile.displayName ||
+            u.displayName ||
+            u.name ||
+            consent.displayName ||
+            (userEmail ? userEmail.split("@")[0] : "") ||
+            `Estudiante (${k.slice(0, 6)})`;
+
+          return {
+            uid: k,
+            name: userName,
+            email: userEmail || "Sin correo",
+            planId: sub.planId || "free",
+            availableQuotas: Number(sub.remainingCredits ?? u.availableQuotas ?? 1),
+            hasConfirmedHold: true,
+            quotaDeducted: true,
+          };
+        })
+        .filter(
+          (s) =>
+            !s.email.toLowerCase().includes("administrator@ivanperez.tech") &&
+            !s.email.toLowerCase().includes("docente@")
+        );
+
+      setEnrolledStudents(list);
+      setLoading(false);
+    };
 
     const unsubSessions = onValue(sessionsRef, (snap) => {
       if (snap.exists()) {
@@ -89,33 +114,19 @@ export function LiveClassSplitView() {
     });
 
     const unsubUsers = onValue(usersRef, (snap) => {
-      if (snap.exists()) {
-        const val = snap.val();
-        const list: EnrolledStudent[] = Object.keys(val)
-          .map((k) => {
-            const u = val[k] || {};
-            const userEmail = typeof u.email === "string" ? u.email : "";
-            return {
-              uid: k,
-              name: u.displayName || u.name || (userEmail ? userEmail.split("@")[0] : "") || "Estudiante",
-              email: userEmail || "Sin correo",
-              availableQuotas: u.availableQuotas ?? 3,
-              hasConfirmedHold: true,
-              quotaDeducted: true,
-            };
-          })
-          .filter((s) => !s.email.toLowerCase().includes("administrator@ivanperez.tech") && !s.email.toLowerCase().includes("docente@"));
+      rawUsers = snap.exists() ? snap.val() : {};
+      recomputeStudents();
+    });
 
-        setEnrolledStudents(list);
-      } else {
-        setEnrolledStudents([]);
-      }
-      setLoading(false);
+    const unsubSubs = onValue(subsRef, (snap) => {
+      rawSubs = snap.exists() ? snap.val() : {};
+      recomputeStudents();
     });
 
     return () => {
       unsubSessions();
       unsubUsers();
+      unsubSubs();
     };
   }, []);
 
@@ -158,7 +169,6 @@ export function LiveClassSplitView() {
       return;
     }
 
-    // Actualizar estado en Firebase RTDB para que el estudiante vea la sesión en directo
     if (selectedSessionId) {
       try {
         await update(ref(rtdb, `lms_live_sessions/${selectedSessionId}`), {
@@ -193,7 +203,6 @@ export function LiveClassSplitView() {
     const nextState = !activeQuizLaunched;
     setActiveQuizLaunched(nextState);
 
-    // Notificar en RTDB si se lanza quiz a estudiantes
     try {
       if (nextState) {
         await set(ref(rtdb, "active_live_quiz"), {
@@ -243,7 +252,7 @@ export function LiveClassSplitView() {
               )}
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Control de cupos por clase sincrónica, visor de asistentes y sincronización directa con el calendario de estudiantes.
+              Control de cupos por clase sincrónica, visor de asistentes reales de ipt-course y lanzamiento de quizzes en vivo.
             </p>
           </div>
         </div>
@@ -294,10 +303,10 @@ export function LiveClassSplitView() {
                   <div>
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <Users className="w-4 h-4 text-violet-400" />
-                      Validación de Asistencia de Estudiantes Registrados
+                      Validación de Asistencia de Estudiantes en Base de Datos
                     </h3>
                     <p className="text-xs text-zinc-400 mt-0.5">
-                      Verifica a los alumnos que participarán en esta sesión. Los datos provienen directamente de la base de datos de estudiantes.
+                      Verifica a los alumnos que participarán en esta sesión. Los datos se leen en vivo de /users y /lms_subscriptions.
                     </p>
                   </div>
                   <span className="text-xs font-mono font-bold bg-[#181820] text-violet-300 px-3 py-1 rounded-full border border-violet-500/30">
@@ -339,8 +348,8 @@ export function LiveClassSplitView() {
                         </div>
 
                         <div className="text-right font-mono">
-                          <span className="text-xs font-bold text-emerald-400">
-                            {stu.availableQuotas} cupos
+                          <span className="text-xs font-bold text-emerald-400 uppercase">
+                            Plan {stu.planId} · {stu.availableQuotas} créditos
                           </span>
                           <div className="text-[10px] text-zinc-500">
                             {stu.quotaDeducted ? "Confirmado" : "Sin confirmar"}
@@ -393,9 +402,7 @@ export function LiveClassSplitView() {
                     <span className="text-[10px] font-bold uppercase text-violet-200 block mb-1">
                       Quiz en Vivo Desplegado
                     </span>
-                    <p className="text-xs font-bold text-white">
-                      {quizQuestion}
-                    </p>
+                    <p className="text-xs font-bold text-white">{quizQuestion}</p>
                     <span className="text-[10px] text-violet-300 font-mono mt-1 block">
                       Enviado a {verifiedCount} estudiantes
                     </span>

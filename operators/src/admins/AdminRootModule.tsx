@@ -5,21 +5,14 @@ import {
   ShieldCheck,
   Scale,
   Users,
-  Activity,
   Server,
-  FileText,
   ArrowLeft,
   Lock,
   Menu,
   X,
   LogOut,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle,
-  Database,
   Cpu,
-  Layers,
-  ChevronRight
+  CreditCard,
 } from "lucide-react";
 import { LegalComplianceAdmin } from "./LegalComplianceAdmin";
 import { SecurityRolesMatrix } from "./SecurityRolesMatrix";
@@ -27,46 +20,60 @@ import { RegisteredAccountsView } from "./RegisteredAccountsView";
 import { SystemLoadMonitor } from "./SystemLoadMonitor";
 import { ConcurrencyScaleManager } from "./ConcurrencyScaleManager";
 import { AuditLogsViewer } from "./AuditLogsViewer";
+import { SubscriptionsGovernanceAdmin } from "./SubscriptionsGovernanceAdmin";
 import { OperatorUserProfile, rtdb } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { ref, onValue } from "firebase/database";
 
-export type AdminDomain = "identities" | "infrastructure" | "compliance";
+export type AdminDomain =
+  | "subscriptions"
+  | "identities"
+  | "infrastructure"
+  | "compliance";
 
 export default function AdminRootModule({
   userProfile,
-  onExitAdmin
+  onExitAdmin,
 }: {
   userProfile: OperatorUserProfile;
   onExitAdmin: () => void;
 }) {
   const { logout } = useAuth();
-  const [activeDomain, setActiveDomain] = useState<AdminDomain>("identities");
-  const [identitiesSubTab, setIdentitiesSubTab] = useState<"accounts" | "roles">("accounts");
-  const [infraSubTab, setInfraSubTab] = useState<"telemetry" | "scaling">("telemetry");
-  const [complianceSubTab, setComplianceSubTab] = useState<"legal" | "audit">("legal");
+  const [activeDomain, setActiveDomain] = useState<AdminDomain>("subscriptions");
+  const [identitiesSubTab, setIdentitiesSubTab] = useState<"accounts" | "roles">(
+    "accounts"
+  );
+  const [infraSubTab, setInfraSubTab] = useState<"telemetry" | "scaling">(
+    "telemetry"
+  );
+  const [complianceSubTab, setComplianceSubTab] = useState<"legal" | "audit">(
+    "legal"
+  );
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
-  // Métricas reactivas ejecutivas de alto nivel
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [activeStudents, setActiveStudents] = useState<number>(0);
   const [activeTeachers, setActiveTeachers] = useState<number>(0);
+  const [totalCourses, setTotalCourses] = useState<number>(0);
+  const [totalModules, setTotalModules] = useState<number>(0);
   const [totalLegalConsents, setTotalLegalConsents] = useState<number>(0);
   const [totalAuditLogs, setTotalAuditLogs] = useState<number>(0);
-  const [apiShieldStatus, setApiShieldStatus] = useState<"online" | "checking">("checking");
+  const [totalSubscriptions, setTotalSubscriptions] = useState<number>(0);
 
   useEffect(() => {
-    // 1. Escuchar usuarios y roles
     const usersRef = ref(rtdb, "users");
     const unsubUsers = onValue(usersRef, (snap) => {
       if (snap.exists()) {
         const val = snap.val();
         const usersList = Object.values(val) as any[];
         setTotalUsers(usersList.length);
-        const studs = usersList.filter((u) => (u.role || u.profile?.role || "student").toLowerCase() === "student");
         const teachers = usersList.filter((u) => {
           const r = (u.role || u.profile?.role || "").toLowerCase();
           return r === "teacher" || r === "instructor";
+        });
+        const studs = usersList.filter((u) => {
+          const email = (u.email || u.profile?.email || "").toLowerCase();
+          return email !== "administrator@ivanperez.tech";
         });
         setActiveStudents(studs.length);
         setActiveTeachers(teachers.length);
@@ -77,60 +84,90 @@ export default function AdminRootModule({
       }
     });
 
-    // 2. Escuchar consentimientos legales
+    const coursesRef = ref(rtdb, "courses");
+    const unsubCourses = onValue(coursesRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        const list = Array.isArray(val) ? val.filter(Boolean) : Object.values(val);
+        setTotalCourses(list.length);
+        let modCount = 0;
+        list.forEach((c: any) => {
+          const mods = Array.isArray(c?.modules)
+            ? c.modules.filter(Boolean)
+            : c?.modules && typeof c.modules === "object"
+            ? Object.values(c.modules)
+            : [];
+          modCount += mods.length;
+        });
+        setTotalModules(modCount);
+      } else {
+        setTotalCourses(0);
+        setTotalModules(0);
+      }
+    });
+
     const legalRef = ref(rtdb, "legal_consents");
     const unsubLegal = onValue(legalRef, (snap) => {
       setTotalLegalConsents(snap.exists() ? Object.keys(snap.val()).length : 0);
     });
 
-    // 3. Escuchar logs de auditoría
     const auditRef = ref(rtdb, "audit_logs");
     const unsubAudit = onValue(auditRef, (snap) => {
       setTotalAuditLogs(snap.exists() ? Object.keys(snap.val()).length : 0);
     });
 
-    // 4. Comprobar salud de la API
-    fetch("https://ipt-course-api.vercel.app/health")
-      .then((res) => {
-        if (res.ok) setApiShieldStatus("online");
-        else setApiShieldStatus("online");
-      })
-      .catch(() => setApiShieldStatus("online"));
+    const subsRef = ref(rtdb, "lms_subscriptions");
+    const unsubSubs = onValue(subsRef, (snap) => {
+      setTotalSubscriptions(snap.exists() ? Object.keys(snap.val()).length : 0);
+    });
 
     return () => {
       unsubUsers();
+      unsubCourses();
       unsubLegal();
       unsubAudit();
+      unsubSubs();
     };
   }, []);
 
   const domains = [
     {
+      id: "subscriptions" as AdminDomain,
+      label: "Planes, Your Plan & RRHH Docente",
+      badge: `${totalSubscriptions} Membresías`,
+      icon: CreditCard,
+      description:
+        "Precios Free/Pro/Pro+, liberación de cursos, acuerdos Your Plan, quórum docente y antifraude.",
+    },
+    {
       id: "identities" as AdminDomain,
       label: "Identidades & Seguridad",
       badge: `${totalUsers} Cuentas`,
       icon: Users,
-      description: "Directorio maestro de usuarios, asignación de licencias y matriz de más de 50 permisos.",
+      description:
+        "Directorio maestro de usuarios, asignación de licencias y matriz de permisos.",
     },
     {
       id: "infrastructure" as AdminDomain,
       label: "Infraestructura & Cómputo",
       badge: "Edge / Multicloud",
       icon: Cpu,
-      description: "Telemetría viva de servidores Cloudflare/GCP, indicadores de concurrencia y auto-escalado.",
+      description:
+        "Telemetría de servidores, indicadores de concurrencia y auto-escalado.",
     },
     {
       id: "compliance" as AdminDomain,
       label: "Auditoría & Cumplimiento Legal",
       badge: `${totalLegalConsents} Firmas`,
       icon: Scale,
-      description: "Trazabilidad inmutable de términos y litigios, y registro centralizado de fallos y accesos.",
+      description:
+        "Trazabilidad de términos, facturación DIAN y registro de accesos.",
     },
   ];
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] flex flex-col font-sans text-white selection:bg-violet-600 selection:text-white">
-      {/* Barra Superior Dark Pro */}
+      {/* Barra Superior */}
       <header className="bg-[#0e0e12]/95 backdrop-blur-md border-b border-white/10 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -138,7 +175,11 @@ export default function AdminRootModule({
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
 
             <div className="flex items-center gap-2.5">
@@ -147,12 +188,16 @@ export default function AdminRootModule({
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-white tracking-tight">IPT Course</span>
+                  <span className="text-xs font-bold text-white tracking-tight">
+                    IPT Course
+                  </span>
                   <span className="text-[10px] font-mono font-bold bg-violet-500/10 text-violet-300 border border-violet-500/20 px-2 py-0.5 rounded-full">
-                    Command Center Ejecutivo
+                    Dirección Ejecutiva
                   </span>
                 </div>
-                <p className="text-[10px] text-zinc-400">Gobernanza & Operaciones Maestro</p>
+                <p className="text-[10px] text-zinc-400">
+                  Gobernanza Comercial, Planes & Operaciones ({userProfile.email})
+                </p>
               </div>
             </div>
           </div>
@@ -192,7 +237,9 @@ export default function AdminRootModule({
                   setMobileMenuOpen(false);
                 }}
                 className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-semibold transition-colors ${
-                  isActive ? "bg-violet-600 text-white" : "text-zinc-300 hover:bg-white/5"
+                  isActive
+                    ? "bg-violet-600 text-white"
+                    : "text-zinc-300 hover:bg-white/5"
                 }`}
               >
                 <div className="flex items-center gap-2.5">
@@ -210,64 +257,74 @@ export default function AdminRootModule({
 
       {/* Main Executive Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* KPI Status Strip (Apple Pro Cards) */}
+        {/* KPI Status Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Cuentas */}
           <div className="bg-[#121217] border border-white/10 rounded-2xl p-4 shadow-sm space-y-1">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Cuentas Registradas</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Cuentas Registradas
+              </span>
               <Users className="w-4 h-4 text-violet-400" />
             </div>
-            <div className="text-2xl font-bold text-white tracking-tight">{totalUsers}</div>
+            <div className="text-2xl font-bold text-white tracking-tight">
+              {totalUsers}
+            </div>
             <p className="text-[11px] text-zinc-400 flex items-center gap-2 pt-1 border-t border-white/5">
-              <span>{activeStudents} alumnos</span>
+              <span>{activeStudents} alumnos en RTDB</span>
               <span>•</span>
-              <span>{activeTeachers} docentes</span>
+              <span>{totalCourses} cursos ({totalModules} mód.)</span>
             </p>
           </div>
 
-          {/* Card 2: Seguridad y API */}
           <div className="bg-[#121217] border border-white/10 rounded-2xl p-4 shadow-sm space-y-1">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Escudo de Seguridad</span>
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Motor de Suscripciones
+              </span>
+              <CreditCard className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-2xl font-bold text-emerald-400 tracking-tight flex items-center gap-2">
-              <span>Activo</span>
+              <span>4 Planes Activos</span>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <p className="text-[11px] text-zinc-400 pt-1 border-t border-white/5">
-              API Edge blindada contra alumnos
+              Free · Pro (20d) · Pro+ (15d) · Your Plan
             </p>
           </div>
 
-          {/* Card 3: Infraestructura */}
           <div className="bg-[#121217] border border-white/10 rounded-2xl p-4 shadow-sm space-y-1">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Concurrencia (CCU)</span>
-              <Server className="w-4 h-4 text-cyan-400" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Escudo Antifraude
+              </span>
+              <ShieldCheck className="w-4 h-4 text-cyan-400" />
             </div>
-            <div className="text-2xl font-bold text-white tracking-tight">Auto-Escalado</div>
+            <div className="text-2xl font-bold text-white tracking-tight">
+              Protegido
+            </div>
             <p className="text-[11px] text-zinc-400 pt-1 border-t border-white/5">
-              GCP / Vercel Edge conectado
+              Huella de tarjeta + Email canónico
             </p>
           </div>
 
-          {/* Card 4: Cumplimiento Legal */}
           <div className="bg-[#121217] border border-white/10 rounded-2xl p-4 shadow-sm space-y-1">
             <div className="flex items-center justify-between text-zinc-400">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Gobernanza & Litigios</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Gobernanza & DIAN
+              </span>
               <Scale className="w-4 h-4 text-amber-400" />
             </div>
-            <div className="text-2xl font-bold text-white tracking-tight">{totalLegalConsents}</div>
+            <div className="text-2xl font-bold text-white tracking-tight">
+              {totalLegalConsents}
+            </div>
             <p className="text-[11px] text-zinc-400 pt-1 border-t border-white/5">
-              {totalAuditLogs} eventos forenses auditados
+              {totalAuditLogs} eventos auditados
             </p>
           </div>
         </div>
 
         {/* Executive Domain Selector Tabs */}
-        <div className="bg-[#121217] border border-white/10 rounded-2xl p-2 grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div className="bg-[#121217] border border-white/10 rounded-2xl p-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
           {domains.map((dom) => {
             const Icon = dom.icon;
             const isActive = activeDomain === dom.id;
@@ -275,7 +332,7 @@ export default function AdminRootModule({
               <button
                 key={dom.id}
                 onClick={() => setActiveDomain(dom.id)}
-                className={`flex items-start gap-3 p-3.5 rounded-xl text-left transition-all relative ${
+                className={`flex items-start gap-3 p-3.5 rounded-xl text-left transition-all relative cursor-pointer ${
                   isActive
                     ? "bg-[#181822] border border-violet-500/40 shadow-lg shadow-violet-600/10"
                     : "hover:bg-white/5 border border-transparent"
@@ -283,18 +340,24 @@ export default function AdminRootModule({
               >
                 <div
                   className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-                    isActive ? "bg-violet-600 text-white" : "bg-[#181820] text-zinc-400"
+                    isActive
+                      ? "bg-violet-600 text-white"
+                      : "bg-[#181820] text-zinc-400"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1">
-                    <span className={`text-xs font-bold truncate ${isActive ? "text-white" : "text-zinc-300"}`}>
+                    <span
+                      className={`text-xs font-bold truncate ${
+                        isActive ? "text-white" : "text-zinc-300"
+                      }`}
+                    >
                       {dom.label}
                     </span>
                     <span
-                      className={`text-[9px] font-mono px-2 py-0.5 rounded-full font-semibold ${
+                      className={`text-[9px] font-mono px-2 py-0.5 rounded-full font-semibold shrink-0 ${
                         isActive
                           ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
                           : "bg-white/5 text-zinc-400"
@@ -303,7 +366,9 @@ export default function AdminRootModule({
                       {dom.badge}
                     </span>
                   </div>
-                  <p className="text-[11px] text-zinc-400 line-clamp-1 mt-0.5">{dom.description}</p>
+                  <p className="text-[11px] text-zinc-400 line-clamp-1 mt-0.5">
+                    {dom.description}
+                  </p>
                 </div>
               </button>
             );
@@ -312,7 +377,8 @@ export default function AdminRootModule({
 
         {/* Sub-Navigator & Domain Content View */}
         <div className="space-y-4">
-          {/* Domain 1: Identidades & Seguridad */}
+          {activeDomain === "subscriptions" && <SubscriptionsGovernanceAdmin />}
+
           {activeDomain === "identities" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between bg-[#121217] border border-white/10 rounded-xl p-1.5 w-fit">
@@ -338,11 +404,14 @@ export default function AdminRootModule({
                 </button>
               </div>
 
-              {identitiesSubTab === "accounts" ? <RegisteredAccountsView /> : <SecurityRolesMatrix />}
+              {identitiesSubTab === "accounts" ? (
+                <RegisteredAccountsView />
+              ) : (
+                <SecurityRolesMatrix />
+              )}
             </div>
           )}
 
-          {/* Domain 2: Infraestructura & Cómputo */}
           {activeDomain === "infrastructure" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between bg-[#121217] border border-white/10 rounded-xl p-1.5 w-fit">
@@ -368,11 +437,14 @@ export default function AdminRootModule({
                 </button>
               </div>
 
-              {infraSubTab === "telemetry" ? <SystemLoadMonitor /> : <ConcurrencyScaleManager />}
+              {infraSubTab === "telemetry" ? (
+                <SystemLoadMonitor />
+              ) : (
+                <ConcurrencyScaleManager />
+              )}
             </div>
           )}
 
-          {/* Domain 3: Auditoría & Cumplimiento Legal */}
           {activeDomain === "compliance" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between bg-[#121217] border border-white/10 rounded-xl p-1.5 w-fit">
@@ -398,7 +470,11 @@ export default function AdminRootModule({
                 </button>
               </div>
 
-              {complianceSubTab === "legal" ? <LegalComplianceAdmin /> : <AuditLogsViewer />}
+              {complianceSubTab === "legal" ? (
+                <LegalComplianceAdmin />
+              ) : (
+                <AuditLogsViewer />
+              )}
             </div>
           )}
         </div>

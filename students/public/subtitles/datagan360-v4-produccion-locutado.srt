@@ -1,0 +1,291 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,038
+[...]
+
+4
+00:00:05,038 --> 00:00:07,162
+bienvenido a un nuevo tutorial de DataGan 360.
+
+5
+00:00:07,162 --> 00:00:08,187
+[...]
+
+6
+00:00:08,187 --> 00:00:09,581
+Entramos al módulo de producción,
+
+7
+00:00:09,581 --> 00:00:09,876
+[...]
+
+8
+00:00:09,876 --> 00:00:12,681
+donde cada dato que ingreses alimentará las gráficas de rendimiento,
+
+9
+00:00:12,681 --> 00:00:13,006
+[...]
+
+10
+00:00:13,006 --> 00:00:14,138
+tops y analítica avanzada.
+
+11
+00:00:14,138 --> 00:00:15,057
+[...]
+
+12
+00:00:15,057 --> 00:00:18,871
+En pesaje presionamos crear pesaje y filtramos primero el lote que estamos pasando por báscula.
+
+13
+00:00:18,871 --> 00:00:20,198
+[...]
+
+14
+00:00:20,198 --> 00:00:21,161
+Al elegir el animal,
+
+15
+00:00:21,161 --> 00:00:21,363
+[...]
+
+16
+00:00:21,363 --> 00:00:23,308
+o escanear su chapeta con detectar animal,
+
+17
+00:00:23,308 --> 00:00:23,626
+[...]
+
+18
+00:00:23,626 --> 00:00:26,705
+mira cómo aparece una cinta recordándote cuánto pesó la última vez.
+
+19
+00:00:26,705 --> 00:00:27,056
+[...]
+
+20
+00:00:27,056 --> 00:00:30,785
+Así sabrás de inmediato al digitar el nuevo peso si ganó o perdió condición corporal.
+
+21
+00:00:30,785 --> 00:00:32,208
+[...]
+
+22
+00:00:32,208 --> 00:00:35,048
+Aquí seleccionas con qué dieta se está alimentando actualmente,
+
+23
+00:00:35,048 --> 00:00:35,358
+[...]
+
+24
+00:00:35,358 --> 00:00:39,841
+dato que usará el motor de inteligencia predictiva para cruzar nutrición versus ganancia de peso,
+
+25
+00:00:39,841 --> 00:00:40,180
+[...]
+
+26
+00:00:40,180 --> 00:00:42,521
+agregas cualquier observación y presionas guardar.
+
+27
+00:00:42,521 --> 00:00:54,210
+[...]
+
+28
+00:00:54,210 --> 00:00:58,598
+Nota que la ventana no se cierra sola para que puedas seguir pesando todo el lote sin interrupciones.
+
+29
+00:00:58,598 --> 00:00:59,597
+[...]
+
+30
+00:00:59,597 --> 00:01:00,242
+Al cerrarla,
+
+31
+00:01:00,242 --> 00:01:00,614
+[...]
+
+32
+00:01:00,614 --> 00:01:05,418
+el nuevo peso ya actualiza el valor comercial del animal y puedes exportar la planilla con descargar Excel.
+
+33
+00:01:05,418 --> 00:01:13,205
+[...]
+
+34
+00:01:13,205 --> 00:01:14,928
+Ahora vamos en el menú lateral a leche,
+
+35
+00:01:14,928 --> 00:01:15,243
+[...]
+
+36
+00:01:15,243 --> 00:01:16,808
+donde dispones de ordeño individual,
+
+37
+00:01:16,808 --> 00:01:17,160
+[...]
+
+38
+00:01:17,160 --> 00:01:17,853
+venta de leche,
+
+39
+00:01:17,853 --> 00:01:18,146
+[...]
+
+40
+00:01:18,146 --> 00:01:20,875
+que envía el ingreso directo a finanzas y ordeño masivo.
+
+41
+00:01:20,875 --> 00:01:21,949
+[...]
+
+42
+00:01:21,949 --> 00:01:24,617
+Entramos al registro individual y presionamos crear leche.
+
+43
+00:01:24,617 --> 00:01:26,188
+[...]
+
+44
+00:01:26,188 --> 00:01:27,689
+Seleccionamos el lote de ordeño.
+
+45
+00:01:27,689 --> 00:01:28,021
+[...]
+
+46
+00:01:28,021 --> 00:01:33,714
+Observa que el sistema detecta en qué potrero está ese lote para calcular más adelante qué pradera produce más leche por hectárea.
+
+47
+00:01:33,714 --> 00:01:34,839
+[...]
+
+48
+00:01:34,839 --> 00:01:37,072
+Elegimos la vaca y digitamos los litros del ordeño.
+
+49
+00:01:37,072 --> 00:01:46,210
+[...]
+
+50
+00:01:46,210 --> 00:01:48,244
+Indicamos la calidad y el turno de ordeño
+
+51
+00:01:48,244 --> 00:01:48,577
+[...]
+
+52
+00:01:48,577 --> 00:01:50,316
+y presta atención a esta integración,
+
+53
+00:01:50,316 --> 00:01:50,641
+[...]
+
+54
+00:01:50,641 --> 00:01:52,089
+si das suplementación en sala,
+
+55
+00:01:52,089 --> 00:01:52,464
+[...]
+
+56
+00:01:52,464 --> 00:01:57,253
+aquí despliega los concentrados que tienes cargados en el inventario de finanzas viendo sus kilos disponibles.
+
+57
+00:01:57,253 --> 00:02:00,209
+[...]
+
+58
+00:02:00,209 --> 00:02:01,672
+Lo mismo ocurre con las sales mineralizadas
+
+59
+00:02:01,672 --> 00:02:02,068
+[...]
+
+60
+00:02:02,068 --> 00:02:03,027
+o suplementos.
+
+61
+00:02:03,027 --> 00:02:04,028
+[...]
+
+62
+00:02:04,028 --> 00:02:06,562
+Solo debes elegir el insumo e indicar cuántos kilos exactos
+
+63
+00:02:06,562 --> 00:02:06,798
+[...]
+
+64
+00:02:06,798 --> 00:02:08,358
+se comió esta vaca durante el ordeño.
+
+65
+00:02:08,358 --> 00:02:21,198
+[...]
+
+66
+00:02:21,198 --> 00:02:22,235
+Al presionar guardar,
+
+67
+00:02:22,235 --> 00:02:22,554
+[...]
+
+68
+00:02:22,554 --> 00:02:24,052
+DataGan hace tres cosas por ti,
+
+69
+00:02:24,052 --> 00:02:24,458
+[...]
+
+70
+00:02:24,458 --> 00:02:26,435
+registra los litros en la curva de la vaca,
+
+71
+00:02:26,435 --> 00:02:26,806
+[...]
+
+72
+00:02:26,806 --> 00:02:31,291
+suma la leche al tanque y descuenta automáticamente esos kilos de concentrado del inventario de bodega.
+
+73
+00:02:31,291 --> 00:02:35,710
+[...]

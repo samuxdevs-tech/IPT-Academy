@@ -5,4 +5,4 @@ Disallow: /admin/*
 Disallow: /login
 Disallow: /register
 
-Sitemap: https://datagan-course.iptapps.com/sitemap.xml
+Sitemap: https://ipt-course-students.web.app/sitemap.xml

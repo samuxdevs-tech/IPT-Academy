@@ -18,7 +18,8 @@ import {
   MessageSquare,
   ChevronRight,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  FolderTree
 } from "lucide-react";
 import { CourseBuilder } from "./CourseBuilder";
 import { RubricGradeMatrix } from "./RubricGradeMatrix";
@@ -29,12 +30,14 @@ import { CourseConditionalsView } from "./CourseConditionalsView";
 import { StudentsAnalyticsView } from "./StudentsAnalyticsView";
 import { TeacherCalendarView } from "./TeacherCalendarView";
 import { TutoriaDirectivesChat } from "./TutoriaDirectivesChat";
+import { StudentGroupsManager } from "./StudentGroupsManager";
 import { OperatorUserProfile } from "@/lib/firebase";
 
 export type TeacherTab =
   | "builder"
   | "conditionals"
   | "questions"
+  | "groups"
   | "grading"
   | "rubrics"
   | "live"
@@ -57,22 +60,23 @@ const NAV_GROUPS: NavGroup[] = [
   {
     groupTitle: "Estructura Didáctica",
     items: [
-      { id: "builder", label: "Creador Modular", sublabel: "Drag & drop y lecciones", icon: BookOpen },
+      { id: "builder", label: "Creador Guiado (4 Pasos)", sublabel: "Curso, módulos, clases y recursos", icon: BookOpen, badge: "Wizard" },
       { id: "conditionals", label: "Control de Candados", sublabel: "Condicionales de avance", icon: Lock },
       { id: "questions", label: "Banco de Preguntas", sublabel: "Import / Export JSON/CSV", icon: HelpCircle },
     ]
   },
   {
-    groupTitle: "Evaluación & Calificaciones",
+    groupTitle: "Evaluación & Segmentación",
     items: [
+      { id: "groups", label: "Cohortes & Grupos", sublabel: "Lotes de alumnos para tareas", icon: GraduationCap, badge: "Lotes" },
       { id: "grading", label: "Calificación Rápida", sublabel: "Revisión asistida con IA", icon: CheckSquare, badge: "IA Activa" },
-      { id: "rubrics", label: "Rúbricas & Matriz", sublabel: "Gradebook a Excel/CSV", icon: Table },
+      { id: "rubrics", label: "Rúbricas & Matriz", sublabel: "Gradebook y asignación granular", icon: Table },
     ]
   },
   {
     groupTitle: "Sesiones & Agenda",
     items: [
-      { id: "live", label: "Split View Videollamada", sublabel: "Cupos per-class & docx/pdf", icon: Video, badge: "En Vivo" },
+      { id: "live", label: "Split View Videollamada", sublabel: "Cupos per-class & recursos", icon: Video, badge: "En Vivo" },
       { id: "calendar", label: "Calendario Sincrónico", sublabel: "Agenda TutorIA y manual", icon: Calendar },
       { id: "tutoria", label: "Directivas a TutorIA", sublabel: "Restricción horaria docente", icon: Sparkles },
     ]
@@ -201,7 +205,7 @@ export function TeacherStudioWorkspace({
               </span>
             </div>
             <p className="text-[11px] text-zinc-300">
-              Datagan 360 · Certificación Maestra
+              IPT Master: Arquitectura de Software e IA
             </p>
           </div>
         )}
@@ -212,6 +216,7 @@ export function TeacherStudioWorkspace({
         {activeTab === "builder" && <CourseBuilder onOpenPreview={onOpenPreview} />}
         {activeTab === "conditionals" && <CourseConditionalsView onOpenPreview={onOpenPreview} />}
         {activeTab === "questions" && <QuestionBankView />}
+        {activeTab === "groups" && <StudentGroupsManager />}
         {activeTab === "grading" && <QuickGradingView />}
         {activeTab === "rubrics" && <RubricGradeMatrix />}
         {activeTab === "live" && <LiveClassSplitView />}

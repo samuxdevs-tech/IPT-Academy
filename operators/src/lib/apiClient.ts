@@ -53,8 +53,8 @@ export const ApiClient = {
       return [
         {
           id: 'assign-1',
-          courseSlug: 'datagan-360',
-          courseTitle: 'DataGan 360 · Certificación Maestra',
+          courseSlug: 'IPT Course-360',
+          courseTitle: 'IPT Master: Arquitectura de Software e IA',
           moduleTitle: 'Módulo 1 · Cimientos Operativos',
           cutId: 'corte-1',
           weightInCutPercent: 30,
@@ -157,7 +157,7 @@ export const ApiClient = {
             criterionTitle: 'Cálculo Matemático de Capacidad de Carga',
             aiSuggestedPoints: 4.8,
             aiQuote: 'La capacidad calculada fue de 2.1 UGM/ha con rotación cada 28 días.',
-            reasoning: 'El planteamiento numérico coincide exactamente con la fórmula estándar de DataGan 360.'
+            reasoning: 'El planteamiento numérico coincide exactamente con la fórmula estándar de IPT Master.'
           },
           {
             criterionTitle: 'Análisis Crítico y Recomendaciones Técnicas',

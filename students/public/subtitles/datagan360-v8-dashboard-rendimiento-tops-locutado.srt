@@ -1,0 +1,171 @@
+1
+00:00:00,000 --> 00:00:04,030
+[...]
+
+2
+00:00:04,030 --> 00:00:04,297
+Hola,
+
+3
+00:00:04,297 --> 00:00:05,025
+[...]
+
+4
+00:00:05,025 --> 00:00:07,162
+bienvenido a un nuevo tutorial de DataGan 360,
+
+5
+00:00:07,162 --> 00:00:08,157
+[...]
+
+6
+00:00:08,157 --> 00:00:12,528
+en las pestañas Rendimiento y Tops identificamos a los mejores y peores ejemplares del hato a partir de los pesajes y ordeños.
+
+7
+00:00:12,528 --> 00:00:13,284
+[...]
+
+8
+00:00:13,284 --> 00:00:16,051
+En esta primera tabla ves cuántos kilos diarios está ganando cada animal en báscula.
+
+9
+00:00:16,051 --> 00:00:17,033
+[...]
+
+10
+00:00:17,033 --> 00:00:17,372
+Debajo,
+
+11
+00:00:17,372 --> 00:00:17,643
+[...]
+
+12
+00:00:17,643 --> 00:00:18,809
+en Rendimiento de leche individual,
+
+13
+00:00:18,809 --> 00:00:19,078
+[...]
+
+14
+00:00:19,078 --> 00:00:22,947
+el sistema compara cada ordeño con el anterior y te marca en rojo si una vaca tuvo una caída brusca de producción.
+
+15
+00:00:22,947 --> 00:00:23,922
+[...]
+
+16
+00:00:23,922 --> 00:00:26,753
+Y en las dos tablas inferiores agrupa esos mismos resultados por lotes completos,
+
+17
+00:00:26,753 --> 00:00:27,052
+[...]
+
+18
+00:00:27,052 --> 00:00:30,025
+para que evalúes qué lote está convirtiendo mejor el pasto o el concentrado en carne y leche.
+
+19
+00:00:30,025 --> 00:00:31,184
+[...]
+
+20
+00:00:31,184 --> 00:00:32,632
+Si quieres revisar un animal puntual,
+
+21
+00:00:32,632 --> 00:00:32,942
+[...]
+
+22
+00:00:32,942 --> 00:00:37,786
+lo seleccionas aquí arriba en buscar animal y el sistema aislará únicamente sus pesajes, ordeños y curvas individuales.
+
+23
+00:00:37,786 --> 00:00:39,179
+[...]
+
+24
+00:00:39,179 --> 00:00:44,547
+O usas el buscador de la derecha para filtrar en todas las tablas únicamente los animales del lote que te interese auditar.
+
+25
+00:00:44,547 --> 00:00:49,157
+[...]
+
+26
+00:00:49,157 --> 00:00:50,239
+Al pasar a la cuarta pestaña,
+
+27
+00:00:50,239 --> 00:00:50,507
+[...]
+
+28
+00:00:50,507 --> 00:00:50,672
+tops,
+
+29
+00:00:50,672 --> 00:00:50,896
+[...]
+
+30
+00:00:50,896 --> 00:00:53,007
+DataGan arma automáticamente los rankings de honor de tu finca.
+
+31
+00:00:53,007 --> 00:00:53,258
+[...]
+
+32
+00:00:53,258 --> 00:00:54,847
+Arriba tienes las 10 vacas más lecheras,
+
+33
+00:00:54,847 --> 00:00:55,092
+[...]
+
+34
+00:00:55,092 --> 00:00:57,341
+los 10 líderes en ganancia de peso y los lotes más productivos.
+
+35
+00:00:57,341 --> 00:00:58,312
+[...]
+
+36
+00:00:58,312 --> 00:01:03,491
+En el bloque central de pastos te grafica qué potrero da más leche por hectárea y vigila cuántos días lleva ocupado cada potrero para evitar el sobrepastoreo.
+
+37
+00:01:03,491 --> 00:01:04,556
+[...]
+
+38
+00:01:04,556 --> 00:01:05,184
+Finalmente,
+
+39
+00:01:05,184 --> 00:01:05,491
+[...]
+
+40
+00:01:05,491 --> 00:01:08,549
+abajo te resume las 5 enfermedades que más están golpeando al hato,
+
+41
+00:01:08,549 --> 00:01:08,893
+[...]
+
+42
+00:01:08,893 --> 00:01:13,877
+los rubros de finanzas donde más dinero estás gastando y el ranking de tus 10 animales más valiosos en pesos.
+
+43
+00:01:13,877 --> 00:01:18,490
+[...]

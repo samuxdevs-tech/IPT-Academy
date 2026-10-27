@@ -1,33 +1,29 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Video,
   Radio,
   Clock,
   CheckCircle2,
-  AlertCircle,
   ShieldCheck,
-  Sparkles,
   Home,
   Mic,
-  MicOff,
   Camera,
   CameraOff,
   User,
-  BookOpen,
-  Calendar,
   ExternalLink,
-  RotateCcw,
-  Play,
   Film,
+  Lock,
+  Users,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { ref, onValue, off, get } from 'firebase/database';
+import { useSubscription } from '@/context/SubscriptionContext';
+import { ref, onValue, off } from 'firebase/database';
 import { db } from '@/lib/firebase';
-import { LiveStudentService, StudentLiveClassItem } from '@/services/liveStudentService';
+import { StudentLiveClassItem } from '@/services/liveStudentService';
 
 declare global {
   interface Window {
@@ -37,18 +33,31 @@ declare global {
 
 function StudentLiveRoomContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const classId = searchParams.get('id');
+  const classId = searchParams.get('id') || 'live_default_ipt';
 
   const { user } = useAuth();
+  const {
+    entitlements,
+    liveBookings,
+    openPricingModal,
+    bookLiveSession,
+    cancelLiveBooking,
+  } = useSubscription();
 
   const [liveClass, setLiveClass] = useState<StudentLiveClassItem | null>(null);
-  const [classStatus, setClassStatus] = useState<'scheduled' | 'in_progress' | 'completed'>('scheduled');
+  const [classStatus, setClassStatus] = useState<'scheduled' | 'in_progress' | 'completed'>(
+    'scheduled'
+  );
   const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
-  
-  // Test local de audio y video
-  const [micActive, setMicActive] = useState(true);
-  const [cameraActive, setCameraActive] = useState(true);
+  const [quorumRequired, setQuorumRequired] = useState<number>(3);
+  const [bookedCount, setBookedCount] = useState<number>(2);
+  const [maxCapacity, setMaxCapacity] = useState<number>(25);
+  const [bookingMsg, setBookingMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(
+    null
+  );
+  const [busyBooking, setBusyBooking] = useState(false);
+
+  const [cameraActive] = useState(true);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [deviceCheckPassed, setDeviceCheckPassed] = useState(false);
 
@@ -56,26 +65,30 @@ function StudentLiveRoomContent() {
   const jitsiContainerRef = useRef<HTMLDivElement>(null);
   const jitsiApiRef = useRef<any>(null);
 
+  const currentBooking = useMemo(
+    () =>
+      liveBookings.find((b) => b.sessionId === classId && b.status === 'confirmed') || null,
+    [liveBookings, classId]
+  );
+
   // 1. Cargar datos de la clase desde la API / Firebase
   useEffect(() => {
     if (!classId) return;
 
-    // Escuchar estado en tiempo real en Firebase Realtime Database
     const sessionRef = ref(db, `liveSessions/${classId}`);
-    const unsubscribe = onValue(sessionRef, (snap) => {
+    onValue(sessionRef, (snap) => {
       if (snap.exists()) {
         const data = snap.val();
-        if (data.status) {
-          setClassStatus(data.status);
-        }
-        if (data.recordingUrl) {
-          setRecordingUrl(data.recordingUrl);
-        }
+        if (data.status) setClassStatus(data.status);
+        if (data.recordingUrl) setRecordingUrl(data.recordingUrl);
+        if (typeof data.quorumRequired === 'number') setQuorumRequired(data.quorumRequired);
+        if (typeof data.bookedCount === 'number') setBookedCount(data.bookedCount);
+        if (typeof data.maxCapacity === 'number') setMaxCapacity(data.maxCapacity);
       }
     });
 
-    // Cargar detalles de la clase
-    const API_BASE = process.env.NEXT_PUBLIC_TASK_API_URL || 'https://ipt-course-api.samuxdevs.workers.dev';
+    const API_BASE =
+      process.env.NEXT_PUBLIC_TASK_API_URL || 'https://ipt-course-api.samuxdevs.workers.dev';
     fetch(`${API_BASE}/api/live/classes/${classId}`)
       .then((res) => {
         if (!res.ok) return null;
@@ -92,9 +105,7 @@ function StudentLiveRoomContent() {
           }
         }
       })
-      .catch((err) => {
-        console.warn('Error fetching class details:', err);
-      });
+      .catch(() => {});
 
     return () => {
       off(sessionRef);
@@ -103,8 +114,7 @@ function StudentLiveRoomContent() {
 
   // 2. Test local de cámara y micrófono para la sala de espera
   useEffect(() => {
-    if (classStatus === 'in_progress') {
-      // Liberar cámara local si la clase ya inició para que Jitsi tome el control
+    if (classStatus === 'in_progress' || !entitlements.canJoinLiveClasses) {
       if (mediaStream) {
         mediaStream.getTracks().forEach((track) => track.stop());
         setMediaStream(null);
@@ -128,8 +138,8 @@ function StudentLiveRoomContent() {
             localVideoRef.current.srcObject = stream;
           }
         }
-      } catch (err) {
-        console.warn('No se pudo acceder a dispositivos locales:', err);
+      } catch {
+        // Dispositivos no disponibles en entorno sin cámara
       }
     }
 
@@ -141,11 +151,16 @@ function StudentLiveRoomContent() {
         mediaStream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [classStatus]);
+  }, [classStatus, entitlements.canJoinLiveClasses]);
 
-  // 3. Handshake Instantáneo: Cuando el docente da "Start", montar Jitsi Meet
+  // 3. Handshake Instantáneo: Cuando el docente inicia la clase, montar Jitsi Meet
   useEffect(() => {
-    if (classStatus !== 'in_progress' || !liveClass || !jitsiContainerRef.current) {
+    if (
+      classStatus !== 'in_progress' ||
+      !liveClass ||
+      !jitsiContainerRef.current ||
+      !entitlements.canJoinLiveClasses
+    ) {
       return;
     }
 
@@ -166,7 +181,8 @@ function StudentLiveRoomContent() {
         height: '100%',
         parentNode: jitsiContainerRef.current,
         userInfo: {
-          displayName: user?.displayName || user?.email?.split('@')[0] || 'Estudiante IPT',
+          displayName:
+            user?.displayName || user?.email?.split('@')[0] || 'Estudiante IPT',
           email: user?.email || 'estudiante@ipt.com',
         },
         configOverwrite: {
@@ -210,9 +226,8 @@ function StudentLiveRoomContent() {
         } catch {}
       }
     };
-  }, [classStatus, liveClass, user]);
+  }, [classStatus, liveClass, user, entitlements.canJoinLiveClasses]);
 
-  // Convertir URL de Google Drive a /preview embebido ($0 R2)
   const embedPreviewUrl = useMemo(() => {
     if (!recordingUrl) return null;
     const match = recordingUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
@@ -222,9 +237,58 @@ function StudentLiveRoomContent() {
     return recordingUrl;
   }, [recordingUrl]);
 
+  const handleBookNow = async () => {
+    setBookingMsg(null);
+    setBusyBooking(true);
+    try {
+      const defaultFuture = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+      await bookLiveSession(classId, {
+        courseSlug: liveClass?.course_slug || 'general',
+        teacherId: 'teacher_ipt',
+        title: liveClass?.title || 'Sesión Técnica en Vivo',
+        startTime: (liveClass as any)?.scheduled_at || defaultFuture,
+        durationMinutes: liveClass?.duration_minutes || 60,
+        quorumRequired,
+        maxCapacity,
+      });
+      setBookedCount((c) => c + 1);
+      setBookingMsg({
+        type: 'ok',
+        text: 'Tu cupo quedó confirmado. Se descontó 1 crédito de tu bolsa mensual.',
+      });
+    } catch (err: any) {
+      setBookingMsg({
+        type: 'err',
+        text: err?.message || 'No se pudo reservar la sesión.',
+      });
+    } finally {
+      setBusyBooking(false);
+    }
+  };
+
+  const handleCancelNow = async () => {
+    if (!currentBooking) return;
+    setBookingMsg(null);
+    setBusyBooking(true);
+    try {
+      await cancelLiveBooking(currentBooking.id);
+      setBookedCount((c) => Math.max(0, c - 1));
+      setBookingMsg({
+        type: 'ok',
+        text: 'Reserva cancelada con más de 4 horas de anticipación. Tu crédito fue reembolsado.',
+      });
+    } catch (err: any) {
+      setBookingMsg({
+        type: 'err',
+        text: err?.message || 'No se pudo cancelar la reserva.',
+      });
+    } finally {
+      setBusyBooking(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0f0f12] text-[#f5f5f7] flex flex-col font-sans select-none overflow-x-hidden">
-      
       {/* Barra superior de navegación */}
       <header className="h-14 bg-[#18181b] border-b border-neutral-800 px-6 flex items-center justify-between z-20">
         <div className="flex items-center space-x-3">
@@ -255,14 +319,16 @@ function StudentLiveRoomContent() {
         </div>
 
         <div className="flex items-center space-x-3 text-xs">
+          <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1 bg-neutral-900 border border-neutral-800 rounded-xl">
+            <Users className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-neutral-300 font-medium">
+              Quórum: {bookedCount} / {quorumRequired} mín. (Cupo máx. {maxCapacity})
+            </span>
+          </div>
           <div className="flex items-center space-x-1.5 px-3 py-1 bg-neutral-900 border border-neutral-800 rounded-xl">
             <Radio className="w-3.5 h-3.5 text-emerald-400" />
             <span className="text-neutral-300 font-medium">
-              {classStatus === 'in_progress'
-                ? 'Sesión en Vivo'
-                : classStatus === 'completed'
-                ? 'Clase Finalizada'
-                : 'Sala de Espera Conectada'}
+              Créditos disponibles: {entitlements.availableLiveCredits}
             </span>
           </div>
         </div>
@@ -270,20 +336,44 @@ function StudentLiveRoomContent() {
 
       {/* CONTENEDOR CENTRAL */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
-
-        {/* 1. ESTADO: EN CURSO (IN_PROGRESS) => JITSI MEET ACTIVO */}
-        {classStatus === 'in_progress' && (
+        {/* COMPUERTA DE SUSCRIPCIÓN SI EL ESTUDIANTE NO TIENE PLAN PRO+ / YOUR PLAN */}
+        {!entitlements.canJoinLiveClasses && classStatus !== 'completed' ? (
+          <div className="flex-1 flex items-center justify-center p-6 bg-radial from-neutral-900 via-[#0f0f12] to-black">
+            <div className="w-full max-w-xl bg-[#1c1c1f] rounded-2xl border border-neutral-800 p-8 shadow-2xl space-y-5 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-bold text-white">
+                Las sesiones en vivo con docentes son exclusivas de Pro+ y Your Plan
+              </h2>
+              <p className="text-xs text-neutral-400 leading-relaxed max-w-md mx-auto">
+                Con el Plan Pro+ recibes 8 créditos mensuales para reservar mentorías y clases en vivo (y 1 crédito de cortesía durante tus 15 días de prueba gratuita), además de acceso completo a las grabaciones.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <Link
+                  href="/"
+                  className="px-4 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-xs font-semibold text-white"
+                >
+                  Volver al catálogo
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => openPricingModal('pro_plus')}
+                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-extrabold inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Activar Pro+ (15 días de prueba + 1 clase en vivo)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : classStatus === 'in_progress' ? (
           <div className="flex-1 w-full h-full bg-black relative">
             <div ref={jitsiContainerRef} className="w-full h-full" />
           </div>
-        )}
-
-        {/* 2. ESTADO: SALA DE ESPERA REACTIVA (SCHEDULED / WAITING) */}
-        {classStatus === 'scheduled' && (
+        ) : classStatus === 'scheduled' ? (
           <div className="flex-1 flex items-center justify-center p-6 bg-radial from-neutral-900 via-[#0f0f12] to-black">
             <div className="w-full max-w-2xl bg-[#1c1c1f] rounded-2xl border border-neutral-800 p-8 shadow-2xl space-y-6 text-center animate-in zoom-in-95 duration-200">
-              
-              {/* Badge Dinámico de Sala de Espera */}
               <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Estás en el lugar correcto • Conexión en tiempo real activa</span>
@@ -294,9 +384,56 @@ function StudentLiveRoomContent() {
                   {liveClass?.title || 'Preparando tu clase en vivo...'}
                 </h2>
                 <p className="text-xs text-neutral-400 max-w-lg mx-auto mt-2">
-                  Estamos esperando a que el docente titular inicie la sesión en su panel. En el milisegundo en que presione <strong className="text-white">"Start"</strong>, tu pantalla se conectará automáticamente sin que tengas que recargar la página.
+                  Estamos esperando a que el docente titular inicie la sesión. En cuanto comience, tu pantalla se conectará automáticamente sin recargar la página.
                 </p>
               </div>
+
+              {/* Panel de Reserva con Créditos y Quórum */}
+              <div className="p-4 rounded-2xl bg-neutral-900/90 border border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
+                <div className="space-y-1">
+                  <p className="text-xs font-bold text-white">
+                    Estado de tu reserva y quórum de la sesión
+                  </p>
+                  <p className="text-[11px] text-neutral-400">
+                    Inscritos: <strong className="text-white">{bookedCount}</strong> · Quórum mínimo:{' '}
+                    <strong className="text-white">{quorumRequired}</strong> · Si no se alcanza el quórum 3 h antes, tu crédito se devuelve automáticamente.
+                  </p>
+                </div>
+
+                <div className="shrink-0">
+                  {currentBooking ? (
+                    <button
+                      type="button"
+                      disabled={busyBooking}
+                      onClick={handleCancelNow}
+                      className="px-4 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-xs font-bold cursor-pointer"
+                    >
+                      Cancelar reserva (reembolso hasta 4 h antes)
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={busyBooking || entitlements.availableLiveCredits <= 0}
+                      onClick={handleBookNow}
+                      className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-neutral-950 text-xs font-extrabold cursor-pointer"
+                    >
+                      Confirmar asistencia (1 crédito)
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {bookingMsg && (
+                <div
+                  className={`p-3 rounded-xl border text-xs font-semibold ${
+                    bookingMsg.type === 'ok'
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                      : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                  }`}
+                >
+                  {bookingMsg.text}
+                </div>
+              )}
 
               {/* Visor de Auto-Prueba de Cámara y Micrófono */}
               <div className="p-4 bg-neutral-900 rounded-2xl border border-neutral-800/80 max-w-md mx-auto space-y-3">
@@ -340,45 +477,63 @@ function StudentLiveRoomContent() {
                 </div>
               </div>
 
-              {/* Información de la Clase */}
               <div className="pt-2 border-t border-neutral-800/80 flex flex-wrap items-center justify-around gap-4 text-xs text-neutral-400">
                 <div className="flex items-center space-x-1.5">
                   <User className="w-3.5 h-3.5 text-neutral-500" />
-                  <span>Docente: <strong className="text-neutral-200">{liveClass?.teacher_name || 'Profesor'}</strong></span>
+                  <span>
+                    Docente:{' '}
+                    <strong className="text-neutral-200">
+                      {liveClass?.teacher_name || 'Profesor IPT'}
+                    </strong>
+                  </span>
                 </div>
                 <div className="flex items-center space-x-1.5">
                   <Clock className="w-3.5 h-3.5 text-neutral-500" />
-                  <span>Duración: <strong className="text-neutral-200">{liveClass?.duration_minutes || 60} minutos</strong></span>
+                  <span>
+                    Duración:{' '}
+                    <strong className="text-neutral-200">
+                      {liveClass?.duration_minutes || 60} minutos
+                    </strong>
+                  </span>
                 </div>
                 <div className="flex items-center space-x-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Cupo Mensual Asegurado</span>
+                  <span>Quórum y créditos protegidos</span>
                 </div>
               </div>
-
             </div>
           </div>
-        )}
-
-        {/* 3. ESTADO: CLASE FINALIZADA & REPRODUCTOR EMBEBIDO GOOGLE DRIVE ($0 R2) */}
-        {classStatus === 'completed' && (
+        ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-6 bg-[#0f0f12]">
             <div className="w-full max-w-3xl bg-[#1c1c1f] rounded-2xl border border-neutral-800 p-8 shadow-2xl space-y-6">
-              
               <div className="text-center space-y-2">
                 <div className="w-12 h-12 rounded-2xl bg-neutral-800 text-neutral-300 flex items-center justify-center mx-auto">
                   <Film className="w-6 h-6 text-emerald-400" />
                 </div>
-                <h2 className="text-lg sm:text-xl font-bold text-white">Esta clase ha finalizado</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-white">
+                  Esta clase ha finalizado
+                </h2>
                 <p className="text-xs text-neutral-400 max-w-md mx-auto">
                   {embedPreviewUrl
-                    ? 'El docente ha publicado la grabación oficial en su Google Drive. Puedes repasarla directamente aquí sin límites de tiempo.'
-                    : 'La sesión en vivo ha terminado. Si el docente sube la grabación, aparecerá automáticamente en esta pantalla.'}
+                    ? 'El docente ha publicado la grabación oficial. Puedes repasarla directamente aquí las veces que necesites.'
+                    : 'La sesión en vivo ha terminado. Cuando el docente publique la grabación, aparecerá automáticamente en esta pantalla.'}
                 </p>
               </div>
 
-              {/* Visor Embebido de Grabación de Google Drive */}
-              {embedPreviewUrl ? (
+              {!entitlements.canJoinLiveClasses ? (
+                <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800 text-center space-y-3">
+                  <p className="text-xs text-neutral-300">
+                    Las grabaciones de sesiones en vivo están incluidas en el Plan Pro+ y Your Plan.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => openPricingModal('pro_plus')}
+                    className="px-4 py-2 rounded-xl bg-amber-500 text-neutral-950 text-xs font-bold cursor-pointer"
+                  >
+                    Desbloquear Grabaciones con Pro+
+                  </button>
+                </div>
+              ) : embedPreviewUrl ? (
                 <div className="space-y-3">
                   <div className="aspect-video w-full rounded-2xl overflow-hidden border border-neutral-800 bg-black shadow-lg">
                     <iframe
@@ -391,7 +546,7 @@ function StudentLiveRoomContent() {
                   <div className="flex items-center justify-between text-xs text-neutral-500 px-2">
                     <span className="flex items-center space-x-1">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Transmisión fluida desde Google Drive • $0 costo para IPT</span>
+                      <span>Reproducción en alta definición disponible las 24 horas</span>
                     </span>
                     <a
                       href={recordingUrl || '#'}
@@ -418,11 +573,9 @@ function StudentLiveRoomContent() {
                   Volver al Panel Principal
                 </Link>
               </div>
-
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
