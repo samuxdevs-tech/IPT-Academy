@@ -1,25 +1,25 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import SafeNavLink from '@/components/navigation/SafeNavLink';
-import { usePathname, useRouter } from 'next/navigation';
+import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
-  Search,
-  Menu,
   Bell,
   Sparkles,
   Video,
-  AlertCircle,
-  Archive,
   CheckCircle2,
   BookOpen,
+  FileCheck2,
+  Award,
+  Calendar,
+  GraduationCap,
+  Layers,
+  ShieldCheck,
+  Menu,
+  X,
 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
-import UserProfileMenu from '@/components/UserProfileMenu';
-import StudentSidebar from '@/components/navigation/StudentSidebar';
-import StudentMobileDrawer from '@/components/navigation/StudentMobileDrawer';
-import StudentMobileBottomBar from '@/components/navigation/StudentMobileBottomBar';
+import { IptLogoIcon } from '@/components/IptLogoIcon';
 
 export default function StudentPortalShell({
   children,
@@ -27,304 +27,327 @@ export default function StudentPortalShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname() || '/';
-  const router = useRouter();
-  const { user } = useAuth();
   const {
     subscription,
     entitlements,
     notifications,
     openPricingModal,
     markNotificationRead,
+    switchDemoTier,
+    zeroSumAccounting,
   } = useSubscription();
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [headerSearch, setHeaderSearch] = useState('');
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    setMobileDrawerOpen(false);
     setNotifOpen(false);
+    setMobileMenuOpen(false);
   }, [pathname]);
 
-  const isAuthOrStandalone =
+  // Rutas que tienen su propio encabezado autónomo completo
+  const isStandalone =
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
     pathname.startsWith('/legal') ||
-    pathname === '/' || pathname === '/home' || pathname.startsWith('/course') || pathname.startsWith('/free');
+    pathname.startsWith('/verify') ||
+    pathname === '/' ||
+    pathname === '/course' ||
+    pathname.startsWith('/course/') ||
+    pathname === '/free' ||
+    pathname.startsWith('/free/');
 
-  if (isAuthOrStandalone) {
+  const currentPlanId = useMemo<'free' | 'pro' | 'pro_plus' | 'your_plan'>(() => {
+    if (!subscription || !subscription.planId) {
+      if (entitlements.campusTheme === 'campus-pro-plus') return 'pro_plus';
+      if (entitlements.campusTheme === 'campus-pro') return 'pro';
+      if (entitlements.campusTheme === 'campus-enterprise') return 'your_plan';
+      return 'free';
+    }
+    return subscription.planId;
+  }, [subscription, entitlements.campusTheme]);
+
+  if (isStandalone) {
     return <>{children}</>;
   }
 
-  const handleGlobalSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const q = headerSearch.trim();
-    if (!q) {
-      router.push('/');
-      return;
-    }
-    router.push(`/?q=${encodeURIComponent(q)}`);
-  };
-
-  const toggleSidebarOrDrawer = () => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setMobileDrawerOpen((prev) => !prev);
-    } else {
-      setSidebarOpen((prev) => !prev);
-    }
-  };
-
   const unreadNotifs = notifications.filter((n) => !n.read);
 
-  // Emblema institucional según el Campus activo
-  const campusLogoSrc =
-    entitlements.campusTheme === 'campus-pro-plus'
-      ? '/logo-pro-plus.svg'
-      : entitlements.campusTheme === 'campus-pro'
-      ? '/logo-pro.svg'
-      : entitlements.campusTheme === 'campus-enterprise'
-      ? '/logo-your-plan.svg'
-      : '/logo.png';
-
-  const isPremiumTheme =
-    entitlements.campusTheme === 'campus-pro' ||
-    entitlements.campusTheme === 'campus-pro-plus' ||
-    entitlements.campusTheme === 'campus-enterprise';
+  const navItems = [
+    {
+      href: '/home',
+      label: 'Campus',
+      icon: Layers,
+      visible: true,
+    },
+    {
+      href: '/course',
+      label: 'Aula de Clases',
+      icon: BookOpen,
+      visible: true,
+    },
+    {
+      href: '/assignments',
+      label: 'Tareas y Rúbricas',
+      icon: FileCheck2,
+      visible: currentPlanId !== 'free',
+    },
+    {
+      href: '/grades',
+      label: 'Mis Notas',
+      icon: GraduationCap,
+      visible: currentPlanId !== 'free',
+    },
+    {
+      href: '/live',
+      label: 'Sala en Vivo',
+      icon: Video,
+      visible: currentPlanId === 'pro_plus' || currentPlanId === 'your_plan',
+      badge:
+        currentPlanId === 'pro_plus' || currentPlanId === 'your_plan'
+          ? `${entitlements.availableLiveCredits} créd.`
+          : undefined,
+    },
+    {
+      href: '/calendar',
+      label: 'Calendario',
+      icon: Calendar,
+      visible: currentPlanId !== 'free',
+    },
+    {
+      href: '/certificate',
+      label: 'Certificados',
+      icon: Award,
+      visible: true,
+    },
+  ].filter((item) => item.visible);
 
   return (
-    <div
-      className={`min-h-screen flex flex-col font-sans ${
-        isPremiumTheme ? 'bg-[#f6f7f9] text-[#2a2b3f]' : 'bg-[#ffffff] text-[#0f0f0f]'
-      }`}
-    >
-      <StudentMobileDrawer
-        isOpen={mobileDrawerOpen}
-        onClose={() => setMobileDrawerOpen(false)}
-      />
+    <div className="min-h-screen flex flex-col bg-[#000000] text-[#ffffff] font-sans selection:bg-[#8052ff] selection:text-white">
+      {/* Barra Superior Unificada Dala Dark Void D1 */}
+      <header className="sticky top-0 z-50 h-16 border-b border-[#ffffff]/10 bg-[#000000]/90 backdrop-blur-md print:hidden">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
+          {/* Izquierda: Logo + Marca */}
+          <div className="flex items-center gap-6">
+            <Link href="/home" className="flex items-center gap-2.5 group shrink-0">
+              <IptLogoIcon className="w-7 h-7 transition-transform group-hover:scale-105" />
+              <span className="text-white text-sm font-semibold tracking-[-0.02em]">
+                IPT <span className="font-light text-[#9a9a9a]">Academy</span>
+              </span>
+            </Link>
 
-      {/* Banner de Modo Archivo / Solo Lectura o Mora (Past Due) */}
-      {entitlements.isReadOnly && (
-        <div className="bg-[#202230] text-[#ffffff] px-4 py-2.5 text-xs flex flex-wrap items-center justify-between gap-3 border-b border-[#3d4055] print:hidden">
-          <div className="flex items-center gap-2">
-            <Archive className="w-4 h-4 text-[#c4710d] shrink-0" />
-            <span>
-              <strong>Modo Consulta (Archivo):</strong> Tu suscripción ha finalizado (
-              {entitlements.readOnlyReason === 'trial_ended_cancelled'
-                ? 'periodo de prueba cancelado'
-                : entitlements.readOnlyReason === 'past_due_grace_ended'
-                ? 'periodo de gracia vencido'
-                : 'ciclo vencido'}
-              ). Conservas acceso vitalicio a tus certificados obtenidos y calificaciones históricas.
-            </span>
+            {/* Navegación Horizontal de Estudiante */}
+            <nav className="hidden xl:flex items-center gap-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  pathname === item.href || pathname.startsWith(item.href + '/');
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all ${
+                      isActive
+                        ? 'bg-[#8052ff] text-white shadow-[0_0_20px_rgba(128,82,255,0.4)]'
+                        : 'text-[#bdbdbd] hover:text-white hover:bg-[#ffffff]/5'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span
+                        className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                          isActive
+                            ? 'bg-black/30 text-white'
+                            : 'bg-[#ffb829]/15 text-[#ffb829] border border-[#ffb829]/30'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
-          <div className="flex items-center gap-2">
-            <SafeNavLink
-              href="/certificate"
-              className="px-3 py-1 rounded-md bg-[#33364a] hover:bg-[#3d4055] text-[#ffffff] font-medium"
-            >
-              Ver mis certificados
-            </SafeNavLink>
+
+          {/* Derecha: Conmutador de Nivel en Tiempo Real + Contabilidad + Notificaciones */}
+          <div className="flex items-center gap-3">
+            {/* Selector Rápido de Nivel de Estudiante */}
+            <div className="hidden md:flex items-center bg-[#09090b] border border-[#ffffff]/15 rounded-full p-1 gap-0.5">
+              <span className="text-[10px] uppercase tracking-wider text-[#9a9a9a] px-2.5 font-medium">
+                Nivel:
+              </span>
+              {(
+                [
+                  { id: 'free', label: 'Free' },
+                  { id: 'pro', label: 'Pro' },
+                  { id: 'pro_plus', label: 'Pro+' },
+                  { id: 'your_plan', label: 'Your Plan' },
+                ] as const
+              ).map((tier) => {
+                const active = currentPlanId === tier.id;
+                return (
+                  <button
+                    key={tier.id}
+                    type="button"
+                    onClick={() => switchDemoTier(tier.id)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                      active
+                        ? tier.id === 'pro_plus'
+                          ? 'bg-[#ffb829] text-black shadow-[0_0_12px_rgba(255,184,41,0.4)]'
+                          : tier.id === 'your_plan'
+                          ? 'bg-[#15846e] text-white shadow-[0_0_12px_rgba(21,132,110,0.4)]'
+                          : tier.id === 'pro'
+                          ? 'bg-[#8052ff] text-white shadow-[0_0_12px_rgba(128,82,255,0.4)]'
+                          : 'bg-[#ffffff]/20 text-white'
+                        : 'text-[#9a9a9a] hover:text-white'
+                    }`}
+                  >
+                    {tier.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Indicador de Partida Doble = 0 (Para planes con créditos) */}
+            {(currentPlanId === 'pro_plus' || currentPlanId === 'your_plan') && (
+              <div
+                title={`Contabilidad Partida Doble: Emitidos (${zeroSumAccounting.issuedCredits}) = Disponibles (${zeroSumAccounting.availableCredits}) + Reservados (${zeroSumAccounting.reservedInEscrow}) + Consumidos (${zeroSumAccounting.consumedCredits}) | Δ = ${zeroSumAccounting.netDelta}`}
+                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#15846e]/10 border border-[#15846e]/30 text-[11px] text-[#15846e] font-mono"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Δ=0 ({zeroSumAccounting.availableCredits}/{zeroSumAccounting.issuedCredits})</span>
+              </div>
+            )}
+
+            {/* Campana de Notificaciones */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setNotifOpen((p) => !p)}
+                className="relative p-2 rounded-full border border-[#ffffff]/10 bg-[#09090b] hover:border-[#ffffff]/25 text-[#bdbdbd] hover:text-white transition-colors cursor-pointer"
+                aria-label="Notificaciones"
+              >
+                <Bell className="w-4 h-4" />
+                {unreadNotifs.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#8052ff] text-white text-[9px] font-bold flex items-center justify-center">
+                    {unreadNotifs.length}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-[#09090b] border border-[#ffffff]/15 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-[#ffffff]/10 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-white">
+                      Notificaciones del Campus
+                    </span>
+                    <span className="text-[10px] font-mono text-[#9a9a9a]">
+                      {unreadNotifs.length} nuevas
+                    </span>
+                  </div>
+                  <div className="max-h-72 overflow-y-auto divide-y divide-[#ffffff]/10">
+                    {notifications.length === 0 ? (
+                      <div className="p-6 text-center text-xs text-[#9a9a9a]">
+                        No tienes notificaciones pendientes.
+                      </div>
+                    ) : (
+                      notifications.slice(0, 8).map((n) => (
+                        <div
+                          key={n.id}
+                          onClick={() => markNotificationRead(n.id)}
+                          className={`p-3.5 text-xs cursor-pointer hover:bg-[#ffffff]/5 transition-colors ${
+                            !n.read ? 'bg-[#8052ff]/5' : ''
+                          }`}
+                        >
+                          <div className="font-semibold text-white">{n.title}</div>
+                          <p className="text-[#9a9a9a] mt-0.5 text-[11px] leading-relaxed">
+                            {n.message}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Botón de Planes */}
             <button
               type="button"
               onClick={() => openPricingModal('pro_plus')}
-              className="px-3 py-1 rounded-md bg-[#ffffff] text-[#202230] font-bold cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#ffffff]/10 hover:bg-[#ffffff]/15 border border-[#ffffff]/15 text-white text-xs font-medium transition-all cursor-pointer"
             >
-              Reactivar Suscripción
+              <Sparkles className="w-3.5 h-3.5 text-[#ffb829]" />
+              <span>Planes</span>
             </button>
-          </div>
-        </div>
-      )}
 
-      {subscription?.status === 'past_due' && !entitlements.isReadOnly && (
-        <div className="bg-amber-50 text-amber-950 px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-3 border-b border-amber-200 print:hidden">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
-            <span>
-              <strong>Aviso de pago pendiente:</strong> No pudimos procesar tu último cobro. Mantienes acceso completo durante tu ventana de gracia mientras reintentamos en los días 1, 3 y 5.
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => openPricingModal()}
-            className="px-3 py-1 rounded-md bg-amber-900 text-white font-semibold cursor-pointer"
-          >
-            Actualizar tarjeta
-          </button>
-        </div>
-      )}
-
-      {/* Barra superior institucional adaptada al Campus */}
-      <header
-        className={`sticky top-0 z-40 h-14 px-4 flex items-center justify-between gap-4 border-b print:hidden select-none ${
-          isPremiumTheme
-            ? 'bg-[#ffffff] border-[#d1d2e0]'
-            : 'bg-[#ffffff] border-[#e5e5e5]'
-        }`}
-      >
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={toggleSidebarOrDrawer}
-            className="p-2 rounded-full hover:bg-[#f2f2f2] text-[#202230] cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95 transition-transform"
-            aria-label="Mostrar u ocultar menú lateral"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-          <SafeNavLink href="/" prefetch={true} className="flex items-center gap-2 shrink-0">
-            <img
-              src={campusLogoSrc}
-              alt="IPT Academy"
-              className="h-8 w-auto object-contain"
-            />
-          </SafeNavLink>
-        </div>
-
-        {/* Buscador central */}
-        <form
-          onSubmit={handleGlobalSearch}
-          className="flex-1 max-w-[540px] hidden md:flex items-center"
-        >
-          <div className="flex w-full items-center border border-[#d1d2e0] rounded-full overflow-hidden focus-within:border-[#6d28d2] bg-[#ffffff]">
-            <input
-              type="search"
-              value={headerSearch}
-              onChange={(e) => setHeaderSearch(e.target.value)}
-              placeholder="Buscar cursos estáticos, cursos dinámicos o sesiones..."
-              className="w-full h-9 pl-4 pr-3 text-xs text-[#202230] placeholder-[#595c73] focus:outline-hidden"
-            />
-            <button
-              type="submit"
-              className="h-9 px-4 bg-[#f6f7f9] hover:bg-[#e9eaf2] border-l border-[#d1d2e0] flex items-center justify-center text-[#202230] cursor-pointer"
-              aria-label="Buscar"
-            >
-              <Search className="w-4 h-4" />
-            </button>
-          </div>
-        </form>
-
-        {/* Controles de Suscripción, Créditos En Vivo, Notificaciones y Perfil */}
-        <div className="flex items-center gap-2">
-          {/* Indicador de Créditos en Vivo para Pro+ y Your Plan */}
-          {entitlements.canJoinLiveClasses && (
-            <SafeNavLink
-              href="/live"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#202230] text-[#ffffff] text-xs font-semibold hover:bg-[#33364a]"
-            >
-              <Video className="w-3.5 h-3.5 text-[#c0c4fc]" />
-              <span>{entitlements.availableLiveCredits} créditos en vivo</span>
-            </SafeNavLink>
-          )}
-
-          {/* Indicador de Curso Dinámico en Pro */}
-          {entitlements.maxDynamicCourses > 0 && !entitlements.canJoinLiveClasses && (
-            <SafeNavLink
-              href="/assignments"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#d1d2e0] bg-[#f6f7f9] text-[#202230] text-xs font-semibold"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-[#6d28d2]" />
-              <span>
-                {entitlements.effectiveActiveCourseSlugs.length}/{entitlements.maxDynamicCourses} curso dinámico
-              </span>
-            </SafeNavLink>
-          )}
-
-          {/* Botón de Planes / Suscripción */}
-          <button
-            type="button"
-            onClick={() => openPricingModal()}
-            className="px-3.5 py-1.5 rounded-lg border-[1.5px] border-[#6d28d2] text-[#6d28d2] hover:bg-[#f6f7f9] text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer min-h-[38px]"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>
-              {!subscription || subscription.planId === 'free'
-                ? 'Probar Pro / Pro+'
-                : subscription.status === 'trial'
-                ? `En Prueba (${subscription.planId.toUpperCase()})`
-                : `Plan ${subscription.planId.toUpperCase()}`}
-            </span>
-          </button>
-
-          {/* Campana de Notificaciones Transaccionales In-App */}
-          <div className="relative">
+            {/* Botón Menú Móvil */}
             <button
               type="button"
-              onClick={() => setNotifOpen((prev) => !prev)}
-              className="p-2 rounded-full hover:bg-[#f2f2f2] text-[#202230] relative cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
-              aria-label="Notificaciones"
+              onClick={() => setMobileMenuOpen((p) => !p)}
+              className="xl:hidden p-2 rounded-full border border-[#ffffff]/10 bg-[#09090b] text-white"
+              aria-label="Menú"
             >
-              <Bell className="w-4 h-4" />
-              {unreadNotifs.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#6d28d2]" />
-              )}
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
-
-            {notifOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-[#ffffff] border border-[#d1d2e0] rounded-xl shadow-lg z-50 overflow-hidden">
-                <div className="px-4 py-2.5 bg-[#f6f7f9] border-b border-[#e9eaf2] flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#202230]">
-                    Avisos y Notificaciones ({unreadNotifs.length})
-                  </span>
-                </div>
-                <div className="max-h-72 overflow-y-auto divide-y divide-[#e9eaf2]">
-                  {notifications.length === 0 ? (
-                    <p className="p-4 text-xs text-[#595c73] text-center">
-                      No tienes notificaciones pendientes.
-                    </p>
-                  ) : (
-                    notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        onClick={() => markNotificationRead(n.id)}
-                        className={`p-3.5 text-xs cursor-pointer hover:bg-[#f6f7f9] ${
-                          !n.read ? 'bg-[#f6f7f9]/60 font-medium' : 'text-[#595c73]'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="font-bold text-[#202230]">{n.title}</span>
-                          {!n.read && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#6d28d2] shrink-0" />
-                          )}
-                        </div>
-                        <p className="text-[11px] text-[#595c73] leading-relaxed">{n.message}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
           </div>
-
-          {user ? (
-            <UserProfileMenu />
-          ) : (
-            <a
-              href="/login"
-              className="px-3.5 py-1.5 rounded-lg border border-[#d1d2e0] hover:bg-[#f6f7f9] text-xs font-semibold text-[#202230] transition-colors min-h-[38px] inline-flex items-center justify-center"
-            >
-              Iniciar sesión
-            </a>
-          )}
         </div>
+
+        {/* Drawer Móvil y Tablet */}
+        {mobileMenuOpen && (
+          <div className="xl:hidden border-b border-[#ffffff]/10 bg-[#09090b] px-4 py-4 space-y-3">
+            <div className="flex flex-wrap items-center gap-1.5 pb-3 border-b border-[#ffffff]/10">
+              <span className="text-[11px] text-[#9a9a9a] mr-2">Vista de Nivel:</span>
+              {(
+                [
+                  { id: 'free', label: 'Free' },
+                  { id: 'pro', label: 'Pro' },
+                  { id: 'pro_plus', label: 'Pro+' },
+                  { id: 'your_plan', label: 'Your Plan' },
+                ] as const
+              ).map((tier) => (
+                <button
+                  key={tier.id}
+                  type="button"
+                  onClick={() => switchDemoTier(tier.id)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    currentPlanId === tier.id
+                      ? 'bg-[#8052ff] text-white'
+                      : 'bg-[#ffffff]/5 text-[#9a9a9a]'
+                  }`}
+                >
+                  {tier.label}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`p-2.5 rounded-xl text-xs font-medium flex items-center gap-2 ${
+                      isActive
+                        ? 'bg-[#8052ff] text-white'
+                        : 'bg-[#ffffff]/5 text-[#bdbdbd] hover:text-white'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* Estructura principal con Sidebar y área de Campus */}
-      <div className="flex-1 flex min-h-0">
-        <StudentSidebar isOpen={sidebarOpen} />
-
-        <div
-          className={`flex-1 min-w-0 flex flex-col pb-20 md:pb-0 ${
-            isPremiumTheme ? 'bg-[#f6f7f9]' : 'bg-[#ffffff]'
-          }`}
-        >
-          {children}
-        </div>
-      </div>
-
-      <StudentMobileBottomBar
-        isDrawerOpen={mobileDrawerOpen}
-        onOpenDrawer={() => setMobileDrawerOpen(true)}
-      />
+      {/* Contenido Principal */}
+      <main className="flex-1 flex flex-col bg-[#000000]">{children}</main>
     </div>
   );
 }

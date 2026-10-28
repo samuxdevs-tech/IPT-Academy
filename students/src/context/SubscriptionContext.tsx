@@ -120,6 +120,15 @@ interface SubscriptionContextValue {
   ) => Promise<YourPlanExecutiveRequest>;
   markNotificationRead: (notifId: string) => Promise<void>;
   advanceVirtualClockDays: (days: number) => Promise<void>;
+  switchDemoTier: (targetPlanId: 'free' | 'pro' | 'pro_plus' | 'your_plan') => Promise<void>;
+  zeroSumAccounting: {
+    issuedCredits: number;
+    availableCredits: number;
+    reservedInEscrow: number;
+    consumedCredits: number;
+    netDelta: number;
+    isBalanced: boolean;
+  };
 }
 
 const SubscriptionContext = createContext<SubscriptionContextValue | undefined>(undefined);
@@ -580,6 +589,83 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     [effectiveUid, syncEngineToStorageAndRtdb]
   );
 
+  const switchDemoTier = useCallback(
+    async (targetPlanId: 'free' | 'pro' | 'pro_plus' | 'your_plan') => {
+      const engine = engineRef.current;
+      const now = clockRef.current.now();
+      const nextMonth = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      let existingSub = Array.from(engine.subscriptions.values()).find(
+        (s) => s.userId === effectiveUid
+      );
+
+      const defaultSlugs =
+        targetPlanId === 'free'
+          ? []
+          : targetPlanId === 'pro'
+          ? ['ipt-master-fullstack']
+          : ['ipt-master-fullstack', 'arquitectura-cloud-ipt', 'sistemas-distribuidos-ipt'];
+
+      const creditsAllowance =
+        targetPlanId === 'free' || targetPlanId === 'pro'
+          ? 0
+          : targetPlanId === 'pro_plus'
+          ? 8
+          : 12;
+
+      const updatedSub: Subscription = {
+        id: existingSub?.id || `sub_${effectiveUid}`,
+        userId: effectiveUid,
+        planId: targetPlanId,
+        status: 'active',
+        cancelAtPeriodEnd: false,
+        readOnlyReason: null,
+        billingAnchorDay: now.getUTCDate(),
+        currentPeriodStart: now.toISOString(),
+        currentPeriodEnd: nextMonth.toISOString(),
+        trialStart: null,
+        trialEnd: null,
+        paymentRetryCount: 0,
+        activeDynamicCourseSlugs: defaultSlugs,
+        frozenDynamicCourseSlugs: [],
+        courseLastActivityAt: {
+          'ipt-master-fullstack': now.toISOString(),
+          'arquitectura-cloud-ipt': now.toISOString(),
+          'sistemas-distribuidos-ipt': now.toISOString(),
+        },
+        monthlyCreditsAllowance: creditsAllowance,
+        remainingCredits: creditsAllowance,
+        creditsConsumedInCycle: 0,
+        creditsResetAt: nextMonth.toISOString(),
+        pendingDowngrade: null,
+        adminOverrides:
+          targetPlanId === 'your_plan'
+            ? { maxDynamicCourses: 4, monthlyLiveCredits: 12, allowLiveAccess: true }
+            : null,
+      };
+
+      engine.subscriptions.set(updatedSub.id, updatedSub);
+      await syncEngineToStorageAndRtdb(effectiveUid);
+    },
+    [effectiveUid, syncEngineToStorageAndRtdb]
+  );
+
+  // Sistema de Contabilidad de Igualación a 0 (Partida Doble de Créditos)
+  const zeroSumAccounting = useMemo(() => {
+    const reservedCount = liveBookings.filter((b) => b.status === 'confirmed').length;
+    const available = subscription ? subscription.remainingCredits : 0;
+    const consumed = Math.max(0, (subscription?.creditsConsumedInCycle || 0) - reservedCount);
+    const issued = available + reservedCount + consumed;
+    const netDelta = issued - (available + reservedCount + consumed);
+    return {
+      issuedCredits: issued,
+      availableCredits: available,
+      reservedInEscrow: reservedCount,
+      consumedCredits: consumed,
+      netDelta,
+      isBalanced: netDelta === 0,
+    };
+  }, [subscription, liveBookings]);
+
   const value = useMemo<SubscriptionContextValue>(
     () => ({
       subscription,
@@ -607,6 +693,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       submitYourPlanRequest,
       markNotificationRead,
       advanceVirtualClockDays,
+      switchDemoTier,
+      zeroSumAccounting,
     }),
     [
       subscription,
@@ -634,6 +722,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       submitYourPlanRequest,
       markNotificationRead,
       advanceVirtualClockDays,
+      switchDemoTier,
+      zeroSumAccounting,
     ]
   );
 

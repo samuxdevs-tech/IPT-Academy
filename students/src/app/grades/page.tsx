@@ -1,482 +1,346 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
-import SafeNavLink from '@/components/navigation/SafeNavLink';
 import {
-  Download,
   Award,
-  Calculator,
-  ArrowRight,
   CheckCircle2,
   Clock,
-  Volume2,
-  HelpCircle,
-  RotateCcw,
-  Home,
+  Printer,
+  Scale,
+  FileCheck2,
+  GraduationCap,
+  ChevronRight,
+  ShieldCheck,
+  BookOpen,
 } from 'lucide-react';
-import { useLms } from '@/context/LmsContext';
-import { formatUtcInTimeZone } from '@/lib/lmsData';
+import { useSubscription } from '@/context/SubscriptionContext';
+import { AssignmentItem } from '@/app/assignments/page';
 
-function GradebookContent() {
-  const searchParams = useSearchParams();
-  const requestedCourse = searchParams?.get('course') || 'all';
+const STORAGE_KEY_ASSIGNMENTS = 'ipt_student_assignments_v2';
 
-  const { courses, assignments, timeZone } = useLms();
-  const [selectedCourse, setSelectedCourse] = useState<string>(requestedCourse);
+const DEFAULT_GRADES_SNAPSHOT: AssignmentItem[] = [
+  {
+    id: 'asg-arch-01',
+    code: 'TR-101',
+    courseSlug: 'ipt-master-fullstack',
+    courseTitle: 'IPT Master: Arquitectura Fullstack e Inteligencia Artificial',
+    title: 'Diseño de Separación de Capas y Contratos de Dominio',
+    dueDate: '2026-11-05T23:59:00Z',
+    status: 'graded',
+    description: 'Separación de dominio y validación de esquemas.',
+    deliverablesExpected: [],
+    finalScore: 86,
+    gradedBy: 'Comité Docente IPT',
+    gradedAt: '2026-10-27 18:40',
+    rubric: [
+      {
+        id: 'crit-1',
+        title: 'Aislamiento y Pureza de la Capa de Dominio',
+        weightPercent: 35,
+        maxPoints: 35,
+        awardedPoints: 34,
+        description: '',
+      },
+      {
+        id: 'crit-2',
+        title: 'Contratos y Validación de Esquemas en Bordes',
+        weightPercent: 30,
+        maxPoints: 30,
+        awardedPoints: 28,
+        description: '',
+      },
+      {
+        id: 'crit-3',
+        title: 'Manejo Determinista de Errores y Estados',
+        weightPercent: 20,
+        maxPoints: 20,
+        awardedPoints: 11,
+        description: '',
+      },
+      {
+        id: 'crit-4',
+        title: 'Claridad de Documentación y Justificación Técnica',
+        weightPercent: 15,
+        maxPoints: 15,
+        awardedPoints: 13,
+        description: '',
+      },
+    ],
+  },
+  {
+    id: 'asg-arch-02',
+    code: 'TR-102',
+    courseSlug: 'ipt-master-fullstack',
+    courseTitle: 'IPT Master: Arquitectura Fullstack e Inteligencia Artificial',
+    title: 'Políticas de Reintento (Backoff) e Idempotencia en Pagos',
+    dueDate: '2026-11-12T23:59:00Z',
+    status: 'pending',
+    description: '',
+    deliverablesExpected: [],
+    rubric: [],
+  },
+  {
+    id: 'asg-arch-03',
+    code: 'TR-103',
+    courseSlug: 'arquitectura-cloud-ipt',
+    courseTitle: 'Arquitectura Cloud Resiliente y Microservicios',
+    title: 'Patrón Transactional Outbox y Consistencia Eventual',
+    dueDate: '2026-11-19T23:59:00Z',
+    status: 'submitted',
+    description: '',
+    deliverablesExpected: [],
+    rubric: [],
+  },
+];
 
-  const visibleAssignments = useMemo(() => {
-    if (selectedCourse === 'all') return assignments;
-    return assignments.filter((a) => a.courseSlug === selectedCourse);
-  }, [assignments, selectedCourse]);
+function StudentGradesContent() {
+  const { subscription, switchDemoTier } = useSubscription();
+  const [items, setItems] = useState<AssignmentItem[]>(DEFAULT_GRADES_SNAPSHOT);
+  const [selectedCourseFilter, setSelectedCourseFilter] = useState<string>('all');
 
-  const gradedList = visibleAssignments.filter((a) => typeof a.finalGrade === 'number');
-  const overallAverage = useMemo(() => {
-    if (!gradedList.length) return null;
-    const sum = gradedList.reduce((acc, a) => acc + (a.finalGrade || 0), 0);
-    return Number((sum / gradedList.length).toFixed(2));
-  }, [gradedList]);
-
-  const getCutAverage = (cutId: 'cut_1' | 'cut_2' | 'cut_3') => {
-    const inCut = visibleAssignments.filter(
-      (a) => a.cutId === cutId && typeof a.finalGrade === 'number'
-    );
-    if (!inCut.length) return null;
-    const sum = inCut.reduce((acc, a) => acc + (a.finalGrade || 0), 0);
-    return Number((sum / inCut.length).toFixed(2));
-  };
-
-  const cut1Avg = getCutAverage('cut_1');
-  const cut2Avg = getCutAverage('cut_2');
-  const cut3Avg = getCutAverage('cut_3');
-
-  const currentCourse = courses.find((c) => c.slug === selectedCourse);
-  const isAcademicCuts =
-    currentCourse?.evaluationModel === 'academic_cuts' ||
-    (selectedCourse === 'all' &&
-      visibleAssignments.some(
-        (a) => a.cutId === 'cut_1' || a.cutId === 'cut_2' || a.cutId === 'cut_3'
-      ));
-
-  const [targetFinalGrade, setTargetFinalGrade] = useState<number>(3.0);
-  const [cut1Simulated, setCut1Simulated] = useState<number>(cut1Avg ?? 0);
-  const [cut2Simulated, setCut2Simulated] = useState<number>(cut2Avg ?? 0);
-
-  const requiredCut3Score = useMemo(() => {
-    const accumulated = cut1Simulated * 0.3 + cut2Simulated * 0.3;
-    const needed = (targetFinalGrade - accumulated) / 0.4;
-    return Number(Math.max(0, Math.min(5.0, needed)).toFixed(2));
-  }, [targetFinalGrade, cut1Simulated, cut2Simulated]);
-
-  const cutLabel = (cutId: string) => {
-    if (cutId === 'cut_1') return 'Primera parte';
-    if (cutId === 'cut_2') return 'Segunda parte';
-    if (cutId === 'cut_3') return 'Parte final';
-    if (cutId === 'free') return 'Evaluación continua';
-    if (cutId?.startsWith('period_')) {
-      const num = cutId.replace('period_', '');
-      return num === 'final' ? 'Evaluación final' : `Periodo ${num}`;
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_ASSIGNMENTS);
+        if (saved) {
+          setItems(JSON.parse(saved));
+        }
+      } catch {}
     }
-    if (cutId?.startsWith('mod-')) return 'Por módulo';
-    return 'General';
-  };
+  }, []);
 
-  const handleExportTranscriptCsv = () => {
-    const headers = [
-      'Curso',
-      'Tarea',
-      'Parte del curso',
-      'Valor en esa parte (%)',
-      'Estado',
-      'Nota (de 0.0 a 5.0)',
-    ];
-    const rows = visibleAssignments.map((a) => [
-      `"${a.courseTitle}"`,
-      `"${a.title}"`,
-      cutLabel(a.cutId),
-      String(a.weightInCutPercent),
-      a.status === 'graded'
-        ? 'Calificada'
-        : a.status === 'submitted'
-          ? 'Entregada'
-          : 'Pendiente',
-      a.finalGrade !== undefined ? a.finalGrade.toFixed(2) : 'Sin calificar',
-    ]);
-    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'mis-notas-ipt-academy.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  const filteredItems = useMemo(() => {
+    if (selectedCourseFilter === 'all') return items;
+    return items.filter((i) => i.courseSlug === selectedCourseFilter);
+  }, [items, selectedCourseFilter]);
 
-  const handleResetCalculator = () => {
-    setCut1Simulated(cut1Avg ?? 0);
-    setCut2Simulated(cut2Avg ?? 0);
-    setTargetFinalGrade(3.0);
-  };
+  const gradedItems = useMemo(() => {
+    return filteredItems.filter((i) => typeof i.finalScore === 'number');
+  }, [filteredItems]);
+
+  const averageScore = useMemo(() => {
+    if (gradedItems.length === 0) return 0;
+    const sum = gradedItems.reduce((acc, cur) => acc + (cur.finalScore || 0), 0);
+    return Math.round(sum / gradedItems.length);
+  }, [gradedItems]);
+
+  const currentPlanId = subscription?.planId || 'free';
 
   return (
-    <div className="flex-1 bg-[#ffffff] text-[#0f0f0f]">
-      <main id="main-content" className="max-w-[1300px] mx-auto py-5 px-4 lg:px-6 space-y-6">
-        <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs text-[#606060]">
-          <Link href="/" className="hover:text-[#0f0f0f] flex items-center gap-1 font-medium">
-            <Home className="w-3.5 h-3.5" />
-            <span>Inicio</span>
-          </Link>
-          <span>/</span>
-          <span className="text-[#0f0f0f] font-semibold">Calificaciones</span>
-        </nav>
-
+    <div className="min-h-screen bg-[#000000] text-white py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1360px] mx-auto space-y-8">
         {/* Cabecera */}
-        <section className="bg-[#ffffff] rounded-2xl border border-[#e5e5e5] p-5 space-y-5">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <h1 className="text-xl lg:text-2xl font-bold text-[#0f0f0f] leading-snug">
-                Mis Notas y Calificaciones
-              </h1>
-              <p className="text-[15px] text-[#595c73]">
-                Consulta cuánto has sacado en cada tarea. Las notas van de 0.0 a 5.0 y el curso se aprueba con 3.0 o más.
-              </p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#ffffff]/10 pb-8 print:hidden">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8052ff]/10 border border-[#8052ff]/30 text-[#8052ff] text-xs font-medium mb-3">
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Registro Oficial de Rendimiento</span>
             </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <label htmlFor="grades-course-filter" className="text-[13px] text-[#595c73]">
-                Ver curso:
-              </label>
-              <select
-                id="grades-course-filter"
-                name="grades-course-filter"
-                value={selectedCourse}
-                onChange={(e) => setSelectedCourse(e.target.value)}
-                aria-label="Elegir el curso para ver sus notas"
-                className="ipt-input !py-2 !px-3 !text-[14px]"
-              >
-                <option value="all">Todos mis cursos</option>
-                {courses.map((c) => (
-                  <option key={c.slug} value={c.slug}>
-                    {c.title}
-                  </option>
-                ))}
-              </select>
-
-              <button
-                type="button"
-                onClick={handleExportTranscriptCsv}
-                disabled={visibleAssignments.length === 0}
-                className="btn-outline-violet !py-2 !px-3.5 !text-[13px] inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-              >
-                <Download className="w-4 h-4" />
-                <span>Descargar tabla de notas (para Excel)</span>
-              </button>
-            </div>
-          </div>
-
-          <details className="text-[14px] text-[#2a2b3f] border-t border-[#e9eaf2] pt-4">
-            <summary className="font-medium cursor-pointer flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-[#6d28d2] shrink-0" />
-              <span>¿Cómo se calcula mi nota final del curso?</span>
-            </summary>
-            <p className="mt-2 text-[#595c73] leading-[1.6] pl-6">
-              {isAcademicCuts ? (
-                <>
-                  El curso se divide en tres partes: la <strong>Primera parte</strong> vale el 30% de la nota, la <strong>Segunda parte</strong> vale otro 30%, y la <strong>Parte final</strong> vale el 40% restante. Al sumar las tres partes obtienes tu promedio final de 0.0 a 5.0.
-                </>
-              ) : (
-                <>
-                  La evaluación en este curso es <strong>continua y directa</strong>: cada tarea o taller calificado suma proporcionalmente a tu promedio final de 0.0 a 5.0 sin divisiones semestrales rígidas.
-                </>
-              )}
+            <h1 className="text-3xl sm:text-4xl font-normal tracking-[-0.03em] text-white">
+              Mis Notas e Historial Académico
+            </h1>
+            <p className="text-sm text-[#9a9a9a] mt-2 max-w-2xl">
+              Consulta el detalle de tus calificaciones por actividad, el cumplimiento de cada
+              rúbrica y el estado de tus solicitudes ante Rectoría.
             </p>
-          </details>
-        </section>
-
-        {/* Resumen de Calificaciones */}
-        {isAcademicCuts ? (
-          <section className="bg-[#202230] text-[#ffffff] rounded-[16px] border border-[#3d4055] p-6 grid grid-cols-1 md:grid-cols-4 gap-6 tabular-nums">
-            <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
-              <span className="text-[13px] text-[#b7b9cd] block">
-                Tu nota promedio hasta hoy
-              </span>
-              <span className="text-[28px] font-bold text-[#c0c4fc]">
-                {overallAverage !== null ? `${overallAverage.toFixed(2)} / 5.00` : 'Sin notas aún'}
-              </span>
-              <span className="text-[13px] text-[#b7b9cd] block">
-                {overallAverage === null
-                  ? 'Aún no hay tareas calificadas'
-                  : overallAverage >= 3.0
-                    ? 'Vas aprobando el curso'
-                    : 'Necesitas subir el promedio a 3.0'}
-              </span>
-            </div>
-
-            <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
-              <span className="text-[13px] text-[#b7b9cd] block">Primera parte (vale 30%)</span>
-              <span className="text-[22px] font-bold text-[#ffffff]">
-                {cut1Avg !== null ? `${cut1Avg.toFixed(2)} / 5.00` : 'Sin calificar'}
-              </span>
-              <span className="text-[13px] text-[#b7b9cd] block">
-                {cut1Avg !== null ? 'Calificada' : 'Sin entregas calificadas'}
-              </span>
-            </div>
-
-            <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
-              <span className="text-[13px] text-[#b7b9cd] block">Segunda parte (vale 30%)</span>
-              <span className="text-[22px] font-bold text-[#ffffff]">
-                {cut2Avg !== null ? `${cut2Avg.toFixed(2)} / 5.00` : 'Sin calificar'}
-              </span>
-              <span className="text-[13px] text-[#b7b9cd] block">
-                {cut2Avg !== null ? 'Calificada' : 'Sin entregas calificadas'}
-              </span>
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[13px] text-[#b7b9cd] block">
-                Parte final (vale 40%)
-              </span>
-              <span className="text-[22px] font-bold text-[#ffffff]">
-                {cut3Avg !== null ? `${cut3Avg.toFixed(2)} / 5.00` : 'Sin calificar'}
-              </span>
-              <span className="text-[13px] text-[#b7b9cd] block">
-                {cut3Avg !== null ? 'Calificada' : 'Sin entregas calificadas'}
-              </span>
-            </div>
-          </section>
-        ) : (
-          <section className="bg-[#202230] text-[#ffffff] rounded-[16px] border border-[#3d4055] p-6 grid grid-cols-1 md:grid-cols-3 gap-6 tabular-nums">
-            <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
-              <span className="text-[13px] text-[#b7b9cd] block">
-                Promedio Acumulado
-              </span>
-              <span className="text-[28px] font-bold text-[#c0c4fc]">
-                {overallAverage !== null ? `${overallAverage.toFixed(2)} / 5.00` : 'Sin notas aún'}
-              </span>
-              <span className="text-[13px] text-[#b7b9cd] block">
-                {overallAverage === null
-                  ? 'Aún no hay actividades calificadas'
-                  : overallAverage >= 3.0
-                    ? 'Aprobando satisfactoriamente'
-                    : 'Necesitas subir el promedio a 3.0'}
-              </span>
-            </div>
-
-            <div className="space-y-1 border-b md:border-b-0 md:border-r border-[#3d4055] pb-4 md:pb-0 md:pr-4">
-              <span className="text-[13px] text-[#b7b9cd] block">Progreso de Evaluación</span>
-              <span className="text-[22px] font-bold text-[#ffffff]">
-                {gradedList.length} de {visibleAssignments.length}
-              </span>
-              <span className="text-[13px] text-[#b7b9cd] block">
-                Actividades calificadas en total
-              </span>
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[13px] text-[#b7b9cd] block">
-                Esquema de Evaluación
-              </span>
-              <span className="text-[22px] font-bold text-[#38d494]">
-                Evaluación Continua
-              </span>
-              <span className="text-[13px] text-[#b7b9cd] block">
-                Sin cortes ni periodos rígidos
-              </span>
-            </div>
-          </section>
-        )}
-
-        {/* Tabla de tareas y notas */}
-        <section className="bg-[#ffffff] rounded-[16px] border border-[#d1d2e0] overflow-hidden">
-          <div className="p-6 border-b border-[#e9eaf2] flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-[20px] font-bold text-[#2a2b3f]">
-                Detalle de tus tareas y notas
-              </h2>
-              <p className="text-[14px] text-[#595c73]">
-                Haz clic en una tarea para abrirla o ver los comentarios del profesor.
-              </p>
-            </div>
-            <Link
-              href="/certificate"
-              className="btn-solid-dark !py-2 !px-3.5 !text-[13px] inline-flex items-center gap-1.5"
-            >
-              <Award className="w-4 h-4" />
-              <span>Ver mi diploma</span>
-            </Link>
           </div>
 
-          {visibleAssignments.length === 0 ? (
-            <div className="p-10 text-center space-y-2">
-              <p className="text-[16px] font-medium text-[#2a2b3f]">
-                Aún no hay tareas ni calificaciones registradas
-              </p>
-              <p className="text-[14px] text-[#595c73]">
-                Las tareas creadas y calificadas desde la sección de Tareas o el Panel de Administrador aparecerán aquí automáticamente.
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse tabular-nums">
-                <thead>
-                  <tr className="bg-[#f6f7f9] border-b border-[#d1d2e0] text-[13px] font-medium text-[#595c73]">
-                    <th className="py-3.5 px-6">Tarea y curso</th>
-                    <th className="py-3.5 px-4">Parte del curso</th>
-                    <th className="py-3.5 px-4">Plazo de entrega</th>
-                    <th className="py-3.5 px-4">Comentarios del profesor</th>
-                    <th className="py-3.5 px-6 text-right">Nota obtenida</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#e9eaf2] text-[14px]">
-                  {visibleAssignments.map((asg) => (
-                    <tr key={asg.id} className="hover:bg-[#f6f7f9]/60">
-                      <td className="py-4 px-6">
-                        <div className="font-medium text-[#2a2b3f]">{asg.title}</div>
-                        <div className="text-[13px] text-[#595c73] mt-0.5">
-                          {asg.courseTitle}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-[#2a2b3f]">
-                        {cutLabel(asg.cutId)}
-                      </td>
-                      <td className="py-4 px-4 text-[13px] text-[#595c73]">
-                        {formatUtcInTimeZone(asg.dueDateUtc, timeZone)}
-                      </td>
-                      <td className="py-4 px-4">
-                        {asg.multimediaFeedback ? (
-                          <SafeNavLink
-                            href={`/assignments?id=${asg.id}`}
-                            className="text-[13px] font-medium text-[#6d28d2] hover:underline inline-flex items-center gap-1"
-                          >
-                            <Volume2 className="w-4 h-4" />
-                            <span>Escuchar o leer comentarios</span>
-                          </SafeNavLink>
-                        ) : (
-                          <SafeNavLink
-                            href={`/assignments?id=${asg.id}`}
-                            className="text-[13px] font-medium text-[#6d28d2] hover:underline inline-flex items-center gap-1"
-                          >
-                            <span>Abrir tarea</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </SafeNavLink>
-                        )}
-                      </td>
-                      <td className="py-4 px-6 text-right">
-                        {typeof asg.finalGrade === 'number' ? (
-                          <span className="text-[18px] font-bold text-[#6d28d2]">
-                            {asg.finalGrade.toFixed(2)} / 5.0
-                          </span>
-                        ) : asg.status === 'submitted' ? (
-                          <span className="ipt-badge-violet">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>En revisión</span>
-                          </span>
-                        ) : (
-                          <span className="ipt-badge-ember">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Falta por enviar</span>
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-
-        {/* Calculadora sencilla de nota */}
-        {isAcademicCuts && (
-        <section className="bg-[#ffffff] rounded-[16px] border border-[#d1d2e0] p-6 space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e9eaf2] pb-4">
-            <div>
-              <h2 className="text-[18px] font-bold text-[#2a2b3f] flex items-center gap-2">
-                <Calculator className="w-5 h-5 text-[#6d28d2]" />
-                <span>Calculadora: ¿Qué nota necesito sacar en la parte final?</span>
-              </h2>
-              <p className="text-[14px] text-[#595c73]">
-                Puedes cambiar los números de abajo libremente para hacer tus cuentas; tus notas reales no se borrarán.
-              </p>
-            </div>
-
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={handleResetCalculator}
-              className="btn-ghost-neutral !py-1.5 !px-3 !text-[13px] inline-flex items-center gap-1 cursor-pointer"
+              onClick={() => typeof window !== 'undefined' && window.print()}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#ffffff]/10 hover:bg-[#ffffff]/15 border border-[#ffffff]/15 text-xs font-medium text-white cursor-pointer"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Restablecer calculadora</span>
+              <Printer className="w-4 h-4" />
+              <span>Descargar Certificado de Notas</span>
             </button>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end tabular-nums">
-            <div className="space-y-1">
-              <label htmlFor="sim-c1" className="block text-[13px] font-medium text-[#2a2b3f]">
-                Nota en la Primera parte (30%)
-              </label>
-              <input
-                id="sim-c1"
-                name="sim-c1"
-                type="number"
-                step="0.1"
-                min="0"
-                max="5"
-                value={cut1Simulated}
-                onChange={(e) => setCut1Simulated(Number(e.target.value))}
-                className="ipt-input w-full"
-              />
+        {/* Tarjetas de Resumen General */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-2xl p-5 space-y-1">
+            <span className="text-xs text-[#9a9a9a] block">Promedio General Acumulado</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-[#15846e]">{averageScore}</span>
+              <span className="text-xs text-[#9a9a9a]">/ 100 puntos</span>
             </div>
-
-            <div className="space-y-1">
-              <label htmlFor="sim-c2" className="block text-[13px] font-medium text-[#2a2b3f]">
-                Nota en la Segunda parte (30%)
-              </label>
-              <input
-                id="sim-c2"
-                name="sim-c2"
-                type="number"
-                step="0.1"
-                min="0"
-                max="5"
-                value={cut2Simulated}
-                onChange={(e) => setCut2Simulated(Number(e.target.value))}
-                className="ipt-input w-full"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label htmlFor="sim-target" className="block text-[13px] font-medium text-[#2a2b3f]">
-                Nota final que quieres lograr (3.0 a 5.0)
-              </label>
-              <input
-                id="sim-target"
-                name="sim-target"
-                type="number"
-                step="0.1"
-                min="3.0"
-                max="5.0"
-                value={targetFinalGrade}
-                onChange={(e) => setTargetFinalGrade(Number(e.target.value))}
-                className="ipt-input w-full"
-              />
-            </div>
-
-            <div className="p-3.5 rounded-[8px] bg-[#f6f7f9] border border-[#6d28d2] flex items-center justify-between">
-              <span className="text-[13px] font-medium text-[#2a2b3f]">
-                Necesitas sacar al final:
-              </span>
-              <span className="text-[20px] font-bold text-[#6d28d2]">
-                {requiredCut3Score.toFixed(2)} / 5.0
-              </span>
-            </div>
+            <span className="text-[11px] text-[#15846e] block pt-1">
+              Nivel aprobatorio cumplido (mín. 70/100)
+            </span>
           </div>
-        </section>
-        )}
-      </main>
+
+          <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-2xl p-5 space-y-1">
+            <span className="text-xs text-[#9a9a9a] block">Actividades Evaluadas</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-white">{gradedItems.length}</span>
+              <span className="text-xs text-[#9a9a9a]">de {filteredItems.length} totales</span>
+            </div>
+            <span className="text-[11px] text-[#bdbdbd] block pt-1">
+              Calificadas bajo matriz de rúbrica
+            </span>
+          </div>
+
+          <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-2xl p-5 space-y-1">
+            <span className="text-xs text-[#9a9a9a] block">Horas de Estudio Registradas</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-white">42.5</span>
+              <span className="text-xs text-[#9a9a9a]">horas verificadas</span>
+            </div>
+            <span className="text-[11px] text-[#bdbdbd] block pt-1">
+              Clases en video y entregas prácticas
+            </span>
+          </div>
+
+          <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-2xl p-5 space-y-1">
+            <span className="text-xs text-[#9a9a9a] block">Estado en Rectoría</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg font-semibold text-white">
+                {items.some((i) => i.status === 'appealed')
+                  ? '1 Apelación en Revisión'
+                  : 'Expediente al Día'}
+              </span>
+            </div>
+            <span className="text-[11px] text-[#8052ff] block pt-1">
+              Trazabilidad inmutable activa
+            </span>
+          </div>
+        </div>
+
+        {/* Filtro por Curso */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {[
+              { slug: 'all', label: 'Todos mis cursos' },
+              {
+                slug: 'ipt-master-fullstack',
+                label: 'IPT Master: Arquitectura Fullstack',
+              },
+              {
+                slug: 'arquitectura-cloud-ipt',
+                label: 'Arquitectura Cloud Resiliente',
+              },
+            ].map((tab) => (
+              <button
+                key={tab.slug}
+                type="button"
+                onClick={() => setSelectedCourseFilter(tab.slug)}
+                className={`px-4 py-2 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                  selectedCourseFilter === tab.slug
+                    ? 'bg-[#8052ff] text-white'
+                    : 'bg-[#09090b] border border-[#ffffff]/10 text-[#bdbdbd] hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <Link
+            href="/assignments"
+            className="text-xs text-[#8052ff] hover:underline flex items-center gap-1"
+          >
+            <span>Ir al módulo de entregas y rúbricas</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {/* Tabla Detallada de Calificaciones */}
+        <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl overflow-hidden">
+          <div className="px-6 py-5 border-b border-[#ffffff]/10 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-white">
+              Desglose Oficial de Evaluaciones y Rúbricas
+            </h2>
+            <span className="text-xs font-mono text-[#9a9a9a]">Escala: 0 a 100 puntos</span>
+          </div>
+
+          <div className="divide-y divide-[#ffffff]/10">
+            {filteredItems.map((item) => (
+              <div key={item.id} className="p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xs font-mono text-[#8052ff]">{item.code}</span>
+                      <span className="text-xs text-[#9a9a9a]">•</span>
+                      <span className="text-xs text-[#bdbdbd]">{item.courseTitle}</span>
+                    </div>
+                    <h3 className="text-base font-semibold text-white">{item.title}</h3>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    {item.status === 'graded' && (
+                      <div className="px-4 py-2 rounded-2xl bg-[#15846e]/15 border border-[#15846e]/30 text-right">
+                        <span className="text-[10px] uppercase tracking-wider text-[#15846e] block font-semibold">
+                          Nota Definitiva
+                        </span>
+                        <span className="text-lg font-bold text-white">
+                          {item.finalScore} / 100
+                        </span>
+                      </div>
+                    )}
+                    {item.status === 'appealed' && (
+                      <div className="px-4 py-2 rounded-2xl bg-[#8052ff]/15 border border-[#8052ff]/40 text-right">
+                        <span className="text-[10px] uppercase tracking-wider text-[#c0c4fc] block font-semibold">
+                          En Revisión por Rectoría
+                        </span>
+                        <span className="text-sm font-bold text-white">
+                          Nota actual: {item.finalScore}/100 ({item.appealRecord?.folio})
+                        </span>
+                      </div>
+                    )}
+                    {item.status === 'submitted' && (
+                      <span className="px-3.5 py-1.5 rounded-full bg-[#ffb829]/15 border border-[#ffb829]/30 text-xs font-semibold text-[#ffb829]">
+                        Entregada · En Evaluación Docente
+                      </span>
+                    )}
+                    {item.status === 'pending' && (
+                      <Link
+                        href={`/assignments?id=${item.id}`}
+                        className="px-4 py-2 rounded-full bg-[#ffffff]/10 hover:bg-[#8052ff] text-xs font-semibold text-white transition-colors"
+                      >
+                        Realizar Entrega
+                      </Link>
+                    )}
+                  </div>
+                </div>
+
+                {/* Si tiene rúbrica calificada, mostrar barra de puntos por criterio */}
+                {item.rubric && item.rubric.some((r) => typeof r.awardedPoints === 'number') && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+                    {item.rubric.map((crit) => (
+                      <div
+                        key={crit.id}
+                        className="p-3.5 rounded-2xl bg-[#000000] border border-[#ffffff]/10 space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-[#bdbdbd] font-medium truncate pr-2">
+                            {crit.title}
+                          </span>
+                          <span className="font-mono text-white shrink-0">
+                            {crit.awardedPoints}/{crit.maxPoints}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-[#ffffff]/10 overflow-hidden">
+                          <div
+                            className="h-full bg-[#15846e] rounded-full"
+                            style={{
+                              width: `${Math.min(
+                                100,
+                                Math.round(((crit.awardedPoints || 0) / crit.maxPoints) * 100)
+                              )}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -485,12 +349,12 @@ export default function GradesPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex-1 bg-[#ffffff] p-8 text-xs text-[#606060]">
-          Abriendo tus notas...
+        <div className="min-h-screen bg-black flex items-center justify-center text-white/50 text-xs font-mono">
+          Cargando historial de notas...
         </div>
       }
     >
-      <GradebookContent />
+      <StudentGradesContent />
     </Suspense>
   );
 }

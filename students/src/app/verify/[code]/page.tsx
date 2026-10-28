@@ -3,7 +3,12 @@ import fs from 'fs';
 import path from 'path';
 import { VerifyView } from '@/app/verify/page';
 
-const DEFAULT_CODES: string[] = ['IPT-VERIFY'];
+const DEFAULT_CODES: string[] = [
+  'IPT-VERIFY',
+  'IPT-2026-SW-ARCH-PRO',
+  'IPT-2026-UNVERIFIED-DRAFT',
+  'IPT-CERT-2026-MASTER-PRO',
+];
 
 export function generateStaticParams() {
   const codes = new Set<string>(DEFAULT_CODES);
@@ -46,7 +51,7 @@ export default async function VerifyCodePage({ params }: VerifyCodePageProps) {
   return (
     <Suspense
       fallback={
-        <div className="p-8 text-center text-xs text-[#606060]">
+        <div className="min-h-screen bg-[#000000] p-8 text-center text-xs text-[#9a9a9a]">
           Verificando credencial oficial IPT Academy...
         </div>
       }

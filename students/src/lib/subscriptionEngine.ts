@@ -557,8 +557,32 @@ export function computeEntitlements(
     }
   }
 
-  // 4. Resolución Fail-Closed para "Your Plan" (Corporativo)
+  // 4. Resolución para "Your Plan" (Individual a la Medida o Corporativo)
   if (effectivePlanId === 'your_plan') {
+    if (!sub.organizationId && !org) {
+      const maxDyn = sub.adminOverrides?.maxDynamicCourses ?? 4;
+      const liveAllowed = sub.adminOverrides?.allowLiveAccess ?? true;
+      const effectiveSlugs = selectMostRecentCourses(
+        sub.activeDynamicCourseSlugs,
+        sub.courseLastActivityAt,
+        maxDyn
+      );
+      return {
+        canAccessStaticCatalog: true,
+        canAccessAllStatic: true,
+        maxDynamicCourses: maxDyn,
+        effectiveActiveCourseSlugs: effectiveSlugs,
+        canJoinLiveClasses: liveAllowed,
+        availableLiveCredits: liveAllowed ? sub.remainingCredits : 0,
+        canSubmitAssignments: true,
+        canViewCertificates: true,
+        canClaimCertificates: true,
+        certificateRequiresConversion: false,
+        campusTheme: 'campus-enterprise',
+        isReadOnly: false,
+      };
+    }
+
     const customExpiry = sub.adminOverrides?.customExpiryDate;
     const effectiveOrgEnd = customExpiry || org?.currentPeriodEnd;
     const orgExpired = effectiveOrgEnd ? new Date(effectiveOrgEnd).getTime() <= now.getTime() : true;

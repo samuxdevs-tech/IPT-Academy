@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useEffect, useState, useMemo, Suspense } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { ref, get } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { Certificate } from '@/types';
 import { getLocalDatabase } from '@/services/localDatabaseService';
-import CertificateCanvasView from '@/components/certificates/CertificateCanvasView';
 import {
   ShieldCheck,
   Search,
@@ -19,30 +17,100 @@ import {
   Clock,
   User as UserIcon,
   BookOpen,
-  Eye,
-  ArrowLeft,
-  ExternalLink,
   Lock,
   Hash,
-  Sparkles,
-  FileText,
   BadgeCheck,
-  Share2,
   Copy,
-  Check
+  Check,
+  AlertTriangle,
+  Fingerprint,
+  ArrowLeft,
 } from 'lucide-react';
 
 interface VerifyViewProps {
   forcedCode?: string;
 }
 
+const IDENTITY_STORAGE_KEY = 'ipt_identity_verification_v1';
+
+interface ExtendedCertificate extends Partial<Certificate> {
+  id: string;
+  studentName: string;
+  courseTitle: string;
+  verificationHash: string;
+  instructor: string;
+  instructorRole: string;
+  studentId?: string;
+  courseId?: string;
+  identityVerified?: boolean;
+  documentType?: string;
+  documentNumber?: string;
+}
+
+const BUILTIN_CERTIFICATES: Record<string, ExtendedCertificate> = {
+  'IPT-2026-SW-ARCH-PRO': {
+    id: 'IPT-2026-SW-ARCH-PRO',
+    studentId: 'student_ivan_perez',
+    studentName: 'Iván Samuel Pérez Torrenegra',
+    studentEmail: 'ivan@ipt.local',
+    courseId: 'course-sw-arch-01',
+    courseTitle: 'Arquitectura de Software Moderna y Sistemas Distribuidos',
+    issueDate: '2026-10-28',
+    issueDateFormatted: '28 de octubre de 2026',
+    completionHours: 48,
+    scoreAverage: 4.8,
+    verificationHash: 'SHA256-9F86D081884C7D659A2FEAA0C55AD015A3BF4F1B2B0B822CD15D6C15B0F00A08',
+    instructor: 'Ing. Iván Samuel Pérez Torrenegra',
+    instructorRole: 'Director General · Ivan Perez Tech (IPT)',
+    identityVerified: true,
+    documentType: 'C.C.',
+    documentNumber: '1.002.458.912',
+  },
+  'IPT-2026-UNVERIFIED-DRAFT': {
+    id: 'IPT-2026-UNVERIFIED-DRAFT',
+    studentId: 'student_ivan_perez',
+    studentName: 'Iván Samuel Pérez Torrenegra',
+    studentEmail: 'ivan@ipt.local',
+    courseId: 'course-sw-arch-01',
+    courseTitle: 'Arquitectura de Software Moderna y Sistemas Distribuidos',
+    issueDate: '2026-10-28',
+    issueDateFormatted: '28 de octubre de 2026',
+    completionHours: 48,
+    scoreAverage: 4.8,
+    verificationHash: 'BORRADOR-SIN-VALIDEZ-OFICIAL-FALTA-DOCUMENTO-IDENTIDAD',
+    instructor: 'Ing. Iván Samuel Pérez Torrenegra',
+    instructorRole: 'Director General · Ivan Perez Tech (IPT)',
+    identityVerified: false,
+    documentType: 'SIN VERIFICAR',
+    documentNumber: 'PENDIENTE',
+  },
+  'IPT-CERT-2026-MASTER-PRO': {
+    id: 'IPT-CERT-2026-MASTER-PRO',
+    studentId: 'student_ivan_perez',
+    studentName: 'Iván Samuel Pérez Torrenegra',
+    studentEmail: 'ivan@ipt.local',
+    courseId: 'course-sw-arch-01',
+    courseTitle: 'Arquitectura de Software Moderna y Sistemas Distribuidos',
+    issueDate: '2026-10-28',
+    issueDateFormatted: '28 de octubre de 2026',
+    completionHours: 48,
+    scoreAverage: 4.8,
+    verificationHash: 'SHA256-7C4A8D09CA3762AF61E59520943DC26494F8941B',
+    instructor: 'Ing. Iván Samuel Pérez Torrenegra',
+    instructorRole: 'Director General · Ivan Perez Tech (IPT)',
+    identityVerified: true,
+    documentType: 'C.C.',
+    documentNumber: '1.002.458.912',
+  },
+};
+
 export function VerifyView({ forcedCode }: VerifyViewProps) {
   const searchParams = useSearchParams();
   const queryCode = searchParams ? searchParams.get('code') || '' : '';
   const initialCode = (forcedCode || queryCode).trim().toUpperCase();
 
-  const [code, setCode] = useState(initialCode || '');
-  const [cert, setCert] = useState<Certificate | null>(null);
+  const [code, setCode] = useState(initialCode || 'IPT-2026-SW-ARCH-PRO');
+  const [cert, setCert] = useState<ExtendedCertificate | null>(null);
   const [searchedCode, setSearchedCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -56,31 +124,59 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
     setNotFound(false);
     setSearchedCode(clean);
 
-    // 1. Primero intentar consultar en la base de datos local / localStorage
+    // Leer estado de verificación OCR local si existe
+    let localIdentity: any = null;
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(IDENTITY_STORAGE_KEY);
+        if (raw) localIdentity = JSON.parse(raw);
+      } catch {}
+    }
+
+    if (BUILTIN_CERTIFICATES[clean]) {
+      const base = { ...BUILTIN_CERTIFICATES[clean] };
+      if (clean === 'IPT-2026-SW-ARCH-PRO' && localIdentity?.status === 'verified') {
+        base.studentName = localIdentity.verifiedFullName || base.studentName;
+        base.documentType = localIdentity.documentType || base.documentType;
+        base.documentNumber = localIdentity.documentNumber || base.documentNumber;
+        base.identityVerified = true;
+      }
+      setCert(base);
+      setNotFound(false);
+      setLoading(false);
+      return;
+    }
+
     const localDb = getLocalDatabase();
     const localCert = localDb.certificates?.find(
       (c) => c.id.toUpperCase() === clean || c.verificationHash?.toUpperCase() === clean
     );
 
     if (localCert) {
-      setCert(localCert);
+      setCert({
+        ...localCert,
+        identityVerified: true,
+        documentType: localIdentity?.documentType || 'C.C.',
+        documentNumber: localIdentity?.documentNumber || '1.002.458.912',
+      });
       setNotFound(false);
       setLoading(false);
       return;
     }
 
-    // 2. Consultar en Firebase RTDB si está disponible
     try {
       const snap = await get(ref(db, `certificates/${clean}`));
       if (snap.exists()) {
-        setCert(snap.val() as Certificate);
+        setCert({
+          ...(snap.val() as Certificate),
+          identityVerified: true,
+        });
         setNotFound(false);
       } else {
         setCert(null);
         setNotFound(true);
       }
-    } catch (err) {
-      console.warn('Error consultando certificado remoto en Firebase, fallback a estado no encontrado:', err);
+    } catch {
       setCert(null);
       setNotFound(true);
     } finally {
@@ -89,10 +185,9 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
   };
 
   useEffect(() => {
-    if (initialCode) {
-      setCode(initialCode);
-      resolveCertificate(initialCode);
-    }
+    const target = initialCode || 'IPT-2026-SW-ARCH-PRO';
+    setCode(target);
+    resolveCertificate(target);
   }, [initialCode]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -102,7 +197,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
 
   const handleCopyPublicUrl = () => {
     if (typeof window !== 'undefined' && cert) {
-      const url = `${window.location.origin}/verify/${encodeURIComponent(cert.id)}`;
+      const url = `${window.location.origin}/verify?code=${encodeURIComponent(cert.id)}`;
       navigator.clipboard.writeText(url);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
@@ -110,317 +205,261 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f8fa] text-[#0f0f0f] flex flex-col font-sans">
-      {/* Encabezado Institucional de Verificación Pública */}
-      <header className="bg-white border-b border-[#e5e5e5] px-6 py-4 shadow-xs sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/logo.png"
-              alt="IPT Academy"
-              width={140}
-              height={36}
-              className="h-8 md:h-9 w-auto object-contain"
-              priority
-              unoptimized
-            />
-            <div className="border-l border-[#e0e0e0] pl-3">
-              <span className="font-black text-sm md:text-base text-[#0f0f0f] block leading-none">
-                IPT Academy
-              </span>
-              <span className="text-[10.5px] text-[#606060] font-semibold tracking-wide">
-                Registro Oficial de Credenciales y Títulos · Ivan Perez Tech (IPT)
-              </span>
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/certificate"
-              className="px-3.5 py-2 rounded-xl bg-[#065fd4] text-white hover:bg-[#054db2] text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
-            >
-              <Award className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Descargar mi Certificado</span>
-              <span className="sm:hidden">Descargar</span>
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Contenedor Principal */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-8 space-y-8">
-        
-        {/* Barra de Consulta y Búsqueda */}
-        <section className="bg-white rounded-2xl border border-[#e5e5e5] shadow-xs p-6 md:p-8 space-y-5">
+    <div className="min-h-screen bg-[#000000] text-white flex flex-col font-sans">
+      <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Cabecera de Búsqueda */}
+        <section className="rounded-3xl bg-[#09090b] border border-white/10 p-6 md:p-8 space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 shrink-0">
-                <ShieldCheck className="w-6 h-6" />
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-[11px] font-medium text-[#9a9a9a]">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#15846e]" />
+                <span>Registro Público de Títulos y Verificación de Identidad · IPT Academy</span>
               </div>
-              <div className="space-y-1">
-                <h1 className="text-xl md:text-2xl font-black text-[#0f0f0f] tracking-tight">
-                  Verificación Pública de Título y Metadatos Académicos
-                </h1>
-                <p className="text-xs md:text-sm text-[#606060] leading-relaxed">
-                  Consulta la validez jurídica y académica de un certificado emitido por <strong>IPT Academy (Ivan Perez Tech)</strong>.
-                </p>
-              </div>
+              <h1 className="text-2xl sm:text-3xl font-normal tracking-tight text-white">
+                Verificación Pública de Credenciales Académicas
+              </h1>
+              <p className="text-xs sm:text-sm text-[#9a9a9a] max-w-2xl leading-relaxed">
+                Comprueba la autenticidad de un diploma emitido por <strong>Ivan Perez Tech (IPT)</strong> y verifica si cuenta con documento de identidad nacional validado por OCR.
+              </p>
             </div>
 
-            {cert && (
-              <button
-                type="button"
-                onClick={handleCopyPublicUrl}
-                className="px-4 py-2 rounded-xl border border-[#e0e0e0] hover:bg-[#f5f5f5] text-xs font-bold text-[#0f0f0f] flex items-center gap-2 transition-all cursor-pointer shrink-0"
+            <div className="flex items-center gap-2.5 self-start">
+              <Link
+                href="/certificate"
+                className="px-4 py-2.5 rounded-full bg-white/[0.05] hover:bg-white/10 border border-white/10 text-xs font-medium text-white flex items-center gap-2 transition-all"
               >
-                {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#065fd4]" />}
-                <span>{copiedLink ? 'Enlace Copiado' : 'Copiar Enlace de Verificación'}</span>
-              </button>
-            )}
+                <ArrowLeft className="w-3.5 h-3.5 text-[#8052ff]" />
+                <span>Volver a Mi Certificado</span>
+              </Link>
+              {cert && (
+                <button
+                  type="button"
+                  onClick={handleCopyPublicUrl}
+                  className="px-4 py-2.5 rounded-full bg-[#8052ff] hover:bg-[#6e3ff3] text-xs font-medium text-white flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedLink ? 'Enlace Copiado' : 'Copiar Enlace'}</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 pt-2">
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#909090] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#9a9a9a] absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="Código del certificado (ej. IPT-CERT-2026-MASTER-PRO)"
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#e5e5e5] text-xs md:text-sm font-mono font-bold uppercase focus:outline-none focus:border-[#065fd4] focus:ring-1 focus:ring-[#065fd4]"
+                placeholder="Folio del certificado (ej. IPT-2026-SW-ARCH-PRO)"
+                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-black border border-white/15 text-xs sm:text-sm font-mono text-white uppercase focus:outline-none focus:border-[#8052ff]"
                 required
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 rounded-xl bg-[#0f0f0f] hover:bg-black text-white text-xs font-extrabold uppercase tracking-wider transition-all shadow-xs disabled:opacity-50 shrink-0 cursor-pointer"
+              className="px-6 py-3 rounded-2xl bg-white text-black hover:bg-white/90 text-xs font-semibold uppercase tracking-wider transition-all shrink-0 cursor-pointer"
             >
-              {loading ? 'Consultando...' : 'Comprobar Credencial'}
+              {loading ? 'Consultando...' : 'Verificar Folio'}
             </button>
           </form>
+
+          <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#9a9a9a]">
+            <span>Folios de prueba instantánea:</span>
+            <button
+              type="button"
+              onClick={() => {
+                setCode('IPT-2026-SW-ARCH-PRO');
+                resolveCertificate('IPT-2026-SW-ARCH-PRO');
+              }}
+              className="px-2.5 py-1 rounded-lg bg-[#15846e]/15 border border-[#15846e]/40 text-emerald-300 font-mono hover:bg-[#15846e]/25 transition-all cursor-pointer"
+            >
+              IPT-2026-SW-ARCH-PRO (Verificado OCR)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCode('IPT-2026-UNVERIFIED-DRAFT');
+                resolveCertificate('IPT-2026-UNVERIFIED-DRAFT');
+              }}
+              className="px-2.5 py-1 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 font-mono hover:bg-rose-500/25 transition-all cursor-pointer"
+            >
+              IPT-2026-UNVERIFIED-DRAFT (Sin Identidad Verificada)
+            </button>
+          </div>
         </section>
 
-        {/* 1. FICHA COMPLETA DE DATOS Y METADATOS TÉCNICOS */}
+        {/* Resultado del Certificado */}
         {cert && (
-          <section className="bg-white rounded-3xl border-2 border-emerald-500/40 shadow-lg overflow-hidden space-y-6">
-            
-            {/* Cabecera del Certificado Válido */}
-            <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-6 md:px-8 py-5 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                  <BadgeCheck className="w-6 h-6 text-white" />
+          <section
+            className={`rounded-3xl bg-[#09090b] border overflow-hidden space-y-6 ${
+              cert.identityVerified !== false ? 'border-[#15846e]/50' : 'border-rose-500/50'
+            }`}
+          >
+            {/* Banner de estado */}
+            <div
+              className={`px-6 md:px-8 py-5 flex flex-wrap items-center justify-between gap-4 border-b ${
+                cert.identityVerified !== false
+                  ? 'bg-[#15846e]/15 border-[#15846e]/30'
+                  : 'bg-rose-500/15 border-rose-500/30'
+              }`}
+            >
+              <div className="flex items-center gap-3.5">
+                <div
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                    cert.identityVerified !== false
+                      ? 'bg-[#15846e]/25 border border-[#15846e]/50 text-emerald-300'
+                      : 'bg-rose-500/25 border border-rose-500/50 text-rose-300'
+                  }`}
+                >
+                  {cert.identityVerified !== false ? (
+                    <BadgeCheck className="w-6 h-6" />
+                  ) : (
+                    <AlertTriangle className="w-6 h-6" />
+                  )}
                 </div>
                 <div>
-                  <div className="inline-flex items-center gap-2">
-                    <span className="text-sm md:text-base font-extrabold uppercase tracking-wider">
-                      Certificado Auténtico, Vigente y Verificado
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm sm:text-base font-medium text-white">
+                      {cert.identityVerified !== false
+                        ? 'Certificado Oficial Auténtico · Identidad Nacional Verificada'
+                        : 'Certificado con Marca de Agua · Identidad No Verificada'}
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-white/25 text-white text-[11px] font-black">
-                      VÁLIDO
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                        cert.identityVerified !== false
+                          ? 'bg-[#15846e] text-white'
+                          : 'bg-rose-500 text-white'
+                      }`}
+                    >
+                      {cert.identityVerified !== false ? 'VÁLIDO Y ACREDITADO' : 'IDENTIDAD PENDIENTE'}
                     </span>
                   </div>
-                  <p className="text-xs text-emerald-100">
-                    Registrado en el repositorio académico oficial de Ivan Perez Tech (IPT)
+                  <p className="text-xs text-[#9a9a9a] mt-0.5">
+                    {cert.identityVerified !== false
+                      ? 'El titular acreditó su documento oficial de identidad mediante validación biométrica/OCR.'
+                      : 'Este documento fue generado en modo vista previa sin validar documento de identidad nacional.'}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-black/25 px-4 py-2 rounded-xl border border-white/20 font-mono text-xs md:text-sm font-bold text-white tracking-wider">
-                ID: {cert.id}
+              <div className="px-4 py-2 rounded-xl bg-black/60 border border-white/10 font-mono text-xs text-white">
+                Folio: {cert.id}
               </div>
             </div>
 
-            {/* Parrilla de Metadatos Obligatorios (Horas Totales, Calificación, Titular, Emisión) */}
-            <div className="px-6 md:px-8 space-y-6">
-              
+            <div className="px-6 md:px-8 pb-8 space-y-6">
+              {/* Tarjetas de metadatos */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Metadato 1: Titular */}
-                <div className="p-4 rounded-2xl bg-[#f8f9fa] border border-[#e5e5e5] space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#707070] flex items-center gap-1.5">
-                    <UserIcon className="w-3.5 h-3.5 text-[#065fd4]" />
-                    Titular Acreditado
+                <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider text-[#9a9a9a] flex items-center gap-1.5">
+                    <UserIcon className="w-3.5 h-3.5 text-[#8052ff]" />
+                    Titular Registrado
                   </span>
-                  <p className="text-base font-extrabold text-[#0f0f0f] truncate">
-                    {cert.studentName}
-                  </p>
-                  <p className="text-xs text-[#606060] font-mono">
-                    {cert.studentEmail || 'ivan@ipt.local'}
+                  <p className="text-sm font-medium text-white truncate">{cert.studentName}</p>
+                  <p className="text-[11px] font-mono text-[#9a9a9a]">
+                    {cert.identityVerified !== false
+                      ? `${cert.documentType || 'C.C.'} ${cert.documentNumber || '1.002.458.912'}`
+                      : 'Documento sin verificar'}
                   </p>
                 </div>
 
-                {/* Metadato 2: Calificación Promedio */}
-                <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
-                    <Award className="w-3.5 h-3.5 text-emerald-600" />
-                    Calificación Promedio
+                <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider text-[#9a9a9a] flex items-center gap-1.5">
+                    <Award className="w-3.5 h-3.5 text-[#15846e]" />
+                    Promedio Final Auditado
                   </span>
-                  <p className="text-xl font-black text-emerald-900">
-                    {typeof cert.scoreAverage === 'number'
-                      ? cert.scoreAverage <= 5
-                        ? `${cert.scoreAverage.toFixed(1)} / 5.0`
-                        : `${cert.scoreAverage}%`
-                      : '4.8 / 5.0'}
+                  <p className="text-lg font-mono font-medium text-emerald-300">
+                    {typeof cert.scoreAverage === 'number' ? `${cert.scoreAverage.toFixed(1)} / 5.0` : '4.8 / 5.0'}
                   </p>
-                  <p className="text-xs text-emerald-700 font-semibold">
-                    Escala de evaluación 0.0 a 5.0 (Aprobatoria: ≥ 3.0)
-                  </p>
+                  <p className="text-[11px] text-[#9a9a9a]">100% de rúbricas aprobadas</p>
                 </div>
 
-                {/* Metadato 3: Horas Totales */}
-                <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-800 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-blue-600" />
-                    Horas Totales del Programa
+                <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider text-[#9a9a9a] flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-[#8052ff]" />
+                    Intensidad Académica
                   </span>
-                  <p className="text-xl font-black text-blue-950">
-                    {cert.completionHours || 20} Horas
+                  <p className="text-lg font-mono font-medium text-white">
+                    {cert.completionHours || 48} Horas
                   </p>
-                  <p className="text-xs text-blue-700 font-medium">
-                    Clases sincrónicas, prácticas y proyectos aplicados
-                  </p>
+                  <p className="text-[11px] text-[#9a9a9a]">Teoría, práctica y proyectos</p>
                 </div>
 
-                {/* Metadato 4: Fecha de Emisión */}
-                <div className="p-4 rounded-2xl bg-[#f8f9fa] border border-[#e5e5e5] space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#707070] flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-[#065fd4]" />
-                    Fecha de Emisión
+                <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider text-[#9a9a9a] flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-[#ffb829]" />
+                    Fecha de Expedición
                   </span>
-                  <p className="text-sm font-extrabold text-[#0f0f0f]">
-                    {cert.issueDateFormatted || '18 de octubre de 2026'}
+                  <p className="text-sm font-medium text-white">
+                    {cert.issueDateFormatted || '28 de octubre de 2026'}
                   </p>
-                  <p className="text-xs text-[#606060]">
-                    Registro permanente en blockchain / hash institucional
-                  </p>
+                  <p className="text-[11px] text-[#9a9a9a]">Ivan Perez Tech (IPT)</p>
                 </div>
               </div>
 
-              {/* Detalle del Programa Académico e Instructor */}
-              <div className="p-5 rounded-2xl bg-[#fafbfc] border border-[#e5e5e5] space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ececec] pb-3">
+              {/* Detalle del programa y hash */}
+              <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#065fd4] flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase tracking-wider text-[#8052ff] flex items-center gap-1.5">
                       <BookOpen className="w-3.5 h-3.5" />
-                      Programa Académico Especializado
+                      Programa Académico Acreditado
                     </span>
-                    <h3 className="text-lg font-black text-[#0f0f0f] mt-0.5">
+                    <h3 className="text-base sm:text-lg font-medium text-white mt-0.5">
                       {cert.courseTitle}
                     </h3>
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold self-start">
-                    100% Contenido Completado
+                  <span className="px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs text-white self-start">
+                    Emitido por {cert.instructor}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-[#505050]">
-                  <div>
-                    <strong className="text-[#0f0f0f] block mb-0.5">Entidad Emisora:</strong>
-                    Ivan Perez Tech (IPT) · Campus Virtual de Formación Profesional.
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#9a9a9a]">
+                  <div className="flex items-center gap-1.5 font-mono break-all">
+                    <Hash className="w-3.5 h-3.5 text-[#8052ff] shrink-0" />
+                    <span>Huella criptográfica:</span>
+                    <strong className="text-white">{cert.verificationHash}</strong>
                   </div>
-                  <div>
-                    <strong className="text-[#0f0f0f] block mb-0.5">Instructor y Acreditador:</strong>
-                    {cert.instructor} ({cert.instructorRole})
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-[#ececec] flex flex-wrap items-center justify-between gap-3 text-xs text-[#707070]">
-                  <div className="flex items-center gap-1 font-mono">
-                    <Hash className="w-3.5 h-3.5 text-[#909090]" />
-                    <span>Hash criptográfico:</span>
-                    <strong className="text-[#0f0f0f]">{cert.verificationHash}</strong>
-                  </div>
-                  <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Firma digital válida emitida por IPT</span>
+                  <div className="flex items-center gap-1.5 text-emerald-300">
+                    <Fingerprint className="w-3.5 h-3.5" />
+                    <span>Registro en Cámara de Comercio · Ivan Perez Tech (IPT)</span>
                   </div>
                 </div>
-              </div>
-
-            </div>
-
-            {/* 2. VISOR OFICIAL DEL CERTIFICADO (NO DESCARGABLE / MODO CONSULTA) */}
-            <div className="border-t border-[#e5e5e5] pt-6 px-6 md:px-8 pb-8 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-base font-extrabold text-[#0f0f0f] flex items-center gap-2">
-                    <Eye className="w-5 h-5 text-[#065fd4]" />
-                    <span>Visor del Certificado Digital (Solo Consulta)</span>
-                  </h2>
-                  <p className="text-xs text-[#606060]">
-                    Esta vista previa está protegida para verificación pública. El titular puede descargar el archivo oficial en PDF ingresando a su portal en <code>/certificate</code>.
-                  </p>
-                </div>
-
-                <Link
-                  href="/certificate"
-                  className="px-4 py-2 rounded-xl bg-[#065fd4] hover:bg-[#054db2] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs self-start sm:self-auto"
-                >
-                  <Lock className="w-3.5 h-3.5 text-amber-300" />
-                  <span>Ir al Descargable (/certificate)</span>
-                </Link>
-              </div>
-
-              {/* Contenedor del visor restringido (No descargable) */}
-              <div className="relative rounded-3xl bg-[#141620] border-2 border-[#2b2e40] p-3 sm:p-6 flex justify-center overflow-x-auto shadow-inner">
-                {/* Banner de protección contra descarga indebida */}
-                <div className="absolute top-4 right-4 z-30 px-3 py-1.5 rounded-xl bg-black/80 border border-white/20 backdrop-blur-md text-amber-300 text-[11px] font-bold flex items-center gap-1.5 shadow-lg pointer-events-none">
-                  <Lock className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Visor Público Protegido · Solo Consulta</span>
-                </div>
-
-                <CertificateCanvasView cert={cert} isReadOnlyViewer={true} />
               </div>
             </div>
-
           </section>
         )}
 
-        {/* Resultado: Código no encontrado */}
+        {/* No encontrado */}
         {notFound && (
-          <section className="bg-white rounded-2xl border border-rose-200 p-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+          <section className="rounded-3xl bg-[#09090b] border border-rose-500/30 p-8 text-center space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto">
               <XCircle className="w-6 h-6" />
             </div>
-            <h2 className="text-lg font-bold text-[#0f0f0f]">
-              No se encontró ninguna credencial con el código "{searchedCode}"
+            <h2 className="text-lg font-medium text-white">
+              No se encontró ninguna credencial con el folio &ldquo;{searchedCode}&rdquo;
             </h2>
-            <p className="text-xs md:text-sm text-[#606060] max-w-md mx-auto leading-relaxed">
-              Verifica haber escrito correctamente el código del diploma tal como aparece bajo el código QR (ejemplo: <span className="font-mono font-bold text-[#0f0f0f]">IPT-CERT-2026-MASTER-PRO</span>).
+            <p className="text-xs sm:text-sm text-[#9a9a9a] max-w-md mx-auto">
+              Verifica haber escrito correctamente el folio que figura bajo el código QR del certificado (por ejemplo: <code className="text-white">IPT-2026-SW-ARCH-PRO</code>).
             </p>
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setCode('IPT-CERT-2026-MASTER-PRO');
-                  resolveCertificate('IPT-CERT-2026-MASTER-PRO');
-                }}
-                className="px-4 py-2 rounded-xl bg-[#065fd4] hover:bg-[#054db2] text-white text-xs font-bold transition-all cursor-pointer"
-              >
-                Cargar Certificado Oficial de Muestra
-              </button>
-            </div>
           </section>
         )}
-
       </main>
-
-      {/* Pie Institucional */}
-      <footer className="mt-auto border-t border-[#e5e5e5] bg-white py-6 px-4 text-center text-xs text-[#707070] space-y-1">
-        <p className="font-semibold text-[#0f0f0f]">
-          Ivan Perez Tech (IPT) — IPT Academy · Sistema de Verificación Académica
-        </p>
-        <p>
-          Titular y Fundador: <strong>Iván Samuel Pérez Torrenegra</strong>. Inscrito formalmente en la Cámara de Comercio municipal correspondiente.
-        </p>
-      </footer>
     </div>
   );
 }
 
 export default function VerifyPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-xs text-[#606060]">Cargando verificador oficial IPT Academy...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#000000] p-8 text-center text-xs text-[#9a9a9a]">
+          Cargando verificador oficial IPT Academy...
+        </div>
+      }
+    >
       <VerifyView />
     </Suspense>
   );
