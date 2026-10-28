@@ -22,6 +22,7 @@ import {
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useLms } from '@/context/LmsContext';
 import { BillingTaxProfile, PlanId } from '@/lib/subscriptionEngine';
+import { YourPlanRequestModal } from '@/components/YourPlanRequestModal';
 
 export default function SubscriptionCheckoutModal() {
   const {
@@ -44,7 +45,8 @@ export default function SubscriptionCheckoutModal() {
 
   const { courses } = useLms();
 
-  const [activeTab, setActiveTab] = useState<'plans' | 'checkout' | 'your_plan' | 'billing'>('plans');
+  const [activeTab, setActiveTab] = useState<'plans' | 'checkout'>('plans');
+  const [isYourPlanModalOpen, setIsYourPlanModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'pro' | 'pro_plus'>(
     preselectedModalPlan === 'pro' ? 'pro' : 'pro_plus'
   );
@@ -106,7 +108,7 @@ export default function SubscriptionCheckoutModal() {
   const handleSelectPlanForCheckout = (plan: PlanId) => {
     setFeedbackMessage(null);
     if (plan === 'your_plan') {
-      setActiveTab('your_plan');
+      setIsYourPlanModalOpen(true);
       return;
     }
     if (plan === 'free') {
@@ -279,43 +281,9 @@ export default function SubscriptionCheckoutModal() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex bg-[#e9eaf2] p-1 rounded-lg text-xs font-medium">
-              <button
-                type="button"
-                onClick={() => setActiveTab('plans')}
-                className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-                  activeTab === 'plans' ? 'bg-[#ffffff] text-[#202230] font-semibold' : 'text-[#595c73]'
-                }`}
-              >
-                Comparar Planes
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('checkout')}
-                className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-                  activeTab === 'checkout' ? 'bg-[#ffffff] text-[#202230] font-semibold' : 'text-[#595c73]'
-                }`}
-              >
-                Activar / Cambiar
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('your_plan')}
-                className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-                  activeTab === 'your_plan' ? 'bg-[#ffffff] text-[#202230] font-semibold' : 'text-[#595c73]'
-                }`}
-              >
-                Your Plan
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('billing')}
-                className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
-                  activeTab === 'billing' ? 'bg-[#ffffff] text-[#202230] font-semibold' : 'text-[#595c73]'
-                }`}
-              >
-                Mi Cuenta y Facturas
-              </button>
+            <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#e9eaf2] text-xs font-semibold text-[#202230]">
+              <Sparkles className="w-3.5 h-3.5 text-[#8052ff]" />
+              <span>Comprar Planes</span>
             </div>
 
             <button
@@ -530,16 +498,18 @@ export default function SubscriptionCheckoutModal() {
                 </div>
 
                 {/* 4. Plan Your Plan */}
-                <div className="rounded-xl border border-[#c4710d] bg-[#ffffff] p-5 flex flex-col justify-between">
+                <div className="rounded-xl border border-[#c4710d] bg-[#ffffff] p-5 flex flex-col justify-between shadow-xs">
                   <div className="space-y-4">
                     <div>
                       <div className="flex items-center justify-between">
-                        <img src="/logo-your-plan.svg" alt="Your Plan" className="h-6 w-auto" />
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#c4710d] bg-[#c4710d]/10 px-2.5 py-0.5 rounded-full">
+                          A tu Medida
+                        </span>
                       </div>
                       <div className="mt-3">
-                        <span className="text-lg font-bold text-[#202230]">Acuerdo a Medida</span>
+                        <span className="text-lg font-bold text-[#202230]">Your Plan</span>
                         <p className="text-[11px] text-[#595c73] mt-0.5">
-                          Precio, cupos y facturación definidos con un ejecutivo
+                          Para personas con requerimientos específicos o temario personalizado
                         </p>
                       </div>
                     </div>
@@ -547,29 +517,33 @@ export default function SubscriptionCheckoutModal() {
                     <ul className="space-y-2.5 text-xs text-[#2a2b3f]">
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-[#c4710d] shrink-0 mt-0.5" />
-                        <span>Llamada o conversación directa con un ejecutivo/administrador</span>
+                        <span>Temario adaptado a tus necesidades específicas</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-[#c4710d] shrink-0 mt-0.5" />
-                        <span>Días de prueba gratuitos personalizados según la intensidad que busques</span>
+                        <span>Acompañamiento y mentoría directa 1 a 1</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-[#c4710d] shrink-0 mt-0.5" />
-                        <span>Soporte para múltiples asientos de equipos u organizaciones</span>
+                        <span>Flexibilidad total de horarios y ritmo</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-[#c4710d] shrink-0 mt-0.5" />
-                        <span>Facturación electrónica corporativa DIAN</span>
+                        <span>Evaluación y certificación personalizada</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-[#c4710d] shrink-0 mt-0.5" />
+                        <span>Atención y seguimiento directo con el equipo IPT</span>
                       </li>
                     </ul>
                   </div>
 
                   <button
                     type="button"
-                    onClick={() => handleSelectPlanForCheckout('your_plan')}
-                    className="mt-6 w-full py-2.5 px-4 rounded-lg bg-[#202230] text-[#ffffff] hover:bg-[#33364a] text-xs font-semibold cursor-pointer"
+                    onClick={() => setIsYourPlanModalOpen(true)}
+                    className="mt-6 w-full py-2.5 px-4 rounded-lg bg-[#202230] hover:bg-[#33364a] text-[#ffffff] text-xs font-semibold cursor-pointer transition-colors shadow-sm"
                   >
-                    Conversar con Ejecutivo
+                    Contactar Asesoría
                   </button>
                 </div>
               </div>
@@ -577,7 +551,16 @@ export default function SubscriptionCheckoutModal() {
           )}
 
           {activeTab === 'checkout' && (
-            <form onSubmit={handleConfirmCheckout} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="space-y-4">
+              <button
+                type="button"
+                onClick={() => setActiveTab('plans')}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#595c73] hover:text-[#202230] cursor-pointer"
+              >
+                <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                <span>← Volver a Comprar Planes</span>
+              </button>
+              <form onSubmit={handleConfirmCheckout} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-7 space-y-5">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-[#202230]">
@@ -852,305 +835,16 @@ export default function SubscriptionCheckoutModal() {
                 </button>
               </div>
             </form>
-          )}
-
-          {activeTab === 'your_plan' && (
-            <form onSubmit={handleSubmitYourPlan} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-7 space-y-4">
-                <h3 className="text-base font-bold text-[#202230]">
-                  Configura tu propuesta Your Plan con un Ejecutivo IPT
-                </h3>
-                <p className="text-xs text-[#595c73]">
-                  Cuéntanos qué necesitas exactamente (para ti o para tu equipo). Un administrador revisará tu solicitud, conversará contigo para definir el precio y método de facturación, y te habilitará tus días de prueba acordados.
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-[#202230] mb-1">
-                      Empresa, Universidad o Proyecto
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={orgName}
-                      onChange={(e) => setOrgName(e.target.value)}
-                      placeholder="Nombre de tu organización o personal"
-                      className="w-full h-10 px-3 rounded-lg border border-[#d1d2e0] text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-[#202230] mb-1">
-                      Teléfono / WhatsApp directo
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={executivePhone}
-                      onChange={(e) => setExecutivePhone(e.target.value)}
-                      placeholder="+57 300 000 0000"
-                      className="w-full h-10 px-3 rounded-lg border border-[#d1d2e0] text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#595c73] mb-1">
-                      Cupos / Asientos
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={500}
-                      value={seatsRequested}
-                      onChange={(e) => setSeatsRequested(Number(e.target.value))}
-                      className="w-full h-10 px-3 rounded-lg border border-[#d1d2e0] text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#595c73] mb-1">
-                      Cursos dinámicos
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={20}
-                      value={desiredDynamicCourses}
-                      onChange={(e) => setDesiredDynamicCourses(Number(e.target.value))}
-                      className="w-full h-10 px-3 rounded-lg border border-[#d1d2e0] text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#595c73] mb-1">
-                      Clases en vivo / sem
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={20}
-                      value={desiredWeeklyLive}
-                      onChange={(e) => setDesiredWeeklyLive(Number(e.target.value))}
-                      className="w-full h-10 px-3 rounded-lg border border-[#d1d2e0] text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#595c73] mb-1">
-                      Días gratis deseados
-                    </label>
-                    <input
-                      type="number"
-                      min={5}
-                      max={60}
-                      value={desiredTrialDays}
-                      onChange={(e) => setDesiredTrialDays(Number(e.target.value))}
-                      className="w-full h-10 px-3 rounded-lg border border-[#d1d2e0] text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[#202230] mb-1">
-                    Objetivos y horario preferido para conversar
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={executiveNotes}
-                    onChange={(e) => setExecutiveNotes(e.target.value)}
-                    placeholder="Indica qué temas buscas dominar, intensidad deseada y en qué horario te queda mejor recibir la llamada..."
-                    className="w-full p-3 rounded-lg border border-[#d1d2e0] text-xs"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="py-3 px-6 rounded-lg bg-[#202230] text-[#ffffff] text-xs font-bold hover:bg-[#33364a] cursor-pointer"
-                >
-                  Solicitar llamada con Ejecutivo IPT
-                </button>
-              </div>
-
-              <div className="lg:col-span-5 bg-[#f6f7f9] rounded-xl p-5 border border-[#d1d2e0] space-y-4">
-                <h4 className="text-sm font-bold text-[#202230]">Estado de tus solicitudes Your Plan</h4>
-                {yourPlanRequests.length === 0 ? (
-                  <p className="text-xs text-[#595c73]">
-                    Aún no has enviado solicitudes personalizadas. Al enviar el formulario, aparecerá aquí el seguimiento y la propuesta del administrador.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {yourPlanRequests.map((r) => (
-                      <div
-                        key={r.id}
-                        className="p-3.5 rounded-lg bg-[#ffffff] border border-[#d1d2e0] space-y-1.5 text-xs"
-                      >
-                        <div className="flex items-center justify-between font-bold text-[#202230]">
-                          <span>{r.organizationName}</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-900">
-                            {r.status === 'pending_call'
-                              ? 'Llamada pendiente'
-                              : r.status === 'approved'
-                              ? 'Aprobado'
-                              : 'En revisión'}
-                          </span>
-                        </div>
-                        <p className="text-[#595c73]">
-                          {r.seatsRequested} asiento(s) • {r.desiredDynamicCourses} cursos dinámicos •{' '}
-                          {r.desiredTrialDays} días de prueba solicitados
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </form>
-          )}
-
-          {activeTab === 'billing' && (
-            <div className="space-y-6">
-              {/* Estado actual, Cancelación, Deshacer Cancelación y Downgrade */}
-              <div className="p-5 rounded-xl border border-[#d1d2e0] bg-[#f6f7f9] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-[#202230]">
-                      Plan actual: {subscription?.planId.toUpperCase() || 'FREE'}
-                    </span>
-                    <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#ffffff] border border-[#d1d2e0] text-[#2a2b3f]">
-                      Estado: {subscription?.status || 'active'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#595c73]">
-                    Fecha de corte actual:{' '}
-                    {subscription?.currentPeriodEnd
-                      ? new Date(subscription.currentPeriodEnd).toLocaleDateString('es-CO')
-                      : 'Sin vencimiento'}
-                    {subscription?.cancelAtPeriodEnd &&
-                      ' (Cancelación programada al corte: no se realizarán más cobros)'}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {subscription &&
-                    subscription.planId !== 'free' &&
-                    subscription.status !== 'read_only' &&
-                    !subscription.cancelAtPeriodEnd && (
-                      <button
-                        type="button"
-                        onClick={() => cancelSubscription()}
-                        className="px-3.5 py-2 rounded-lg border border-rose-300 bg-rose-50 text-rose-800 text-xs font-semibold hover:bg-rose-100 cursor-pointer"
-                      >
-                        Cancelar al final del ciclo
-                      </button>
-                    )}
-
-                  {subscription &&
-                    subscription.cancelAtPeriodEnd &&
-                    subscription.status !== 'read_only' && (
-                      <button
-                        type="button"
-                        onClick={() => resumeSubscription()}
-                        className="px-3.5 py-2 rounded-lg bg-emerald-700 text-[#ffffff] text-xs font-semibold hover:bg-emerald-800 cursor-pointer"
-                      >
-                        Deshacer cancelación (Mantener mi plan sin cobro extra)
-                      </button>
-                    )}
-                </div>
-              </div>
-
-              {/* Si está en Pro+ y quiere bajar a Pro eligiendo qué curso conservar */}
-              {subscription?.planId === 'pro_plus' && subscription.status !== 'read_only' && (
-                <div className="p-4 rounded-xl border border-[#d1d2e0] bg-[#ffffff] space-y-3">
-                  <h4 className="text-xs font-bold text-[#202230]">
-                    ¿Deseas bajar de Pro+ a Plan Pro en tu próxima fecha de corte?
-                  </h4>
-                  <p className="text-xs text-[#595c73]">
-                    El Plan Pro incluye 1 curso dinámico activo. Elige cuál de tus cursos dinámicos quieres mantener activo para el próximo ciclo (los demás quedarán guardados en pausa sin perder tu avance):
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <select
-                      value={downgradeCourseToKeep}
-                      onChange={(e) => setDowngradeCourseToKeep(e.target.value)}
-                      className="h-9 px-3 rounded-lg border border-[#d1d2e0] text-xs text-[#202230]"
-                    >
-                      {(subscription.activeDynamicCourseSlugs.length > 0
-                        ? subscription.activeDynamicCourseSlugs
-                        : ['ipt-master-fullstack']
-                      ).map((slug) => (
-                        <option key={slug} value={slug}>
-                          Conservar activo: {slug}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => handleDowngrade('pro')}
-                      className="px-4 py-2 rounded-lg border border-[#202230] text-xs font-semibold text-[#202230] hover:bg-[#f6f7f9] cursor-pointer"
-                    >
-                      Programar paso a Pro al corte
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Historial de Facturas con desglose de IVA */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-bold text-[#202230]">
-                  Comprobantes y Facturas Electrónicas ({invoices.length})
-                </h4>
-                {invoices.length === 0 ? (
-                  <p className="text-xs text-[#595c73]">
-                    Aún no se han generado cobros en tu cuenta.
-                  </p>
-                ) : (
-                  <div className="border border-[#d1d2e0] rounded-xl overflow-hidden">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-[#f6f7f9] text-[#595c73] border-b border-[#d1d2e0]">
-                        <tr>
-                          <th className="py-2.5 px-4">Factura</th>
-                          <th className="py-2.5 px-4">Fecha</th>
-                          <th className="py-2.5 px-4">Plan</th>
-                          <th className="py-2.5 px-4">Subtotal</th>
-                          <th className="py-2.5 px-4">IVA</th>
-                          <th className="py-2.5 px-4">Total</th>
-                          <th className="py-2.5 px-4">Estado DIAN</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#e9eaf2]">
-                        {invoices.map((inv) => (
-                          <tr key={inv.id}>
-                            <td className="py-2.5 px-4 font-mono font-semibold text-[#202230]">
-                              {inv.invoiceNumber}
-                            </td>
-                            <td className="py-2.5 px-4 text-[#595c73]">
-                              {new Date(inv.createdAt).toLocaleDateString('es-CO')}
-                            </td>
-                            <td className="py-2.5 px-4 uppercase font-medium">{inv.planId}</td>
-                            <td className="py-2.5 px-4">
-                              ${inv.subtotal.toLocaleString('es-CO')}
-                            </td>
-                            <td className="py-2.5 px-4">
-                              ${inv.taxAmount.toLocaleString('es-CO')} ({inv.taxRatePercent}%)
-                            </td>
-                            <td className="py-2.5 px-4 font-bold text-[#202230]">
-                              ${inv.total.toLocaleString('es-CO')} {inv.currency}
-                            </td>
-                            <td className="py-2.5 px-4">
-                              <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200">
-                                {inv.dianStatus === 'pending_emission'
-                                  ? 'Lista para DIAN'
-                                  : 'Comprobante emitido'}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Modal oficial de Contacto Your Plan */}
+      <YourPlanRequestModal
+        isOpen={isYourPlanModalOpen}
+        onClose={() => setIsYourPlanModalOpen(false)}
+      />
     </div>
   );
 }
