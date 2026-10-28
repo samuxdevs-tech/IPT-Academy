@@ -128,7 +128,7 @@ export default function StudentPortalShell({
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
           {/* Izquierda: Logo + Marca */}
           <div className="flex items-center gap-6">
-            <Link href="/home" className="flex items-center gap-2.5 group shrink-0">
+            <Link href="/" className="flex items-center gap-2.5 group shrink-0">
               <IptLogoIcon className="w-7 h-7 transition-transform group-hover:scale-105" />
               <span className="text-white text-sm font-semibold tracking-[-0.02em]">
                 IPT <span className="font-light text-[#9a9a9a]">Academy</span>

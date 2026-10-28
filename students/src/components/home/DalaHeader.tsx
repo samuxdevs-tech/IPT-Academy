@@ -78,7 +78,7 @@ export default function DalaHeader() {
             <>
               {isOperator ? (
                 <a
-                  href="https://ipt-course-admin-2a354.web.app"
+                  href="https://ac-administrator.iptapps.com"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-[24px] bg-[#ffb829] hover:bg-[#e5a420] text-[#000000] text-[12px] font-semibold uppercase tracking-[0.03em] transition-colors"
@@ -89,7 +89,7 @@ export default function DalaHeader() {
                 </a>
               ) : isTeacher ? (
                 <a
-                  href="https://ipt-course-admin-2a354.web.app"
+                  href="https://ac-administrator.iptapps.com"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-[24px] bg-[#15846e] hover:bg-[#126f5d] text-white text-[12px] font-semibold uppercase tracking-[0.03em] transition-colors"

@@ -99,12 +99,12 @@ export default function DalaFooter() {
                 </li>
                 <li>
                   <a
-                    href="https://ipt-course-admin-2a354.web.app"
+                    href="https://ac-administrator.iptapps.com"
                     target="_blank"
                     rel="noreferrer"
                     className="hover:text-white transition-colors"
                   >
-                    Portal Docente
+                    Sector Administrativo
                   </a>
                 </li>
               </ul>

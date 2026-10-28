@@ -21,7 +21,7 @@ export default function CertificateCanvasView({
   const displayedProgress = cert.progressPercent || 100;
   const qrVerificationUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/verify/${encodeURIComponent(cert.id)}`
-    : `https://ipt-course.web.app/verify/${encodeURIComponent(cert.id)}`;
+    : `https://academy.iptapps.com/verify/${encodeURIComponent(cert.id)}`;
 
   return (
     <div
@@ -242,7 +242,7 @@ export default function CertificateCanvasView({
               </div>
             </div>
             <p className="text-[8px] text-[#8c887b] leading-tight max-w-[190px]">
-              Escanea el QR o verifica en {typeof window !== 'undefined' ? window.location.host : 'ipt-course'}/verify/{cert.id}
+              Escanea el QR o verifica en {typeof window !== 'undefined' ? window.location.host : 'academy.iptapps.com'}/verify/{cert.id}
             </p>
           </div>
         </div>
