@@ -11,6 +11,7 @@ import StudentPortalShell from "@/components/StudentPortalShell";
 import SubscriptionCheckoutModal from "@/components/SubscriptionCheckoutModal";
 import IdentityVerificationPrompt from "@/components/IdentityVerificationPrompt";
 import MinimalistPreloader from "@/components/MinimalistPreloader";
+import { LoginTransitionProvider } from "@/context/LoginTransitionContext";
 
 const interSans = Inter({
   variable: "--font-udemy-sans",
@@ -74,7 +75,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#000000] text-[#ffffff]">
         <MinimalistPreloader />
         <AuthProvider>
-          <LmsProvider>
+          <LoginTransitionProvider>
+            <LmsProvider>
             <SubscriptionProvider>
               <StudentPortalShell>{children}</StudentPortalShell>
               <SubscriptionCheckoutModal />
@@ -84,6 +86,7 @@ export default function RootLayout({
               <PqrSupportWidget />
             </SubscriptionProvider>
           </LmsProvider>
+          </LoginTransitionProvider>
         </AuthProvider>
       </body>
     </html>

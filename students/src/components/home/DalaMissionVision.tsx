@@ -3,8 +3,10 @@
 import React from 'react';
 import { Target, Compass, Sparkles, Shield, Cpu } from 'lucide-react';
 import Link from 'next/link';
+import { useLoginTransition } from '@/context/LoginTransitionContext';
 
 export default function DalaMissionVision() {
+  const { handleAuthAction } = useLoginTransition();
   return (
     <section id="mision-vision" className="relative py-28 px-6 z-10 border-t border-[#ffffff]/10 bg-[#000000]">
       <div className="max-w-[1280px] mx-auto w-full">
@@ -60,13 +62,14 @@ export default function DalaMissionVision() {
             </div>
 
             <div className="pt-8">
-              <Link
-                href="/home"
-                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.04em] text-[#8052ff] hover:text-white transition-colors"
+              <button
+                type="button"
+                onClick={() => handleAuthAction('/home')}
+                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.04em] text-[#8052ff] hover:text-white transition-colors cursor-pointer"
               >
                 <span>Explorar campus de estudio</span>
                 <span>→</span>
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -107,13 +110,14 @@ export default function DalaMissionVision() {
             </div>
 
             <div className="pt-8">
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.04em] text-[#ffb829] hover:text-white transition-colors"
+              <button
+                type="button"
+                onClick={() => handleAuthAction('/home')}
+                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.04em] text-[#ffb829] hover:text-white transition-colors cursor-pointer"
               >
                 <span>Formar parte del ecosistema</span>
                 <span>→</span>
-              </Link>
+              </button>
             </div>
           </div>
         </div>

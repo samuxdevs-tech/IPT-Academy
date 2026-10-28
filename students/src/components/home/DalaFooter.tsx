@@ -3,8 +3,10 @@
 import React from 'react';
 import { IptLogoIcon } from '@/components/IptLogoIcon';
 import Link from 'next/link';
+import { useLoginTransition } from '@/context/LoginTransitionContext';
 
 export default function DalaFooter() {
+  const { navigateToLogin, handleAuthAction } = useLoginTransition();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -45,9 +47,13 @@ export default function DalaFooter() {
               </span>
               <ul className="space-y-2 text-[12px] text-[#9a9a9a] font-light">
                 <li>
-                  <Link href="/home" className="hover:text-white transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => handleAuthAction('/home')}
+                    className="hover:text-white transition-colors text-left cursor-pointer"
+                  >
                     Campus Estudiantil
-                  </Link>
+                  </button>
                 </li>
                 <li>
                   <a href="#mision-vision" className="hover:text-white transition-colors">
@@ -73,9 +79,13 @@ export default function DalaFooter() {
               </span>
               <ul className="space-y-2 text-[12px] text-[#9a9a9a] font-light">
                 <li>
-                  <Link href="/login" className="hover:text-white transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => navigateToLogin('/home')}
+                    className="hover:text-white transition-colors text-left cursor-pointer"
+                  >
                     Acceso a Alumnos
-                  </Link>
+                  </button>
                 </li>
                 <li>
                   <a

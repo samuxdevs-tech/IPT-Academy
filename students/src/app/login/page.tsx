@@ -19,6 +19,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const resetTokenParam = searchParams?.get('token') || '';
   const initialView = searchParams?.get('view') || '';
+  const redirectTarget = searchParams?.get('redirect') || '/home';
 
   const [activeTab, setActiveTab] = useState<'personal' | 'corporate'>('personal');
   const [email, setEmail] = useState('');
@@ -75,7 +76,7 @@ function LoginContent() {
         try {
           const cred = await signInWithEmailAndPassword(auth, email, password);
           await recordUserLegalAcceptance(cred.user, 'email_login');
-          router.push('/');
+          router.push(redirectTarget);
           return;
         } catch {
           setError(res.error || 'Credenciales incorrectas. Verifica tus datos o recupera tu contraseña.');
@@ -214,7 +215,7 @@ function LoginContent() {
       {/* Resplandor atmosférico Dala */}
       <div className="absolute inset-0 bg-radial from-[#8052ff]/10 via-transparent to-transparent pointer-events-none opacity-40 blur-3xl" />
 
-      <div className="relative z-10 max-w-[480px] w-full bg-[#09090b] border border-[#ffffff]/15 rounded-[28px] p-8 sm:p-10 shadow-2xl">
+      <div className="relative z-10 max-w-[480px] w-full bg-[#09090b] border border-[#ffffff]/15 rounded-[28px] p-8 sm:p-10 shadow-2xl animate-login-enter">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
             <IptLogoIcon className="w-9 h-9 transform group-hover:scale-105 transition-transform" />

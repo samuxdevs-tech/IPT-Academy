@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useLoginTransition } from '@/context/LoginTransitionContext';
 import { YourPlanRequestModal } from '@/components/YourPlanRequestModal';
 import { Check, Sparkles, Building2 } from 'lucide-react';
 import { formatCop } from '@/lib/subscriptionEngine';
 
 export default function DalaPricing() {
   const [isYourPlanModalOpen, setIsYourPlanModalOpen] = useState(false);
+  const { handleAuthAction } = useLoginTransition();
   const tiers = [
     {
       id: 'free',
@@ -160,16 +162,17 @@ export default function DalaPricing() {
                     {tier.ctaText}
                   </button>
                 ) : (
-                  <Link
-                    href={tier.ctaHref}
-                    className={`w-full py-3 rounded-[24px] text-[13px] font-semibold uppercase tracking-[0.025em] flex items-center justify-center transition-all ${
+                  <button
+                    type="button"
+                    onClick={() => handleAuthAction(tier.ctaHref.startsWith('/') ? tier.ctaHref : '/home')}
+                    className={`w-full py-3 rounded-[24px] text-[13px] font-semibold uppercase tracking-[0.025em] flex items-center justify-center transition-all cursor-pointer ${
                       tier.isPrimary
                         ? 'bg-[#8052ff] hover:bg-[#6e3df0] text-white shadow-[0_0_20px_rgba(128,82,255,0.35)]'
                         : 'bg-[#ffffff]/10 hover:bg-[#ffffff]/20 text-white'
                     }`}
                   >
                     {tier.ctaText}
-                  </Link>
+                  </button>
                 )}
               </div>
             </div>

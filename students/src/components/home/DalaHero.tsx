@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Play, ArrowRight, BookOpen } from 'lucide-react';
 import { Course } from '@/types';
 import DalaHeroArchitecturePreview from '@/components/home/DalaHeroArchitecturePreview';
+import { useLoginTransition } from '@/context/LoginTransitionContext';
 
 interface DalaHeroProps {
   freeCourse: Course | null;
@@ -12,6 +13,7 @@ interface DalaHeroProps {
 
 export default function DalaHero({ freeCourse }: DalaHeroProps) {
   const trialSlug = freeCourse?.slug || 'introduccion-ingenieria-ipt';
+  const { handleAuthAction } = useLoginTransition();
 
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center px-6 py-20 z-10 overflow-hidden">
@@ -61,22 +63,24 @@ export default function DalaHero({ freeCourse }: DalaHeroProps) {
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
-              <Link
-                href={`/course?slug=${trialSlug}&lesson=1`}
+              <button
+                type="button"
+                onClick={() => handleAuthAction(`/course?slug=${trialSlug}&lesson=1`)}
                 className="group px-6 py-3.5 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] text-white text-[13px] font-semibold flex items-center justify-center gap-2.5 transition-all shadow-[0_0_25px_rgba(128,82,255,0.45)] hover:shadow-[0_0_35px_rgba(128,82,255,0.6)] cursor-pointer"
               >
                 <Play className="w-4 h-4 fill-white" />
                 <span>Comenzar Lección 1 Ahora</span>
                 <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </button>
 
-              <Link
-                href="/home"
+              <button
+                type="button"
+                onClick={() => handleAuthAction('/home')}
                 className="px-5 py-3.5 rounded-[24px] bg-[#ffffff]/10 hover:bg-[#ffffff]/15 text-white text-[13px] font-semibold flex items-center justify-center gap-2 transition-all border border-[#ffffff]/15 hover:border-[#ffffff]/30 cursor-pointer"
               >
                 <BookOpen className="w-4 h-4 text-[#8052ff]" />
                 <span>Entrar al Campus</span>
-              </Link>
+              </button>
             </div>
           </div>
         </div>

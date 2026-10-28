@@ -14,8 +14,10 @@ import {
 } from 'lucide-react';
 import { IptLogoIcon } from '@/components/IptLogoIcon';
 import Link from 'next/link';
+import { useLoginTransition } from '@/context/LoginTransitionContext';
 
 export default function DalaHeroArchitecturePreview() {
+  const { handleAuthAction } = useLoginTransition();
   const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
@@ -212,13 +214,14 @@ export default function DalaHeroArchitecturePreview() {
           <CheckCircle2 className="w-4 h-4 text-[#15846e]" />
           <span>Tu avance se guarda automáticamente</span>
         </span>
-        <Link
-          href="/home"
-          className="text-[#8052ff] hover:text-white font-semibold transition-colors flex items-center gap-1"
+        <button
+          type="button"
+          onClick={() => handleAuthAction('/home')}
+          className="text-[#8052ff] hover:text-white font-semibold transition-colors flex items-center gap-1 cursor-pointer"
         >
           <span>Probar campus</span>
           <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+        </button>
       </div>
     </div>
   );
