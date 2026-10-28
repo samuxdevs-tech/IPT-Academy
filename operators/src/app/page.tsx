@@ -7,9 +7,11 @@ import { useAuth } from "@/context/AuthContext";
 import { LoginScreen } from "@/components/LoginScreen";
 import { TeacherStudioWorkspace } from "@/teachers/TeacherStudioWorkspace";
 import { AdminGatekeeper } from "@/guards/AdminGatekeeper";
+import { RectoriaDeskWorkspace } from "@/rectoria/RectoriaDeskWorkspace";
 import {
   ShieldCheck,
   GraduationCap,
+  Crown,
   ArrowRight,
   ArrowLeft,
   LogOut,
@@ -116,28 +118,28 @@ export default function OperatorsRootPage() {
           </div>
 
           {/* Tarjetas de Selección de Perfil */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full max-w-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-5xl">
             {/* Opción 1: Perfil Docente */}
             <div
               onClick={() => setViewMode("teacher")}
-              className="group cursor-pointer rounded-3xl bg-[#121216] border border-white/10 hover:border-white/25 p-7 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/60 relative overflow-hidden"
+              className="group cursor-pointer rounded-3xl bg-[#121217] border border-white/10 hover:border-emerald-500/40 p-6 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-950/20 relative overflow-hidden"
             >
               <div className="space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:scale-105 transition-transform">
-                  <GraduationCap className="w-6 h-6 text-zinc-200" />
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
+                  <GraduationCap className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-white tracking-tight flex items-center justify-between">
                     <span>Docente</span>
-                    <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                   </h2>
                   <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                    Acceso al Teachers Studio para gestionar tareas, calificaciones, rúbricas de evaluación y sesiones en vivo.
+                    Teachers Studio: creación de cursos, rúbricas de evaluación, dictado de clases en vivo y directivas de TutorIA.
                   </p>
                 </div>
               </div>
 
-              <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between text-xs text-zinc-400 group-hover:text-white font-medium">
+              <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between text-xs text-zinc-400 group-hover:text-emerald-300 font-medium">
                 <span>Ingresar como Docente</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               </div>
@@ -146,7 +148,7 @@ export default function OperatorsRootPage() {
             {/* Opción 2: Perfil Administrador */}
             <div
               onClick={() => setViewMode("admin")}
-              className="group cursor-pointer rounded-3xl bg-[#121216] border border-white/10 hover:border-rose-500/40 p-7 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-rose-950/20 relative overflow-hidden"
+              className="group cursor-pointer rounded-3xl bg-[#121217] border border-white/10 hover:border-rose-500/40 p-6 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-rose-950/20 relative overflow-hidden"
             >
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 group-hover:scale-105 transition-transform">
@@ -158,7 +160,7 @@ export default function OperatorsRootPage() {
                     <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-rose-400 group-hover:translate-x-1 transition-all" />
                   </h2>
                   <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                    Panel de gobernanza para monitorear infraestructura, identidades, registros de auditoría y controles del sistema.
+                    Admin Governance: infraestructura técnica, auto-escalado de concurrencia, bitácora de auditoría y cuentas.
                   </p>
                 </div>
               </div>
@@ -166,6 +168,32 @@ export default function OperatorsRootPage() {
               <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between text-xs text-zinc-400 group-hover:text-rose-300 font-medium">
                 <span>Ingresar como Administrador</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+              </div>
+            </div>
+
+            {/* Opción 3: Perfil Rectoría */}
+            <div
+              onClick={() => setViewMode("rectoria")}
+              className="group cursor-pointer rounded-3xl bg-[#121217] border border-white/10 hover:border-[#f59e0b]/50 p-6 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#f59e0b]/10 relative overflow-hidden"
+            >
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-[#f59e0b]/10 border border-[#f59e0b]/20 flex items-center justify-center text-[#f59e0b] group-hover:scale-105 transition-transform">
+                  <Crown className="w-6 h-6 text-[#f59e0b]" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white tracking-tight flex items-center justify-between">
+                    <span>Rectoría</span>
+                    <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-[#f59e0b] group-hover:translate-x-1 transition-all" />
+                  </h2>
+                  <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+                    Despacho Rectoral: control de ofertas/becas en RTDB, tribunal de apelaciones, cancillería de títulos y planes DevOps.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between text-xs text-zinc-400 group-hover:text-[#f59e0b] font-medium">
+                <span>Ingresar a Rectoría</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
               </div>
             </div>
           </div>
@@ -202,10 +230,15 @@ export default function OperatorsRootPage() {
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     Teachers Studio
                   </>
-                ) : (
+                ) : activeView === "admin" ? (
                   <>
                     <span className="w-2 h-2 rounded-full bg-rose-500" />
                     Admin Governance
+                  </>
+                ) : (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-[#f59e0b]" />
+                    Despacho de Rectoría
                   </>
                 )}
               </span>
@@ -254,24 +287,30 @@ export default function OperatorsRootPage() {
             }}
             onOpenPreview={handleOpenPreview}
           />
-        ) : (
+        ) : activeView === "admin" ? (
           <AdminGatekeeper
             userProfile={operatorProfile}
             onBackToTeachers={() => setViewMode("teacher")}
           />
+        ) : (
+          <RectoriaDeskWorkspace
+            userProfile={operatorProfile}
+            onGoToTeacher={() => setViewMode("teacher")}
+            onGoToAdmin={() => setViewMode("admin")}
+          />
         )}
       </main>
 
-      {/* Botón Flotante Rojo Inferior Izquierdo: Solo para Administradores para volver al Selector de Perfil */}
+      {/* Botón Flotante Inferior Izquierdo: Para volver al Selector de Perfil Tripartito */}
       {isAdmin && (
         <button
           onClick={() => setViewMode(null)}
-          className="fixed bottom-5 left-5 z-50 inline-flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-500 text-white shadow-xl shadow-rose-950/60 border border-rose-400/30 transition-all hover:scale-105 active:scale-95 group font-medium text-xs backdrop-blur-md"
+          className="fixed bottom-5 left-5 z-50 inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white shadow-xl shadow-black/60 border border-white/20 transition-all hover:scale-105 active:scale-95 group font-medium text-xs backdrop-blur-md cursor-pointer"
           title="Volver a selección de perfil"
           aria-label="Volver a selección de perfil"
         >
           <ArrowLeft className="w-4 h-4 text-white transition-transform group-hover:-translate-x-0.5" />
-          <span className="hidden sm:inline">Cambiar Perfil</span>
+          <span className="hidden sm:inline">Cambiar Perfil (Docente / Admin / Rectoría)</span>
         </button>
       )}
     </div>

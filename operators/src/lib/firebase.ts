@@ -55,9 +55,10 @@ export interface OperatorUserProfile {
   uid: string;
   email: string | null;
   displayName: string | null;
-  role: "teacher" | "admin" | "operator" | "student" | "owner";
+  role: "teacher" | "admin" | "operator" | "student" | "owner" | "rectoria";
   isAdmin: boolean;
   isTeacher: boolean;
+  isRectoria?: boolean;
   claims?: Record<string, any>;
   photoURL?: string | null;
 }

@@ -6,9 +6,10 @@ export interface OperatorUser {
   uid: string;
   email: string;
   displayName: string;
-  role: "admin" | "teacher";
+  role: "teacher" | "admin" | "operator" | "student" | "owner" | "rectoria";
   isAdmin: boolean;
   isTeacher: boolean;
+  isRectoria?: boolean;
   photoURL?: string | null;
 }
 
@@ -17,8 +18,8 @@ export type OperatorUserProfile = OperatorUser;
 interface AuthContextType {
   user: OperatorUser | null;
   operatorProfile: OperatorUser | null;
-  viewMode: "teacher" | "admin" | null;
-  setViewMode: (mode: "teacher" | "admin" | null) => void;
+  viewMode: "teacher" | "admin" | "rectoria" | null;
+  setViewMode: (mode: "teacher" | "admin" | "rectoria" | null) => void;
   loading: boolean;
   error: string | null;
   loginWithEmail: (email: string, pass: string) => Promise<void>;
@@ -43,7 +44,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://ipt-course-api.verc
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<OperatorUser | null>(null);
   const [operatorProfile, setOperatorProfile] = useState<OperatorUser | null>(null);
-  const [viewMode, setViewModeState] = useState<"teacher" | "admin" | null>(null);
+  const [viewMode, setViewModeState] = useState<"teacher" | "admin" | "rectoria" | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function checkSession() {
       const token = typeof window !== "undefined" ? sessionStorage.getItem("ipt_auth_token") : null;
-      const savedViewMode = typeof window !== "undefined" ? (sessionStorage.getItem("ipt_view_mode") as "teacher" | "admin" | null) : null;
+      const savedViewMode = typeof window !== "undefined" ? (sessionStorage.getItem("ipt_view_mode") as "teacher" | "admin" | "rectoria" | null) : null;
 
       if (!token) {
         if (mounted) setLoading(false);
@@ -91,10 +92,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(profile);
             setOperatorProfile(profile);
 
-            // Docente entra directo a teacher; Admin respeta viewMode persistido o null
+            // Docente entra directo a teacher; Rectoría a rectoria; Admin respeta viewMode persistido o null
             if (u.role === "teacher") {
               setViewModeState("teacher");
-            } else if (savedViewMode === "teacher" || savedViewMode === "admin") {
+            } else if (u.role === "rectoria") {
+              setViewModeState("rectoria");
+            } else if (
+              savedViewMode === "teacher" ||
+              savedViewMode === "admin" ||
+              savedViewMode === "rectoria"
+            ) {
               setViewModeState(savedViewMode);
             } else {
               setViewModeState(null);
@@ -124,8 +131,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // 2. Control de vista persistente para el Administrador
-  const setViewMode = (mode: "teacher" | "admin" | null) => {
+  // 2. Control de vista persistente para el Administrador / Rectoría
+  const setViewMode = (mode: "teacher" | "admin" | "rectoria" | null) => {
     setViewModeState(mode);
     if (typeof window !== "undefined") {
       if (mode) {

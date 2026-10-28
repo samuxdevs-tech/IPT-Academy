@@ -1,7 +1,7 @@
 export interface PermissionItem {
   id: string;
   name: string;
-  category: 'courses' | 'grading' | 'live' | 'tutoria' | 'certificates' | 'students' | 'legal' | 'infra';
+  category: 'courses' | 'grading' | 'live' | 'tutoria' | 'certificates' | 'students' | 'legal' | 'infra' | 'rectoria';
   description: string;
 }
 
@@ -14,6 +14,7 @@ export const CATEGORY_LABELS: Record<PermissionItem['category'], string> = {
   students: 'Estudiantes y Licencias',
   legal: 'Cumplimiento Legal y Litigios',
   infra: 'Infraestructura y Seguridad',
+  rectoria: 'Rectoría y Gobierno Académico',
 };
 
 export const EXTENSIVE_PERMISSIONS: PermissionItem[] = [
@@ -90,6 +91,15 @@ export const EXTENSIVE_PERMISSIONS: PermissionItem[] = [
   { id: 'admin.view_audit_logs', name: 'Auditar bitácora centralizada de eventos', category: 'infra', description: 'Registros de seguridad, accesos fallidos y cambios críticos.' },
   { id: 'admin.export_audit_trail', name: 'Exportar pistas de auditoría forense', category: 'infra', description: 'Descarga inmutable de eventos de seguridad.' },
   { id: 'admin.manage_api_keys', name: 'Administrar integraciones y llaves API', category: 'infra', description: 'Configurar tokens de Cloudflare, Firebase y servicios de correo.' },
+
+  // 9. Rectoría y Gobierno Académico (7)
+  { id: 'rectoria.manage_offers', name: 'Definir ofertas de prueba y tarifas de fomento', category: 'rectoria', description: 'Control de plan, tiempo y precio en RTDB.' },
+  { id: 'rectoria.resolve_appeals', name: 'Emitir fallos y actas sobre apelaciones de notas', category: 'rectoria', description: 'Tribunal inapelable sobre rúbricas impugnadas.' },
+  { id: 'rectoria.issue_honor_certificates', name: 'Expedir títulos de honor y validar OCR', category: 'rectoria', description: 'Acreditación oficial con firma digital institucional.' },
+  { id: 'rectoria.revoke_certificates', name: 'Revocar diplomas con hash inmutable', category: 'rectoria', description: 'Inhabilitar credenciales por faltas éticas.' },
+  { id: 'rectoria.devops_upgrade', name: 'Elevar plan con hash DevOps de autorización', category: 'rectoria', description: 'Cambio de membresía ascendente con token de seguridad.' },
+  { id: 'rectoria.devops_downgrade', name: 'Degradar plan con hash DevOps de autorización', category: 'rectoria', description: 'Cambio de membresía descendente con token de seguridad.' },
+  { id: 'rectoria.institutional_directives', name: 'Publicar directivas rectorales para TutorIA y claustro', category: 'rectoria', description: 'Políticas pedagógicas vinculantes de la institución.' },
 ];
 
 export interface CustomRoleDefinition {
@@ -136,6 +146,19 @@ export const INITIAL_ROLES: CustomRoleDefinition[] = [
       'student.view_directory', 'student.assign_license', 'student.revoke_license',
       'student.export_roster', 'quota.grant_monthly', 'quota.refund_manual',
       'legal.view_consents', 'legal.export_excel'
+    ]
+  },
+  {
+    id: 'rectoria',
+    name: 'Despacho de Rectoría',
+    description: 'Alta autoridad académica: ofertas de becas/fomento en RTDB, tribunal de apelaciones de notas, cancillería de títulos y gobierno DevOps de planes.',
+    badgeColor: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+    permissions: [
+      'rectoria.manage_offers', 'rectoria.resolve_appeals', 'rectoria.issue_honor_certificates',
+      'rectoria.revoke_certificates', 'rectoria.devops_upgrade', 'rectoria.devops_downgrade',
+      'rectoria.institutional_directives', 'course.view', 'rubric.view', 'grade.override',
+      'certificate.view_registry', 'certificate.issue_manual', 'certificate.revoke',
+      'student.view_directory', 'student.view_progress', 'legal.view_consents'
     ]
   }
 ];
