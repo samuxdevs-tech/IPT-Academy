@@ -6,99 +6,78 @@ import {
   Calendar as CalendarIcon,
   Download,
   Clock,
-  CheckCircle2,
   ArrowRight,
   Video,
   FileCheck2,
-  Users,
-  Radio,
 } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
+import { useLms } from '@/context/LmsContext';
 
 interface CalendarScheduleItem {
   id: string;
   title: string;
-  category: 'live_class' | 'assignment_due' | 'mentorship_1on1';
+  category: 'live_class' | 'assignment_due';
   courseTitle: string;
   dateLabel: string;
   timeLabel: string;
   instructorOrNote: string;
   actionHref: string;
   actionLabel: string;
-  minQuotaLabel?: string;
 }
-
-const SCHEDULE_EVENTS: CalendarScheduleItem[] = [
-  {
-    id: 'cal-1',
-    title: 'Clase en Vivo: Diseño de Sistemas de Alta Concurrencia e Idempotencia',
-    category: 'live_class',
-    courseTitle: 'IPT Master: Arquitectura Fullstack',
-    dateLabel: 'Miércoles 04 de Noviembre',
-    timeLabel: '19:00 a 20:00 (Hora Colombia)',
-    instructorOrNote: 'Ing. Iván Pérez · Director Académico',
-    actionHref: '/live?session=sess-wed-1900',
-    actionLabel: 'Ir a la Sala / Reservar',
-    minQuotaLabel: 'Cuota mínima: 3 estudiantes (Confirmada 4/3)',
-  },
-  {
-    id: 'cal-2',
-    title: 'Fecha Límite de Entrega: Separación de Capas y Contratos de Dominio',
-    category: 'assignment_due',
-    courseTitle: 'IPT Master: Arquitectura Fullstack',
-    dateLabel: 'Jueves 05 de Noviembre',
-    timeLabel: 'Hasta las 23:59',
-    instructorOrNote: 'Evaluación con matriz de rúbrica oficial (100 pts)',
-    actionHref: '/assignments?id=asg-arch-01',
-    actionLabel: 'Ver Tarea y Rúbrica',
-  },
-  {
-    id: 'cal-3',
-    title: 'Clase en Vivo: Laboratorio de Recuperación ante Caídas de Nodos',
-    category: 'live_class',
-    courseTitle: 'Arquitectura Cloud Resiliente',
-    dateLabel: 'Viernes 06 de Noviembre',
-    timeLabel: '18:00 a 19:00 (Hora Colombia)',
-    instructorOrNote: 'Comité Docente IPT',
-    actionHref: '/live?session=sess-fri-1800',
-    actionLabel: 'Reservar Cupo (1 Crédito)',
-    minQuotaLabel: 'Cuota mínima: 3 estudiantes (En inscripción 1/3)',
-  },
-  {
-    id: 'cal-4',
-    title: 'Horario de Atención Individual 1 a 1 (Exclusivo Your Plan)',
-    category: 'mentorship_1on1',
-    courseTitle: 'Mentoría Personalizada a la Medida',
-    dateLabel: 'Martes y Jueves',
-    timeLabel: '17:00 a 18:30 (Bloques de 15 min)',
-    instructorOrNote: 'Fila virtual directa con el profesor titular',
-    actionHref: '/home',
-    actionLabel: 'Tomar Turno en Fila 1 a 1',
-  },
-  {
-    id: 'cal-5',
-    title: 'Fecha Límite de Entrega: Políticas de Reintento e Idempotencia en Pagos',
-    category: 'assignment_due',
-    courseTitle: 'IPT Master: Arquitectura Fullstack',
-    dateLabel: 'Jueves 12 de Noviembre',
-    timeLabel: 'Hasta las 23:59',
-    instructorOrNote: 'Evaluación con matriz de rúbrica oficial (100 pts)',
-    actionHref: '/assignments?id=asg-arch-02',
-    actionLabel: 'Realizar Entrega',
-  },
-];
 
 export default function InstitutionalCalendarPage() {
   const { subscription } = useSubscription();
+  const { liveSessions: rawLiveSessions, assignments: rawAssignments } = useLms();
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [exportNotice, setExportNotice] = useState<string | null>(null);
 
+  const realEvents = useMemo<CalendarScheduleItem[]>(() => {
+    const list: CalendarScheduleItem[] = [];
+
+    // Clases en vivo reales de la plataforma
+    if (Array.isArray(rawLiveSessions)) {
+      rawLiveSessions.forEach((sess) => {
+        list.push({
+          id: `live-${sess.id}`,
+          title: sess.title,
+          category: 'live_class',
+          courseTitle: sess.courseSlug,
+          dateLabel: sess.startTimeUtc ? new Date(sess.startTimeUtc).toLocaleDateString('es-CO', { dateStyle: 'long' }) : 'Fecha por confirmar',
+          timeLabel: `${sess.durationMinutes} minutos`,
+          instructorOrNote: sess.instructorName || 'Docente IPT',
+          actionHref: `/live?session=${encodeURIComponent(sess.id)}`,
+          actionLabel: 'Entrar a la Sala / Reservar',
+        });
+      });
+    }
+
+    // Tareas reales con fecha límite
+    if (Array.isArray(rawAssignments)) {
+      rawAssignments.forEach((asg) => {
+        list.push({
+          id: `asg-${asg.id}`,
+          title: `Fecha límite de entrega: ${asg.title}`,
+          category: 'assignment_due',
+          courseTitle: asg.courseTitle,
+          dateLabel: asg.dueDateUtc ? new Date(asg.dueDateUtc).toLocaleDateString('es-CO', { dateStyle: 'long' }) : 'Fecha límite por definir',
+          timeLabel: asg.dueDateUtc ? new Date(asg.dueDateUtc).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '23:59',
+          instructorOrNote: `Estado: ${asg.status === 'graded' ? 'Calificada' : asg.status === 'submitted' ? 'Entregada' : 'Pendiente'}`,
+          actionHref: `/assignments?id=${encodeURIComponent(asg.id)}`,
+          actionLabel: 'Ver Tarea y Rúbrica',
+        });
+      });
+    }
+
+    return list;
+  }, [rawLiveSessions, rawAssignments]);
+
   const visibleEvents = useMemo(() => {
-    if (filterCategory === 'all') return SCHEDULE_EVENTS;
-    return SCHEDULE_EVENTS.filter((e) => e.category === filterCategory);
-  }, [filterCategory]);
+    if (filterCategory === 'all') return realEvents;
+    return realEvents.filter((e) => e.category === filterCategory);
+  }, [realEvents, filterCategory]);
 
   const handleDownloadCalendar = () => {
+    if (visibleEvents.length === 0) return;
     const lines = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
@@ -138,41 +117,49 @@ export default function InstitutionalCalendarPage() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8052ff]/10 border border-[#8052ff]/30 text-[#8052ff] text-xs font-medium mb-3">
               <CalendarIcon className="w-3.5 h-3.5" />
-              <span>Cronograma Fijo Semanal y Entregas</span>
+              <span>Cronograma de Actividades</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-normal tracking-[-0.03em] text-white">
-              Calendario de Clases en Vivo y Actividades
+              Calendario de Clases y Entregas
             </h1>
             <p className="text-sm text-[#9a9a9a] mt-2 max-w-2xl">
-              Consulta los horarios publicados por los docentes para las sesiones en vivo, las
-              fechas límite de tus entregas y las franjas de atención individual.
+              Consulta los horarios de clases en vivo y las fechas límite de entrega de proyectos.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleDownloadCalendar}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-xs font-semibold text-white shadow-[0_0_25px_rgba(128,82,255,0.35)] transition-all cursor-pointer shrink-0"
-          >
-            <Download className="w-4 h-4" />
-            <span>Guardar Agenda en mi Celular / Computador</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            {visibleEvents.length > 0 && (
+              <button
+                type="button"
+                onClick={handleDownloadCalendar}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#8052ff] hover:bg-[#6e3ff3] text-xs font-medium text-white transition-all cursor-pointer shadow-[0_0_20px_rgba(128,82,255,0.3)]"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Exportar a Mi Calendario</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {exportNotice && (
-          <div className="p-4 rounded-2xl bg-[#15846e]/15 border border-[#15846e]/40 text-xs text-white flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-[#15846e] shrink-0" />
+          <div className="p-4 rounded-2xl bg-[#15846e]/15 border border-[#15846e]/40 text-xs text-emerald-300 flex items-center justify-between">
             <span>{exportNotice}</span>
+            <button
+              type="button"
+              onClick={() => setExportNotice(null)}
+              className="text-[#9a9a9a] hover:text-white"
+            >
+              Cerrar
+            </button>
           </div>
         )}
 
-        {/* Filtros de Categoría */}
+        {/* Filtros */}
         <div className="flex flex-wrap items-center gap-2">
           {[
-            { id: 'all', label: 'Todas las Fechas' },
-            { id: 'live_class', label: 'Catálogo de Clases en Vivo' },
-            { id: 'assignment_due', label: 'Fechas de Entrega de Tareas' },
-            { id: 'mentorship_1on1', label: 'Asesorías 1 a 1 (Your Plan)' },
+            { id: 'all', label: 'Todos los eventos' },
+            { id: 'live_class', label: 'Clases en Vivo' },
+            { id: 'assignment_due', label: 'Fechas Límite de Tareas' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -180,8 +167,8 @@ export default function InstitutionalCalendarPage() {
               onClick={() => setFilterCategory(tab.id)}
               className={`px-4 py-2 rounded-full text-xs font-medium transition-all cursor-pointer ${
                 filterCategory === tab.id
-                  ? 'bg-[#8052ff] text-white'
-                  : 'bg-[#09090b] border border-[#ffffff]/10 text-[#bdbdbd] hover:text-white'
+                  ? 'bg-white text-black'
+                  : 'bg-[#09090b] text-[#9a9a9a] border border-[#ffffff]/10 hover:text-white'
               }`}
             >
               {tab.label}
@@ -189,67 +176,61 @@ export default function InstitutionalCalendarPage() {
           ))}
         </div>
 
-        {/* Lista de Eventos del Cronograma */}
-        <div className="space-y-4">
-          {visibleEvents.map((ev) => (
-            <div
-              key={ev.id}
-              className="p-6 rounded-3xl bg-[#09090b] border border-[#ffffff]/10 hover:border-[#ffffff]/25 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6"
-            >
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  {ev.category === 'live_class' && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#ffb829]/15 border border-[#ffb829]/30 text-[#ffb829] text-[11px] font-semibold">
-                      <Video className="w-3 h-3" />
-                      <span>Clase en Vivo</span>
-                    </span>
-                  )}
-                  {ev.category === 'assignment_due' && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#8052ff]/15 border border-[#8052ff]/30 text-[#c0c4fc] text-[11px] font-semibold">
-                      <FileCheck2 className="w-3 h-3" />
-                      <span>Entrega de Tarea</span>
-                    </span>
-                  )}
-                  {ev.category === 'mentorship_1on1' && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#15846e]/15 border border-[#15846e]/30 text-[#15846e] text-[11px] font-semibold">
-                      <Radio className="w-3 h-3" />
-                      <span>Exclusivo Your Plan · 1 a 1</span>
-                    </span>
-                  )}
+        {/* Lista de Eventos Reales */}
+        {visibleEvents.length === 0 ? (
+          <div className="p-12 text-center rounded-3xl bg-[#09090b] border border-white/10 space-y-3">
+            <CalendarIcon className="w-10 h-10 text-[#9a9a9a] mx-auto opacity-40" />
+            <h3 className="text-base font-semibold text-white">No hay actividades programadas</h3>
+            <p className="text-xs text-[#9a9a9a] max-w-md mx-auto">
+              No hay eventos ni clases en vivo programadas en este momento. El equipo docente publicará las próximas actividades aquí.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {visibleEvents.map((ev) => (
+              <div
+                key={ev.id}
+                className="p-6 rounded-3xl bg-[#09090b] border border-[#ffffff]/10 hover:border-[#ffffff]/25 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6"
+              >
+                <div className="flex items-start gap-4">
+                  <div
+                    className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                      ev.category === 'live_class'
+                        ? 'bg-[#ffb829]/15 text-[#ffb829] border border-[#ffb829]/30'
+                        : 'bg-[#8052ff]/15 text-[#8052ff] border border-[#8052ff]/30'
+                    }`}
+                  >
+                    {ev.category === 'live_class' ? (
+                      <Video className="w-5 h-5" />
+                    ) : (
+                      <FileCheck2 className="w-5 h-5" />
+                    )}
+                  </div>
 
-                  <span className="text-xs font-mono text-white">{ev.dateLabel}</span>
-                  <span className="text-xs text-[#9a9a9a]">•</span>
-                  <span className="text-xs text-[#bdbdbd] flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-[#8052ff]" />
-                    {ev.timeLabel}
-                  </span>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-mono text-[#9a9a9a]">
+                        {ev.dateLabel} • {ev.timeLabel}
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-semibold text-white">{ev.title}</h3>
+                    <p className="text-xs text-[#9a9a9a]">
+                      {ev.courseTitle} • {ev.instructorOrNote}
+                    </p>
+                  </div>
                 </div>
 
-                <h3 className="text-lg font-semibold text-white">{ev.title}</h3>
-                <p className="text-xs text-[#9a9a9a]">
-                  {ev.courseTitle} — {ev.instructorOrNote}
-                </p>
-
-                {ev.minQuotaLabel && (
-                  <div className="inline-flex items-center gap-1.5 text-xs text-[#ffb829] pt-1">
-                    <Users className="w-3.5 h-3.5" />
-                    <span>{ev.minQuotaLabel}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="shrink-0">
                 <Link
                   href={ev.actionHref}
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#ffffff]/10 hover:bg-[#8052ff] text-xs font-semibold text-white transition-all"
+                  className="px-5 py-2.5 rounded-full bg-white/[0.05] hover:bg-white/10 border border-white/15 text-xs font-semibold text-white flex items-center gap-2 transition-all self-start md:self-center shrink-0"
                 >
                   <span>{ev.actionLabel}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

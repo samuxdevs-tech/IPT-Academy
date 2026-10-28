@@ -14,78 +14,40 @@ import {
   PenTool,
   Play,
   CheckCircle2,
-  AlertCircle,
   Clock,
   ShieldCheck,
-  Sparkles,
   Send,
   RotateCcw,
   BookOpen,
   Radio,
   Calendar,
   Eraser,
+  Download,
+  AlertCircle,
 } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLms } from '@/context/LmsContext';
+import { ref, onValue, push } from 'firebase/database';
+import { db } from '@/lib/firebase';
+import { LiveVirtualSession } from '@/types';
 
-interface TeacherCatalogSession {
+interface LiveChatMessage {
   id: string;
-  courseSlug: string;
-  title: string;
-  instructor: string;
-  dayTimeLabel: string;
-  startTimeIso: string;
-  durationMinutes: number;
-  enrolledCount: number;
-  minQuotaRequired: number;
-  maxCapacity: number;
-  quotaStatus: 'pending' | 'confirmed' | 'cancelled_refunded';
-  isBookedByCurrentStudent: boolean;
+  sender: string;
+  text: string;
+  time: string;
+  timestamp?: number;
 }
 
-interface ProcessedRecording {
+interface StoredRecording {
   id: string;
   title: string;
   date: string;
-  duration: string;
-  instructor: string;
-  timestamps: { time: string; label: string }[];
-  keyTakeaways: string[];
-  glossary: { term: string; definition: string }[];
+  duration?: string;
+  instructor?: string;
+  videoUrl?: string;
 }
-
-const PROCESSED_RECORDINGS: ProcessedRecording[] = [
-  {
-    id: 'rec-oct-21',
-    title: 'Arquitectura de Eventos, Outbox Transaccional y Consistencia',
-    date: '2026-10-21',
-    duration: '58:20',
-    instructor: 'Ing. Iván Pérez',
-    timestamps: [
-      { time: '02:15', label: 'El problema de la escritura dual entre Base de Datos y Bus' },
-      { time: '16:40', label: 'Diseño de la tabla Outbox en la misma transacción local' },
-      { time: '34:10', label: 'Manejo de mensajes duplicados mediante llaves de idempotencia' },
-      { time: '48:55', label: 'Preguntas y revisión de arquitecturas de los estudiantes' },
-    ],
-    keyTakeaways: [
-      'Nunca publiques un evento en red antes de confirmar (commit) la transacción local.',
-      'Todo consumidor debe ser idempotente porque la entrega es al menos una vez (At-least-once).',
-      'El particionado por fecha evita que la tabla Outbox degrade el rendimiento.',
-    ],
-    glossary: [
-      {
-        term: 'Transactional Outbox',
-        definition:
-          'Patrón que guarda los eventos por emitir dentro de una tabla en la misma transacción de base de datos que modifica la entidad.',
-      },
-      {
-        term: 'Idempotencia',
-        definition:
-          'Propiedad matemática donde aplicar una operación múltiples veces produce exactamente el mismo resultado que aplicarla una sola vez.',
-      },
-    ],
-  },
-];
 
 function StudentLiveRoomContent() {
   const searchParams = useSearchParams();
@@ -101,45 +63,29 @@ function StudentLiveRoomContent() {
     openPricingModal,
   } = useSubscription();
 
-  // Catálogo Fijo Semanal publicado por el Docente
-  const [catalogSessions, setCatalogSessions] = useState<TeacherCatalogSession[]>([
-    {
-      id: 'sess-wed-1900',
-      courseSlug: 'ipt-master-fullstack',
-      title: 'Diseño de Sistemas de Alta Concurrencia e Idempotencia',
-      instructor: 'Ing. Iván Pérez · Director Académico',
-      dayTimeLabel: 'Miércoles 19:00 COT',
-      startTimeIso: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
-      durationMinutes: 60,
-      enrolledCount: 4,
-      minQuotaRequired: 3,
-      maxCapacity: 12,
-      quotaStatus: 'confirmed',
-      isBookedByCurrentStudent: false,
-    },
-    {
-      id: 'sess-fri-1800',
-      courseSlug: 'arquitectura-cloud-ipt',
-      title: 'Laboratorio en Vivo: Recuperación ante Caídas de Nodos',
-      instructor: 'Comité Docente IPT',
-      dayTimeLabel: 'Viernes 18:00 COT',
-      startTimeIso: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
-      durationMinutes: 60,
-      enrolledCount: 1,
-      minQuotaRequired: 3,
-      maxCapacity: 12,
-      quotaStatus: 'pending',
-      isBookedByCurrentStudent: false,
-    },
-  ]);
+  const { liveSessions: rawLiveSessions } = useLms();
+  const availableLiveSessions = useMemo<LiveVirtualSession[]>(() => {
+    return Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
+  }, [rawLiveSessions]);
 
-  const [selectedSessionId, setSelectedSessionId] = useState<string>('sess-wed-1900');
-  const [activeStudioTab, setActiveStudioTab] = useState<
-    'stream' | 'whiteboard' | 'recordings'
-  >('stream');
+  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
+
+  // Seleccionar la primera sesión real disponible si existe
+  useEffect(() => {
+    if (availableLiveSessions.length > 0 && !selectedSessionId) {
+      setSelectedSessionId(availableLiveSessions[0].id);
+    }
+  }, [availableLiveSessions, selectedSessionId]);
+
+  const activeSession = useMemo<LiveVirtualSession | null>(() => {
+    if (!availableLiveSessions.length) return null;
+    return availableLiveSessions.find((s) => s.id === selectedSessionId) || availableLiveSessions[0];
+  }, [availableLiveSessions, selectedSessionId]);
+
+  const [activeStudioTab, setActiveStudioTab] = useState<'stream' | 'whiteboard' | 'recordings'>('stream');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  // Controles de Sala Nativa WebRTC In-App
+  // Controles multimedia locales WebRTC del estudiante
   const [micEnabled, setMicEnabled] = useState<boolean>(false);
   const [camEnabled, setCamEnabled] = useState<boolean>(false);
   const [handRaised, setHandRaised] = useState<boolean>(false);
@@ -147,39 +93,75 @@ function StudentLiveRoomContent() {
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
-  // Chat en vivo moderado
-  const [chatMessages, setChatMessages] = useState<
-    { id: string; sender: string; role: string; text: string; time: string }[]
-  >([
-    {
-      id: 'm1',
-      sender: 'Ing. Iván Pérez',
-      role: 'Docente Titular',
-      text: 'Bienvenidos a la sala sincrónica de IPT Academy. Hoy revisaremos el patrón de reserva atómica con partida doble.',
-      time: '19:00',
-    },
-    {
-      id: 'm2',
-      sender: 'Laura Gómez',
-      role: 'Estudiante Pro+',
-      text: 'Buenas noches profesor, ¿veremos cómo se comporta el bloqueo cuando dos usuarios reservan el último cupo?',
-      time: '19:02',
-    },
-  ]);
+  // Chat en tiempo real conectado a Firebase RTDB
+  const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
 
-  // Pizarra Colaborativa HTML5 Canvas
+  const currentRoomChatId = useMemo(() => {
+    if (modeParam === '1on1') {
+      return `chat_1on1_${user?.uid || 'guest'}`;
+    }
+    return activeSession?.id ? `chat_session_${activeSession.id}` : 'chat_general';
+  }, [modeParam, user?.uid, activeSession?.id]);
+
+  useEffect(() => {
+    const chatRef = ref(db, `lms_live_chat/${currentRoomChatId}`);
+    const unsub = onValue(
+      chatRef,
+      (snap) => {
+        if (snap.exists()) {
+          const val = snap.val();
+          const list: LiveChatMessage[] = Object.keys(val).map((k) => ({
+            id: k,
+            sender: val[k].sender || 'Estudiante',
+            text: val[k].text || '',
+            time: val[k].time || '',
+            timestamp: val[k].timestamp || 0,
+          }));
+          list.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+          setChatMessages(list);
+        } else {
+          setChatMessages([]);
+        }
+      },
+      () => setChatMessages([])
+    );
+    return () => unsub();
+  }, [currentRoomChatId]);
+
+  // Grabaciones almacenadas en Firebase RTDB
+  const [recordings, setRecordings] = useState<StoredRecording[]>([]);
+  useEffect(() => {
+    const recRef = ref(db, 'lms_recordings');
+    const unsub = onValue(
+      recRef,
+      (snap) => {
+        if (snap.exists()) {
+          const val = snap.val();
+          const list: StoredRecording[] = Object.keys(val).map((k) => ({
+            id: k,
+            title: val[k].title || 'Clase grabada',
+            date: val[k].date || '',
+            duration: val[k].duration || '',
+            instructor: val[k].instructor || 'Docente IPT',
+            videoUrl: val[k].videoUrl,
+          }));
+          setRecordings(list);
+        } else {
+          setRecordings([]);
+        }
+      },
+      () => setRecordings([])
+    );
+    return () => unsub();
+  }, []);
+
+  // Pizarra HTML5 Canvas
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [strokeColor, setStrokeColor] = useState('#8052ff');
 
-  const activeSession = useMemo(() => {
-    return (
-      catalogSessions.find((s) => s.id === selectedSessionId) || catalogSessions[0]
-    );
-  }, [catalogSessions, selectedSessionId]);
-
-  // Temporizador de permanencia verificada en sala
+  // Contador de tiempo en sala
   useEffect(() => {
     const timer = setInterval(() => {
       setAttendanceSeconds((prev) => prev + 1);
@@ -187,7 +169,7 @@ function StudentLiveRoomContent() {
     return () => clearInterval(timer);
   }, []);
 
-  // Activar/Desactivar cámara real WebRTC si el usuario lo solicita
+  // Activar / Desactivar cámara real WebRTC
   const toggleCameraWebRtc = async () => {
     if (camEnabled) {
       if (mediaStreamRef.current) {
@@ -199,18 +181,19 @@ function StudentLiveRoomContent() {
       try {
         if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
           const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: micEnabled,
+            video: { width: 640, height: 360 },
+            audio: false,
           });
           mediaStreamRef.current = stream;
           if (localVideoRef.current) {
             localVideoRef.current.srcObject = stream;
           }
+          setCamEnabled(true);
+        } else {
+          alert('Tu navegador no cuenta con soporte para cámara WebRTC.');
         }
-        setCamEnabled(true);
       } catch {
-        // Si el navegador no tiene webcam física conectada, activar vista previa simulada
-        setCamEnabled(true);
+        alert('No se pudo acceder a la cámara. Revisa los permisos de tu navegador.');
       }
     }
   };
@@ -223,106 +206,33 @@ function StudentLiveRoomContent() {
     };
   }, []);
 
-  // Reservar cupo con 1 crédito de la bolsa
-  const handleReserveSeat = async (session: TeacherCatalogSession) => {
-    setStatusMessage(null);
-    try {
-      await bookLiveSession(session.id, {
-        courseSlug: session.courseSlug,
-        teacherId: 'teacher_ivan',
-        title: session.title,
-        startTime: session.startTimeIso,
-        durationMinutes: session.durationMinutes,
-        quorumRequired: session.minQuotaRequired,
-        maxCapacity: session.maxCapacity,
-      });
-    } catch {}
-
-    setCatalogSessions((prev) =>
-      prev.map((s) =>
-        s.id === session.id
-          ? {
-              ...s,
-              enrolledCount: s.enrolledCount + 1,
-              isBookedByCurrentStudent: true,
-              quotaStatus:
-                s.enrolledCount + 1 >= s.minQuotaRequired ? 'confirmed' : 'pending',
-            }
-          : s
-      )
-    );
-    setStatusMessage(
-      `Reserva confirmada para "${session.title}". Se descontó 1 crédito hacia custodia (Partida Doble Δ = 0).`
-    );
-  };
-
-  // Cancelar reserva (reintegro automático hasta 4 h antes)
-  const handleCancelSeat = async (session: TeacherCatalogSession) => {
-    const existingBooking = liveBookings.find(
-      (b) => b.sessionId === session.id && b.status === 'confirmed'
-    );
-    if (existingBooking) {
-      try {
-        await cancelLiveBooking(existingBooking.id);
-      } catch {}
-    }
-
-    setCatalogSessions((prev) =>
-      prev.map((s) =>
-        s.id === session.id
-          ? {
-              ...s,
-              enrolledCount: Math.max(0, s.enrolledCount - 1),
-              isBookedByCurrentStudent: false,
-            }
-          : s
-      )
-    );
-    setStatusMessage(
-      `Reserva cancelada con más de 4 h de anticipación. Tu crédito fue reintegrado íntegramente a tu bolsa disponible.`
-    );
-  };
-
-  const handleSendChat = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-    const nowTime = new Date().toTimeString().slice(0, 5);
-    setChatMessages((prev) => [
-      ...prev,
-      {
-        id: `m-${Date.now()}`,
-        sender: user?.displayName || 'Estudiante IPT',
-        role: modeParam === '1on1' ? 'Your Plan 1 a 1' : 'Estudiante Activo',
-        text: chatInput.trim(),
-        time: nowTime,
-      },
-    ]);
-    setChatInput('');
-  };
-
-  // Eventos de dibujo en Pizarra Colaborativa
+  // Funciones de la Pizarra
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const rect = canvas.getBoundingClientRect();
-    ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
     ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
     setIsDrawing(true);
   };
 
-  const drawMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const rect = canvas.getBoundingClientRect();
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    ctx.lineTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = strokeColor === '#000000' ? 16 : 3;
+    ctx.lineCap = 'round';
     ctx.stroke();
   };
 
@@ -330,7 +240,7 @@ function StudentLiveRoomContent() {
     setIsDrawing(false);
   };
 
-  const clearWhiteboard = () => {
+  const clearCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -338,78 +248,145 @@ function StudentLiveRoomContent() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
+  const downloadCanvasAsPng = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = `apuntes-clase-${new Date().toISOString().slice(0, 10)}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
+  const formatTimer = (totalSec: number) => {
+    const m = Math.floor(totalSec / 60)
+      .toString()
+      .padStart(2, '0');
+    const s = (totalSec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   const currentPlanId = subscription?.planId || 'free';
-  const formatTimer = (sec: number) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+  // Reserva real de cupos
+  const isBooked = useMemo(() => {
+    if (!activeSession) return false;
+    return (liveBookings || []).some(
+      (b) => b.sessionId === activeSession.id && b.status === 'confirmed'
+    );
+  }, [activeSession, liveBookings]);
+
+  const handleReserveSeat = async () => {
+    if (!activeSession) return;
+    if (entitlements.availableLiveCredits <= 0) {
+      setStatusMessage('No tienes créditos disponibles en este ciclo para reservar clases.');
+      return;
+    }
+    try {
+      await bookLiveSession(activeSession.id, {
+        courseSlug: activeSession.courseSlug,
+        teacherId: activeSession.instructorName || 'docente_ipt',
+        title: activeSession.title,
+        startTime: activeSession.startTimeUtc,
+        durationMinutes: activeSession.durationMinutes || 60,
+      });
+      setStatusMessage(`Cupo reservado para "${activeSession.title}". Se descontó 1 crédito de tu bolsa.`);
+    } catch (err: any) {
+      setStatusMessage(err?.message || 'No se pudo completar la reserva.');
+    }
+  };
+
+  const handleCancelSeat = async () => {
+    if (!activeSession) return;
+    const booking = (liveBookings || []).find(
+      (b) => b.sessionId === activeSession.id && b.status === 'confirmed'
+    );
+    if (!booking) return;
+    try {
+      await cancelLiveBooking(booking.id);
+      setStatusMessage(`Reserva cancelada con éxito. Tu crédito fue reintegrado a tu cuenta.`);
+    } catch (err: any) {
+      setStatusMessage(err?.message || 'No se pudo cancelar la reserva.');
+    }
+  };
+
+  const handleSendChat = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    const textToSend = chatInput.trim();
+    setChatInput('');
+
+    try {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+      await push(ref(db, `lms_live_chat/${currentRoomChatId}`), {
+        sender: user?.displayName || 'Estudiante',
+        text: textToSend,
+        time: timeStr,
+        timestamp: Date.now(),
+      });
+    } catch {
+      // Local fallback si no hay conexión
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: `m-${Date.now()}`,
+          sender: user?.displayName || 'Estudiante',
+          text: textToSend,
+          time: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] text-white py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#000000] text-white py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-[1400px] mx-auto space-y-6">
-        {/* Barra Superior de Estado Sincrónico y Contabilidad de Igualación a 0 */}
+        {/* Barra Superior de Estado */}
         <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
                 <Radio className="w-3.5 h-3.5 animate-pulse" />
                 <span>
-                  {modeParam === '1on1'
-                    ? 'Sala Privada 1 a 1 · Your Plan'
-                    : 'Sala Sincrónica Nativa In-App'}
+                  {modeParam === '1on1' ? 'Asesoría Individual 1 a 1' : 'Sala de Clases en Vivo'}
                 </span>
               </span>
               <span className="text-xs font-mono text-[#9a9a9a]">
-                Permanencia verificada: {formatTimer(attendanceSeconds)}
+                Tiempo en sala: {formatTimer(attendanceSeconds)}
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-semibold text-white">
               {modeParam === '1on1'
-                ? 'Sesión de Mentoría Individual 1 a 1 con el Profesor'
-                : activeSession.title}
+                ? 'Asesoría Individual 1 a 1 con el Docente'
+                : activeSession?.title || 'Clase en Vivo'}
             </h1>
           </div>
 
-          {/* Panel de Contabilidad de Igualación a 0 y Cuota Mínima */}
+          {/* Información de Créditos */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="px-4 py-2 rounded-2xl bg-[#000000] border border-[#ffffff]/10 flex items-center gap-2.5 text-xs">
-              <Users className="w-4 h-4 text-[#ffb829]" />
-              <div>
-                <span className="text-[#9a9a9a] block text-[10px]">
-                  Cuota mínima de estudiantes
-                </span>
-                <span className="font-semibold text-white">
-                  {activeSession.enrolledCount} / {activeSession.minQuotaRequired} mín. (Cupo máx.{' '}
-                  {activeSession.maxCapacity})
-                </span>
-              </div>
-            </div>
-
             <div className="px-4 py-2 rounded-2xl bg-[#000000] border border-[#15846e]/40 flex items-center gap-2.5 text-xs">
               <ShieldCheck className="w-4 h-4 text-[#15846e]" />
               <div>
                 <span className="text-[#9a9a9a] block text-[10px]">
-                  Contabilidad Partida Doble (Δ = {zeroSumAccounting.netDelta})
+                  Tus créditos disponibles
                 </span>
-                <span className="font-mono text-white">
-                  Disp: {zeroSumAccounting.availableCredits} | Custodia:{' '}
-                  {zeroSumAccounting.reservedInEscrow} | Total: {zeroSumAccounting.issuedCredits}
+                <span className="font-semibold text-white">
+                  {entitlements.availableLiveCredits} de {zeroSumAccounting.issuedCredits} créditos este mes
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Aviso si el usuario está en Free o Pro sin acceso en vivo */}
+        {/* Aviso si el usuario no tiene plan con clases en vivo */}
         {(currentPlanId === 'free' || currentPlanId === 'pro') && (
           <div className="rounded-2xl border border-[#ffb829]/40 bg-gradient-to-r from-[#ffb829]/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#ffb829]">
-                Acceso Sincrónico de Nivel Pro+ y Your Plan
+                Acceso a Clases en Vivo
               </span>
               <p className="text-xs text-[#d1d5db]">
-                Las sesiones en vivo y asesorías 1 a 1 están disponibles para miembros con Plan Pro+ o Your Plan.
+                Las clases en vivo con el docente y las asesorías 1 a 1 están incluidas en el Plan Pro+ y Your Plan.
               </p>
             </div>
             <div className="flex items-center gap-2.5 shrink-0">
@@ -440,21 +417,16 @@ function StudentLiveRoomContent() {
           </div>
         )}
 
-        {/* Grid Principal: Estudio en Vivo Izquierda (8 cols) + Catálogo y Chat Derecha (4 cols) */}
+        {/* Grid Principal: Video/Pizarra Izquierda (8 cols) + Chat y Agenda Derecha (4 cols) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Columna Izquierda (8 cols): Sala Nativa In-App (Stream, Pizarra, Grabaciones) */}
           <div className="lg:col-span-8 space-y-5">
-            {/* Pestañas del Estudio Sincrónico */}
+            {/* Pestañas de la Sala */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-[#09090b] border border-[#ffffff]/10 rounded-2xl p-2">
               <div className="flex items-center gap-1.5">
                 {[
-                  { id: 'stream', label: 'Sala de Videollamada In-App', icon: Video },
-                  { id: 'whiteboard', label: 'Pizarra Colaborativa en Vivo', icon: PenTool },
-                  {
-                    id: 'recordings',
-                    label: 'Grabaciones con Timestamps y Glosario',
-                    icon: BookOpen,
-                  },
+                  { id: 'stream', label: 'Videollamada en Vivo', icon: Video },
+                  { id: 'whiteboard', label: 'Pizarra de Dibujo y Apuntes', icon: PenTool },
+                  { id: 'recordings', label: 'Clases Grabadas Anteriores', icon: BookOpen },
                 ].map((tab) => {
                   const Icon = tab.icon;
                   const active = activeStudioTab === tab.id;
@@ -477,45 +449,40 @@ function StudentLiveRoomContent() {
               </div>
             </div>
 
-            {/* VISTA 1: TRANSMISIÓN WEBRTC IN-APP */}
+            {/* PESTAÑA 1: VIDEOLLAMADA */}
             {activeStudioTab === 'stream' && (
               <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl overflow-hidden shadow-2xl">
-                <div className="relative aspect-video bg-gradient-to-br from-[#0e0c1a] via-[#050507] to-[#130d26] flex flex-col justify-between p-6">
+                <div className="relative aspect-video bg-[#050507] flex flex-col justify-between p-6">
                   {/* Cabecera sobre video */}
                   <div className="flex items-center justify-between z-10">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#ffffff]/15 text-xs">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                      <span className="font-medium text-white">{activeSession.instructor}</span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                      <span className="font-medium text-white">
+                        {activeSession?.instructorName || 'Docente IPT'}
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-2">
                       {handRaised && (
                         <span className="px-3 py-1 rounded-full bg-[#ffb829]/20 border border-[#ffb829]/50 text-[#ffb829] text-xs font-semibold flex items-center gap-1.5">
                           <Hand className="w-3.5 h-3.5" />
-                          <span>Mano levantada en turno</span>
+                          <span>Mano levantada</span>
                         </span>
                       )}
-                      <span className="px-2.5 py-1 rounded-lg bg-black/60 border border-[#ffffff]/10 text-[11px] font-mono text-[#bdbdbd]">
-                        HD 1080p · Baja Latencia
-                      </span>
                     </div>
                   </div>
 
-                  {/* Escenario Central: Presentación de Arquitectura del Docente */}
-                  <div className="my-auto max-w-xl mx-auto text-center space-y-4 z-10">
-                    <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#8052ff]/20 border border-[#8052ff]/40 text-[#c0c4fc] text-xs font-mono">
-                      <span>TRANSMISIÓN ACTIVA EN CAMPUS</span>
-                    </div>
+                  {/* Estado Central de la Sala */}
+                  <div className="my-auto max-w-xl mx-auto text-center space-y-3 z-10">
                     <h2 className="text-xl sm:text-2xl font-semibold text-white">
-                      {activeSession.title}
+                      {activeSession?.title || 'Sala de Clases en Vivo'}
                     </h2>
-                    <p className="text-xs text-[#bdbdbd]">
-                      Conectado directamente desde el navegador sin aplicaciones externas. Puedes
-                      alternar a la Pizarra Colaborativa arriba para diagramar en tiempo real.
+                    <p className="text-xs text-[#bdbdbd] max-w-md mx-auto">
+                      La videollamada se realiza directamente dentro de la plataforma. Puedes activar tu micrófono o cámara para participar en la clase.
                     </p>
                   </div>
 
-                  {/* Ventana Picture-in-Picture de la Cámara del Estudiante */}
+                  {/* Ventana de cámara local del estudiante */}
                   {camEnabled && (
                     <div className="absolute bottom-20 right-6 w-44 aspect-video rounded-2xl border-2 border-[#8052ff] bg-[#000000] overflow-hidden shadow-2xl z-20 flex items-center justify-center">
                       <video
@@ -531,7 +498,7 @@ function StudentLiveRoomContent() {
                     </div>
                   )}
 
-                  {/* Barra Inferior de Controles de Videollamada */}
+                  {/* Controles de Videollamada */}
                   <div className="z-10 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#ffffff]/10 bg-black/40 backdrop-blur-md -mx-6 -mb-6 px-6 py-4">
                     <div className="flex items-center gap-2.5">
                       <button
@@ -572,8 +539,8 @@ function StudentLiveRoomContent() {
                           </>
                         ) : (
                           <>
-                            <VideoOff className="w-4 h-4 text-[#9a9a9a]" />
-                            <span>Compartir Cámara</span>
+                            <VideoOff className="w-4 h-4 text-rose-400" />
+                            <span>Activar Cámara</span>
                           </>
                         )}
                       </button>
@@ -583,280 +550,272 @@ function StudentLiveRoomContent() {
                         onClick={() => setHandRaised((p) => !p)}
                         className={`px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
                           handRaised
-                            ? 'bg-[#ffb829] text-black'
+                            ? 'bg-[#ffb829] text-black font-bold'
                             : 'bg-[#ffffff]/10 hover:bg-[#ffffff]/15 text-white'
                         }`}
                       >
                         <Hand className="w-4 h-4" />
-                        <span>{handRaised ? 'Bajar la Mano' : 'Pedir la Palabra'}</span>
+                        <span>{handRaised ? 'Bajar Mano' : 'Levantar la Mano'}</span>
                       </button>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setActiveStudioTab('whiteboard')}
-                      className="px-4 py-2.5 rounded-full border border-[#8052ff]/50 bg-[#8052ff]/15 text-xs font-semibold text-white hover:bg-[#8052ff] transition-all cursor-pointer flex items-center gap-2"
-                    >
-                      <PenTool className="w-3.5 h-3.5" />
-                      <span>Abrir Pizarra Interactiva</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* VISTA 2: PIZARRA COLABORATIVA EN VIVO */}
-            {activeStudioTab === 'whiteboard' && (
-              <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl p-6 space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-base font-semibold text-white">
-                      Pizarra de Arquitectura Colaborativa en Vivo
-                    </h3>
-                    <p className="text-xs text-[#9a9a9a]">
-                      Dibuja diagramas de nodos, capas o flujos directamente con el cursor.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {[
-                      { color: '#8052ff', label: 'Violeta' },
-                      { color: '#15846e', label: 'Esmeralda' },
-                      { color: '#ffb829', label: 'Ámbar' },
-                      { color: '#ffffff', label: 'Blanco' },
-                    ].map((c) => (
-                      <button
-                        key={c.color}
-                        type="button"
-                        onClick={() => setStrokeColor(c.color)}
-                        className={`w-7 h-7 rounded-full border-2 cursor-pointer ${
-                          strokeColor === c.color ? 'border-white scale-110' : 'border-transparent'
-                        }`}
-                        style={{ backgroundColor: c.color }}
-                        title={c.label}
-                      />
-                    ))}
-
-                    <button
-                      type="button"
-                      onClick={clearWhiteboard}
-                      className="ml-2 px-3.5 py-1.5 rounded-full bg-[#ffffff]/10 hover:bg-[#ffffff]/15 text-xs text-white flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Eraser className="w-3.5 h-3.5" />
-                      <span>Limpiar Pizarra</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl overflow-hidden border border-[#ffffff]/15 bg-[#050507]">
-                  <canvas
-                    ref={canvasRef}
-                    width={860}
-                    height={460}
-                    onMouseDown={startDrawing}
-                    onMouseMove={drawMove}
-                    onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
-                    className="w-full h-[420px] cursor-crosshair block"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* VISTA 3: GRABACIONES PROCESADAS CON TIMESTAMPS Y GLOSARIO */}
-            {activeStudioTab === 'recordings' && (
-              <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl p-6 sm:p-8 space-y-6">
-                <div>
-                  <span className="text-xs font-mono uppercase text-[#8052ff] block mb-1">
-                    Pipeline Automático Post-Clase
-                  </span>
-                  <h3 className="text-xl font-semibold text-white">
-                    Grabaciones con Marcas de Tiempo, Conclusiones y Glosario
-                  </h3>
-                </div>
-
-                {PROCESSED_RECORDINGS.map((rec) => (
-                  <div
-                    key={rec.id}
-                    className="p-6 rounded-2xl bg-[#000000] border border-[#ffffff]/10 space-y-6"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ffffff]/10 pb-4">
+                    {activeSession && (
                       <div>
-                        <span className="text-xs font-mono text-[#15846e]">
-                          Sesión Grabada · {rec.date} · {rec.duration}
-                        </span>
-                        <h4 className="text-base font-semibold text-white mt-0.5">{rec.title}</h4>
-                      </div>
-                      <span className="text-xs text-[#9a9a9a]">{rec.instructor}</span>
-                    </div>
-
-                    {/* Timestamps */}
-                    <div className="space-y-2.5">
-                      <h5 className="text-xs font-semibold uppercase tracking-wider text-white">
-                        Desglose Temático por Minuto (Timestamps):
-                      </h5>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        {rec.timestamps.map((ts, idx) => (
-                          <div
-                            key={idx}
-                            className="p-3 rounded-xl bg-[#09090b] border border-[#ffffff]/10 flex items-start gap-2.5 text-xs"
-                          >
-                            <span className="px-2 py-0.5 rounded bg-[#8052ff]/20 text-[#c0c4fc] font-mono shrink-0">
-                              {ts.time}
-                            </span>
-                            <span className="text-[#d1d5db]">{ts.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Conclusiones y Glosario */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                      <div className="p-4 rounded-xl bg-[#09090b] border border-[#ffffff]/10 space-y-2">
-                        <span className="text-xs font-semibold text-[#15846e] block">
-                          Puntos Clave de la Sesión:
-                        </span>
-                        <ul className="space-y-1.5 text-xs text-[#bdbdbd]">
-                          {rec.keyTakeaways.map((kt, i) => (
-                            <li key={i} className="flex items-start gap-2">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-[#15846e] shrink-0 mt-0.5" />
-                              <span>{kt}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-[#09090b] border border-[#ffffff]/10 space-y-2">
-                        <span className="text-xs font-semibold text-[#8052ff] block">
-                          Glosario Extraído:
-                        </span>
-                        <div className="space-y-2 text-xs">
-                          {rec.glossary.map((g, i) => (
-                            <div key={i}>
-                              <strong className="text-white">{g.term}:</strong>{' '}
-                              <span className="text-[#9a9a9a]">{g.definition}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Catálogo Fijo de Sesiones del Docente con Simulación T-3h */}
-            <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl p-6 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <h3 className="text-base font-semibold text-white">
-                    Catálogo Semanal de Clases Publicadas por el Docente
-                  </h3>
-                  <p className="text-xs text-[#9a9a9a]">
-                    Reserva tu cupo con 1 crédito o ejecuta la prueba de corte a 3 horas del inicio
-                    (Cuota mínima de estudiantes).
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {catalogSessions.map((sess) => {
-                  const isSelected = sess.id === selectedSessionId;
-                  return (
-                    <div
-                      key={sess.id}
-                      onClick={() => setSelectedSessionId(sess.id)}
-                      className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                        isSelected
-                          ? 'bg-[#000000] border-[#8052ff]'
-                          : 'bg-[#000000]/60 border-[#ffffff]/10 hover:border-[#ffffff]/25'
-                      }`}
-                    >
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-xs font-mono text-[#ffb829]">
-                            {sess.dayTimeLabel}
-                          </span>
-                          {sess.quotaStatus === 'confirmed' && (
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#15846e]/15 text-[#15846e] border border-[#15846e]/30">
-                              Cuota Mínima Alcanzada ({sess.enrolledCount}/{sess.minQuotaRequired})
-                            </span>
-                          )}
-                          {sess.quotaStatus === 'pending' && (
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#ffb829]/15 text-[#ffb829] border border-[#ffb829]/30">
-                              Reuniendo Cuota Mínima ({sess.enrolledCount}/{sess.minQuotaRequired}{' '}
-                              estudiantes)
-                            </span>
-                          )}
-                          {sess.quotaStatus === 'cancelled_refunded' && (
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                              Cancelada en T-3h · Créditos Reintegrados
-                            </span>
-                          )}
-                        </div>
-                        <h4 className="text-sm font-semibold text-white">{sess.title}</h4>
-                        <p className="text-xs text-[#9a9a9a]">{sess.instructor}</p>
-                      </div>
-
-                      <div
-                        className="flex flex-wrap items-center gap-2 shrink-0"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {sess.isBookedByCurrentStudent ? (
+                        {isBooked ? (
                           <button
                             type="button"
-                            onClick={() => handleCancelSeat(sess)}
+                            onClick={handleCancelSeat}
                             className="px-4 py-2 rounded-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-xs font-semibold text-rose-200 cursor-pointer"
                           >
-                            Cancelar Reserva (+1 Créd.)
+                            Cancelar Mi Reserva (+1 Crédito)
                           </button>
                         ) : (
                           <button
                             type="button"
-                            disabled={sess.quotaStatus === 'cancelled_refunded'}
-                            onClick={() => handleReserveSeat(sess)}
-                            className="px-4 py-2 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] disabled:opacity-40 text-xs font-semibold text-white cursor-pointer"
+                            onClick={handleReserveSeat}
+                            className="px-4 py-2 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-xs font-semibold text-white cursor-pointer"
                           >
                             Reservar Cupo (1 Crédito)
                           </button>
                         )}
                       </div>
-                    </div>
-                  );
-                })}
+                    )}
+                  </div>
+                </div>
               </div>
+            )}
+
+            {/* PESTAÑA 2: PIZARRA */}
+            {activeStudioTab === 'whiteboard' && (
+              <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl p-5 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#ffffff]/10">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[#9a9a9a]">Colores:</span>
+                    {['#8052ff', '#15846e', '#ffb829', '#ffffff', '#ef4444'].map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setStrokeColor(c)}
+                        style={{ backgroundColor: c }}
+                        className={`w-6 h-6 rounded-full transition-transform cursor-pointer ${
+                          strokeColor === c ? 'scale-125 ring-2 ring-white ring-offset-2 ring-offset-black' : ''
+                        }`}
+                        aria-label={`Color ${c}`}
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setStrokeColor('#000000')}
+                      className={`px-3 py-1 rounded-full text-xs flex items-center gap-1 border border-[#ffffff]/20 cursor-pointer ${
+                        strokeColor === '#000000' ? 'bg-white text-black' : 'text-white'
+                      }`}
+                    >
+                      <Eraser className="w-3.5 h-3.5" />
+                      <span>Borrador</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={clearCanvas}
+                      className="px-3.5 py-1.5 rounded-full border border-[#ffffff]/15 text-xs text-[#9a9a9a] hover:text-white flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Limpiar</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={downloadCanvasAsPng}
+                      className="px-3.5 py-1.5 rounded-full bg-[#8052ff] text-xs font-semibold text-white flex items-center gap-1.5 cursor-pointer hover:bg-[#6d3df5]"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Guardar Apunte</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-[#ffffff]/15 bg-black overflow-hidden flex justify-center">
+                  <canvas
+                    ref={canvasRef}
+                    width={1000}
+                    height={560}
+                    onMouseDown={startDrawing}
+                    onMouseMove={draw}
+                    onMouseUp={stopDrawing}
+                    onMouseLeave={stopDrawing}
+                    className="w-full max-w-full aspect-video cursor-crosshair touch-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* PESTAÑA 3: GRABACIONES ANTERIORES */}
+            {activeStudioTab === 'recordings' && (
+              <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl p-6 space-y-4">
+                <div className="border-b border-[#ffffff]/10 pb-3">
+                  <h3 className="text-base font-semibold text-white">Grabaciones de Clases</h3>
+                  <p className="text-xs text-[#9a9a9a]">
+                    Accede a las sesiones pasadas para repasar el contenido explicado en clase.
+                  </p>
+                </div>
+
+                {recordings.length === 0 ? (
+                  <div className="p-8 text-center rounded-2xl bg-black border border-white/10 space-y-2">
+                    <BookOpen className="w-8 h-8 text-[#9a9a9a] mx-auto opacity-40" />
+                    <p className="text-xs text-[#9a9a9a]">
+                      Aún no hay grabaciones de clases anteriores disponibles en este curso.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {recordings.map((rec) => (
+                      <div
+                        key={rec.id}
+                        className="p-4 rounded-2xl bg-black border border-[#ffffff]/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                      >
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-semibold text-white">{rec.title}</h4>
+                          <div className="flex items-center gap-3 text-xs text-[#9a9a9a]">
+                            <span>{rec.instructor}</span>
+                            <span>•</span>
+                            <span>{rec.date}</span>
+                            {rec.duration && (
+                              <>
+                                <span>•</span>
+                                <span>{rec.duration}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {rec.videoUrl && (
+                          <a
+                            href={rec.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 rounded-full bg-[#8052ff] text-xs font-semibold text-white flex items-center gap-2 hover:bg-[#6d3df5]"
+                          >
+                            <Play className="w-3.5 h-3.5" />
+                            <span>Ver Grabación</span>
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Catálogo de Sesiones Programadas */}
+            <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-[#ffffff]/10 pb-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">Próximas Clases Programadas</h3>
+                  <p className="text-xs text-[#9a9a9a]">
+                    Horarios publicados por el equipo docente para reservar tu cupo con anticipación.
+                  </p>
+                </div>
+              </div>
+
+              {availableLiveSessions.length === 0 ? (
+                <div className="p-8 text-center rounded-2xl bg-black border border-white/10 space-y-2">
+                  <Calendar className="w-8 h-8 text-[#9a9a9a] mx-auto opacity-40" />
+                  <p className="text-xs text-[#9a9a9a]">
+                    No hay clases en vivo programadas para esta semana. El docente anunciará los próximos horarios en el calendario del curso.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {availableLiveSessions.map((sess) => {
+                    const isSelected = sess.id === activeSession?.id;
+                    const sessionBooked = (liveBookings || []).some(
+                      (b) => b.sessionId === sess.id && b.status === 'confirmed'
+                    );
+
+                    return (
+                      <div
+                        key={sess.id}
+                        onClick={() => setSelectedSessionId(sess.id)}
+                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+                          isSelected
+                            ? 'bg-black border-[#8052ff] shadow-[0_0_15px_rgba(128,82,255,0.2)]'
+                            : 'bg-black/50 border-[#ffffff]/10 hover:border-[#ffffff]/20'
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-semibold text-white">{sess.title}</h4>
+                          <p className="text-xs text-[#9a9a9a]">
+                            {sess.instructorName} • {sess.durationMinutes} min
+                          </p>
+                        </div>
+
+                        <div
+                          className="flex items-center gap-2 shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {sessionBooked ? (
+                            <span className="px-3.5 py-1.5 rounded-full bg-[#15846e]/20 border border-[#15846e]/40 text-xs font-semibold text-emerald-300">
+                              Cupo Reservado
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedSessionId(sess.id);
+                                handleReserveSeat();
+                              }}
+                              className="px-4 py-2 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-xs font-semibold text-white cursor-pointer"
+                            >
+                              Reservar Cupo (1 Crédito)
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Columna Derecha (4 cols): Chat en Vivo Moderado y Garantías */}
+          {/* Columna Derecha (4 cols): Chat en Vivo Real */}
           <div className="lg:col-span-4 space-y-5">
             <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl flex flex-col h-[580px] overflow-hidden">
               <div className="px-5 py-4 border-b border-[#ffffff]/10 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="w-4 h-4 text-[#8052ff]" />
-                  <span className="text-xs font-semibold text-white">
-                    Chat Sincrónico de la Clase
-                  </span>
+                  <span className="text-xs font-semibold text-white">Chat de la Clase</span>
                 </div>
-                <span className="text-[11px] font-mono text-[#15846e]">En Línea</span>
+                <span className="text-[11px] font-mono text-[#15846e]">En línea</span>
               </div>
 
+              {/* Mensajes del chat */}
               <div className="flex-1 p-4 overflow-y-auto space-y-3">
-                {chatMessages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className="p-3.5 rounded-2xl bg-[#000000] border border-[#ffffff]/10 space-y-1 text-xs"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-white">{msg.sender}</span>
-                      <span className="text-[10px] font-mono text-[#8052ff]">{msg.role}</span>
-                    </div>
-                    <p className="text-[#d1d5db] leading-relaxed">{msg.text}</p>
-                    <span className="text-[10px] text-[#9a9a9a] block text-right">{msg.time}</span>
+                {chatMessages.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-2">
+                    <MessageSquare className="w-8 h-8 text-[#9a9a9a] opacity-30" />
+                    <p className="text-xs text-[#9a9a9a] leading-relaxed">
+                      No hay mensajes en este chat aún. Escribe aquí para participar o hacer una pregunta durante la clase.
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  chatMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className="p-3.5 rounded-2xl bg-[#000000] border border-[#ffffff]/10 space-y-1 text-xs"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-white">{msg.sender}</span>
+                        <span className="text-[10px] text-[#9a9a9a]">{msg.time}</span>
+                      </div>
+                      <p className="text-[#d1d5db] leading-relaxed">{msg.text}</p>
+                    </div>
+                  ))
+                )}
               </div>
 
+              {/* Entrada de mensaje */}
               <form
                 onSubmit={handleSendChat}
                 className="p-3.5 border-t border-[#ffffff]/10 bg-[#000000] flex items-center gap-2"
@@ -865,12 +824,13 @@ function StudentLiveRoomContent() {
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Escribe tu pregunta en la sala..."
+                  placeholder="Escribe tu mensaje o pregunta..."
                   className="flex-1 px-3.5 py-2.5 rounded-full bg-[#09090b] border border-[#ffffff]/15 text-xs text-white placeholder:text-[#9a9a9a]/60 focus:outline-none focus:border-[#8052ff]"
                 />
                 <button
                   type="submit"
-                  className="p-2.5 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-white cursor-pointer"
+                  disabled={!chatInput.trim()}
+                  className="p-2.5 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] disabled:opacity-40 text-white cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5" />
                 </button>
@@ -888,7 +848,7 @@ export default function LivePage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-black flex items-center justify-center text-white/50 text-xs font-mono">
-          Conectando con la sala en vivo...
+          Cargando sala de clases...
         </div>
       }
     >

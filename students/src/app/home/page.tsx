@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
+import { useLms } from '@/context/LmsContext';
 import DalaQuantumGridBackground from '@/components/home/DalaQuantumGridBackground';
 import {
   Play,
@@ -74,39 +75,7 @@ const SYSTEM_COURSES: SpecializationItem[] = [
   },
 ];
 
-interface WeeklyTeacherSession {
-  id: string;
-  title: string;
-  instructor: string;
-  dayLabel: string;
-  timeLabel: string;
-  enrolled: number;
-  minQuota: number;
-  maxCapacity: number;
-}
 
-const FIXED_TEACHER_SCHEDULE: WeeklyTeacherSession[] = [
-  {
-    id: 'live-wed-1900',
-    title: 'Diseño de Sistemas de Alta Concurrencia e Idempotencia',
-    instructor: 'Ing. Iván Pérez · Director Académico',
-    dayLabel: 'Miércoles',
-    timeLabel: '19:00 COT (60 min)',
-    enrolled: 4,
-    minQuota: 3,
-    maxCapacity: 12,
-  },
-  {
-    id: 'live-fri-1800',
-    title: 'Arquitectura Limpia y Revisión de Casos Reales en Vivo',
-    instructor: 'Comité Docente IPT',
-    dayLabel: 'Viernes',
-    timeLabel: '18:00 COT (60 min)',
-    enrolled: 2,
-    minQuota: 3,
-    maxCapacity: 12,
-  },
-];
 
 export default function StudentCampusPage() {
   const { user } = useAuth();
@@ -117,6 +86,8 @@ export default function StudentCampusPage() {
     activateDynamicCourse,
     zeroSumAccounting,
   } = useSubscription();
+  const { liveSessions: rawLiveSessions } = useLms();
+  const liveSessions = Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
 
   const currentPlanId = useMemo<'free' | 'pro' | 'pro_plus' | 'your_plan'>(() => {
     if (!subscription || !subscription.planId) {
@@ -464,7 +435,7 @@ export default function StudentCampusPage() {
                 </h3>
                 <p className="text-xs text-[#9a9a9a]">
                   Si una sesión no alcanza la cuota mínima de estudiantes 3 horas antes del inicio,
-                  se cancela y tu crédito regresa automáticamente a tu saldo (Contabilidad Δ = 0).
+                  se cancela y tu crédito regresa automáticamente a tu saldo disponible.
                 </p>
               </div>
 
@@ -488,9 +459,15 @@ export default function StudentCampusPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {FIXED_TEACHER_SCHEDULE.map((sess) => {
-                const quotaMet = sess.enrolled >= sess.minQuota;
-                return (
+              {liveSessions.length === 0 ? (
+                <div className="col-span-full p-8 text-center rounded-2xl bg-[#000000] border border-[#ffffff]/10 space-y-2">
+                  <Video className="w-8 h-8 text-[#9a9a9a] mx-auto opacity-40" />
+                  <p className="text-xs text-[#9a9a9a]">
+                    No hay clases en vivo programadas para esta semana. El docente anunciará los próximos horarios aquí.
+                  </p>
+                </div>
+              ) : (
+                liveSessions.map((sess) => (
                   <div
                     key={sess.id}
                     className="p-5 rounded-2xl bg-[#000000] border border-[#ffffff]/10 flex flex-col justify-between gap-4"
@@ -498,40 +475,25 @@ export default function StudentCampusPage() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-mono text-[#ffb829]">
-                          {sess.dayLabel} · {sess.timeLabel}
-                        </span>
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                            quotaMet
-                              ? 'bg-[#15846e]/15 text-[#15846e] border border-[#15846e]/30'
-                              : 'bg-[#ffb829]/15 text-[#ffb829] border border-[#ffb829]/30'
-                          }`}
-                        >
-                          {quotaMet
-                            ? `Confirmada (${sess.enrolled}/${sess.minQuota} mín.)`
-                            : `En inscripción (${sess.enrolled}/${sess.minQuota} mín.)`}
+                          {sess.durationMinutes} minutos
                         </span>
                       </div>
                       <h4 className="text-sm font-semibold text-white">{sess.title}</h4>
-                      <p className="text-xs text-[#9a9a9a]">{sess.instructor}</p>
+                      <p className="text-xs text-[#9a9a9a]">{sess.instructorName}</p>
                     </div>
 
                     <div className="flex items-center justify-between pt-3 border-t border-[#ffffff]/10">
-                      <span className="text-[11px] text-[#bdbdbd] flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-[#ffb829]" />
-                        Cuota mínima: {sess.minQuota} estudiantes
-                      </span>
                       <Link
                         href={`/live?session=${sess.id}`}
                         className="text-xs font-semibold text-[#ffb829] hover:underline flex items-center gap-1"
                       >
-                        <span>Reservar / Entrar</span>
+                        <span>Entrar a la Sala</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>
                   </div>
-                );
-              })}
+                ))
+              )}
             </div>
           </div>
         )}

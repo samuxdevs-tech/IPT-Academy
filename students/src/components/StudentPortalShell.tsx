@@ -209,14 +209,14 @@ export default function StudentPortalShell({
               </span>
             </div>
 
-            {/* Indicador de Partida Doble = 0 (Para planes con créditos) */}
+            {/* Créditos disponibles para clases */}
             {(currentPlanId === 'pro_plus' || currentPlanId === 'your_plan') && (
               <div
-                title={`Contabilidad Partida Doble: Emitidos (${zeroSumAccounting.issuedCredits}) = Disponibles (${zeroSumAccounting.availableCredits}) + Reservados (${zeroSumAccounting.reservedInEscrow}) + Consumidos (${zeroSumAccounting.consumedCredits}) | Δ = ${zeroSumAccounting.netDelta}`}
-                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#15846e]/10 border border-[#15846e]/30 text-[11px] text-[#15846e] font-mono"
+                title="Créditos disponibles para clases en vivo este mes"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#15846e]/10 border border-[#15846e]/30 text-xs text-emerald-400 font-medium"
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Δ=0 ({zeroSumAccounting.availableCredits}/{zeroSumAccounting.issuedCredits})</span>
+                <span>{entitlements.availableLiveCredits} créditos de clase</span>
               </div>
             )}
 
