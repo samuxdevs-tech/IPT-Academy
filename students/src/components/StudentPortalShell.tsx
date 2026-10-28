@@ -51,7 +51,7 @@ export default function StudentPortalShell({
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
     pathname.startsWith('/legal') ||
-    pathname === '/' || pathname === '/home';
+    pathname === '/' || pathname === '/home' || pathname.startsWith('/course') || pathname.startsWith('/free');
 
   if (isAuthOrStandalone) {
     return <>{children}</>;

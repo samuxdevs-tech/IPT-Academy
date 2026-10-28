@@ -46,7 +46,7 @@ const safeDateTime = (val?: string | null): string => {
 
 export default function LocalAiTutorWidget() {
   const pathname = usePathname();
-  if (pathname === '/' || pathname === '/legal' || pathname.startsWith('/login') || pathname.startsWith('/register')) {
+  if (pathname === '/' || pathname === '/home' || pathname === '/legal' || pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/course') || pathname.startsWith('/free')) {
     return null;
   }
   const { user, effectiveIsAdmin } = useAuth();
