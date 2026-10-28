@@ -28308,15 +28308,15 @@ app.use("*", async (c, next) => {
 app.use("*", cors({
   origin: (reqOrigin) => {
     if (!reqOrigin)
-      return "https://ipt-course-admin-2a354.web.app";
+      return "https://ac-administrator.iptapps.com";
     const lower = reqOrigin.toLowerCase();
     if (lower.includes("ipt-course-students") || lower.includes("ipt-course.web.app") || lower.includes("localhost:3000") && !lower.includes("3005")) {
       return null;
     }
-    if (lower.includes("ipt-course-admin") || lower.includes("localhost:3005") || lower.includes("vercel.app")) {
+    if (lower.includes("ac-administrator.iptapps.com") || lower.includes("ac-administrator") || lower.includes("ipt-course-admin") || lower.includes("localhost:3005") || lower.includes("localhost:3001") || lower.includes("vercel.app")) {
       return reqOrigin;
     }
-    return "https://ipt-course-admin-2a354.web.app";
+    return "https://ac-administrator.iptapps.com";
   },
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowHeaders: ["Content-Type", "Authorization", "X-Client-Type", "X-User-Role", "X-Teacher-Key"],
