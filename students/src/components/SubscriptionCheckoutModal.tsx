@@ -170,13 +170,20 @@ export default function SubscriptionCheckoutModal() {
         subscription.planId !== 'free' &&
         (subscription.status === 'active' || subscription.status === 'trial')
       ) {
-        await upgradeSubscription(selectedPlan);
+        await upgradeSubscription(selectedPlan, {
+          panLast4: last4,
+          brand: cardBrand,
+          expMonth,
+          expYear,
+          cardholderName: cardholderName.trim() || 'Titular IPT',
+        });
         setFeedbackMessage({
           type: 'success',
           text: `Tu plan se actualizó a ${targetConfig.name} exitosamente.`,
         });
       } else {
-        await startTrial({
+        try {
+          await startTrial({
           planId: selectedPlan,
           cardInput: {
             panLast4: last4,
@@ -194,7 +201,29 @@ export default function SubscriptionCheckoutModal() {
           type: 'success',
           text: `¡Periodo de prueba de ${targetConfig.trialDays} días en ${targetConfig.name} activado!`,
         });
+      } catch (trialErr: any) {
+        const tMsg = String(trialErr?.message || '');
+        if (
+          tMsg.includes('TRIAL_ALREADY_USED') ||
+          tMsg.includes('PHONE_VERIFICATION_REQUIRED') ||
+          tMsg.includes('INVALID_TRIAL_PLAN')
+        ) {
+          await upgradeSubscription(selectedPlan, {
+            panLast4: last4,
+            brand: cardBrand,
+            expMonth,
+            expYear,
+            cardholderName: cardholderName.trim() || 'Titular IPT',
+          });
+          setFeedbackMessage({
+            type: 'success',
+            text: `¡Suscripción a ${targetConfig.name} activada exitosamente!`,
+          });
+        } else {
+          throw trialErr;
+        }
       }
+    }
       setTimeout(() => {
         closePricingModal();
       }, 1100);

@@ -80,7 +80,14 @@ interface SubscriptionContextValue {
   }) => Promise<Subscription>;
   convertTrialForCertificate: () => Promise<{ subscription: Subscription; invoice: Invoice }>;
   upgradeSubscription: (
-    targetPlanId: 'pro' | 'pro_plus'
+    targetPlanId: 'pro' | 'pro_plus',
+    newCardInput?: {
+      panLast4: string;
+      brand?: 'visa' | 'mastercard' | 'amex';
+      expMonth?: number;
+      expYear?: number;
+      cardholderName?: string;
+    }
   ) => Promise<{ subscription: Subscription; invoice: Invoice }>;
   scheduleDowngrade: (
     targetPlanId: 'free' | 'pro',
@@ -414,11 +421,21 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }, [subscription, effectiveUid, syncEngineToStorageAndRtdb]);
 
   const upgradeSubscription = useCallback(
-    async (targetPlanId: 'pro' | 'pro_plus') => {
+    async (
+      targetPlanId: 'pro' | 'pro_plus',
+      newCardInput?: {
+        panLast4: string;
+        brand?: 'visa' | 'mastercard' | 'amex';
+        expMonth?: number;
+        expYear?: number;
+        cardholderName?: string;
+      }
+    ) => {
       if (!subscription) throw new Error('No hay suscripción activa.');
       const res = await engineRef.current.upgradeSubscription({
         subId: subscription.id,
         targetPlanId,
+        newCardInput,
       });
       await syncEngineToStorageAndRtdb(effectiveUid);
       return res;
