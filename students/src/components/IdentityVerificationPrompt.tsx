@@ -119,6 +119,8 @@ export default function IdentityVerificationPrompt() {
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <div
       role="region"

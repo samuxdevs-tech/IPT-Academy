@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { ref, get } from 'firebase/database';
@@ -18,8 +17,6 @@ import {
   Cookie,
   X,
   CheckCircle2,
-  Building2,
-  Mail,
   SlidersHorizontal
 } from 'lucide-react';
 
@@ -70,135 +67,7 @@ export default function LegalComplianceSystem() {
 
   return (
     <>
-      {/* PIE DE PÁGINA LEGAL OFICIAL DE IPT ACADEMY */}
-      {!isInsideAdmin && (
-        <footer className="bg-[#0f172a] text-slate-300 border-t border-slate-800 mt-auto">
-          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-10">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-8 border-b border-slate-800">
-              {/* Columna 1: Identificación Legal del Propietario */}
-              <div className="md:col-span-5 space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-white p-1 flex items-center justify-center">
-                    <Image
-                      src="/favicon.png"
-                      alt="IPT Academy"
-                      width={24}
-                      height={24}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <span className="font-extrabold text-white text-base tracking-tight">
-                    {IPT_OWNER_INFO.commercialName}
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-400 leading-relaxed max-w-md">
-                  Plataforma de formación en línea, clases en video, gestión de entregas y certificación académica propiedad de Ivan Perez Tech (IPT).
-                </p>
-
-                <div className="text-[11px] text-slate-400 space-y-1 pt-1">
-                  <p className="flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                    <span>
-                      <strong className="text-slate-200">Propietario:</strong> {IPT_OWNER_INFO.legalOwner}
-                    </span>
-                  </p>
-                  <p>
-                    <strong className="text-slate-200">Registro Mercantil:</strong> {IPT_OWNER_INFO.mercantileRegistry} ({IPT_OWNER_INFO.domicile})
-                  </p>
-                  <p className="flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                    <span>
-                      <strong className="text-slate-200">Contacto Legal y Habeas Data:</strong>{' '}
-                      <a
-                        href={`mailto:${IPT_OWNER_INFO.officialEmail}`}
-                        className="text-blue-400 hover:underline font-semibold"
-                      >
-                        {IPT_OWNER_INFO.officialEmail}
-                      </a>
-                    </span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Columna 2: Los 5 Pilares Legales Obligatorios */}
-              <div className="md:col-span-4 space-y-2.5">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-white">
-                  Marco Legal y Normativo (Colombia)
-                </h3>
-                <ul className="space-y-2 text-xs">
-                  {LEGAL_DOCUMENTS.map((doc) => (
-                    <li key={doc.id}>
-                      <button
-                        type="button"
-                        onClick={() => setModalSection(doc.id)}
-                        className="text-slate-300 hover:text-white hover:underline transition-colors text-left flex items-center justify-between w-full gap-2 cursor-pointer"
-                      >
-                        <span>{doc.title}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Columna 3: Accesos Rápidos y Configuración de Cookies */}
-              <div className="md:col-span-3 space-y-3">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-white">
-                  Derechos del Usuario
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Consulta nuestras políticas completas o ajusta tus preferencias de privacidad y almacenamiento en cualquier momento.
-                </p>
-                <div className="flex flex-col gap-2 pt-1">
-                  <Link
-                    href="/legal"
-                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors"
-                  >
-                    <Scale className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Abrir Centro Legal Completo</span>
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowCookieBanner(true);
-                      setShowCookieConfig(true);
-                    }}
-                    className="px-3.5 py-2 rounded-xl border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white text-xs font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                  >
-                    <Cookie className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Configurar Cookies</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-400">
-              <p>
-                © {new Date().getFullYear()} {IPT_OWNER_INFO.commercialName} ({IPT_OWNER_INFO.legalOwner}). Todos los derechos reservados.
-              </p>
-              <div className="flex flex-wrap items-center gap-4">
-                <Link href="/legal?tab=aviso_legal" className="hover:text-white">
-                  Aviso Legal
-                </Link>
-                <Link href="/legal?tab=privacidad" className="hover:text-white">
-                  Habeas Data (Ley 1581)
-                </Link>
-                <Link href="/legal?tab=terminos" className="hover:text-white">
-                  Términos
-                </Link>
-                <Link href="/legal?tab=retracto_pagos" className="hover:text-white">
-                  Retracto y Reversión (Ley 1480)
-                </Link>
-                <Link href="/legal?tab=cookies" className="hover:text-white">
-                  Cookies
-                </Link>
-              </div>
-            </div>
-          </div>
-        </footer>
-      )}
-
-      {/* BANNER Y CONFIGURADOR DE COOKIES (Punto 5 Legal) */}
+{/* BANNER Y CONFIGURADOR DE COOKIES (Punto 5 Legal) */}
       {showCookieBanner && (
         <div className="fixed bottom-4 left-4 right-4 sm:left-6 sm:right-auto sm:max-w-md z-[85] bg-[#0f172a] text-white rounded-2xl border border-slate-700 shadow-2xl p-5 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="flex items-start justify-between gap-3">
