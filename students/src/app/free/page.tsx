@@ -1,0 +1,18 @@
+'use client';
+
+import React, { Suspense } from 'react';
+import FreeTierClassViewer from '@/components/course/FreeTierClassViewer';
+
+export default function FreeTierPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black flex items-center justify-center text-white/50 text-sm font-mono">
+          Cargando aula Free Tier...
+        </div>
+      }
+    >
+      <FreeTierClassViewer />
+    </Suspense>
+  );
+}
