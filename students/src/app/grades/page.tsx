@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { AssignmentItem } from '@/app/assignments/page';
+import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
 
 const STORAGE_KEY_ASSIGNMENTS = 'ipt_student_assignments_v2';
 
@@ -354,7 +355,9 @@ export default function GradesPage() {
         </div>
       }
     >
-      <StudentGradesContent />
+      <AcademicFeatureGate feature="grades">
+        <StudentGradesContent />
+      </AcademicFeatureGate>
     </Suspense>
   );
 }

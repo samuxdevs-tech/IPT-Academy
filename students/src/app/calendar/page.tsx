@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useLms } from '@/context/LmsContext';
+import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
 
 interface CalendarScheduleItem {
   id: string;
@@ -110,10 +111,11 @@ export default function InstitutionalCalendarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] text-white py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-[1360px] mx-auto space-y-8">
-        {/* Cabecera */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#ffffff]/10 pb-8">
+    <AcademicFeatureGate feature="calendar">
+      <div className="min-h-screen bg-[#000000] text-white py-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1360px] mx-auto space-y-8">
+          {/* Cabecera */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#ffffff]/10 pb-8">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8052ff]/10 border border-[#8052ff]/30 text-[#8052ff] text-xs font-medium mb-3">
               <CalendarIcon className="w-3.5 h-3.5" />
@@ -233,5 +235,6 @@ export default function InstitutionalCalendarPage() {
         )}
       </div>
     </div>
+    </AcademicFeatureGate>
   );
 }

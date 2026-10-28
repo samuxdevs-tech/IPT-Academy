@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
+import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
 
 export interface RubricCriterion {
   id: string;
@@ -1003,7 +1004,9 @@ export default function AssignmentsPage() {
         </div>
       }
     >
-      <StudentAssignmentsContent />
+      <AcademicFeatureGate feature="assignments">
+        <StudentAssignmentsContent />
+      </AcademicFeatureGate>
     </Suspense>
   );
 }

@@ -85,6 +85,7 @@ export default function StudentCampusPage() {
     openPricingModal,
     activateDynamicCourse,
     zeroSumAccounting,
+    rectoriaOffer,
   } = useSubscription();
   const { liveSessions: rawLiveSessions } = useLms();
   const liveSessions = Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
@@ -350,74 +351,142 @@ export default function StudentCampusPage() {
         </div>
 
         {/* =========================================================================
-            ACCESOS RÁPIDOS DE NIVEL PRO, PRO+ Y YOUR PLAN (TAREAS, NOTAS, DIPLOMAS)
+            PROPUESTA DINÁMICA DE RECTORÍA (ANTI-ESTRÉS, GANANCIA BAJA Y ALTO VALOR)
            ========================================================================= */}
-        {currentPlanId !== 'free' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <Link
-              href="/assignments"
-              className="p-6 rounded-2xl border border-[#ffffff]/10 bg-[#09090b] hover:border-[#8052ff]/50 transition-all group space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-[#8052ff]/15 border border-[#8052ff]/30 flex items-center justify-center text-[#8052ff]">
-                  <FileCheck2 className="w-5 h-5" />
-                </div>
-                <span className="text-[11px] font-mono text-[#15846e] bg-[#15846e]/10 px-2.5 py-0.5 rounded-full">
-                  Rúbricas Activas
-                </span>
+        {currentPlanId === 'free' && (
+          <div className="rounded-3xl border border-[#8052ff]/30 bg-gradient-to-r from-[#8052ff]/15 via-[#0d0d12] to-[#15846e]/10 p-6 sm:p-8 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#ffffff]/10 pb-4">
+              <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#ffb829]">
+                <Sparkles className="w-4 h-4" />
+                <span>{rectoriaOffer.badge || 'Acuerdo Oficial de Rectoría'}</span>
               </div>
-              <h3 className="text-base font-semibold text-white group-hover:text-[#c0c4fc]">
-                Tareas, Entregas y Apelaciones
-              </h3>
-              <p className="text-xs text-[#9a9a9a] leading-relaxed">
-                Adjunta tus proyectos en PDF, código o nota de voz, revisa tu evaluación criterio
-                por criterio o radica apelación ante Rectoría.
-              </p>
-            </Link>
+              <span className="text-[11px] font-mono text-[#9a9a9a]">
+                Tarifa de Fomento Académico
+              </span>
+            </div>
 
-            <Link
-              href="/grades"
-              className="p-6 rounded-2xl border border-[#ffffff]/10 bg-[#09090b] hover:border-[#8052ff]/50 transition-all group space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-[#15846e]/15 border border-[#15846e]/30 flex items-center justify-center text-[#15846e]">
-                  <GraduationCap className="w-5 h-5" />
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="space-y-2 max-w-2xl">
+                <h3 className="text-xl sm:text-2xl font-normal text-white tracking-tight">
+                  {rectoriaOffer.headline}
+                </h3>
+                <p className="text-xs sm:text-sm text-[#bdbdbd] font-light leading-relaxed">
+                  {rectoriaOffer.description}
+                </p>
+                <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-[#d1d5db]">
+                  <span className="inline-flex items-center gap-1.5 font-medium text-white">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#15846e]" />
+                    {rectoriaOffer.targetPlan === 'pro_plus' ? 'Nivel Pro+ Autorizado' : 'Nivel Pro Autorizado'}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 font-medium text-white">
+                    <Clock className="w-3.5 h-3.5 text-[#8052ff]" />
+                    {rectoriaOffer.durationDays} Días de prueba
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 font-medium text-[#ffb829]">
+                    {rectoriaOffer.isFreeTrial || rectoriaOffer.priceCop === 0
+                      ? 'Sin Costo Inicial'
+                      : `$${rectoriaOffer.priceCop.toLocaleString('es-CO')} COP (~$${rectoriaOffer.priceUsd} USD)`}
+                  </span>
                 </div>
-                <span className="text-[11px] font-mono text-white bg-[#ffffff]/10 px-2.5 py-0.5 rounded-full">
-                  Promedio: 86/100
-                </span>
               </div>
-              <h3 className="text-base font-semibold text-white group-hover:text-[#c0c4fc]">
-                Mis Notas e Historial Académico
-              </h3>
-              <p className="text-xs text-[#9a9a9a] leading-relaxed">
-                Consulta tu promedio acumulado, horas de estudio verificadas y descarga tu
-                certificado oficial de calificaciones.
-              </p>
-            </Link>
 
-            <Link
-              href="/certificate"
-              className="p-6 rounded-2xl border border-[#ffffff]/10 bg-[#09090b] hover:border-[#8052ff]/50 transition-all group space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-[#ffb829]/15 border border-[#ffb829]/30 flex items-center justify-center text-[#ffb829]">
-                  <Award className="w-5 h-5" />
-                </div>
-                <span className="text-[11px] font-mono text-[#ffb829] bg-[#ffb829]/10 px-2.5 py-0.5 rounded-full">
-                  Verificación OCR
-                </span>
+              <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => openPricingModal(rectoriaOffer.targetPlan)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#8052ff] hover:bg-[#6e3ff5] text-white text-xs sm:text-sm font-semibold px-7 py-3.5 rounded-full shadow-[0_0_25px_rgba(128,82,255,0.4)] transition-all cursor-pointer group"
+                >
+                  <span>
+                    {rectoriaOffer.isFreeTrial || rectoriaOffer.priceCop === 0
+                      ? `Iniciar Prueba de ${rectoriaOffer.durationDays} Días`
+                      : `Activar Pase de Rectoría`}
+                  </span>
+                  <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                </button>
               </div>
-              <h3 className="text-base font-semibold text-white group-hover:text-[#c0c4fc]">
-                Certificados y Validación de Documento
-              </h3>
-              <p className="text-xs text-[#9a9a9a] leading-relaxed">
-                Verifica tu documento nacional por OCR para remover las marcas de agua anti-IA y
-                emitir tu diploma con huella SHA-256.
-              </p>
-            </Link>
+            </div>
           </div>
         )}
+
+        {/* =========================================================================
+            ACCESOS DIRECTOS DEL CAMPUS (TAREAS, NOTAS, CERTIFICADOS)
+           ========================================================================= */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <Link
+            href="/assignments"
+            className="p-6 rounded-2xl border border-[#ffffff]/10 bg-[#09090b] hover:border-[#8052ff]/50 transition-all group space-y-3 relative overflow-hidden"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-[#8052ff]/15 border border-[#8052ff]/30 flex items-center justify-center text-[#8052ff]">
+                <FileCheck2 className="w-5 h-5" />
+              </div>
+              <span
+                className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full ${
+                  currentPlanId === 'free'
+                    ? 'text-[#8052ff] bg-[#8052ff]/10 border border-[#8052ff]/30'
+                    : 'text-[#15846e] bg-[#15846e]/10'
+                }`}
+              >
+                {currentPlanId === 'free' ? 'Plan Pro' : 'Rúbricas Activas'}
+              </span>
+            </div>
+            <h3 className="text-base font-semibold text-white group-hover:text-[#c0c4fc]">
+              Tareas, Entregas y Apelaciones
+            </h3>
+            <p className="text-xs text-[#9a9a9a] leading-relaxed">
+              Adjunta tus proyectos en PDF, código o nota de voz, revisa tu evaluación criterio
+              por criterio o radica apelación ante Rectoría.
+            </p>
+          </Link>
+
+          <Link
+            href="/grades"
+            className="p-6 rounded-2xl border border-[#ffffff]/10 bg-[#09090b] hover:border-[#8052ff]/50 transition-all group space-y-3 relative overflow-hidden"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-[#15846e]/15 border border-[#15846e]/30 flex items-center justify-center text-[#15846e]">
+                <GraduationCap className="w-5 h-5" />
+              </div>
+              <span
+                className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full ${
+                  currentPlanId === 'free'
+                    ? 'text-[#8052ff] bg-[#8052ff]/10 border border-[#8052ff]/30'
+                    : 'text-white bg-[#ffffff]/10'
+                }`}
+              >
+                {currentPlanId === 'free' ? 'Plan Pro' : 'Promedio: 86/100'}
+              </span>
+            </div>
+            <h3 className="text-base font-semibold text-white group-hover:text-[#c0c4fc]">
+              Mis Notas e Historial Académico
+            </h3>
+            <p className="text-xs text-[#9a9a9a] leading-relaxed">
+              Consulta tu promedio acumulado, horas de estudio verificadas y descarga tu
+              certificado oficial de calificaciones.
+            </p>
+          </Link>
+
+          <Link
+            href="/certificate"
+            className="p-6 rounded-2xl border border-[#ffffff]/10 bg-[#09090b] hover:border-[#8052ff]/50 transition-all group space-y-3 relative overflow-hidden"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-[#ffb829]/15 border border-[#ffb829]/30 flex items-center justify-center text-[#ffb829]">
+                <Award className="w-5 h-5" />
+              </div>
+              <span className="text-[11px] font-mono text-[#ffb829] bg-[#ffb829]/10 px-2.5 py-0.5 rounded-full">
+                Verificación OCR
+              </span>
+            </div>
+            <h3 className="text-base font-semibold text-white group-hover:text-[#c0c4fc]">
+              Certificados y Validación de Documento
+            </h3>
+            <p className="text-xs text-[#9a9a9a] leading-relaxed">
+              Verifica tu documento nacional por OCR para remover las marcas de agua anti-IA y
+              emitir tu diploma con huella SHA-256.
+            </p>
+          </Link>
+        </div>
 
         {/* =========================================================================
             CATÁLOGO FIJO SEMANAL DE CLASES EN VIVO (PARA PLAN PRO+ Y YOUR PLAN)

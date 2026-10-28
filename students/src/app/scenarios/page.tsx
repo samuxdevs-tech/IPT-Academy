@@ -11,6 +11,7 @@ import { Scenario, Metric, Course } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { normalizeCourse } from '@/lib/courseUtils';
 import { verifyUserHasCourseLicense, generateCourseLicenseToken } from '@/lib/licenseUtils';
+import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
 
 interface NormalizedOption {
   id: string;
@@ -28,7 +29,9 @@ export default function ScenariosPage() {
         </div>
       }
     >
-      <ScenariosContent />
+      <AcademicFeatureGate feature="sandbox">
+        <ScenariosContent />
+      </AcademicFeatureGate>
     </Suspense>
   );
 }

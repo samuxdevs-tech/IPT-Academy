@@ -28,6 +28,7 @@ import {
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLms } from '@/context/LmsContext';
+import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
 import { ref, onValue, push } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { LiveVirtualSession } from '@/types';
@@ -852,7 +853,9 @@ export default function LivePage() {
         </div>
       }
     >
-      <StudentLiveRoomContent />
+      <AcademicFeatureGate feature="live" minPlan="pro_plus">
+        <StudentLiveRoomContent />
+      </AcademicFeatureGate>
     </Suspense>
   );
 }

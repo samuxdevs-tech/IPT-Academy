@@ -51,10 +51,46 @@ export interface YourPlanExecutiveRequest {
   createdAt: string;
 }
 
+export interface RectoriaTrialOffer {
+  active: boolean;
+  targetPlan: 'pro' | 'pro_plus';
+  durationDays: number;
+  priceCop: number;
+  priceUsd: number;
+  isFreeTrial: boolean;
+  headline: string;
+  badge: string;
+  description: string;
+  discountNote: string;
+  perks: string[];
+}
+
+export const DEFAULT_RECTORIA_OFFER: RectoriaTrialOffer = {
+  active: true,
+  targetPlan: 'pro',
+  durationDays: 7,
+  priceCop: 19000,
+  priceUsd: 5,
+  isFreeTrial: false,
+  headline: 'Pase Académico de Acceso Total',
+  badge: 'Acuerdo Institucional de Rectoría',
+  description:
+    'Prueba sin compromisos la entrega de proyectos con rúbricas de ingeniería, seguimiento de calificaciones y entorno de aprendizaje avanzado.',
+  discountNote: 'Tarifa de fomento académico aprobada por Rectoría para nuevos estudiantes',
+  perks: [
+    'Entrega de tareas y corrección docente con rúbricas oficiales',
+    'Kárdex y registro acumulado de rendimiento académico',
+    'Acceso completo a escenarios interactivos y laboratorios',
+    'Cancelación flexible en 1 clic sin llamadas ni penalidades',
+  ],
+};
+
 interface SubscriptionContextValue {
   subscription: Subscription | null;
   entitlements: Entitlements;
   planConfigs: Record<StandardPlanId, PlanConfig>;
+  rectoriaOffer: RectoriaTrialOffer;
+  updateRectoriaOffer: (newOffer: Partial<RectoriaTrialOffer>) => Promise<void>;
   invoices: Invoice[];
   notifications: UserNotification[];
   liveBookings: LiveBooking[];
@@ -153,6 +189,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [planConfigs, setPlanConfigs] = useState<Record<StandardPlanId, PlanConfig>>(
     () => structuredClone(DEFAULT_PLAN_CONFIGS)
   );
+  const [rectoriaOffer, setRectoriaOffer] = useState<RectoriaTrialOffer>(DEFAULT_RECTORIA_OFFER);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [orgMember, setOrgMember] = useState<OrganizationMember | null>(null);
@@ -237,6 +274,34 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           };
           engineRef.current.planConfigs = merged;
           setPlanConfigs(merged);
+        }
+      },
+      () => {}
+    );
+    return () => unsub();
+  }, []);
+
+  // 1.1 Escuchar rectoria_trial_offers en tiempo real desde Firebase RTDB
+  useEffect(() => {
+    const offerRef = ref(db, 'rectoria_trial_offers');
+    const unsub = onValue(
+      offerRef,
+      (snap) => {
+        if (snap.exists()) {
+          const val = snap.val();
+          setRectoriaOffer({
+            active: val.active !== undefined ? Boolean(val.active) : DEFAULT_RECTORIA_OFFER.active,
+            targetPlan: val.targetPlan === 'pro_plus' ? 'pro_plus' : 'pro',
+            durationDays: Number(val.durationDays) || DEFAULT_RECTORIA_OFFER.durationDays,
+            priceCop: Number(val.priceCop) !== undefined && !isNaN(Number(val.priceCop)) ? Number(val.priceCop) : DEFAULT_RECTORIA_OFFER.priceCop,
+            priceUsd: Number(val.priceUsd) !== undefined && !isNaN(Number(val.priceUsd)) ? Number(val.priceUsd) : DEFAULT_RECTORIA_OFFER.priceUsd,
+            isFreeTrial: Boolean(val.isFreeTrial),
+            headline: val.headline || DEFAULT_RECTORIA_OFFER.headline,
+            badge: val.badge || DEFAULT_RECTORIA_OFFER.badge,
+            description: val.description || DEFAULT_RECTORIA_OFFER.description,
+            discountNote: val.discountNote || DEFAULT_RECTORIA_OFFER.discountNote,
+            perks: Array.isArray(val.perks) && val.perks.length > 0 ? val.perks : DEFAULT_RECTORIA_OFFER.perks,
+          });
         }
       },
       () => {}
@@ -692,11 +757,26 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     };
   }, [subscription, liveBookings]);
 
+  const updateRectoriaOffer = useCallback(
+    async (newOffer: Partial<RectoriaTrialOffer>) => {
+      const merged: RectoriaTrialOffer = { ...rectoriaOffer, ...newOffer };
+      setRectoriaOffer(merged);
+      try {
+        await set(ref(db, 'rectoria_trial_offers'), cleanForFirebase(merged));
+      } catch (e) {
+        console.error('Error guardando rectoria_trial_offers:', e);
+      }
+    },
+    [rectoriaOffer]
+  );
+
   const value = useMemo<SubscriptionContextValue>(
     () => ({
       subscription,
       entitlements,
       planConfigs,
+      rectoriaOffer,
+      updateRectoriaOffer,
       invoices,
       notifications,
       liveBookings,
@@ -726,6 +806,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       subscription,
       entitlements,
       planConfigs,
+      rectoriaOffer,
+      updateRectoriaOffer,
       invoices,
       notifications,
       liveBookings,

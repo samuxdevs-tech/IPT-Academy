@@ -85,29 +85,32 @@ export default function StudentPortalShell({
       href: '/assignments',
       label: 'Tareas y Rúbricas',
       icon: FileCheck2,
-      visible: currentPlanId !== 'free',
+      visible: true,
+      badge: currentPlanId === 'free' ? 'Pro' : undefined,
     },
     {
       href: '/grades',
       label: 'Mis Notas',
       icon: GraduationCap,
-      visible: currentPlanId !== 'free',
+      visible: true,
+      badge: currentPlanId === 'free' ? 'Pro' : undefined,
     },
     {
       href: '/live',
       label: 'Sala en Vivo',
       icon: Video,
-      visible: currentPlanId === 'pro_plus' || currentPlanId === 'your_plan',
+      visible: true,
       badge:
         currentPlanId === 'pro_plus' || currentPlanId === 'your_plan'
           ? `${entitlements.availableLiveCredits} créd.`
-          : undefined,
+          : 'Pro+',
     },
     {
       href: '/calendar',
       label: 'Calendario',
       icon: Calendar,
-      visible: currentPlanId !== 'free',
+      visible: true,
+      badge: currentPlanId === 'free' ? 'Pro' : undefined,
     },
     {
       href: '/certificate',
@@ -115,7 +118,7 @@ export default function StudentPortalShell({
       icon: Award,
       visible: true,
     },
-  ].filter((item) => item.visible);
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-[#000000] text-[#ffffff] font-sans selection:bg-[#8052ff] selection:text-white">
