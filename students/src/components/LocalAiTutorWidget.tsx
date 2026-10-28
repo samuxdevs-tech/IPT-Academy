@@ -14,19 +14,56 @@ import {
   User as UserIcon,
   GripHorizontal,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Calendar,
+  Clock,
+  Ticket,
+  ShieldCheck,
+  RefreshCw,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useLms } from '@/context/LmsContext';
-import { ref, get, set } from 'firebase/database';
+import { ref, get, set, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase';
 
-interface ChatMessage {
+export interface InteractiveActionPayload {
+  kind: 'sessions_picker' | 'bookings_list' | 'credits_card' | 'rules_card';
+  sessions?: Array<{
+    id: string;
+    title: string;
+    instructorName: string;
+    startTimeUtc: string;
+    durationMinutes: number;
+    courseSlug: string;
+    isBooked: boolean;
+    tooLateToBook: boolean;
+    hoursUntilStart: number;
+  }>;
+  bookings?: Array<{
+    id: string;
+    sessionId: string;
+    title: string;
+    instructorName: string;
+    startTimeUtc: string;
+    canCancel: boolean;
+    hoursRemaining: number;
+  }>;
+  credits?: {
+    available: number;
+    consumed: number;
+    planTitle: string;
+    cycleEnd?: string;
+  };
+}
+
+export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  actionPayload?: InteractiveActionPayload;
 }
 
 type PositionZone = 'Abajo a la izquierda' | 'Abajo a la derecha' | 'Al medio';
@@ -47,11 +84,25 @@ const safeDateTime = (val?: string | null): string => {
 
 export default function LocalAiTutorWidget() {
   const pathname = usePathname();
-  if (pathname === '/' || pathname === '/home' || pathname === '/legal' || pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/course') || pathname.startsWith('/free')) {
+  if (
+    pathname === '/' ||
+    pathname === '/home' ||
+    pathname === '/legal' ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/register') ||
+    pathname.startsWith('/course') ||
+    pathname.startsWith('/free')
+  ) {
     return null;
   }
   const { user, effectiveIsAdmin } = useAuth();
-  const { subscription } = useSubscription();
+  const {
+    subscription,
+    entitlements,
+    liveBookings,
+    bookLiveSession,
+    cancelLiveBooking
+  } = useSubscription();
 
   // La tutoría está habilitada a partir del Plan Pro (Pro, Pro+, Your Plan o Administradores)
   const isTutoringPlanActive =
@@ -65,6 +116,7 @@ export default function LocalAiTutorWidget() {
   if (!isTutoringPlanActive) {
     return null;
   }
+
   const {
     courses: rawCourses,
     assignments: rawAssignments,
@@ -76,6 +128,48 @@ export default function LocalAiTutorWidget() {
   const assignments = Array.isArray(rawAssignments) ? rawAssignments : [];
   const calendarEvents = Array.isArray(rawCalendarEvents) ? rawCalendarEvents : [];
   const liveSessions = Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
+
+  // Créditos en vivo y plan
+  const availableCredits = entitlements?.availableLiveCredits ?? subscription?.remainingCredits ?? 0;
+  const consumedCredits = subscription?.creditsConsumedInCycle ?? 0;
+  const planTitle =
+    subscription?.planId === 'pro_plus'
+      ? 'Pro+'
+      : subscription?.planId === 'pro'
+      ? 'Pro'
+      : subscription?.planId === 'your_plan'
+      ? 'Your Plan'
+      : 'Suscripción Activa';
+
+  // Directivas docentes en vivo desde Firebase RTDB
+  const [teacherDirectives, setTeacherDirectives] = useState<
+    Array<{ id: string; type: string; description: string }>
+  >([]);
+
+  useEffect(() => {
+    const dirRef = ref(db, 'tutoria_directives');
+    const unsub = onValue(
+      dirRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const list: Array<{ id: string; type: string; description: string }> = [];
+          Object.entries(data).forEach(([id, item]: [string, any]) => {
+            list.push({
+              id,
+              type: item.type === 'block' ? 'block' : 'recommend',
+              description: item.description || 'Directiva docente'
+            });
+          });
+          setTeacherDirectives(list);
+        } else {
+          setTeacherDirectives([]);
+        }
+      },
+      () => setTeacherDirectives([])
+    );
+    return () => unsub();
+  }, []);
 
   // Estado de carga silenciosa del motor IA (0 a 100)
   const [loadProgress, setLoadProgress] = useState<number>(0);
@@ -89,14 +183,20 @@ export default function LocalAiTutorWidget() {
   // Estado visual del widget e interacciones
   const [isHidden, setIsHidden] = useState<boolean>(false);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
-  const [topNotification, setTopNotification] = useState<{
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [topBanner, setTopBanner] = useState<{
+    show: boolean;
     type: 'warning' | 'ready';
     text: string;
-  } | null>(null);
+  }>({
+    show: false,
+    type: 'warning',
+    text: ''
+  });
 
-  // Posición movible con valores por defecto seguros
-  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 24, y: 500 });
-  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isExecutingAction, setIsExecutingAction] = useState<string | null>(null);
+
   const dragStartRef = useRef<{
     pointerX: number;
     pointerY: number;
@@ -118,7 +218,7 @@ export default function LocalAiTutorWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const notifTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Detección reactiva de altura dinámica y teclado virtual móvil (interactive-widget / visualViewport)
+  // Detección reactiva de altura dinámica y teclado virtual móvil
   const [visualViewportHeight, setVisualViewportHeight] = useState<number | null>(null);
   const [keyboardOffset, setKeyboardOffset] = useState<number>(0);
 
@@ -134,7 +234,6 @@ export default function LocalAiTutorWidget() {
       }
       setVisualViewportHeight(vv.height);
       const isMobile = window.innerWidth < 768;
-      // En móviles, si vv.height + vv.offsetTop < window.innerHeight, el teclado virtual está activo
       const offset = Math.round(window.innerHeight - (vv.height + vv.offsetTop));
       if (isMobile && offset > 60) {
         setKeyboardOffset(offset);
@@ -159,7 +258,6 @@ export default function LocalAiTutorWidget() {
     };
   }, []);
 
-  // Asegurar que al abrir el teclado el input y los últimos mensajes se mantengan visibles
   useEffect(() => {
     if (keyboardOffset > 0 && isChatOpen) {
       const timer = setTimeout(() => {
@@ -169,7 +267,6 @@ export default function LocalAiTutorWidget() {
     }
   }, [keyboardOffset, isChatOpen]);
 
-  // Inicializar coordenada Y asegurando que en móviles flote arriba de la barra inferior
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const isMobile = window.innerWidth < 768;
@@ -196,36 +293,34 @@ export default function LocalAiTutorWidget() {
     }
   }, []);
 
-  // Determinar en qué zona de la pantalla está el icono movible
-  const getPositionZoneLabel = useCallback(
-    (xPos?: number): PositionZone => {
-      if (typeof window === 'undefined') return 'Abajo a la izquierda';
-      const safeX = typeof xPos === 'number' && !isNaN(xPos) ? xPos : 24;
-      const width = window.innerWidth;
-      const centerX = safeX + 32;
-      if (centerX < width * 0.35) {
-        return 'Abajo a la izquierda';
+  const getPositionZoneLabel = useCallback((xPos?: number): PositionZone => {
+    if (typeof window === 'undefined') return 'Abajo a la izquierda';
+    const safeX = typeof xPos === 'number' && !isNaN(xPos) ? xPos : 24;
+    const width = window.innerWidth;
+    const centerX = safeX + 32;
+    if (centerX < width * 0.35) {
+      return 'Abajo a la izquierda';
+    }
+    if (centerX > width * 0.65) {
+      return 'Abajo a la derecha';
+    }
+    return 'Al medio';
+  }, []);
+
+  const showTopBanner = useCallback(
+    (type: 'warning' | 'ready', text: string, durationMs = 6000) => {
+      if (notifTimeoutRef.current) {
+        clearTimeout(notifTimeoutRef.current);
       }
-      if (centerX > width * 0.65) {
-        return 'Abajo a la derecha';
-      }
-      return 'Al medio';
+      setTopBanner({ show: true, type, text });
+      notifTimeoutRef.current = setTimeout(() => {
+        setTopBanner((prev) => ({ ...prev, show: false }));
+      }, durationMs);
     },
     []
   );
 
-  // Mostrar notificación superior temporal
-  const showTopBanner = useCallback((type: 'warning' | 'ready', text: string, durationMs = 6000) => {
-    if (notifTimeoutRef.current) {
-      clearTimeout(notifTimeoutRef.current);
-    }
-    setTopNotification({ type, text });
-    notifTimeoutRef.current = setTimeout(() => {
-      setTopNotification(null);
-    }, durationMs);
-  }, []);
-
-  // Cargar historial/memoria de conversación y progreso del usuario desde Firebase RTDB
+  // Cargar historial de chat y progreso del usuario
   useEffect(() => {
     if (!user) {
       setMessages([]);
@@ -244,21 +339,24 @@ export default function LocalAiTutorWidget() {
     const progressRef = ref(db, `progress/${user.uid}`);
     get(progressRef)
       .then((snap) => {
-        if (snap.exists() && typeof snap.val() === 'object') {
+        if (snap.exists()) {
           const val = snap.val();
           let count = 0;
-          Object.keys(val).forEach((slug) => {
-            if (Array.isArray(val[slug]?.completedLessons)) {
-              count += val[slug].completedLessons.length;
-            }
-          });
+          if (val.completedLessons && typeof val.completedLessons === 'object') {
+            count = Object.keys(val.completedLessons).length;
+          } else if (typeof val === 'object') {
+            Object.values(val).forEach((courseObj: any) => {
+              if (courseObj?.completedLessons && typeof courseObj.completedLessons === 'object') {
+                count += Object.keys(courseObj.completedLessons).length;
+              }
+            });
+          }
           setCompletedLessonsCount(count);
         }
       })
       .catch(() => {});
   }, [user]);
 
-  // Guardar historial/memoria en Firebase para que recuerde al usuario activamente
   const persistMessagesToFirebase = useCallback(
     async (updated: ChatMessage[]) => {
       if (!user) return;
@@ -266,17 +364,16 @@ export default function LocalAiTutorWidget() {
         const recent = updated.slice(-24);
         await set(ref(db, `users/${user.uid}/ai_tutor_history`), recent);
       } catch (e) {
-        // Silencioso para no interrumpir al usuario
+        // Silencioso
       }
     },
     [user]
   );
 
-  // Inicialización persistente de WebLLM + Índice Contextual en vivo
+  // Inicialización de WebLLM / RAG local
   useEffect(() => {
     let cancelled = false;
 
-    // Si ya existe la instancia global en memoria, reutilizarla instantáneamente (0ms)
     if (typeof window !== 'undefined' && (window as any).__IPT_WEBLLM_ENGINE__) {
       engineRef.current = (window as any).__IPT_WEBLLM_ENGINE__;
       setEngineMode('webllm');
@@ -285,7 +382,6 @@ export default function LocalAiTutorWidget() {
       return;
     }
 
-    // Si el usuario ya descargó el tutor previamente en este dispositivo, marcar listo al instante
     const isCachedLocally =
       typeof window !== 'undefined' &&
       window.localStorage.getItem('ipt_ai_tutor_cached_2b_v1') === 'true';
@@ -300,7 +396,6 @@ export default function LocalAiTutorWidget() {
       setLoadProgress(4);
     }
 
-    // Avance visual suave mientras se prepara el motor
     const smoothTimer = setInterval(() => {
       if (cancelled || isCachedLocally) return;
       progressValue = Math.min(92, progressValue + Math.random() * 8 + 3);
@@ -309,12 +404,10 @@ export default function LocalAiTutorWidget() {
 
     const initLocalAi = async () => {
       try {
-        // Verificar soporte de WebGPU en el navegador actual
         const hasWebGPU =
           typeof navigator !== 'undefined' && 'gpu' in navigator && Boolean((navigator as any).gpu);
 
         if (hasWebGPU) {
-          // Validar compatibilidad de shaders de 16 bits (f16) para evitar errores fatales en Windows/Intel GPUs
           let supportsF16 = false;
           try {
             const adapter = await (navigator as any).gpu.requestAdapter();
@@ -352,20 +445,14 @@ export default function LocalAiTutorWidget() {
           }
         }
       } catch (err) {
-        console.info('Activando motor contextual local de alta velocidad:', err);
+        // Fallback a motor RAG local optimizado
       }
 
-      // Motor contextual local entrenado con Firebase (0 consumo de ancho de banda y 100% confiable)
       if (!cancelled) {
         clearInterval(smoothTimer);
         setEngineMode('local-rag');
         setLoadProgress(100);
         setIsReady(true);
-        if (typeof window !== 'undefined') {
-          try {
-            window.localStorage.setItem('ipt_ai_tutor_cached_2b_v1', 'true');
-          } catch {}
-        }
       }
     };
 
@@ -377,7 +464,6 @@ export default function LocalAiTutorWidget() {
     };
   }, []);
 
-  // Disparar la notificación superior exacta apenas se llena al 100% (una vez por sesión para no saturar)
   const hasNotifiedReadyRef = useRef<boolean>(false);
   useEffect(() => {
     if (isReady && !hasNotifiedReadyRef.current) {
@@ -400,18 +486,72 @@ export default function LocalAiTutorWidget() {
     }
   }, [isReady, position?.x, getPositionZoneLabel, showTopBanner]);
 
-  // Auto-scroll al último mensaje cuando el chat está abierto
   useEffect(() => {
     if (isChatOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isChatOpen]);
 
-  // Construir el conocimiento en tiempo real a partir de los cursos de Firebase y los datos del usuario
+  // Sesiones activas y agendamientos confirmados
+  const userConfirmedBookings = useMemo(() => {
+    return (liveBookings || []).filter((b) => b.status === 'confirmed');
+  }, [liveBookings]);
+
+  // Construir sesiones preparadas para agendamiento
+  const preparedSessions = useMemo(() => {
+    const nowMs = Date.now();
+    const fourHoursMs = 4 * 60 * 60 * 1000;
+
+    let baseList = liveSessions.length > 0 ? liveSessions : [];
+
+    // Si no hay sesiones en vivo programadas, ofrecer sesión de tutoría institucional flexible
+    if (baseList.length === 0) {
+      const tomorrow18 = new Date();
+      tomorrow18.setDate(tomorrow18.getDate() + 1);
+      tomorrow18.setHours(18, 0, 0, 0);
+      baseList = [
+        {
+          id: 'live_tutoria_personalizada',
+          title: 'Tutoría Sincrónica Personalizada (1 a 1)',
+          instructorName: 'Ing. Iván Pérez (Docente Titular)',
+          startTimeUtc: tomorrow18.toISOString(),
+          durationMinutes: 60,
+          courseSlug: 'ipt-master-fullstack',
+          moduleId: 'mod_tutoria',
+          provider: 'native_jitsi',
+          meetingCode: 'ipt-tutor-room',
+          joinUrl: '/live?mode=1on1',
+          cloudRecordingState: 'scheduled',
+          autoTranscribed: true
+        } as any
+      ];
+    }
+
+    return baseList.map((s) => {
+      const sessionStartMs = new Date(s.startTimeUtc).getTime();
+      const diffMs = sessionStartMs - nowMs;
+      const hoursUntilStart = Math.max(0, Math.round(diffMs / (1000 * 60 * 60)));
+      const isBooked = userConfirmedBookings.some((b) => b.sessionId === s.id);
+      const tooLateToBook = diffMs < fourHoursMs;
+
+      return {
+        id: s.id,
+        title: s.title,
+        instructorName: s.instructorName || 'Docente IPT Academy',
+        startTimeUtc: s.startTimeUtc,
+        durationMinutes: s.durationMinutes || 60,
+        courseSlug: s.courseSlug || 'ipt-master-fullstack',
+        isBooked,
+        tooLateToBook,
+        hoursUntilStart
+      };
+    });
+  }, [liveSessions, userConfirmedBookings]);
+
+  // Construir conocimiento en tiempo real y System Prompt
   const liveKnowledgeContext = useMemo(() => {
     const studentName =
-      user?.displayName ||
-      (user?.email ? user.email.split('@')[0] : 'Estudiante');
+      user?.displayName || (user?.email ? user.email.split('@')[0] : 'Estudiante');
     const roleLabel = effectiveIsAdmin ? 'Administrador / Instructor' : 'Estudiante';
 
     const coursesSummary =
@@ -458,14 +598,19 @@ export default function LocalAiTutorWidget() {
                   a.finalGrade !== undefined ? `, nota=${a.finalGrade.toFixed(2)}/5.0` : ''
                 }`
             )
+            .join('\n');
+
+    const userBookingsSummary =
+      userConfirmedBookings.length === 0
+        ? 'El estudiante no tiene citas agendadas actualmente.'
+        : userConfirmedBookings
+            .map((b) => `Cita ID: ${b.id} para sesión ${b.sessionId} (reservada el ${safeDateTime(b.bookedAt)})`)
             .join(' | ');
 
-    const upcomingSessions =
-      liveSessions.length === 0
-        ? 'No hay clases en vivo programadas.'
-        : liveSessions
-            .map((s) => `${s.title} con ${s.instructorName} (${safeDateTime(s.startTimeUtc)})`)
-            .join(' | ');
+    const directivesSummary =
+      teacherDirectives.length === 0
+        ? 'Sin directivas docentes específicas.'
+        : teacherDirectives.map((d) => `[${d.type.toUpperCase()}] ${d.description}`).join(' ; ');
 
     return {
       studentName,
@@ -475,72 +620,199 @@ export default function LocalAiTutorWidget() {
       avgScore,
       coursesSummary,
       assignmentsSummary,
-      upcomingSessions,
-      systemPrompt: `Eres TutorIA, el asistente académico oficial de IPT Academy.
-Responde siempre en español claro, amable, breve y directo (máximo 3 párrafos cortos).
-Estás entrenado en tiempo real con la base de datos activa de IPT Academy y con el perfil del usuario actual:
-- Usuario actual: ${studentName} (${roleLabel})
-- Lecciones completadas por el usuario: ${completedLessonsCount}
-- Tareas pendientes: ${pendingAssignments.length} | Promedio actual: ${avgScore}
-- Cursos activos en la plataforma:
-${coursesSummary}
-- Tareas registradas:
-${assignmentsSummary}
-- Clases en vivo:
-${upcomingSessions}
-- Política estricta de cupos: Como IA tienes terminantemente prohibido tramitar reembolsos, devoluciones o alterar balances de cupos. Si te solicitan una devolución, aclara que esta acción está reservada exclusivamente para un docente o administrador humano.`
+      availableCredits,
+      consumedCredits,
+      planTitle,
+      userBookingsSummary,
+      directivesSummary,
+      systemPrompt: `Eres TutorIA, el asistente y tutor de inteligencia artificial oficial de IPT Academy.
+Responde siempre en español claro, amable, conciso y profesional (máximo 2 a 3 párrafos cortos).
+Estás integrado con el sistema operativo académico y tienes facultades operativas completas:
+
+1. FACULTADES ACTIVAS:
+- Agendar citas de clases y tutorías en vivo para el estudiante (consume 1 crédito de su saldo mensual de forma atómica).
+- Cancelar citas previamente agendadas (con reembolso automático del crédito si faltan más de 4 horas para el inicio).
+- Consultar e informar el balance exacto de créditos de clases en vivo.
+- Enseñar y aplicar las 5 reglas del sistema institucional.
+
+2. ESTADO ACTUAL DEL ESTUDIANTE:
+- Nombre: ${studentName} (${roleLabel})
+- Plan de Suscripción: ${planTitle}
+- Créditos disponibles para clases y tutorías: ${availableCredits} (Créditos consumidos este ciclo: ${consumedCredits})
+- Citas confirmadas en agenda: ${userBookingsSummary}
+- Lecciones completadas: ${completedLessonsCount}
+- Tareas pendientes: ${pendingAssignments.length} | Promedio de notas: ${avgScore}
+
+3. REGLAS INSTITUCIONALES DEL SISTEMA DE CITAS:
+- 1 Cita = 1 Crédito mensual.
+- Ventana de 4 Horas: Reservas y cancelaciones requieren al menos 4 horas de antelación al inicio.
+- Reembolso automático: Si el estudiante cancela con > 4 horas, el crédito se reintegra de inmediato. Con < 4 horas no es reembolsable.
+- Quórum mínimo de 3 estudiantes: Evaluado a las 3 horas previas. Si no se alcanza, se cancela la sesión y se reembolsa el crédito al instante.
+- Directivas docentes vigentes: ${directivesSummary}`
     };
   }, [
     user,
     effectiveIsAdmin,
     courses,
     assignments,
-    liveSessions,
-    completedLessonsCount
+    completedLessonsCount,
+    availableCredits,
+    consumedCredits,
+    planTitle,
+    userConfirmedBookings,
+    teacherDirectives
   ]);
 
-  // Respuesta inteligente local basada en el índice vivo (cuando WebLLM delega o como apoyo instantáneo)
+  // Generador de respuestas contextuales enriquecidas con Action Cards
   const buildContextualResponse = useCallback(
-    (question: string): string => {
+    (question: string): { text: string; actionPayload?: InteractiveActionPayload } => {
       const q = question.toLowerCase().trim();
-      const {
-        studentName,
-        completedCount,
-        pendingCount,
-        avgScore,
-        roleLabel
-      } = liveKnowledgeContext;
+      const { studentName, completedCount, pendingCount, avgScore, roleLabel } = liveKnowledgeContext;
 
-      // 0. Solicitudes de devolución de cupos o reembolsos (Protegido: Solo humanos)
+      // 1. Consultar balance de créditos
       if (
-        q.includes('devolver cupo') ||
-        q.includes('devuelveme') ||
-        q.includes('devuélveme') ||
-        q.includes('devolución') ||
-        q.includes('devolucion') ||
-        q.includes('reembolso') ||
-        q.includes('reembolsar') ||
-        q.includes('regresar mi cupo') ||
-        q.includes('regresame mi cupo') ||
-        q.includes('regrésame mi cupo')
-      ) {
-        return `Hola ${studentName}. Como asistente virtual tengo terminantemente restringida cualquier modificación o reembolso de cupos. La devolución de créditos de clases en vivo es una operación contable delicada que debe ser autorizada y ejecutada exclusivamente por un docente o administrador humano. Por favor comunícate directamente con tu profesor o el equipo de soporte de IPT Academy para que verifiquen tu caso.`;
-      }
-
-      // 1. Consultas sobre Clases en Vivo, Agendamiento o Cupos Mensuales
-      if (
-        q.includes('clase en vivo') ||
-        q.includes('agendar') ||
-        q.includes('tutor') ||
-        q.includes('cita') ||
+        q.includes('credito') ||
+        q.includes('crédito') ||
         q.includes('cupo') ||
-        q.includes('en vivo') ||
-        q.includes('live')
+        q.includes('saldo') ||
+        q.includes('puntos') ||
+        q.includes('cuantas citas') ||
+        q.includes('cuántas citas')
       ) {
-        return `Hola ${studentName}. En IPT Academy dispones de tu bolsa mensual de cupos para clases magistrales en vivo. Puedes revisar los horarios disponibles y apartar tu lugar con 1 clic en el Calendario. Una vez programada, podrás ingresar a la sala en /live donde se activará la videollamada tan pronto tu docente dé inicio a la sesión.`;
+        const text = `Hola ${studentName}. En tu plan ${planTitle} cuentas actualmente con ${availableCredits} crédito(s) disponible(s) para clases y tutorías en vivo (has consumido ${consumedCredits} en este período). Cada cita reservada descuenta 1 crédito de tu bolsa mensual, y si cancelas con más de 4 horas de anticipación tu crédito se reintegra al instante.`;
+        return {
+          text,
+          actionPayload: {
+            kind: 'credits_card',
+            credits: {
+              available: availableCredits,
+              consumed: consumedCredits,
+              planTitle,
+              cycleEnd: subscription?.currentPeriodEnd
+            }
+          }
+        };
       }
 
-      // 2. Consultas sobre progreso, notas o calificaciones del usuario
+      // 2. Agendar cita o ver clases disponibles
+      if (
+        q.includes('agendar') ||
+        q.includes('reservar') ||
+        q.includes('pedir cita') ||
+        q.includes('sacar cita') ||
+        q.includes('programar') ||
+        q.includes('quiero cita') ||
+        q.includes('ver clases') ||
+        q.includes('horarios')
+      ) {
+        if (availableCredits <= 0) {
+          const text = `Hola ${studentName}. En este momento tienes 0 créditos disponibles para agendar citas en tu ciclo actual de ${planTitle}. Para obtener más créditos mensuales puedes actualizar a nuestro plan Pro+ (4 créditos al mes) o esperar a la renovación de tu ciclo de facturación.`;
+          return {
+            text,
+            actionPayload: {
+              kind: 'credits_card',
+              credits: {
+                available: availableCredits,
+                consumed: consumedCredits,
+                planTitle,
+                cycleEnd: subscription?.currentPeriodEnd
+              }
+            }
+          };
+        }
+
+        const text = `Hola ${studentName}. Tienes ${availableCredits} crédito(s) disponible(s). A continuación te presento las sesiones y tutorías magistrales programadas. Puedes agendar tu lugar con 1 clic (se descontará 1 crédito):`;
+        return {
+          text,
+          actionPayload: {
+            kind: 'sessions_picker',
+            sessions: preparedSessions
+          }
+        };
+      }
+
+      // 3. Ver mis citas o cancelar cita
+      if (
+        q.includes('mis citas') ||
+        q.includes('cancelar cita') ||
+        q.includes('cancelar') ||
+        q.includes('anular') ||
+        q.includes('citas programadas') ||
+        q.includes('mis reservas') ||
+        q.includes('mis clases')
+      ) {
+        if (userConfirmedBookings.length === 0) {
+          const text = `Hola ${studentName}. No tienes ninguna cita activa agendada en este momento. Tienes ${availableCredits} crédito(s) disponible(s) en tu cuenta listos para usar cuando desees programar una clase con tu docente.`;
+          return {
+            text,
+            actionPayload: {
+              kind: 'credits_card',
+              credits: {
+                available: availableCredits,
+                consumed: consumedCredits,
+                planTitle,
+                cycleEnd: subscription?.currentPeriodEnd
+              }
+            }
+          };
+        }
+
+        const nowMs = Date.now();
+        const fourHoursMs = 4 * 60 * 60 * 1000;
+        const mappedBookings = userConfirmedBookings.map((bkg) => {
+          const session = liveSessions.find((s) => s.id === bkg.sessionId);
+          const title = session?.title || 'Tutoría Sincrónica con Docente';
+          const instructorName = session?.instructorName || 'Ing. Iván Pérez';
+          const startTimeUtc = session?.startTimeUtc || bkg.bookedAt;
+          const sessionStartMs = new Date(startTimeUtc).getTime();
+          const diffMs = sessionStartMs - nowMs;
+          const canCancel = diffMs >= fourHoursMs;
+          const hoursRemaining = Math.max(0, Math.round(diffMs / (1000 * 60 * 60)));
+
+          return {
+            id: bkg.id,
+            sessionId: bkg.sessionId,
+            title,
+            instructorName,
+            startTimeUtc,
+            canCancel,
+            hoursRemaining
+          };
+        });
+
+        const text = `Hola ${studentName}. Estas son tus citas y clases en vivo confirmadas en tu agenda institucional. Puedes revisarlas o cancelar cualquiera de ellas (si cancelas con más de 4 horas de antelación, tu crédito se reembolsará automáticamente a tu saldo):`;
+        return {
+          text,
+          actionPayload: {
+            kind: 'bookings_list',
+            bookings: mappedBookings
+          }
+        };
+      }
+
+      // 4. Reglas del sistema y políticas de citas
+      if (
+        q.includes('regla') ||
+        q.includes('norma') ||
+        q.includes('política') ||
+        q.includes('politica') ||
+        q.includes('condicion') ||
+        q.includes('condición') ||
+        q.includes('cómo funciona') ||
+        q.includes('como funciona') ||
+        q.includes('plazo') ||
+        q.includes('reembolso')
+      ) {
+        const text = `Hola ${studentName}. En IPT Academy el agendamiento de tutorías y clases en vivo está respaldado por 5 reglas claras e integradas al sistema contable atómico:`;
+        return {
+          text,
+          actionPayload: {
+            kind: 'rules_card'
+          }
+        };
+      }
+
+      // 5. Consultas sobre notas o calificaciones
       if (
         q.includes('nota') ||
         q.includes('promedio') ||
@@ -550,57 +822,39 @@ ${upcomingSessions}
         q.includes('mi avance') ||
         q.includes('progreso')
       ) {
-        const graded = assignments.filter(
-          (a) => a.status === 'graded' && a.finalGrade !== undefined
-        );
+        const graded = assignments.filter((a) => a.status === 'graded' && a.finalGrade !== undefined);
         if (courses.length === 0 && assignments.length === 0) {
-          return `Hola ${studentName}. En este momento la plataforma aún no tiene cursos ni tareas calificados. Apenas se publiquen tus actividades desde el panel de administrador, aquí podré darte el seguimiento detallado de tus notas y tu promedio.`;
+          return {
+            text: `Hola ${studentName}. En este momento la plataforma aún no tiene cursos ni tareas calificados. En cuanto el docente publique evaluaciones, podré darte el seguimiento detallado de tus notas.`
+          };
         }
-        return `Hola ${studentName}, revisé tu expediente en tiempo real:\n• Lecciones completadas: ${completedCount}.\n• Tareas pendientes por entregar: ${pendingCount}.\n• Promedio de notas calificadas: ${avgScore}${graded.length > 0 ? ` (${graded.length} entregas evaluadas)` : ''}.`;
+        return {
+          text: `Hola ${studentName}, revisé tu expediente en tiempo real:\n• Lecciones completadas: ${completedCount}.\n• Tareas pendientes por entregar: ${pendingCount}.\n• Promedio de notas calificadas: ${avgScore}${graded.length > 0 ? ` (${graded.length} entregas evaluadas)` : ''}.`
+        };
       }
 
-      // 2. Consultas sobre tareas o entregas
+      // 6. Consultas sobre tareas o entregas
       if (q.includes('tarea') || q.includes('entrega') || q.includes('pendiente') || q.includes('deber')) {
         if (assignments.length === 0) {
-          return `Actualmente no tienes ninguna tarea registrada en IPT Academy. Cuando el administrador publique una nueva actividad en la sección de Tareas, aparecerá automáticamente en tu calendario y podré ayudarte a resolverla.`;
+          return {
+            text: `Actualmente no tienes ninguna tarea registrada en IPT Academy. Cuando el administrador publique una nueva actividad en la sección de Tareas, aparecerá automáticamente en tu calendario.`
+          };
         }
         const pending = assignments.filter((a) => a.status === 'pending');
         if (pending.length === 0) {
-          return `¡Excelente trabajo, ${studentName}! Estás al día: no tienes tareas pendientes por entregar de las ${assignments.length} registradas en el curso.`;
+          return {
+            text: `¡Excelente trabajo, ${studentName}! Estás al día: no tienes tareas pendientes por entregar de las ${assignments.length} registradas en el curso.`
+          };
         }
         const list = pending
           .map((a) => `• "${a.title}" (${a.courseTitle}) — Fecha límite: ${safeDateSlice(a.dueDateUtc)}`)
           .join('\n');
-        return `Tienes ${pending.length} tarea(s) pendiente(s) en este momento:\n${list}\n\nPuedes subir tu entrega desde la pestaña "Tareas" en el menú superior.`;
+        return {
+          text: `Tienes ${pending.length} tarea(s) pendiente(s) en este momento:\n${list}\n\nPuedes subir tu entrega desde la pestaña "Tareas" en el menú superior.`
+        };
       }
 
-      // 3. Consultas sobre calendario o clases en vivo
-      if (q.includes('vivo') || q.includes('calendario') || q.includes('clase') || q.includes('horario') || q.includes('evento')) {
-        if (liveSessions.length === 0 && calendarEvents.length === 0) {
-          return `Por ahora no hay clases en vivo ni fechas próximas programadas en el calendario. En cuanto el administrador programe una sesión en vivo o una entrega, te avisaré por aquí.`;
-        }
-        const sessionsText =
-          liveSessions.length > 0
-            ? `Clases en vivo programadas:\n${liveSessions
-                .map((s) => `• ${s.title} (${safeDateTime(s.startTimeUtc)}) con ${s.instructorName}`)
-                .join('\n')}`
-            : '';
-        const eventsText =
-          calendarEvents.length > 0
-            ? `Eventos del calendario:\n${calendarEvents
-                .slice(0, 4)
-                .map((e) => `• ${e.title} (${safeDateSlice(e.startUtc)})`)
-                .join('\n')}`
-            : '';
-        return [sessionsText, eventsText].filter(Boolean).join('\n\n');
-      }
-
-      // 4. Búsqueda directa en los cursos, módulos y lecciones publicados en Firebase
-      if (courses.length === 0) {
-        return `Hola ${studentName} (${roleLabel}). Ya estoy conectado en vivo a la base de datos de IPT Academy, que actualmente se encuentra en blanco esperando el primer curso. En cuanto crees o publiques cursos, módulos, lecciones o tareas desde el panel de administración, aprenderé su contenido al instante para responder cualquier duda.`;
-      }
-
-      // Buscar coincidencias en lecciones o módulos
+      // 7. Búsqueda directa en los cursos y lecciones
       for (const course of courses) {
         for (const mod of course.modules || []) {
           for (const les of mod.lessons || []) {
@@ -611,32 +865,145 @@ ${upcomingSessions}
                 les.checkpointQuiz && les.checkpointQuiz.length > 0
                   ? `\nAdemás, esta clase incluye ${les.checkpointQuiz.length} pregunta(s) de repaso.`
                   : '';
-              return `Sobre "${les.title}" (del ${mod.title} en el curso "${course.title}"):\n${
-                les.description || 'Esta lección forma parte del plan de estudios activo.'
-              }\nDuración estimada: ${les.duration || '10 min'}.${quizHint}`;
+              return {
+                text: `Sobre "${les.title}" (del ${mod.title} en el curso "${course.title}"):\n${
+                  les.description || 'Esta lección forma parte del plan de estudios activo.'
+                }\nDuración estimada: ${les.duration || '10 min'}.${quizHint}`
+              };
             }
           }
         }
       }
 
-      // Respuesta general con resumen de los cursos disponibles en vivo
+      // Respuesta general
       const firstCourse = courses[0];
       const activeTitle = firstCourse?.title || 'IPT Academy';
-      const totalMods = firstCourse?.modules?.length || 0;
-      const totalLessons = (firstCourse?.modules || []).reduce(
-        (acc: number, m) => acc + (m.lessons?.length || 0),
-        0
-      );
-
-      return `Hola ${studentName}. Estoy entrenado con el contenido activo de "${activeTitle}" (${totalMods} módulos y ${totalLessons} clases publicadas) y con tu progreso personal (${completedCount} clases vistas, promedio ${avgScore}). Pregúntame sobre cualquier lección del curso, tus tareas pendientes o tus calificaciones.`;
+      return {
+        text: `Hola ${studentName}. Estoy lista para ayudarte con tus clases de "${activeTitle}", tus tareas pendientes, tus notas o el agendamiento de tus tutorías en vivo (tienes ${availableCredits} créditos disponibles). ¿Qué deseas consultar hoy?`,
+        actionPayload: {
+          kind: 'credits_card',
+          credits: {
+            available: availableCredits,
+            consumed: consumedCredits,
+            planTitle
+          }
+        }
+      };
     },
-    [liveKnowledgeContext, assignments, courses, liveSessions, calendarEvents]
+    [
+      liveKnowledgeContext,
+      availableCredits,
+      consumedCredits,
+      planTitle,
+      subscription?.currentPeriodEnd,
+      preparedSessions,
+      userConfirmedBookings,
+      liveSessions,
+      courses,
+      assignments
+    ]
   );
 
-  // Manejar envío de mensaje al TutorIA
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanPrompt = inputPrompt.trim();
+  // Ejecución de agendamiento atómico desde el chat
+  const handleExecuteBooking = async (session: {
+    id: string;
+    title: string;
+    instructorName: string;
+    startTimeUtc: string;
+    durationMinutes: number;
+    courseSlug: string;
+  }) => {
+    if (availableCredits <= 0) {
+      showTopBanner('warning', 'No tienes créditos disponibles en este ciclo para agendar clases.');
+      return;
+    }
+
+    setIsExecutingAction(session.id);
+    try {
+      await bookLiveSession(session.id, {
+        courseSlug: session.courseSlug,
+        teacherId: session.instructorName,
+        title: session.title,
+        startTime: session.startTimeUtc,
+        durationMinutes: session.durationMinutes || 60
+      });
+
+      const confirmMsg: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: `🎉 ¡Cita agendada con éxito!\n\n• Clase: "${session.title}"\n• Docente: ${session.instructorName}\n• Horario: ${safeDateTime(session.startTimeUtc)} (${session.durationMinutes} min)\n• Crédito descontado: 1 crédito de tu bolsa mensual (te quedan ${Math.max(0, availableCredits - 1)} créditos).\n\nRecuerda que si necesitas cancelar o reprogramar, debes hacerlo con al menos 4 horas de anticipación para que tu crédito sea reembolsado automáticamente. ¡Nos vemos en /live!`,
+        timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      setMessages((prev) => {
+        const next = [...prev, confirmMsg];
+        persistMessagesToFirebase(next);
+        return next;
+      });
+      showTopBanner('ready', `Cita agendada: se descontó 1 crédito de tu bolsa.`, 4500);
+    } catch (err: any) {
+      const errorMsg: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: `⚠️ No se pudo completar la reserva: ${err?.message || 'Error al procesar la cita.'}`,
+        timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setIsExecutingAction(null);
+    }
+  };
+
+  // Ejecución de cancelación atómica desde el chat
+  const handleExecuteCancellation = async (booking: {
+    id: string;
+    title: string;
+    hoursRemaining: number;
+  }) => {
+    setIsExecutingAction(booking.id);
+    try {
+      await cancelLiveBooking(booking.id);
+
+      const confirmMsg: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: `✅ Tu cita para "${booking.title}" ha sido cancelada con éxito.\n\n• Reembolso: Tu crédito de tutoría ha sido reintegrado a tu cuenta de inmediato (ahora dispones de ${availableCredits + 1} créditos).\n\nPuedes volver a agendar en cualquier momento pidiéndome "Agendar cita".`,
+        timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      setMessages((prev) => {
+        const next = [...prev, confirmMsg];
+        persistMessagesToFirebase(next);
+        return next;
+      });
+      showTopBanner('ready', `Cita cancelada: tu crédito fue reintegrado con éxito.`, 4500);
+    } catch (err: any) {
+      const errorMsg: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: `⚠️ No se pudo cancelar la cita: ${err?.message || 'Error al procesar la cancelación.'}`,
+        timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setIsExecutingAction(null);
+    }
+  };
+
+  // Enviar mensaje con fast intent
+  const handleFastIntent = (intent: 'creditos' | 'agendar' | 'citas' | 'reglas' | string) => {
+    const promptMap: Record<string, string> = {
+      creditos: '¿Cuántos créditos de tutoría tengo disponibles?',
+      agendar: 'Quiero agendar una cita o clase en vivo',
+      citas: 'Ver mis citas agendadas',
+      reglas: '¿Cuáles son las reglas y condiciones de las citas?'
+    };
+    const question = promptMap[intent] || intent;
+    executeSendMessage(question);
+  };
+
+  const executeSendMessage = async (promptText: string) => {
+    const cleanPrompt = promptText.trim();
     if (!cleanPrompt || isGenerating) return;
 
     const userMsg: ChatMessage = {
@@ -652,9 +1019,19 @@ ${upcomingSessions}
     setIsGenerating(true);
 
     try {
-      let replyText = '';
+      const responseObj = buildContextualResponse(cleanPrompt);
 
-      if (engineMode === 'webllm' && engineRef.current) {
+      let replyText = responseObj.text;
+      let actionPayload = responseObj.actionPayload;
+
+      // Si es WebLLM y no es una acción determinista de citas/créditos/reglas, consultar WebLLM
+      const isSystemAction =
+        actionPayload?.kind === 'sessions_picker' ||
+        actionPayload?.kind === 'bookings_list' ||
+        actionPayload?.kind === 'credits_card' ||
+        actionPayload?.kind === 'rules_card';
+
+      if (!isSystemAction && engineMode === 'webllm' && engineRef.current) {
         try {
           const historyForModel = nextMessages.slice(-6).map((m) => ({
             role: m.role,
@@ -670,22 +1047,23 @@ ${upcomingSessions}
             max_tokens: 280
           });
 
-          replyText =
-            response?.choices?.[0]?.message?.content?.trim() ||
-            buildContextualResponse(cleanPrompt);
+          const webllmText = response?.choices?.[0]?.message?.content?.trim();
+          if (webllmText) {
+            replyText = webllmText;
+          }
         } catch (webllmErr) {
-          replyText = buildContextualResponse(cleanPrompt);
+          // Mantener respuesta contextual
         }
       } else {
-        await new Promise((r) => setTimeout(r, 450));
-        replyText = buildContextualResponse(cleanPrompt);
+        await new Promise((r) => setTimeout(r, 300));
       }
 
       const assistantMsg: ChatMessage = {
         id: `msg-${Date.now() + 1}`,
         role: 'assistant',
         content: replyText,
-        timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+        timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+        actionPayload
       };
 
       const finalMessages = [...nextMessages, assistantMsg];
@@ -696,9 +1074,13 @@ ${upcomingSessions}
     }
   };
 
-  // Manejo de arrastre (movible por toda la pantalla) y clic en el círculo
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    executeSendMessage(inputPrompt);
+  };
+
+  // Manejo de arrastre
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Si hizo clic en el botón de ocultar, no iniciar arrastre
     if ((e.target as HTMLElement).closest('[data-hide-btn="true"]')) {
       return;
     }
@@ -708,7 +1090,7 @@ ${upcomingSessions}
       pointerX: e.clientX,
       pointerY: e.clientY,
       startX: position?.x ?? 24,
-      startY: position?.y ?? 500,
+      startY: 500,
       moved: false
     };
   };
@@ -738,12 +1120,11 @@ ${upcomingSessions}
     e.currentTarget.releasePointerCapture(e.pointerId);
     setIsDragging(false);
 
-    // Si no fue un arrastre sino un clic directo en el icono circular:
     if (!dragStartRef.current.moved) {
       if (!isReady || loadProgress < 100) {
         showTopBanner(
           'warning',
-          'Actualmente el TutorIA no esta disponible, una vez completada la carga vuelve a intentarlo',
+          'Actualmente el TutorIA no está disponible, una vez completada la carga vuelve a intentarlo',
           5500
         );
         return;
@@ -752,195 +1133,143 @@ ${upcomingSessions}
     }
   };
 
-  // Geometría del anillo de luz progresivo alrededor del círculo
   const radius = 29;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (loadProgress / 100) * circumference;
-
   const currentZone = getPositionZoneLabel(position?.x ?? 24);
 
   return (
     <>
-      {/* NOTIFICACIÓN SUPERIOR (Cuando intenta abrir antes de tiempo o apenas se llena al 100%) */}
-      {topNotification && (
+      {/* Banner de Notificación Superior */}
+      {topBanner.show && (
         <div
-          role="status"
-          aria-live="polite"
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-[120] max-w-xl w-[calc(100%-2rem)] pointer-events-auto animate-in fade-in slide-in-from-top-3 duration-200"
+          role="alert"
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] max-w-lg w-[92%] sm:w-auto px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 border border-white/20 bg-slate-900/95 text-white"
         >
           <div
-            className={`px-4 py-3 rounded-2xl shadow-2xl border flex items-center justify-between gap-3 backdrop-blur-md ${
-              topNotification.type === 'ready'
-                ? 'bg-[#0f172a]/95 border-cyan-400/50 text-white shadow-cyan-500/20'
-                : 'bg-[#1e1b2e]/95 border-amber-400/50 text-white shadow-amber-500/20'
+            className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
+              topBanner.type === 'ready'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+                : 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
             }`}
           >
-            <div className="flex items-center gap-3 min-w-0">
-              <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                  topNotification.type === 'ready'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
-                    : 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
-                }`}
-              >
-                {topNotification.type === 'ready' ? (
-                  <CheckCircle2 className="w-4 h-4" />
-                ) : (
-                  <AlertCircle className="w-4 h-4" />
-                )}
-              </div>
-              <p className="text-xs sm:text-sm font-bold leading-snug">
-                {topNotification.text}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setTopNotification(null)}
-              className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors shrink-0 cursor-pointer"
-              aria-label="Cerrar notificación"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            {topBanner.type === 'ready' ? (
+              <CheckCircle2 className="w-4 h-4" />
+            ) : (
+              <AlertCircle className="w-4 h-4" />
+            )}
           </div>
+          <p className="text-xs font-medium text-slate-100 flex-1 leading-snug">
+            {topBanner.text}
+          </p>
+          <button
+            type="button"
+            onClick={() => setTopBanner((prev) => ({ ...prev, show: false }))}
+            className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
+            aria-label="Cerrar notificación"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
-      {/* PÍLDORA DISCRETA PARA MOSTRAR DE NUEVO SI EL USUARIO OCULTÓ EL ICONO */}
+      {/* Botón flotante para restaurar si el usuario lo ocultó */}
       {isHidden && (
         <button
           type="button"
           onClick={() => setIsHidden(false)}
-          className="fixed bottom-20 right-4 z-[90] px-3 py-1.5 rounded-full bg-[#151726]/90 hover:bg-[#151726] text-white border border-cyan-500/30 shadow-lg flex items-center gap-1.5 text-[11px] font-bold transition-all cursor-pointer"
-          title="Mostrar icono de TutorIA"
+          title="Mostrar TutorIA"
+          className="fixed bottom-20 left-4 z-[95] p-2.5 rounded-full bg-slate-900/90 text-white border border-slate-700 shadow-xl hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
         >
-          <Eye className="w-3.5 h-3.5 text-cyan-400" />
+          <Eye className="w-4 h-4 text-cyan-400" />
           <span>TutorIA</span>
+          <span className="px-1.5 py-0.5 rounded-full bg-violet-500/30 text-violet-300 text-[10px]">
+            {availableCredits}🎟️
+          </span>
         </button>
       )}
 
-      {/* ICONO CIRCULAR MOVIBLE CON ANILLO DE LUZ PROGRESIVO Y TEXTO "Chat" ABAJO */}
+      {/* Widget Circular Flotante */}
       {!isHidden && (
         <div
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           style={{
-            left: `${position?.x ?? 24}px`,
-            top: (position?.y ?? 500) >= 0 ? `${position?.y ?? 500}px` : undefined,
-            bottom: (position?.y ?? 500) < 0 ? '24px' : undefined,
+            transform: `translate3d(${position?.x ?? 24}px, ${position?.y ?? 500}px, 0)`,
             touchAction: 'none'
           }}
-          className={`fixed z-[95] select-none flex flex-col items-center group ${
-            isDragging ? 'cursor-grabbing scale-105' : 'cursor-grab'
+          className={`fixed top-0 left-0 z-[95] select-none cursor-grab active:cursor-grabbing transition-shadow ${
+            isDragging ? 'scale-105 shadow-2xl' : ''
           }`}
+          title="TutorIA • IPT Academy (Arrastra para mover o haz clic para abrir)"
         >
-          {/* Botón para ocultar el icono flotante */}
+          {/* Botón discreto para ocultar */}
           <button
             type="button"
             data-hide-btn="true"
             onClick={(e) => {
               e.stopPropagation();
-              setIsChatOpen(false);
               setIsHidden(true);
+              setIsChatOpen(false);
             }}
-            title="Ocultar icono de Chat"
-            className="absolute -top-1.5 -right-1.5 z-20 w-5 h-5 rounded-full bg-[#151726] text-slate-300 hover:text-white hover:bg-rose-600 border border-slate-700 flex items-center justify-center shadow-md opacity-85 group-hover:opacity-100 transition-all cursor-pointer"
+            title="Ocultar TutorIA"
+            className="absolute -top-1.5 -right-1.5 z-10 w-5 h-5 rounded-full bg-slate-800/90 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-600 flex items-center justify-center shadow-md transition-colors cursor-pointer"
           >
             <EyeOff className="w-2.5 h-2.5" />
           </button>
 
-          {/* Círculo con Anillo de Luz Progresivo y Favicon de IPT Academy */}
-          <div className="relative w-16 h-16 flex items-center justify-center">
-            {/* Resplandor exterior de luz cuando se está llenando o cuando ya está listo */}
-            <div
-              className={`absolute inset-0 rounded-full transition-all duration-500 ${
-                isReady
-                  ? 'bg-cyan-400/25 blur-md animate-pulse'
-                  : 'bg-blue-500/15 blur-xs'
-              }`}
-            />
-
-            {/* SVG de la línea de luz que rellena el borde del círculo */}
+          {/* Anillo exterior SVG con indicador de progreso */}
+          <div className="relative w-16 h-16 rounded-full flex items-center justify-center bg-slate-900 shadow-2xl border border-slate-700/80">
             <svg
-              className="absolute inset-0 w-16 h-16 -rotate-90 pointer-events-none"
+              className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
               viewBox="0 0 64 64"
             >
-              <defs>
-                <linearGradient id="iptTutorLightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#38bdf8" />
-                  <stop offset="50%" stopColor="#22d3ee" />
-                  <stop offset="100%" stopColor="#3b82f6" />
-                </linearGradient>
-                <filter id="iptGlowFilter" x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="2.2" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
-
-              {/* Riel base oscuro */}
               <circle
                 cx="32"
                 cy="32"
                 r={radius}
-                fill="none"
-                stroke="#1e293b"
-                strokeWidth="3.5"
+                className="stroke-slate-800 fill-transparent"
+                strokeWidth="3"
               />
-
-              {/* Línea de luz que se va rellenando progresivamente */}
               <circle
                 cx="32"
                 cy="32"
                 r={radius}
-                fill="none"
-                stroke="url(#iptTutorLightGrad)"
-                strokeWidth="4"
-                strokeLinecap="round"
+                className="stroke-cyan-400 fill-transparent transition-all duration-300 ease-out"
+                strokeWidth="3"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
-                filter="url(#iptGlowFilter)"
-                className="transition-all duration-300 ease-out"
+                strokeLinecap="round"
               />
             </svg>
 
-            {/* Interior del círculo con el Favicon de IPT Academy */}
-            <div
-              className={`relative z-10 w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-inner transition-transform ${
-                isReady ? 'group-hover:scale-105' : 'opacity-90'
-              }`}
-            >
+            {/* Contenido Interior del Círculo */}
+            <div className="relative w-12 h-12 rounded-full overflow-hidden bg-white flex items-center justify-center p-1.5 shadow-inner">
               <Image
                 src="/favicon.png"
                 alt="IPT Academy TutorIA"
-                width={34}
-                height={34}
-                className="w-8 h-8 object-contain pointer-events-none select-none"
+                width={38}
+                height={38}
+                className="w-full h-full object-contain pointer-events-none select-none"
+                priority
               />
+              {/* Badge de créditos disponibles */}
+              <div className="absolute -bottom-1 -right-1 bg-violet-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-white shadow-xs">
+                {availableCredits}
+              </div>
             </div>
           </div>
-
-          {/* Etiqueta "Chat" debajo del círculo */}
-          <span
-            className={`mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold tracking-wide shadow-sm border transition-all ${
-              isReady
-                ? 'bg-[#0f172a] text-cyan-300 border-cyan-400/50 shadow-cyan-500/20'
-                : 'bg-[#151726]/90 text-slate-300 border-slate-700'
-            }`}
-          >
-            Chat
-          </span>
         </div>
       )}
 
-      {/* VENTANA DE CONVERSACIÓN DEL TUTOR IA (Solo accesible cuando loadProgress === 100) */}
+      {/* Ventana de Conversación del Tutor IA */}
       {isChatOpen && isReady && !isHidden && (
         <div
           className={`fixed z-[96] bg-white rounded-2xl border border-[#d1d2e0] shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150 transition-all ${
-            'left-3 right-3 sm:left-auto sm:right-auto sm:w-96'
+            'left-3 right-3 sm:left-auto sm:right-auto sm:w-[410px]'
           } ${
-            keyboardOffset > 0
-              ? ''
-              : 'bottom-20 sm:bottom-28'
+            keyboardOffset > 0 ? '' : 'bottom-20 sm:bottom-28'
           } ${
             currentZone === 'Abajo a la derecha'
               ? 'sm:right-6'
@@ -952,14 +1281,14 @@ ${upcomingSessions}
             bottom: keyboardOffset > 0 ? `${keyboardOffset + 10}px` : undefined,
             maxHeight:
               keyboardOffset > 0 && visualViewportHeight
-                ? `${Math.min(460, visualViewportHeight - 20)}px`
+                ? `${Math.min(520, visualViewportHeight - 20)}px`
                 : visualViewportHeight
-                ? `${Math.min(520, visualViewportHeight - 110)}px`
-                : 'min(520px, calc(100dvh - 120px))'
+                ? `${Math.min(580, visualViewportHeight - 110)}px`
+                : 'min(580px, calc(100dvh - 120px))'
           }}
         >
           {/* Cabecera del TutorIA */}
-          <div className="bg-[#0f172a] text-white px-4 py-3.5 flex items-center justify-between border-b border-slate-800">
+          <div className="bg-[#0f172a] text-white px-4 py-3 flex items-center justify-between border-b border-slate-800">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full bg-white p-1 flex items-center justify-center shrink-0 ring-2 ring-cyan-400/60">
                 <Image
@@ -978,7 +1307,7 @@ ${upcomingSessions}
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
                 </div>
                 <p className="text-[10px] text-cyan-200/80 truncate">
-                  Conectado a tus cursos y avance en vivo
+                  Asistente oficial con gestión de citas y créditos
                 </p>
               </div>
             </div>
@@ -1008,8 +1337,31 @@ ${upcomingSessions}
             </div>
           </div>
 
+          {/* Subcabecera Informativa: Créditos en Vivo y Acceso a Reglas */}
+          <div className="bg-[#1e293b] px-4 py-2 flex items-center justify-between border-b border-slate-700/60 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full bg-violet-500/20 text-violet-300 flex items-center justify-center">
+                <Ticket className="w-3 h-3" />
+              </div>
+              <div className="text-[11px] text-slate-300">
+                <span className="text-white font-semibold">Créditos de Tutoría:</span>{' '}
+                <span className="text-violet-400 font-bold">{availableCredits} disponibles</span>
+                {consumedCredits > 0 && (
+                  <span className="text-slate-400"> ({consumedCredits} usados)</span>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleFastIntent('reglas')}
+              className="text-[10px] text-cyan-300 hover:text-cyan-200 underline font-medium cursor-pointer"
+            >
+              Reglas del sistema
+            </button>
+          </div>
+
           {/* Cuerpo de Mensajes */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f8fafc]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#f8fafc]">
             {messages.length === 0 ? (
               <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 space-y-3 text-xs text-[#334155]">
                 <div className="flex items-center gap-2 text-[#1d4ed8] font-bold">
@@ -1017,21 +1369,25 @@ ${upcomingSessions}
                   <span>¡Hola, {liveKnowledgeContext.studentName}!</span>
                 </div>
                 <p className="leading-relaxed text-[#475569]">
-                  Soy el tutor de inteligencia artificial de <strong>IPT Academy</strong>. Aprendo automáticamente de cada curso, clase y tarea que se publica en la plataforma, así como de tu avance personal.
+                  Soy <strong>TutorIA</strong>, tu asistente académico con facultades operativas. Puedo ayudarte a agendar citas de clases en vivo, consultar o reembolsar tus créditos, explicarte las reglas de la academia y darte seguimiento a tus cursos y notas.
                 </p>
+
                 <div className="pt-1 flex flex-wrap gap-1.5">
                   {[
-                    '¿Cómo voy en mis notas?',
-                    '¿Qué tareas tengo pendientes?',
-                    'Explícame el curso actual'
-                  ].map((suggestion) => (
+                    { label: '🎟️ Ver mis créditos', intent: 'creditos' },
+                    { label: '📅 Agendar cita', intent: 'agendar' },
+                    { label: '📋 Mis citas', intent: 'citas' },
+                    { label: '⚖️ Reglas del sistema', intent: 'reglas' },
+                    { label: '📊 Mis notas', intent: '¿Cómo voy en mis notas?' },
+                    { label: '📚 Curso actual', intent: 'Explícame el curso actual' }
+                  ].map((btn) => (
                     <button
-                      key={suggestion}
+                      key={btn.label}
                       type="button"
-                      onClick={() => setInputPrompt(suggestion)}
+                      onClick={() => handleFastIntent(btn.intent)}
                       className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1d4ed8] font-semibold text-[11px] transition-colors cursor-pointer"
                     >
-                      {suggestion}
+                      {btn.label}
                     </button>
                   ))}
                 </div>
@@ -1046,9 +1402,7 @@ ${upcomingSessions}
                 >
                   <div
                     className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                      m.role === 'user'
-                        ? 'bg-[#1d4ed8] text-white'
-                        : 'bg-[#0f172a] text-cyan-300'
+                      m.role === 'user' ? 'bg-[#1d4ed8] text-white' : 'bg-[#0f172a] text-cyan-300'
                     }`}
                   >
                     {m.role === 'user' ? (
@@ -1058,13 +1412,247 @@ ${upcomingSessions}
                     )}
                   </div>
                   <div
-                    className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-line shadow-2xs ${
+                    className={`max-w-[86%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-line shadow-2xs ${
                       m.role === 'user'
                         ? 'bg-[#1d4ed8] text-white rounded-tr-xs'
                         : 'bg-white text-[#1e293b] border border-[#e2e8f0] rounded-tl-xs'
                     }`}
                   >
                     <p>{m.content}</p>
+
+                    {/* Tarjeta Interactiva de Acción */}
+                    {m.actionPayload && (
+                      <div className="mt-2.5">
+                        {/* 1. Selector de Sesiones Disponibles para Agendar */}
+                        {m.actionPayload.kind === 'sessions_picker' && (
+                          <div className="space-y-2 pt-2 border-t border-slate-100">
+                            <p className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                              Sesiones y Tutorías en Vivo
+                            </p>
+                            {m.actionPayload.sessions && m.actionPayload.sessions.length > 0 ? (
+                              m.actionPayload.sessions.map((sess) => (
+                                <div
+                                  key={sess.id}
+                                  className="p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 shadow-2xs space-y-1.5"
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                      <h5 className="font-bold text-[12px] text-slate-900 leading-snug">
+                                        {sess.title}
+                                      </h5>
+                                      <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
+                                        <span>{sess.instructorName}</span> •{' '}
+                                        <span>{sess.durationMinutes} min</span>
+                                      </p>
+                                    </div>
+                                    {sess.isBooked && (
+                                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold shrink-0">
+                                        ✓ Reservada
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center justify-between text-[10px] text-slate-600 pt-1">
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-slate-400" />
+                                      {safeDateTime(sess.startTimeUtc)}
+                                    </span>
+                                    {!sess.isBooked && (
+                                      sess.tooLateToBook ? (
+                                        <span className="text-amber-700 font-medium">
+                                          Cerrada (&lt; 4h)
+                                        </span>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          disabled={
+                                            isExecutingAction === sess.id || availableCredits <= 0
+                                          }
+                                          onClick={() => handleExecuteBooking(sess)}
+                                          className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-[10px] transition-all shadow-2xs cursor-pointer flex items-center gap-1"
+                                        >
+                                          {isExecutingAction === sess.id ? (
+                                            <span className="animate-spin w-2.5 h-2.5 border border-white border-t-transparent rounded-full" />
+                                          ) : (
+                                            <Ticket className="w-2.5 h-2.5" />
+                                          )}
+                                          Agendar (-1 crédito)
+                                        </button>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-[11px] text-slate-500">
+                                No hay sesiones en vivo programadas en este momento.
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* 2. Lista de Citas Programadas con opción de Cancelación */}
+                        {m.actionPayload.kind === 'bookings_list' && (
+                          <div className="space-y-2 pt-2 border-t border-slate-100">
+                            <p className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              Tus Citas Programadas
+                            </p>
+                            {m.actionPayload.bookings && m.actionPayload.bookings.length > 0 ? (
+                              m.actionPayload.bookings.map((bkg) => (
+                                <div
+                                  key={bkg.id}
+                                  className="p-2.5 rounded-xl border border-emerald-100 bg-emerald-50/40 shadow-2xs space-y-1.5"
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                      <h5 className="font-bold text-[12px] text-slate-900 leading-snug">
+                                        {bkg.title}
+                                      </h5>
+                                      <p className="text-[10px] text-slate-500 mt-0.5">
+                                        {bkg.instructorName}
+                                      </p>
+                                    </div>
+                                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold shrink-0">
+                                      Confirmada
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-[10px] pt-1">
+                                    <span className="text-slate-600 flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-slate-400" />
+                                      {safeDateTime(bkg.startTimeUtc)}
+                                    </span>
+                                    {bkg.canCancel ? (
+                                      <button
+                                        type="button"
+                                        disabled={isExecutingAction === bkg.id}
+                                        onClick={() => handleExecuteCancellation(bkg)}
+                                        className="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-semibold text-[10px] transition-all cursor-pointer flex items-center gap-1"
+                                      >
+                                        {isExecutingAction === bkg.id ? (
+                                          <span className="animate-spin w-2.5 h-2.5 border border-rose-700 border-t-transparent rounded-full" />
+                                        ) : (
+                                          <Trash2 className="w-2.5 h-2.5" />
+                                        )}
+                                        Cancelar (+1 crédito)
+                                      </button>
+                                    ) : (
+                                      <span className="text-[9px] text-amber-700 font-medium">
+                                        Menos de 4h (Sin reembolso)
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-[11px] text-slate-500">
+                                No tienes citas programadas actualmente.
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* 3. Tarjeta de Créditos */}
+                        {m.actionPayload.kind === 'credits_card' && (
+                          <div className="pt-2 border-t border-slate-100 p-3 rounded-xl bg-slate-900 text-white space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                                Bolsa de Créditos
+                              </span>
+                              <span className="text-[10px] font-medium text-cyan-400">
+                                Plan {m.actionPayload.credits?.planTitle || planTitle}
+                              </span>
+                            </div>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-2xl font-extrabold text-white">
+                                {m.actionPayload.credits?.available ?? availableCredits}
+                              </span>
+                              <span className="text-[11px] text-slate-400">
+                                crédito(s) disponibles para clases en vivo
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-300 leading-relaxed">
+                              Cada cita descuenta 1 crédito de tu bolsa mensual. Si cancelas con más de 4 horas de anticipación, tu crédito vuelve automáticamente.
+                            </p>
+                            <div className="flex items-center gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={() => handleFastIntent('agendar')}
+                                className="flex-1 py-1.5 px-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[10px] text-center transition-colors cursor-pointer"
+                              >
+                                📅 Agendar Cita
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleFastIntent('citas')}
+                                className="flex-1 py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-[10px] text-center transition-colors cursor-pointer"
+                              >
+                                📋 Mis Citas
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 4. Tarjeta de Reglas Oficiales */}
+                        {m.actionPayload.kind === 'rules_card' && (
+                          <div className="pt-2 border-t border-slate-100 p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 space-y-2 text-[11px]">
+                            <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                              <ShieldCheck className="w-4 h-4 text-blue-600" />
+                              <span>Reglas Oficiales del Sistema de Citas</span>
+                            </div>
+                            <ul className="space-y-1.5 text-slate-600 leading-snug">
+                              <li className="flex items-start gap-1.5">
+                                <span className="font-bold text-blue-600 shrink-0">1.</span>
+                                <span>
+                                  <strong>1 Cita = 1 Crédito:</strong> Agendar una sesión en vivo descuenta automáticamente un crédito de tu saldo mensual.
+                                </span>
+                              </li>
+                              <li className="flex items-start gap-1.5">
+                                <span className="font-bold text-blue-600 shrink-0">2.</span>
+                                <span>
+                                  <strong>Anticipación de 4 Horas:</strong> Las citas solo pueden reservarse o cancelarse con al menos 4 horas de margen previo al inicio.
+                                </span>
+                              </li>
+                              <li className="flex items-start gap-1.5">
+                                <span className="font-bold text-blue-600 shrink-0">3.</span>
+                                <span>
+                                  <strong>Reembolso Automático:</strong> Si cancelas tu cita con &gt; 4 horas de anticipación, el crédito se reintegra al instante a tu cuenta.
+                                </span>
+                              </li>
+                              <li className="flex items-start gap-1.5">
+                                <span className="font-bold text-blue-600 shrink-0">4.</span>
+                                <span>
+                                  <strong>Quórum Mínimo:</strong> Se evalúa a las 3 horas previas (mínimo 3 estudiantes). Si no se alcanza, se cancela y tu crédito se reembolsa automáticamente.
+                                </span>
+                              </li>
+                              <li className="flex items-start gap-1.5">
+                                <span className="font-bold text-blue-600 shrink-0">5.</span>
+                                <span>
+                                  <strong>Ciclo Mensual:</strong> Los créditos corresponden a tu período mensual activo y se renuevan en tu fecha de corte.
+                                </span>
+                              </li>
+                            </ul>
+                            <div className="pt-1 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleFastIntent('creditos')}
+                                className="px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 font-semibold text-[10px] hover:bg-blue-200 transition-colors cursor-pointer"
+                              >
+                                🎟️ Ver mis créditos
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleFastIntent('agendar')}
+                                className="px-2.5 py-1 rounded-lg bg-slate-200 text-slate-800 font-semibold text-[10px] hover:bg-slate-300 transition-colors cursor-pointer"
+                              >
+                                📅 Agendar cita
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <span
                       className={`block text-[9px] mt-1 text-right ${
                         m.role === 'user' ? 'text-blue-200' : 'text-slate-400'
@@ -1080,7 +1668,7 @@ ${upcomingSessions}
             {isGenerating && (
               <div className="flex items-center gap-2 text-xs text-[#64748b] px-2 py-1">
                 <div className="w-2 h-2 rounded-full bg-cyan-500 animate-ping" />
-                <span>TutorIA está analizando tu curso...</span>
+                <span>TutorIA está analizando tu consulta...</span>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -1100,7 +1688,7 @@ ${upcomingSessions}
                   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
                 }, 150);
               }}
-              placeholder="Escribe tu duda sobre la clase o tus notas..."
+              placeholder="Pregúntame sobre tus clases, créditos o pide una cita..."
               className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-[#cbd5e1] focus:outline-none focus:border-[#1d4ed8] text-[#0f172a]"
             />
             <button
