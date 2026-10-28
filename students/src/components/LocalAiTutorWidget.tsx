@@ -17,7 +17,8 @@ import {
   Calendar,
   Clock,
   Ticket,
-  ShieldCheck
+  ShieldCheck,
+  Video
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
@@ -170,6 +171,114 @@ const parseRequestedTime = (text: string): ParsedTimeQuery => {
     isOutsideAcademicHours
   };
 };
+
+
+// Formateador visual de mensajes con soporte de tablas y negritas
+function renderFormattedContent(content: string) {
+  if (!content) return null;
+  const lines = content.split(/\r?\n/);
+  const blocks: Array<{ type: 'text' | 'table'; lines: string[] }> = [];
+  let currentTable: string[] | null = null;
+  let currentText: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const isTableLine = line.trim().startsWith('|') && line.trim().endsWith('|');
+
+    if (isTableLine) {
+      if (currentText.length > 0) {
+        blocks.push({ type: 'text', lines: currentText });
+        currentText = [];
+      }
+      if (!currentTable) currentTable = [];
+      currentTable.push(line);
+    } else {
+      if (currentTable) {
+        blocks.push({ type: 'table', lines: currentTable });
+        currentTable = null;
+      }
+      currentText.push(line);
+    }
+  }
+
+  if (currentTable) blocks.push({ type: 'table', lines: currentTable });
+  if (currentText.length > 0) blocks.push({ type: 'text', lines: currentText });
+
+  const formatInline = (text: string) => {
+    const parts = text.split(/(\*[^*]+\*)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+        return <strong key={idx} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div className="space-y-2">
+      {blocks.map((block, bIdx) => {
+        if (block.type === 'text') {
+          const textStr = block.lines.join('\n').trim();
+          if (!textStr) return null;
+          return (
+            <p key={bIdx} className="whitespace-pre-line leading-relaxed">
+              {formatInline(textStr)}
+            </p>
+          );
+        }
+
+        // Renderizado de tabla Markdown con diseño profesional
+        const tLines = block.lines;
+        if (tLines.length < 2) return null;
+
+        const headerCells = tLines[0]
+          .split('|')
+          .map((c) => c.trim())
+          .filter(Boolean);
+
+        const dataRows = tLines
+          .slice(2)
+          .map((rowStr) =>
+            rowStr
+              .split('|')
+              .map((c) => c.trim())
+              .filter(Boolean)
+          )
+          .filter((row) => row.length > 0);
+
+        return (
+          <div
+            key={bIdx}
+            className="my-2.5 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-xs"
+          >
+            <table className="w-full text-left text-[11px] border-collapse">
+              <thead className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200">
+                <tr>
+                  {headerCells.map((h, hIdx) => (
+                    <th key={hIdx} className="py-2 px-2.5 whitespace-nowrap">
+                      {formatInline(h)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-800">
+                {dataRows.map((row, rIdx) => (
+                  <tr key={rIdx} className="hover:bg-slate-50/70 transition-colors">
+                    {row.map((cell, cIdx) => (
+                      <td key={cIdx} className="py-2 px-2.5 text-[11px]">
+                        {formatInline(cell)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function LocalAiTutorWidget() {
   const pathname = usePathname();
@@ -1207,6 +1316,51 @@ Tienes facultades plenas:
     }
   };
 
+  
+  // Ejecución atómica de cancelación forzada (sin reembolso)
+  const handleExecuteForceCancellation = async (booking: {
+    id: string;
+    title: string;
+  }) => {
+    setIsExecutingAction(booking.id);
+    try {
+      await cancelLiveBooking(booking.id, { forceCancel: true });
+
+      const confirmMsg: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: `✅ He cancelado la cita para "${booking.title}" de tu agenda institucional tal como lo indicaste.\n\n• Estado: Cita retirada de tu calendario.\n• Créditos: Por haberse cancelado con menos de 4 horas de anticipación y fuera de la ventana de gracia, no se reintegró el crédito según las directrices de IPT Academy.`,
+        timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+        actionPayload: {
+          kind: 'credits_card',
+          credits: {
+            available: availableCredits,
+            consumed: consumedCredits,
+            planTitle,
+            cycleEnd: subscription?.currentPeriodEnd
+          }
+        }
+      };
+
+      setMessages((prev) => {
+        const next = [...prev, confirmMsg];
+        persistMessagesToFirebase(next);
+        return next;
+      });
+      showTopBanner('ready', 'Cita cancelada de tu agenda institucional.', 4500);
+    } catch (err: any) {
+      const errorMsg: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: `⚠️ No se pudo cancelar la cita: ${err?.message || 'Error al procesar la cancelación.'}`,
+        timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setIsExecutingAction(null);
+    }
+  };
+
   const handleFastIntent = (intent: 'creditos' | 'agendar' | 'citas' | 'reglas' | string) => {
     const promptMap: Record<string, string> = {
       creditos: '¿Cuántos créditos de tutoría tengo disponibles?',
@@ -1468,6 +1622,56 @@ Tienes facultades plenas:
             replyText =
               replyText ||
               `Hola ${studentName}. Aquí tienes tus citas activas. Puedes presionar "Cancelar" en la que desees gestionar:`;
+            actionPayload = {
+              kind: 'bookings_list',
+              bookings: mappedBookings
+            };
+          }
+        } else if (name === 'consultar_citas') {
+          if (userConfirmedBookings.length === 0) {
+            replyText = `Hola ${studentName}. No tienes ninguna cita sincrónica agendada en este momento. Tienes **${availableCredits} crédito(s) disponibles** en tu bolsa mensual listos para programar cuando lo desees.`;
+            actionPayload = {
+              kind: 'credits_card',
+              credits: {
+                available: availableCredits,
+                consumed: consumedCredits,
+                planTitle,
+                cycleEnd: subscription?.currentPeriodEnd
+              }
+            };
+          } else {
+            const mappedBookings = userConfirmedBookings.map((bkg) => {
+              const session = liveSessions.find((s) => s.id === bkg.sessionId);
+              const title =
+                (bkg as any).sessionTitle ||
+                session?.title ||
+                'Tutoría Sincrónica Personalizada (1 a 1)';
+              const instructorName =
+                (bkg as any).sessionInstructor || session?.instructorName || 'Ing. Iván Pérez';
+              const defaultTomorrow = new Date();
+              defaultTomorrow.setDate(defaultTomorrow.getDate() + 1);
+              defaultTomorrow.setHours(18, 0, 0, 0);
+              const startTimeUtc =
+                (bkg as any).sessionStartTime || session?.startTimeUtc || defaultTomorrow.toISOString();
+              const sessionStartMs = new Date(startTimeUtc).getTime();
+              const diffMs = sessionStartMs - Date.now();
+              const bookedAtMs = new Date(bkg.bookedAt).getTime();
+              const isRecent = Date.now() - bookedAtMs < 30 * 60 * 1000;
+              const canCancel = diffMs >= 4 * 60 * 60 * 1000 || isRecent;
+              const hoursRemaining = Math.max(0, Math.round(diffMs / (1000 * 60 * 60)));
+
+              return {
+                id: bkg.id,
+                sessionId: bkg.sessionId,
+                title,
+                instructorName,
+                startTimeUtc,
+                canCancel,
+                hoursRemaining
+              };
+            });
+
+            replyText = `¡Claro, ${studentName}! Tienes **${mappedBookings.length} cita(s) programada(s)** en tu calendario. Aquí tienes la tarjeta de gestión con sus detalles y herramientas interactivas:`;
             actionPayload = {
               kind: 'bookings_list',
               bookings: mappedBookings
@@ -1887,7 +2091,7 @@ Puedes subir tu entrega desde la pestaña "Tareas" en el menú superior.`;
                         : 'bg-white text-[#1e293b] border border-[#e2e8f0] rounded-tl-xs'
                     }`}
                   >
-                    <p>{m.content}</p>
+                    {renderFormattedContent(m.content)}
 
                     {/* Tarjetas Interactivas de Acción */}
                     {m.actionPayload && (
@@ -1960,61 +2164,106 @@ Puedes subir tu entrega desde la pestaña "Tareas" en el menú superior.`;
                           </div>
                         )}
 
-                        {/* Lista de Citas Programadas con Botón de Cancelación */}
+                        {/* Lista de Citas Programadas con Panel de Herramientas */}
                         {m.actionPayload.kind === 'bookings_list' && (
-                          <div className="space-y-2 pt-2 border-t border-slate-100">
-                            <p className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                              Tus Citas Programadas
-                            </p>
+                          <div className="space-y-2.5 pt-2 border-t border-slate-100">
+                            <div className="flex items-center justify-between">
+                              <p className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                                <span>Agenda Institucional de Citas</span>
+                              </p>
+                              <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                                {m.actionPayload.bookings?.length || 0} cita(s)
+                              </span>
+                            </div>
+
                             {m.actionPayload.bookings && m.actionPayload.bookings.length > 0 ? (
                               m.actionPayload.bookings.map((bkg) => (
                                 <div
                                   key={bkg.id}
-                                  className="p-2.5 rounded-xl border border-emerald-100 bg-emerald-50/40 shadow-2xs space-y-1.5"
+                                  className="p-3 rounded-xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 shadow-xs space-y-2.5 transition-all hover:border-slate-300"
                                 >
+                                  {/* Encabezado: Título y Estado */}
                                   <div className="flex items-start justify-between gap-2">
-                                    <div>
+                                    <div className="min-w-0">
                                       <h5 className="font-bold text-[12px] text-slate-900 leading-snug">
                                         {bkg.title}
                                       </h5>
-                                      <p className="text-[10px] text-slate-500 mt-0.5">
-                                        {bkg.instructorName}
+                                      <p className="text-[10px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                                        <span className="font-medium text-slate-600">{bkg.instructorName}</span>
                                       </p>
                                     </div>
-                                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold shrink-0">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold shrink-0">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                       Confirmada
                                     </span>
                                   </div>
-                                  <div className="flex items-center justify-between text-[10px] pt-1">
-                                    <span className="text-slate-600 flex items-center gap-1">
-                                      <Clock className="w-3 h-3 text-slate-400" />
+
+                                  {/* Horario y Ventana */}
+                                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-100/80 border border-slate-200/60 text-[11px] text-slate-700 font-medium">
+                                    <span className="flex items-center gap-1.5">
+                                      <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                                       {safeDateTime(bkg.startTimeUtc)}
                                     </span>
-                                    {bkg.canCancel ? (
-                                      <button
-                                        type="button"
-                                        disabled={isExecutingAction === bkg.id}
-                                        onClick={() => handleExecuteCancellation(bkg)}
-                                        className="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-semibold text-[10px] transition-all cursor-pointer flex items-center gap-1"
-                                      >
-                                        {isExecutingAction === bkg.id ? (
-                                          <span className="animate-spin w-2.5 h-2.5 border border-rose-700 border-t-transparent rounded-full" />
-                                        ) : (
-                                          <Trash2 className="w-2.5 h-2.5" />
-                                        )}
-                                        Cancelar (+1 crédito)
-                                      </button>
+                                    {!bkg.canCancel ? (
+                                      <span className="text-[9px] font-bold text-amber-700 bg-amber-100/90 px-1.5 py-0.5 rounded-sm">
+                                        &lt; 4 horas
+                                      </span>
                                     ) : (
-                                      <span className="text-[9px] text-amber-700 font-medium">
-                                        Menos de 4h (Sin reembolso)
+                                      <span className="text-[9px] font-medium text-slate-500">
+                                        Reembolsable
                                       </span>
                                     )}
+                                  </div>
+
+                                  {/* Barra de Herramientas Interactivas */}
+                                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                                    <a
+                                      href="/live"
+                                      className="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[10px] transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                                    >
+                                      <Video className="w-3 h-3" />
+                                      <span>Entrar a /live</span>
+                                    </a>
+
+                                    <div className="flex items-center gap-1.5">
+                                      {bkg.canCancel ? (
+                                        <button
+                                          type="button"
+                                          disabled={isExecutingAction === bkg.id}
+                                          onClick={() => handleExecuteCancellation(bkg)}
+                                          className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-semibold text-[10px] transition-all cursor-pointer flex items-center gap-1"
+                                        >
+                                          {isExecutingAction === bkg.id ? (
+                                            <span className="animate-spin w-2.5 h-2.5 border border-rose-700 border-t-transparent rounded-full" />
+                                          ) : (
+                                            <Trash2 className="w-2.5 h-2.5" />
+                                          )}
+                                          <span>Cancelar (+1 crédito)</span>
+                                        </button>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          disabled={isExecutingAction === bkg.id}
+                                          onClick={() => handleExecuteForceCancellation(bkg)}
+                                          className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-semibold text-[10px] transition-all cursor-pointer flex items-center gap-1"
+                                          title="Cancelar cita (sin reintegro por estar a menos de 4 horas)"
+                                        >
+                                          {isExecutingAction === bkg.id ? (
+                                            <span className="animate-spin w-2.5 h-2.5 border border-rose-700 border-t-transparent rounded-full" />
+                                          ) : (
+                                            <Trash2 className="w-2.5 h-2.5" />
+                                          )}
+                                          <span>Cancelar igualmente</span>
+                                        </button>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               ))
                             ) : (
-                              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-[11px] text-slate-500">
+                              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center text-[11px] text-slate-500">
                                 No tienes citas programadas actualmente.
                               </div>
                             )}

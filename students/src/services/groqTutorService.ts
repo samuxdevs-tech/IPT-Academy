@@ -115,6 +115,18 @@ const TUTOR_TOOLS = [
   {
     type: 'function',
     function: {
+      name: 'consultar_citas',
+      description:
+        'Consulta y muestra las citas o tutorías sincrónicas activas y programadas del estudiante en pantalla con herramientas de gestión (cancelar, entrar al aula /live). Úsala cuando el estudiante pregunte por sus citas, su agenda, qué clases tiene pendientes o quiera revisar sus reservas.',
+      parameters: {
+        type: 'object',
+        properties: {}
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'consultar_creditos',
       description:
         'Consulta el balance actual de créditos disponibles y consumidos del estudiante para clases en vivo.',
@@ -214,7 +226,11 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
    - Cancelación fuera de término / insistencia: Si el estudiante insiste expresamente en cancelar ("cancélala de igual manera", "igualmente", "de todas formas", "no importa", "aunque no devuelvas el crédito", "elimínala igual"), llama a 'cancelar_cita' con forzarSinReembolso: true.
 4. ESTILO DE COMUNICACIÓN:
    - Responde en español natural, humano, educado y directo.
-   - PROHIBIDO usar jerga técnica de prompts, como "según mis directrices inviolables", "soy un modelo", "mi prompt dice". Habla como un tutor académico real de IPT Academy.`;
+   - PROHIBIDO usar jerga técnica de prompts, como "según mis directrices inviolables", "soy un modelo", "mi prompt dice". Habla como un tutor académico real de IPT Academy.
+5. REGLAS DE FORMATO Y PRESENTACIÓN VISUAL:
+   - PROHIBIDO TERMINANTEMENTE escribir o generar tablas de texto Markdown (con barras verticales |---|---|) para mostrar citas o reservas.
+   - NUNCA expongas códigos o IDs técnicos internos como "bkg_live_..." al estudiante.
+   - Cuando el estudiante pregunte por sus citas agendadas, citas pendientes o su agenda, DEBES llamar a la herramienta 'consultar_citas'. Esto activará la tarjeta visual interactiva con herramientas de gestión (cancelación y acceso en vivo).`;
 
   const messagesPayload: any[] = [
     { role: 'system', content: systemPrompt }
