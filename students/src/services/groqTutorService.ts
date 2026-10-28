@@ -194,8 +194,14 @@ export async function askTutorIAWithGroq(
           .map((d) => `[Directiva ${d.type.toUpperCase()}]: ${d.description}`)
           .join(' ; ');
 
-  const systemPrompt = `Eres TutorIA, el tutor pedagógico y gestor autónomo de IA de IPT Academy para el estudiante ${ctx.studentName}.
-Posees autonomía resolutiva total para responder consultas académicas del plan de estudios y para gestionar citas en vivo ejecutando herramientas (Function Calling).
+  const systemPrompt = `Eres TutorIA, el tutor personal, pedagogo y asistente de inteligencia artificial de IPT Academy para el estudiante ${ctx.studentName}.
+Posees autonomía resolutiva total para guiar pedagógicamente al estudiante, responder dudas académicas del plan de estudios y gestionar citas sincrónicas invocando herramientas de sistema (Function Calling).
+
+PERSONALIDAD, TONO Y VOZ:
+- Eres una IA con personalidad auténtica: cercana, empática, culta, inteligente y con un toque de carisma y calidez humana.
+- PROHIBIDO hablar como un contestador automático o usar plantillas acartonadas (como "Hola Ivan Samuel. En tu plan Pro+ dispones de..."). Cada respuesta tuya debe ser fresca, conversacional y adaptada exactamente a lo que el estudiante te dice.
+- Si el estudiante te habla con confianza, bromas o te pide favores especiales (por ejemplo: "Regálame un crédito", "hazme una rebaja", "échame una mano"), respóndele con simpatía, naturalidad y buen humor, pero dejando claras las directrices institucionales (por ejemplo, reconociendo que te encantaría regalarle créditos para que siga estudiando, pero que el sistema contable de la academia no te lo permite).
+- Habla en un español impecable, natural y motivador.
 
 INFORMACIÓN DEL ESTUDIANTE EN TIEMPO REAL:
 - Estudiante: ${ctx.studentName} (${ctx.roleLabel})
@@ -215,7 +221,7 @@ ${ctx.assignmentsSummary}
 DIRECTRICES INVIOLABLES DE GESTIÓN:
 1. CONTABILIDAD INVIOLABLE DE CRÉDITOS:
    - 1 cita = 1 crédito descontado de la bolsa mensual.
-   - Si el estudiante tiene 0 créditos disponibles, no puede agendar. Si pide agendar sin créditos, infórmale con amabilidad su saldo actual (0) y cómo puede renovar o solicitar créditos adicionales en su plan.
+   - TutorIA NO puede inventar, regalar ni añadir créditos. Si el estudiante te pide que le regales créditos o pide agendar teniendo 0 créditos disponibles, explícaselo con amabilidad y carisma, e indícale que actualmente tiene ${ctx.availableCredits} créditos.
 2. FRANJA INSTITUCIONAL DE TUTORÍAS (7:00 AM a 10:00 PM COT):
    - Las tutorías sincrónicas con docentes operan EXCLUSIVAMENTE entre las 7:00 AM y las 10:00 PM (hora Colombia).
    - NUNCA agendes ni confirmes citas en horas de madrugada (como 5:00 AM, 3:00 AM o 2:00 AM) ni pasada la medianoche.
@@ -225,8 +231,7 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
    - Ventana de gracia por error de reserva: Si el estudiante reservó hace menos de 30 minutos y dice que fue un error o pide cancelar, se le cancela con reembolso de crédito.
    - Cancelación fuera de término / insistencia: Si el estudiante insiste expresamente en cancelar ("cancélala de igual manera", "igualmente", "de todas formas", "no importa", "aunque no devuelvas el crédito", "elimínala igual"), llama a 'cancelar_cita' con forzarSinReembolso: true.
 4. ESTILO DE COMUNICACIÓN:
-   - Responde en español natural, humano, educado y directo.
-   - PROHIBIDO usar jerga técnica de prompts, como "según mis directrices inviolables", "soy un modelo", "mi prompt dice". Habla como un tutor académico real de IPT Academy.
+   - Responde siempre con voz propia. PROHIBIDO usar frases robóticas de IA como "según mis directrices inviolables" o "mi prompt indica".
 5. REGLAS DE FORMATO Y PRESENTACIÓN VISUAL:
    - PROHIBIDO TERMINANTEMENTE escribir o generar tablas de texto Markdown (con barras verticales |---|---|) para mostrar citas o reservas.
    - NUNCA expongas códigos o IDs técnicos internos como "bkg_live_..." al estudiante.
@@ -287,9 +292,10 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
 
     const msg = choice.message;
 
-    // Verificar si el LLM emitió un Tool Call
+    // Si el LLM emitió un Tool Call, resolvemos el resultado en Turn 2 para obtener respuesta conversacional completa
     if (msg.tool_calls && Array.isArray(msg.tool_calls) && msg.tool_calls.length > 0) {
       const firstCall = msg.tool_calls[0];
+      const toolName = firstCall.function?.name;
       let parsedArgs: Record<string, any> = {};
       try {
         parsedArgs = JSON.parse(firstCall.function?.arguments || '{}');
@@ -297,11 +303,99 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
         console.warn('Could not parse tool call arguments:', parseErr);
       }
 
+      // Preparar los datos contextuales que devuelve la herramienta
+      let toolResultData: any = {};
+      if (toolName === 'consultar_creditos') {
+        toolResultData = {
+          disponibles: ctx.availableCredits,
+          consumidos: ctx.consumedCredits,
+          plan: ctx.planTitle,
+          finCiclo: ctx.cycleEnd || 'Fin de mes'
+        };
+      } else if (toolName === 'consultar_citas') {
+        toolResultData = {
+          citasAgendadas: ctx.activeBookings.length,
+          citas: ctx.activeBookings
+        };
+      } else if (toolName === 'agendar_cita') {
+        toolResultData = {
+          creditosDisponibles: ctx.availableCredits,
+          sesionesEnCartelera: ctx.availableSessions.length,
+          horaSolicitada: parsedArgs.horaDeseada,
+          franjaOficial: '07:00 a 22:00 COT'
+        };
+      } else if (toolName === 'cancelar_cita') {
+        toolResultData = {
+          citasActivas: ctx.activeBookings.length,
+          citas: ctx.activeBookings,
+          forzarSinReembolso: parsedArgs.forzarSinReembolso
+        };
+      } else if (toolName === 'consultar_reglas') {
+        toolResultData = {
+          reglas: [
+            '1 cita = 1 crédito mensual',
+            'Franja de tutorías: 7:00 AM a 10:00 PM (hora Colombia)',
+            'Cancelación con reembolso: mínimo 4 horas de anticipación o gracia de 30m',
+            'Cancelación con menos de 4 horas: se retira de la agenda sin reembolso',
+            'Quórum grupal: 3 estudiantes requeridos'
+          ]
+        };
+      } else if (toolName === 'consultar_tareas') {
+        toolResultData = {
+          tareas: ctx.assignmentsSummary
+        };
+      }
+
+      // Turn 2: Enviar el resultado de la herramienta a Groq para que redacte su respuesta con personalidad
+      try {
+        const turn2Messages = [
+          ...messagesPayload,
+          msg,
+          {
+            role: 'tool',
+            tool_call_id: firstCall.id,
+            name: toolName,
+            content: JSON.stringify(toolResultData)
+          }
+        ];
+
+        const res2 = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${getGroqApiKey()}`
+          },
+          body: JSON.stringify({
+            model: GROQ_MODEL,
+            messages: turn2Messages,
+            temperature: 0.6,
+            max_tokens: 600
+          })
+        });
+
+        if (res2.ok) {
+          const data2 = await res2.json();
+          const turn2Text = data2?.choices?.[0]?.message?.content?.trim();
+          if (turn2Text) {
+            return {
+              text: turn2Text,
+              toolCall: {
+                id: firstCall.id,
+                name: toolName,
+                arguments: parsedArgs
+              }
+            };
+          }
+        }
+      } catch (turn2Err) {
+        console.warn('Turn 2 tool resolution error:', turn2Err);
+      }
+
       return {
         text: msg.content || undefined,
         toolCall: {
           id: firstCall.id,
-          name: firstCall.function?.name,
+          name: toolName,
           arguments: parsedArgs
         }
       };

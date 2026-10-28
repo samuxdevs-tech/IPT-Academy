@@ -1671,7 +1671,9 @@ Tienes facultades plenas:
               };
             });
 
-            replyText = `¡Claro, ${studentName}! Tienes **${mappedBookings.length} cita(s) programada(s)** en tu calendario. Aquí tienes la tarjeta de gestión con sus detalles y herramientas interactivas:`;
+            replyText =
+              replyText ||
+              `¡Claro, ${studentName}! Tienes **${mappedBookings.length} cita(s) programada(s)** en tu calendario. Aquí tienes la tarjeta de gestión con sus detalles y herramientas interactivas:`;
             actionPayload = {
               kind: 'bookings_list',
               bookings: mappedBookings
@@ -1680,7 +1682,7 @@ Tienes facultades plenas:
         } else if (name === 'consultar_creditos') {
           replyText =
             replyText ||
-            `Hola ${studentName}. En tu plan ${planTitle} dispones de **${availableCredits} crédito(s) para clases y tutorías sincrónicas** en este ciclo (has utilizado ${consumedCredits}). Cada cita consume 1 crédito de tu bolsa mensual, y si cancelas con más de 4 horas de anticipación tu crédito se reintegra al instante.`;
+            `Hola ${studentName}. En tu plan ${planTitle} dispones de **${availableCredits} crédito(s) para clases y tutorías sincrónicas** en este ciclo.`;
           actionPayload = {
             kind: 'credits_card',
             credits: {
@@ -1691,27 +1693,23 @@ Tienes facultades plenas:
             }
           };
         } else if (name === 'consultar_reglas') {
-          replyText =
-            replyText ||
-            `Estas son las normas y directrices institucionales de tutorías y clases sincrónicas en IPT Academy:`;
           actionPayload = {
             kind: 'rules_card'
           };
         } else if (name === 'consultar_tareas') {
-          const pending = assignments.filter((a) => a.status === 'pending');
-          if (pending.length === 0) {
-            replyText = `¡Excelente noticia, ${studentName}! Estás completamente al día: no tienes tareas pendientes de entrega.`;
-          } else {
-            const list = pending
-              .map(
-                (a) =>
-                  `• "${a.title}" (${a.courseTitle}) — Fecha límite: ${safeDateSlice(a.dueDateUtc)}`
-              )
-              .join('\n');
-            replyText = `Tienes ${pending.length} tarea(s) pendiente(s) en este momento:
-${list}
-
-Puedes subir tu entrega desde la pestaña "Tareas" en el menú superior.`;
+          if (!replyText) {
+            const pending = assignments.filter((a) => a.status === 'pending');
+            if (pending.length === 0) {
+              replyText = `¡Excelente noticia, ${studentName}! Estás completamente al día: no tienes tareas pendientes de entrega.`;
+            } else {
+              const list = pending
+                .map(
+                  (a) =>
+                    `• "${a.title}" (${a.courseTitle}) — Fecha límite: ${safeDateSlice(a.dueDateUtc)}`
+                )
+                .join('\n');
+              replyText = `Tienes ${pending.length} tarea(s) pendiente(s) en este momento:\n${list}\n\nPuedes subir tu entrega desde la pestaña "Tareas" en el menú superior.`;
+            }
           }
         }
       }
