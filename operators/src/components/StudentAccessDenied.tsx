@@ -30,7 +30,7 @@ export function StudentAccessDenied() {
           </h2>
           <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
             Tu cuenta actual (<strong>{user?.email}</strong>) está registrada con el rol de{" "}
-            <span className="text-violet-300 font-semibold uppercase">Estudiante</span>. El entorno de operadores está reservado para docentes, instructores y gobernanza de IPT Course.
+            <span className="text-violet-300 font-semibold uppercase">Estudiante</span>. El entorno de operadores está reservado para docentes, instructores y gobernanza de IPT Academy.
           </p>
         </div>
 

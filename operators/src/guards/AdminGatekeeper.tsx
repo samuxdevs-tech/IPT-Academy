@@ -76,7 +76,7 @@ export function AdminGatekeeper({
           </h2>
           <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
             Tu cuenta está autenticada como <strong>{userProfile.displayName}</strong> con rol de{" "}
-            <strong className="text-violet-400 uppercase">{userProfile.role}</strong>. Las herramientas de seguridad de IPT Course, auto-escalado, auditoría forense y control de litigios están aisladas exclusivamente para administradores autorizados.
+            <strong className="text-violet-400 uppercase">{userProfile.role}</strong>. Las herramientas de seguridad de IPT Academy, auto-escalado, auditoría forense y control de litigios están aisladas exclusivamente para administradores autorizados.
           </p>
 
           <div className="bg-[#181820] rounded-xl p-4 mb-6 text-left border border-white/5 text-[11px] space-y-1.5 text-zinc-400 font-mono">

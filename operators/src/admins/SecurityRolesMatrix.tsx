@@ -247,7 +247,7 @@ export function SecurityRolesMatrix() {
               <thead>
                 <tr className="bg-[#181820] border-b border-white/10">
                   <th className="px-6 py-4 font-bold text-white w-2/5">
-                    Acción en IPT Course ({filteredPermissions.length})
+                    Acción en IPT Academy ({filteredPermissions.length})
                   </th>
                   {roles.map((role) => (
                     <th key={role.id} className="px-4 py-4 text-center font-bold text-white">

@@ -456,9 +456,9 @@ export default function LocalAiTutorWidget() {
       coursesSummary,
       assignmentsSummary,
       upcomingSessions,
-      systemPrompt: `Eres TutorIA, el asistente académico oficial de IPT Course.
+      systemPrompt: `Eres TutorIA, el asistente académico oficial de IPT Academy.
 Responde siempre en español claro, amable, breve y directo (máximo 3 párrafos cortos).
-Estás entrenado en tiempo real con la base de datos activa de IPT Course y con el perfil del usuario actual:
+Estás entrenado en tiempo real con la base de datos activa de IPT Academy y con el perfil del usuario actual:
 - Usuario actual: ${studentName} (${roleLabel})
 - Lecciones completadas por el usuario: ${completedLessonsCount}
 - Tareas pendientes: ${pendingAssignments.length} | Promedio actual: ${avgScore}
@@ -504,7 +504,7 @@ ${upcomingSessions}
         q.includes('regresame mi cupo') ||
         q.includes('regrésame mi cupo')
       ) {
-        return `Hola ${studentName}. Como asistente virtual tengo terminantemente restringida cualquier modificación o reembolso de cupos. La devolución de créditos de clases en vivo es una operación contable delicada que debe ser autorizada y ejecutada exclusivamente por un docente o administrador humano. Por favor comunícate directamente con tu profesor o el equipo de soporte de IPT Course para que verifiquen tu caso.`;
+        return `Hola ${studentName}. Como asistente virtual tengo terminantemente restringida cualquier modificación o reembolso de cupos. La devolución de créditos de clases en vivo es una operación contable delicada que debe ser autorizada y ejecutada exclusivamente por un docente o administrador humano. Por favor comunícate directamente con tu profesor o el equipo de soporte de IPT Academy para que verifiquen tu caso.`;
       }
 
       // 1. Consultas sobre Clases en Vivo, Agendamiento o Cupos Mensuales
@@ -517,7 +517,7 @@ ${upcomingSessions}
         q.includes('en vivo') ||
         q.includes('live')
       ) {
-        return `Hola ${studentName}. En IPT Course dispones de tu bolsa mensual de cupos para clases magistrales en vivo. Puedes revisar los horarios disponibles y apartar tu lugar con 1 clic en el Calendario. Una vez programada, podrás ingresar a la sala en /live donde se activará la videollamada tan pronto tu docente dé inicio a la sesión.`;
+        return `Hola ${studentName}. En IPT Academy dispones de tu bolsa mensual de cupos para clases magistrales en vivo. Puedes revisar los horarios disponibles y apartar tu lugar con 1 clic en el Calendario. Una vez programada, podrás ingresar a la sala en /live donde se activará la videollamada tan pronto tu docente dé inicio a la sesión.`;
       }
 
       // 2. Consultas sobre progreso, notas o calificaciones del usuario
@@ -542,7 +542,7 @@ ${upcomingSessions}
       // 2. Consultas sobre tareas o entregas
       if (q.includes('tarea') || q.includes('entrega') || q.includes('pendiente') || q.includes('deber')) {
         if (assignments.length === 0) {
-          return `Actualmente no tienes ninguna tarea registrada en IPT Course. Cuando el administrador publique una nueva actividad en la sección de Tareas, aparecerá automáticamente en tu calendario y podré ayudarte a resolverla.`;
+          return `Actualmente no tienes ninguna tarea registrada en IPT Academy. Cuando el administrador publique una nueva actividad en la sección de Tareas, aparecerá automáticamente en tu calendario y podré ayudarte a resolverla.`;
         }
         const pending = assignments.filter((a) => a.status === 'pending');
         if (pending.length === 0) {
@@ -577,7 +577,7 @@ ${upcomingSessions}
 
       // 4. Búsqueda directa en los cursos, módulos y lecciones publicados en Firebase
       if (courses.length === 0) {
-        return `Hola ${studentName} (${roleLabel}). Ya estoy conectado en vivo a la base de datos de IPT Course, que actualmente se encuentra en blanco esperando el primer curso. En cuanto crees o publiques cursos, módulos, lecciones o tareas desde el panel de administración, aprenderé su contenido al instante para responder cualquier duda.`;
+        return `Hola ${studentName} (${roleLabel}). Ya estoy conectado en vivo a la base de datos de IPT Academy, que actualmente se encuentra en blanco esperando el primer curso. En cuanto crees o publiques cursos, módulos, lecciones o tareas desde el panel de administración, aprenderé su contenido al instante para responder cualquier duda.`;
       }
 
       // Buscar coincidencias en lecciones o módulos
@@ -601,7 +601,7 @@ ${upcomingSessions}
 
       // Respuesta general con resumen de los cursos disponibles en vivo
       const firstCourse = courses[0];
-      const activeTitle = firstCourse?.title || 'IPT Course';
+      const activeTitle = firstCourse?.title || 'IPT Academy';
       const totalMods = firstCourse?.modules?.length || 0;
       const totalLessons = (firstCourse?.modules || []).reduce(
         (acc: number, m) => acc + (m.lessons?.length || 0),
@@ -829,7 +829,7 @@ ${upcomingSessions}
             <EyeOff className="w-2.5 h-2.5" />
           </button>
 
-          {/* Círculo con Anillo de Luz Progresivo y Favicon de IPT Course */}
+          {/* Círculo con Anillo de Luz Progresivo y Favicon de IPT Academy */}
           <div className="relative w-16 h-16 flex items-center justify-center">
             {/* Resplandor exterior de luz cuando se está llenando o cuando ya está listo */}
             <div
@@ -883,7 +883,7 @@ ${upcomingSessions}
               />
             </svg>
 
-            {/* Interior del círculo con el Favicon de IPT Course */}
+            {/* Interior del círculo con el Favicon de IPT Academy */}
             <div
               className={`relative z-10 w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-inner transition-transform ${
                 isReady ? 'group-hover:scale-105' : 'opacity-90'
@@ -891,7 +891,7 @@ ${upcomingSessions}
             >
               <Image
                 src="/favicon.png"
-                alt="IPT Course TutorIA"
+                alt="IPT Academy TutorIA"
                 width={34}
                 height={34}
                 className="w-8 h-8 object-contain pointer-events-none select-none"
@@ -953,7 +953,7 @@ ${upcomingSessions}
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-extrabold text-xs sm:text-sm text-white truncate">
-                    TutorIA • IPT Course
+                    TutorIA • IPT Academy
                   </h3>
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
                 </div>
@@ -997,7 +997,7 @@ ${upcomingSessions}
                   <span>¡Hola, {liveKnowledgeContext.studentName}!</span>
                 </div>
                 <p className="leading-relaxed text-[#475569]">
-                  Soy el tutor de inteligencia artificial de <strong>IPT Course</strong>. Aprendo automáticamente de cada curso, clase y tarea que se publica en la plataforma, así como de tu avance personal.
+                  Soy el tutor de inteligencia artificial de <strong>IPT Academy</strong>. Aprendo automáticamente de cada curso, clase y tarea que se publica en la plataforma, así como de tu avance personal.
                 </p>
                 <div className="pt-1 flex flex-wrap gap-1.5">
                   {[

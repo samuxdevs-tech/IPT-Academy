@@ -6,7 +6,7 @@ interface IptLogoIconProps {
 }
 
 /**
- * Isotipo Oficial de IPT Course inspirado en el favicon (logo-mark.svg)
+ * Isotipo Oficial de IPT Academy inspirado en el favicon (logo-mark.svg)
  * Representa la 'I', 'P', 'T' entrelazadas en perspectiva isométrica
  * simulando un libro abierto de arquitectura técnica de software.
  */

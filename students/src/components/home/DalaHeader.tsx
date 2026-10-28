@@ -36,7 +36,7 @@ export default function DalaHeader() {
             <IptLogoIcon className="w-8 h-8" />
           </div>
           <span className="text-white text-[15px] font-semibold tracking-[-0.02em]">
-            IPT <span className="font-light text-[#bdbdbd]">Course</span>
+            IPT <span className="font-light text-[#bdbdbd]">Academy</span>
           </span>
         </Link>
 

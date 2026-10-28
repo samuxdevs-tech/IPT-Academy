@@ -90,7 +90,7 @@ export default function DalaMissionVision() {
                   Nuestra Visión
                 </h3>
                 <p className="text-[15px] sm:text-[16px] font-extralight text-[#d1d5db] leading-[1.7]">
-                  Consolidar a IPT Course como la institución digital referente en formación técnica y arquitectura de sistemas en Iberoamérica, democratizando el acceso a estándares de ingeniería nivel Big Tech, auditoría de código rigurosa y soberanía tecnológica para la próxima generación de constructores de software.
+                  Consolidar a IPT Academy como la institución digital referente en formación técnica y arquitectura de sistemas en Iberoamérica, democratizando el acceso a estándares de ingeniería nivel Big Tech, auditoría de código rigurosa y soberanía tecnológica para la próxima generación de constructores de software.
                 </p>
               </div>
 

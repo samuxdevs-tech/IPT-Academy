@@ -189,7 +189,7 @@ export default function AdminRootModule({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-white tracking-tight">
-                    IPT Course
+                    IPT Academy
                   </span>
                   <span className="text-[10px] font-mono font-bold bg-violet-500/10 text-violet-300 border border-violet-500/20 px-2 py-0.5 rounded-full">
                     Dirección Ejecutiva

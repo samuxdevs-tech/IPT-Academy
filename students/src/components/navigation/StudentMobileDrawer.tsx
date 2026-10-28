@@ -57,11 +57,11 @@ export default function StudentMobileDrawer({ isOpen, onClose }: StudentMobileDr
           >
             <img
               src="/logo.png"
-              alt="IPT Course"
+              alt="IPT Academy"
               className="h-8 w-auto object-contain pointer-events-none"
             />
             <span className="font-extrabold text-sm text-[#0f0f0f] truncate pointer-events-none">
-              IPT Course
+              IPT Academy
             </span>
           </Link>
           <button

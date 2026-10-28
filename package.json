@@ -2,7 +2,7 @@
   "name": "ipt-course",
   "version": "1.0.0",
   "private": true,
-  "description": "IPT Course — Portal de Formación Técnica y Clases en Línea de Ivan Perez Tech (IPT)",
+  "description": "IPT Academy — Portal de Formación Técnica y Clases en Línea de Ivan Perez Tech (IPT)",
   "scripts": {
     "dev:students": "npm --prefix students run dev",
     "dev:operators": "npm --prefix operators run dev",

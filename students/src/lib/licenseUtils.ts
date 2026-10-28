@@ -1,5 +1,5 @@
 /**
- * Utilidades de licenciamiento y verificación de cursos de IPT Course.
+ * Utilidades de licenciamiento y verificación de cursos de IPT Academy.
  * Implementa funciones criptográficas estándar para firmas de acceso y control de permisos.
  */
 

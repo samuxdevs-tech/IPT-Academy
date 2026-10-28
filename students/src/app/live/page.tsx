@@ -313,7 +313,7 @@ function StudentLiveRoomContent() {
               {liveClass?.title || 'Sala de Clase en Vivo'}
             </h1>
             <span className="px-2 py-0.5 text-[10px] font-semibold bg-neutral-800 text-neutral-300 rounded-md">
-              {liveClass?.course_title || 'IPT Course'}
+              {liveClass?.course_title || 'IPT Academy'}
             </span>
           </div>
         </div>

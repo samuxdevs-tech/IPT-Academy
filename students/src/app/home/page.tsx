@@ -116,7 +116,7 @@ export default function StudentHomePage() {
                 <IptLogoIcon className="w-8 h-8" />
               </div>
               <span className="text-white text-[16px] font-semibold tracking-[-0.02em]">
-                IPT <span className="font-light text-[#bdbdbd]">Course</span>
+                IPT <span className="font-light text-[#bdbdbd]">Academy</span>
               </span>
             </Link>
             <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#8052ff]/15 text-[#8052ff] text-[11px] font-mono border border-[#8052ff]/30">

@@ -75,7 +75,7 @@ function LegalCenterContent() {
             <Link href="/" className="inline-flex items-center gap-2.5 group">
               <IptLogoIcon className="w-7 h-7 transform group-hover:scale-105 transition-transform" />
               <span className="text-[16px] font-semibold tracking-[-0.02em] text-white">
-                IPT <span className="font-light text-[#bdbdbd]">Course</span>
+                IPT <span className="font-light text-[#bdbdbd]">Academy</span>
               </span>
             </Link>
             <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#ffffff]/5 text-[#9a9a9a] text-[11px] font-mono border border-[#ffffff]/10">

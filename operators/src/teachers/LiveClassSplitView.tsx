@@ -316,7 +316,7 @@ export function LiveClassSplitView() {
 
                 {loading ? (
                   <div className="p-16 text-center text-zinc-500 text-xs">
-                    Cargando lista de estudiantes de IPT Course...
+                    Cargando lista de estudiantes de IPT Academy...
                   </div>
                 ) : enrolledStudents.length === 0 ? (
                   <div className="p-16 text-center text-zinc-500 text-xs">

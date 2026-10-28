@@ -333,7 +333,7 @@ export function RegisteredAccountsView() {
 
   return (
     <div className="space-y-6">
-      {/* Selector Principal: Estudiantes de ipt-course (RTDB) vs Operadores Docentes (RBAC) */}
+      {/* Selector Principal: estudiantes de IPT Academy (RTDB) vs Operadores Docentes (RBAC) */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-[#121217] border border-white/10 rounded-2xl p-3">
         <div className="flex items-center gap-2">
           <button
@@ -345,7 +345,7 @@ export function RegisteredAccountsView() {
             }`}
           >
             <Database className="w-3.5 h-3.5" />
-            <span>Estudiantes & Licencias en ipt-course ({rtdbStudents.length})</span>
+            <span>Estudiantes & Licencias en IPT Academy ({rtdbStudents.length})</span>
           </button>
 
           <button

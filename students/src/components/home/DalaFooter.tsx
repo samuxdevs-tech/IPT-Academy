@@ -15,7 +15,7 @@ export default function DalaFooter() {
             <div className="flex items-center gap-3">
               <IptLogoIcon className="w-7 h-7 shrink-0" />
               <span className="text-white text-[15px] font-semibold tracking-[-0.02em]">
-                IPT <span className="font-light text-[#bdbdbd]">Course</span>
+                IPT <span className="font-light text-[#bdbdbd]">Academy</span>
               </span>
             </div>
             <p className="text-[13px] font-extralight text-[#9a9a9a] leading-relaxed max-w-[380px]">

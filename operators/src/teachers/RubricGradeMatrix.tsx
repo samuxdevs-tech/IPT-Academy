@@ -116,7 +116,7 @@ export function RubricGradeMatrix() {
     courses[0] || {
       slug: "ipt-master-fullstack",
       title: "IPT Master: Arquitectura de Software e IA",
-      licenseHash: "LIC-IPT-IPT Course-360-A8F2-99BC",
+      licenseHash: "LIC-IPT-IPT Academy-360-A8F2-99BC",
       modules: [],
     };
 

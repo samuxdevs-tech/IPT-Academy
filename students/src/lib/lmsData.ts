@@ -142,10 +142,10 @@ export function generateInstitutionalIcsFeed(events: InstitutionalCalendarEvent[
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//IPT Course//Calendario de Clases//ES',
+    'PRODID:-//IPT Academy//Calendario de Clases//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:IPT Course — Mis Clases y Entregas',
+    'X-WR-CALNAME:IPT Academy — Mis Clases y Entregas',
     'X-WR-TIMEZONE:UTC',
   ];
 

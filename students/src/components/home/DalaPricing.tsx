@@ -15,7 +15,7 @@ export default function DalaPricing() {
       badge: 'Acceso Inicial',
       price: '$0',
       period: 'por 14 días',
-      description: 'Experimenta la metodología de formación de IPT Course sin costo ni compromiso.',
+      description: 'Experimenta la metodología de formación de IPT Academy sin costo ni compromiso.',
       features: [
         'Acceso completo al curso liberado',
         '1 Crédito de clase en vivo de cortesía',

@@ -286,7 +286,7 @@ export default function DalaConstellationCanvas() {
       return { x: px, y: py, angle };
     }
 
-    // FASE 4: FAVICON OFICIAL IPT COURSE (Isotipo de libro abierto + 'I' + 'P' + 'T')
+    // FASE 4: FAVICON OFICIAL IPT ACADEMY (Isotipo de libro abierto + 'I' + 'P' + 'T')
     function getFaviconCoords(
       p: Particle,
       anchor: { x: number; y: number; size: number },
@@ -443,7 +443,7 @@ export default function DalaConstellationCanvas() {
           pricingAngle = rectRes.angle;
         }
 
-        // 4. Coordenadas de Certificación Criptográfica (Favicon de IPT Course)
+        // 4. Coordenadas de Certificación Criptográfica (Favicon de IPT Academy)
         const crypto = getFaviconCoords(p, cryptoCenter, time);
 
         // Interpolación ponderada multidimensional

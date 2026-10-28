@@ -107,7 +107,7 @@ const DEFAULT_COURSE: CourseData = {
   level: "Profesional",
   published: true,
   courseType: "dynamic",
-  licenseHash: "LIC-IPT-IPT Course-360-A8F2-99BC",
+  licenseHash: "LIC-IPT-IPT Academy-360-A8F2-99BC",
   progressionMode: "free",
   modules: [
     {

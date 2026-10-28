@@ -184,7 +184,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
       courseSlug: activeCourse?.slug || '',
       courseTitle: activeCourse?.title || '',
       instructor: activeCourse?.instructor?.name || 'Instructor IPT',
-      instructorRole: activeCourse?.instructor?.role || 'Docente Titular · IPT Course',
+      instructorRole: activeCourse?.instructor?.role || 'Docente Titular · IPT Academy',
       issueDate: existing?.issueDate || now.toISOString(),
       issueDateFormatted: existing?.issueDateFormatted || formattedDate,
       completionHours: 20,
@@ -222,7 +222,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#065fd4]/10 border border-[#065fd4]/20 text-[#065fd4] text-xs font-bold uppercase tracking-wider">
                 <ShieldCheck className="w-4 h-4 text-[#065fd4]" />
-                <span>Acreditación Académica Oficial · IPT Course</span>
+                <span>Acreditación Académica Oficial · IPT Academy</span>
               </div>
               <h1 className="text-xl lg:text-2xl font-extrabold text-[#0f0f0f] leading-snug">
                 Tu Diploma de Finalización Oficial

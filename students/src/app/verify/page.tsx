@@ -117,7 +117,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/logo.png"
-              alt="IPT Course"
+              alt="IPT Academy"
               width={140}
               height={36}
               className="h-8 md:h-9 w-auto object-contain"
@@ -126,7 +126,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
             />
             <div className="border-l border-[#e0e0e0] pl-3">
               <span className="font-black text-sm md:text-base text-[#0f0f0f] block leading-none">
-                IPT Course
+                IPT Academy
               </span>
               <span className="text-[10.5px] text-[#606060] font-semibold tracking-wide">
                 Registro Oficial de Credenciales y Títulos · Ivan Perez Tech (IPT)
@@ -162,7 +162,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
                   Verificación Pública de Título y Metadatos Académicos
                 </h1>
                 <p className="text-xs md:text-sm text-[#606060] leading-relaxed">
-                  Consulta la validez jurídica y académica de un certificado emitido por <strong>IPT Course (Ivan Perez Tech)</strong>.
+                  Consulta la validez jurídica y académica de un certificado emitido por <strong>IPT Academy (Ivan Perez Tech)</strong>.
                 </p>
               </div>
             </div>
@@ -408,7 +408,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
       {/* Pie Institucional */}
       <footer className="mt-auto border-t border-[#e5e5e5] bg-white py-6 px-4 text-center text-xs text-[#707070] space-y-1">
         <p className="font-semibold text-[#0f0f0f]">
-          Ivan Perez Tech (IPT) — IPT Course · Sistema de Verificación Académica
+          Ivan Perez Tech (IPT) — IPT Academy · Sistema de Verificación Académica
         </p>
         <p>
           Titular y Fundador: <strong>Iván Samuel Pérez Torrenegra</strong>. Inscrito formalmente en la Cámara de Comercio municipal correspondiente.
@@ -420,7 +420,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
 
 export default function VerifyPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-xs text-[#606060]">Cargando verificador oficial IPT Course...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-xs text-[#606060]">Cargando verificador oficial IPT Academy...</div>}>
       <VerifyView />
     </Suspense>
   );

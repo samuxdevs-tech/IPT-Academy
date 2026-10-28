@@ -37,7 +37,7 @@ export function LoginScreen() {
             <div className="relative w-40 h-10">
               <Image
                 src="/logo-horizontal.png"
-                alt="IPT Course"
+                alt="IPT Academy"
                 fill
                 className="object-contain"
                 priority

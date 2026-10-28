@@ -76,7 +76,7 @@ export function normalizeCourse(raw: any): Course {
 
   // Instructor
   const instructor = {
-    name: String(source.instructor?.name || 'IPT Course').trim(),
+    name: String(source.instructor?.name || 'IPT Academy').trim(),
     role: String(source.instructor?.role || 'Instructor').trim(),
     avatar: String(source.instructor?.avatar || '/favicon.png').trim()
   };

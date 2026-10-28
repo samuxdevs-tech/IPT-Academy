@@ -1,5 +1,5 @@
 /**
- * IPT Course — Motor Transaccional de Suscripciones, Entitlements, Outbox, Quórum y Facturación (v6)
+ * IPT Academy — Motor Transaccional de Suscripciones, Entitlements, Outbox, Quórum y Facturación (v6)
  * Cumple 100% con el Plan Maestro Definitivo v6:
  * - ClockService inyectable (bloqueado en producción para manipulación temporal)
  * - Ciclos por mes calendario con Billing Anchor (1..31) y ajuste de fin de mes

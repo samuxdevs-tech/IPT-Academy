@@ -1,6 +1,6 @@
 {
-  "name": "IPT Course — Clases, Tareas y Notas",
-  "short_name": "IPT Course",
+  "name": "IPT Academy — Clases, Tareas y Notas",
+  "short_name": "IPT Academy",
   "description": "Portal de clases en video, calendario de entregas, tareas y notas.",
   "start_url": "/",
   "display": "standalone",

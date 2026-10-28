@@ -102,7 +102,7 @@ export function AuditLogsViewer() {
       l.location
     ]);
 
-    exportToCsv("ipt_course_logs_auditoria_forense.csv", headers, rows);
+    exportToCsv("ipt_academy_logs_auditoria_forense.csv", headers, rows);
   };
 
   const getSeverityBadge = (severity: string) => {

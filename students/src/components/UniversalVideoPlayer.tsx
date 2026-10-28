@@ -699,7 +699,7 @@ export default function UniversalVideoPlayer({
             ref={iframeRef}
             id={`ipt-course-yt-${ytId}`}
             src={`https://www.youtube.com/embed/${ytId}?enablejsapi=1&origin=${encodeURIComponent(origin)}&rel=0&modestbranding=1&playsinline=1&controls=0`}
-            title="IPT Course Video Player"
+            title="IPT Academy Video Player"
             className="w-full h-full border-0 pointer-events-auto"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen

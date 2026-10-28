@@ -3,8 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
-  title: "IPT Course Operators · Teachers & Admin Studio",
-  description: "Portal de Operación, Docencia y Gobernanza de IPT Course (Ivan Perez Tech)",
+  title: "IPT Academy Operators · Teachers & Admin Studio",
+  description: "Portal de Operación, Docencia y Gobernanza de IPT Academy (Ivan Perez Tech)",
   icons: {
     icon: "/favicon.ico",
   },

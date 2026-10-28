@@ -166,7 +166,7 @@ export function StudentsAnalyticsView() {
       s.hasDiploma ? `Expedido (${s.diplomaFolio})` : "En Progreso",
     ]);
 
-    exportToCsv("padron_estudiantes_ipt_course.csv", headers, rows);
+    exportToCsv("padron_estudiantes_ipt_academy.csv", headers, rows);
   };
 
   // Exportar registro de diplomas a CSV
@@ -206,7 +206,7 @@ export function StudentsAnalyticsView() {
             Monitor de Estudiantes, Módulos de Cursos y Diplomas Oficiales
           </h2>
           <p className="text-xs text-zinc-400 mt-1 max-w-xl">
-            Consulta en tiempo real todos los estudiantes registrados en ipt-course, su suscripción activa, lecciones completadas por curso/módulo y los módulos publicados.
+            Consulta en tiempo real todos los Estudiantes Registrados en IPT Academy, su suscripción activa, lecciones completadas por curso/módulo y los módulos publicados.
           </p>
         </div>
 
@@ -353,7 +353,7 @@ export function StudentsAnalyticsView() {
               <p className="text-xs text-zinc-400 max-w-sm mx-auto mt-1">
                 {searchTerm
                   ? "No hay coincidencias para el criterio de búsqueda ingresado."
-                  : "Los estudiantes registrados en ipt-course aparecerán aquí automáticamente."}
+                  : "Los Estudiantes Registrados en IPT Academy aparecerán aquí automáticamente."}
               </p>
             </div>
           ) : (

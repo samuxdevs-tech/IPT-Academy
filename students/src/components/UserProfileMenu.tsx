@@ -233,7 +233,7 @@ export default function UserProfileMenu({ courseSlug: propCourseSlug, className 
                   <div className="flex items-center gap-1.5 text-xs font-bold text-[#065fd4] truncate max-w-[200px]">
                     <Award className="w-4 h-4 shrink-0 text-[#065fd4]" />
                     <span className="truncate">
-                      {courses.find((c) => c.slug === activeCourseSlug)?.title || 'Diploma IPT Course'}
+                      {courses.find((c) => c.slug === activeCourseSlug)?.title || 'Diploma IPT Academy'}
                     </span>
                   </div>
                   <span className="text-[10px] font-bold text-[#065fd4] bg-[#065fd4]/10 px-1.5 py-0.5 rounded">

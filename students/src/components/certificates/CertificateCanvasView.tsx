@@ -63,7 +63,7 @@ export default function CertificateCanvasView({
               COPIA DE CONSULTA
             </span>
             <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-amber-900/50 block">
-              Documento digital autenticado en línea · IPT Course
+              Documento digital autenticado en línea · IPT Academy
             </span>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function CertificateCanvasView({
           <div className="flex items-center gap-3 text-left">
             <Image
               src="/logo.png"
-              alt="IPT Course"
+              alt="IPT Academy"
               width={120}
               height={40}
               className="h-8 sm:h-10 w-auto object-contain"
@@ -84,7 +84,7 @@ export default function CertificateCanvasView({
             />
             <div>
               <p className="text-[11px] sm:text-[13px] font-black uppercase tracking-[0.2em] text-[#065fd4]">
-                IPT Course
+                IPT Academy
               </p>
               <p className="text-[8px] sm:text-[9.5px] font-semibold text-[#66635a] tracking-wider uppercase">
                 Ivan Perez Tech · Acreditación Técnica
@@ -136,7 +136,7 @@ export default function CertificateCanvasView({
             {cert.courseTitle}
           </p>
           <p className="text-[10px] sm:text-[11.5px] text-[#66635a] leading-relaxed pt-1">
-            Certificación técnica expedida por IPT Course como parte del programa oficial de formación técnica de Ivan Perez Tech (IPT).
+            Certificación técnica expedida por IPT Academy como parte del programa oficial de formación técnica de Ivan Perez Tech (IPT).
           </p>
         </div>
 
@@ -205,7 +205,7 @@ export default function CertificateCanvasView({
               <div className="w-full h-full rounded-full border-2 border-dashed border-[#593f0b] flex flex-col items-center justify-center text-center bg-[#b88c2b]/20">
                 <Award className="w-6 h-6 text-[#593f0b] mb-0.5" />
                 <span className="text-[7.5px] font-black uppercase tracking-wider text-[#3d2a05] leading-none">
-                  IPT COURSE
+                  IPT ACADEMY
                 </span>
                 <span className="text-[6.5px] font-bold text-[#3d2a05] leading-none mt-0.5">
                   OFICIAL

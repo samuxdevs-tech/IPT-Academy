@@ -53,7 +53,7 @@ export const ApiClient = {
       return [
         {
           id: 'assign-1',
-          courseSlug: 'IPT Course-360',
+          courseSlug: 'IPT Academy-360',
           courseTitle: 'IPT Master: Arquitectura de Software e IA',
           moduleTitle: 'Módulo 1 · Cimientos Operativos',
           cutId: 'corte-1',

@@ -174,7 +174,7 @@ export default function StudentPortalShell({
           <SafeNavLink href="/" prefetch={true} className="flex items-center gap-2 shrink-0">
             <img
               src={campusLogoSrc}
-              alt="IPT Course"
+              alt="IPT Academy"
               className="h-8 w-auto object-contain"
             />
           </SafeNavLink>

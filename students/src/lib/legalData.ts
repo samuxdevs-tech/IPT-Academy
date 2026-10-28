@@ -41,7 +41,7 @@ export interface LegalAcceptanceRecord {
 }
 
 export const IPT_OWNER_INFO = {
-  commercialName: 'Ivan Perez Tech (IPT) — IPT Course',
+  commercialName: 'Ivan Perez Tech (IPT) — IPT Academy',
   legalOwner: 'Ivan Perez',
   identificationType: 'Persona Natural Comerciante con Matrícula Mercantil y Registro Único Tributario (RUT)',
   mercantileRegistry: 'Inscripción activa en la Cámara de Comercio de Montería (Córdoba, Colombia)',
@@ -76,7 +76,7 @@ export const LEGAL_DOCUMENTS: LegalSectionDocument[] = [
       },
       {
         heading: '1.2. Alcance del Servicio Educativo Digital',
-        body: 'IPT Course opera como un entorno de formación técnica digital, administración de cursos interactivos, verificación de evaluaciones y emisión de constancias académicas. La navegación y el uso de los servicios implican la aceptación plena e incondicional de los presentes avisos legales.'
+        body: 'IPT Academy opera como un entorno de formación técnica digital, administración de cursos interactivos, verificación de evaluaciones y emisión de constancias académicas. La navegación y el uso de los servicios implican la aceptación plena e incondicional de los presentes avisos legales.'
       }
     ]
   },
@@ -126,7 +126,7 @@ export const LEGAL_DOCUMENTS: LegalSectionDocument[] = [
     clauses: [
       {
         heading: '3.1. Naturaleza de la Cuenta y Acceso',
-        body: 'La creación de una cuenta en IPT Course otorga al usuario una licencia de acceso personal, individual, revocable y no transferible para uso exclusivamente formativo. Queda terminantemente prohibido ceder, arrendar o compartir credenciales de acceso con terceros.'
+        body: 'La creación de una cuenta en IPT Academy otorga al usuario una licencia de acceso personal, individual, revocable y no transferible para uso exclusivamente formativo. Queda terminantemente prohibido ceder, arrendar o compartir credenciales de acceso con terceros.'
       },
       {
         heading: '3.2. Propiedad Intelectual y Restricciones de Uso',
@@ -153,7 +153,7 @@ export const LEGAL_DOCUMENTS: LegalSectionDocument[] = [
     clauses: [
       {
         heading: '4.1. Etapa Previa Obligatoria de Arreglo Directo',
-        body: 'Cualquier diferencia, reclamación, controversia o conflicto surgido entre el usuario y el titular derivado de la ejecución, interpretación, terminación o uso de los servicios de IPT Course deberá someterse obligatoriamente a una etapa de arreglo directo previo por un término improrrogable de treinta (30) días calendario. La parte reclamante notificará motivadamente su solicitud a la dirección electrónica legal oficial: ivanpereztech13@gmail.com, detallando hechos, pretensiones y pruebas que sustenten su reclamación.'
+        body: 'Cualquier diferencia, reclamación, controversia o conflicto surgido entre el usuario y el titular derivado de la ejecución, interpretación, terminación o uso de los servicios de IPT Academy deberá someterse obligatoriamente a una etapa de arreglo directo previo por un término improrrogable de treinta (30) días calendario. La parte reclamante notificará motivadamente su solicitud a la dirección electrónica legal oficial: ivanpereztech13@gmail.com, detallando hechos, pretensiones y pruebas que sustenten su reclamación.'
       },
       {
         heading: '4.2. Cláusula Compromisoria / Arbitraje Institucional en Derecho',
@@ -213,7 +213,7 @@ export const LEGAL_DOCUMENTS: LegalSectionDocument[] = [
     clauses: [
       {
         heading: '6.1. Finalidad Exclusivamente Técnica',
-        body: 'IPT Course emplea exclusivamente tecnologías de almacenamiento de sesión y cookies técnicas indispensables para preservar la seguridad de la cuenta, validar la firma del token criptográfico y recordar la preferencia de privacidad del usuario. No se emplean cookies de rastreo comercial ni se transfieren historiales de navegación a terceras partes.'
+        body: 'IPT Academy emplea exclusivamente tecnologías de almacenamiento de sesión y cookies técnicas indispensables para preservar la seguridad de la cuenta, validar la firma del token criptográfico y recordar la preferencia de privacidad del usuario. No se emplean cookies de rastreo comercial ni se transfieren historiales de navegación a terceras partes.'
       }
     ]
   }
@@ -237,7 +237,7 @@ export async function recordUserLegalAcceptance(
   const nowIso = new Date().toISOString();
   const displayName =
     user.displayName ||
-    (user.email ? user.email.split('@')[0] : 'Usuario IPT Course');
+    (user.email ? user.email.split('@')[0] : 'Usuario IPT Academy');
 
   const record: LegalAcceptanceRecord = {
     uid: user.uid,

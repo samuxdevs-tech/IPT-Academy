@@ -69,7 +69,7 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
     label: 'Nivel 4 · Propietario / Superadministrador',
     shortLabel: 'Propietario',
     description:
-      'Control total e irrestricto de IPT Course: asigna roles (IAM/RBAC), administra y elimina cursos, otorga licencias, califica y audita el libro oficial de firmas digitales de Habeas Data y Aceptación Legal.',
+      'Control total e irrestricto de IPT Academy: asigna roles (IAM/RBAC), administra y elimina cursos, otorga licencias, califica y audita el libro oficial de firmas digitales de Habeas Data y Aceptación Legal.',
     badgeClass: 'bg-purple-50 text-[#6d28d2] border-purple-200',
     permissions: [
       'view_student_portal',

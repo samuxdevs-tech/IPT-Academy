@@ -161,7 +161,7 @@ export default function MinimalistPreloader() {
         <div style={{ position: 'relative', marginBottom: '28px' }}>
           <img
             src="/favicon.png"
-            alt="IPT Course"
+            alt="IPT Academy"
             style={{
               width: '56px',
               height: '56px',

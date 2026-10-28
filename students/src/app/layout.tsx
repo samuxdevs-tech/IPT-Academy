@@ -31,8 +31,8 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "IPT Course | Campus Virtual, Cursos y Clases en Vivo",
-    template: "%s | IPT Course",
+    default: "IPT Academy | Campus Virtual, Cursos y Clases en Vivo",
+    template: "%s | IPT Academy",
   },
   description:
     "Portal de formación técnica y arquitectura de software de Ivan Perez Tech (IPT).",
@@ -47,15 +47,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_CO",
     url: siteUrl,
-    siteName: "IPT Course",
-    title: "IPT Course | Campus Virtual, Cursos y Clases en Vivo",
+    siteName: "IPT Academy",
+    title: "IPT Academy | Campus Virtual, Cursos y Clases en Vivo",
     description:
       "Plataforma de formación técnica y arquitectura de software de Ivan Perez Tech (IPT).",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "IPT Course",
+    title: "IPT Academy",
   },
   icons: {
     icon: "/favicon.png",

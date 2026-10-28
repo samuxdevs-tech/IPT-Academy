@@ -29,7 +29,7 @@ export default function OperatorsRootPage() {
         <div className="relative w-36 h-8 mb-2">
           <Image
             src="/logo-horizontal.png"
-            alt="IPT Course"
+            alt="IPT Academy"
             fill
             className="object-contain"
             priority
@@ -69,7 +69,7 @@ export default function OperatorsRootPage() {
             <div className="relative w-32 h-8">
               <Image
                 src="/logo-horizontal.png"
-                alt="IPT Course"
+                alt="IPT Academy"
                 fill
                 className="object-contain"
                 priority
@@ -187,7 +187,7 @@ export default function OperatorsRootPage() {
             <div className="relative w-32 h-8">
               <Image
                 src="/logo-horizontal.png"
-                alt="IPT Course"
+                alt="IPT Academy"
                 fill
                 className="object-contain"
                 priority

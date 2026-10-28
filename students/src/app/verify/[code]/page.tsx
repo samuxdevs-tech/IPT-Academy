@@ -47,7 +47,7 @@ export default async function VerifyCodePage({ params }: VerifyCodePageProps) {
     <Suspense
       fallback={
         <div className="p-8 text-center text-xs text-[#606060]">
-          Verificando credencial oficial IPT Course...
+          Verificando credencial oficial IPT Academy...
         </div>
       }
     >

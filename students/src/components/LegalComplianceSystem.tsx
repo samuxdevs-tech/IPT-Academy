@@ -70,7 +70,7 @@ export default function LegalComplianceSystem() {
 
   return (
     <>
-      {/* PIE DE PÁGINA LEGAL OFICIAL DE IPT COURSE */}
+      {/* PIE DE PÁGINA LEGAL OFICIAL DE IPT ACADEMY */}
       {!isInsideAdmin && (
         <footer className="bg-[#0f172a] text-slate-300 border-t border-slate-800 mt-auto">
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-10">
@@ -81,7 +81,7 @@ export default function LegalComplianceSystem() {
                   <div className="w-8 h-8 rounded-lg bg-white p-1 flex items-center justify-center">
                     <Image
                       src="/favicon.png"
-                      alt="IPT Course"
+                      alt="IPT Academy"
                       width={24}
                       height={24}
                       className="w-full h-full object-contain"

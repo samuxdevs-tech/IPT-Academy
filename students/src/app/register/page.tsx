@@ -130,7 +130,7 @@ export default function RegisterPage() {
           <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
             <IptLogoIcon className="w-9 h-9 transform group-hover:scale-105 transition-transform" />
             <span className="text-white text-[18px] font-semibold tracking-[-0.02em]">
-              IPT <span className="font-light text-[#bdbdbd]">Course</span>
+              IPT <span className="font-light text-[#bdbdbd]">Academy</span>
             </span>
           </Link>
           <h1 className="text-[26px] font-normal text-white tracking-[-0.03em] mb-2">

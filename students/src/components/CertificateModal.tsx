@@ -88,7 +88,7 @@ export default function CertificateModal({
         studentEmail: user?.email || 'estudiante@ivanperez.tech',
         courseSlug,
         courseTitle,
-        instructor: 'Equipo Académico de IPT Course',
+        instructor: 'Equipo Académico de IPT Academy',
         instructorRole: 'Acreditado formalmente por Ivan Perez Tech (IPT)',
         issueDate: now.toISOString(),
         issueDateFormatted: formattedDate,
@@ -244,7 +244,7 @@ export default function CertificateModal({
                 id="certificate-modal-title"
                 className="text-sm font-bold text-white flex items-center gap-2"
               >
-                <span>Certificado Oficial IPT Course</span>
+                <span>Certificado Oficial IPT Academy</span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   {displayedProgress}% Completado
                 </span>
@@ -302,7 +302,7 @@ export default function CertificateModal({
             <div className="py-24 text-center space-y-4">
               <div className="w-10 h-10 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-sm text-[#9194ac]">
-                Verificando acreditación oficial IPT Course...
+                Verificando acreditación oficial IPT Academy...
               </p>
             </div>
           ) : !cert && entitlements.certificateRequiresConversion ? (
@@ -424,14 +424,14 @@ export default function CertificateModal({
                   <div className="flex items-center gap-3 text-left">
                     <Image
                       src="/logo.png"
-                      alt="IPT Course"
+                      alt="IPT Academy"
                       width={120}
                       height={40}
                       className="h-8 sm:h-10 w-auto object-contain"
                     />
                     <div>
                       <p className="text-[11px] sm:text-[12px] font-black uppercase tracking-[0.2em] text-[#065fd4]">
-                        IPT Course
+                        IPT Academy
                       </p>
                       <p className="text-[8px] sm:text-[9px] font-semibold text-[#66635a] tracking-wider uppercase">
                         Ivan Perez Tech · Formación Técnica
@@ -483,13 +483,13 @@ export default function CertificateModal({
                     {cert?.courseTitle || courseTitle}
                   </p>
                   <p className="text-[10px] sm:text-[11px] text-[#66635a] leading-relaxed pt-1">
-                    Certificación oficial expedida por IPT Course como parte del programa de formación técnica de Ivan Perez Tech (IPT).
+                    Certificación oficial expedida por IPT Academy como parte del programa de formación técnica de Ivan Perez Tech (IPT).
                   </p>
                 </div>
 
                 {/* Sellos, Firmas y Metadatos */}
                 <div className="w-full pt-6 sm:pt-8 grid grid-cols-1 sm:grid-cols-3 gap-6 items-end border-t border-[#e5dec9] mt-6">
-                  {/* Firma Directiva de IPT Course */}
+                  {/* Firma Directiva de IPT Academy */}
                   <div className="flex flex-col items-center text-center space-y-1">
                     <div className="h-10 flex items-center justify-center">
                       <svg
@@ -509,7 +509,7 @@ export default function CertificateModal({
                       Dirección Académica · IPT
                     </p>
                     <p className="text-[9px] text-[#66635a] font-medium leading-tight">
-                      IPT Course · Acreditación Oficial
+                      IPT Academy · Acreditación Oficial
                     </p>
                   </div>
 
@@ -519,7 +519,7 @@ export default function CertificateModal({
                       <div className="w-full h-full rounded-full border-2 border-dashed border-[#593f0b] flex flex-col items-center justify-center text-center bg-[#b88c2b]/20">
                         <Award className="w-6 h-6 text-[#593f0b] mb-0.5" />
                         <span className="text-[7px] font-black uppercase tracking-wider text-[#3d2a05] leading-none">
-                          IPT COURSE
+                          IPT ACADEMY
                         </span>
                         <span className="text-[6px] font-bold text-[#3d2a05] leading-none mt-0.5">
                           OFICIAL
@@ -583,7 +583,7 @@ export default function CertificateModal({
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
             <span>
-              Documento emitido oficialmente por IPT Course bajo acreditación institucional de Ivan Perez Tech (IPT).
+              Documento emitido oficialmente por IPT Academy bajo acreditación institucional de Ivan Perez Tech (IPT).
             </span>
           </div>
           <button

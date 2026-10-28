@@ -137,7 +137,7 @@ export function StudentGroupsManager() {
           {
             slug: "ipt-master-fullstack",
             title: "IPT Master: Arquitectura de Software e IA",
-            licenseHash: "LIC-IPT-IPT Course-360",
+            licenseHash: "LIC-IPT-IPT Academy-360",
           },
         ]);
         setSelectedCourseSlug("ipt-master-fullstack");
@@ -265,7 +265,7 @@ export function StudentGroupsManager() {
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Organiza a los alumnos de ipt-course por grupos para asignar tareas diferenciadas, clases y tutorías.
+              Organiza a los alumnos de IPT Academy por grupos para asignar tareas diferenciadas, clases y tutorías.
             </p>
           </div>
         </div>
@@ -311,7 +311,7 @@ export function StudentGroupsManager() {
           </div>
           <p className="font-bold text-white text-sm">No hay grupos creados todavía</p>
           <p className="max-w-md mx-auto text-zinc-400 text-xs">
-            Crea tu primer grupo para segmentar estudiantes de ipt-course y asignarles tareas personalizadas de forma grupal.
+            Crea tu primer grupo para segmentar estudiantes de IPT Academy y asignarles tareas personalizadas de forma grupal.
           </p>
           <button
             onClick={handleOpenCreateModal}
@@ -420,7 +420,7 @@ export function StudentGroupsManager() {
                     {editingGroupId ? "Editar Grupo de Estudiantes" : "Nuevo Grupo de Estudiantes"}
                   </h4>
                   <p className="text-[11px] text-zinc-400">
-                    Segmenta a tus alumnos de ipt-course para asignar tareas y evaluar por grupo.
+                    Segmenta a tus alumnos de IPT Academy para asignar tareas y evaluar por grupo.
                   </p>
                 </div>
               </div>

@@ -111,7 +111,7 @@ export default function DalaHeroArchitecturePreview() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-white tracking-tight">
-                Así se estudia en IPT Course
+                Así se estudia en IPT Academy
               </span>
               <span className="w-2 h-2 rounded-full bg-[#15846e] animate-pulse" />
             </div>

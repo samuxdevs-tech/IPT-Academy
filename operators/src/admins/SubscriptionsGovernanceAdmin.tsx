@@ -646,7 +646,7 @@ export function SubscriptionsGovernanceAdmin() {
                   <h4 className="text-sm font-bold text-white flex items-center gap-2">
                     <Users className="w-4 h-4 text-violet-400" />
                     <span>
-                      Estudiantes Registrados en ipt-course ({filteredStudents.length})
+                      Estudiantes Registrados en IPT Academy ({filteredStudents.length})
                     </span>
                   </h4>
                   <p className="text-[11px] text-zinc-400">
@@ -848,7 +848,7 @@ export function SubscriptionsGovernanceAdmin() {
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-bold text-white flex items-center gap-2">
                     <Layers className="w-4 h-4 text-emerald-400" />
-                    <span>Cursos y Módulos en ipt-course ({filteredCourses.length})</span>
+                    <span>Cursos y Módulos en IPT Academy ({filteredCourses.length})</span>
                   </h4>
                 </div>
                 <div className="relative">
@@ -1371,14 +1371,14 @@ export function SubscriptionsGovernanceAdmin() {
                   const createdDate = reqItem.createdAt ? new Date(reqItem.createdAt).toLocaleString("es-CO") : "Reciente";
 
                   // Plantillas de correo personal
-                  const acceptSubject = encodeURIComponent("Aceptación de Asesoría - Your Plan IPT Course");
+                  const acceptSubject = encodeURIComponent("Aceptación de Asesoría - Your Plan IPT Academy");
                   const acceptBody = encodeURIComponent(
-                    `Hola ${contactName},\n\nHemos evaluado tu solicitud para Your Plan en IPT Course y nos complace comunicarte que ha sido ACEPTADA.\n\nRespecto a los requerimientos específicos que nos compartiste:\n"${descText}"\n\nPodemos estructurar tu acompañamiento formativo a la medida. ¿En qué horario te resultaría más cómodo coordinar una breve llamada de bienvenida para coordinar temario y detalles?\n\nCordialmente,\nEquipo IPT Course\nhttps://iptapps.com`
+                    `Hola ${contactName},\n\nHemos evaluado tu solicitud para Your Plan en IPT Academy y nos complace comunicarte que ha sido ACEPTADA.\n\nRespecto a los requerimientos específicos que nos compartiste:\n"${descText}"\n\nPodemos estructurar tu acompañamiento formativo a la medida. ¿En qué horario te resultaría más cómodo coordinar una breve llamada de bienvenida para coordinar temario y detalles?\n\nCordialmente,\nEquipo IPT Academy\nhttps://iptapps.com`
                   );
 
-                  const denySubject = encodeURIComponent("Respuesta a tu solicitud - Your Plan IPT Course");
+                  const denySubject = encodeURIComponent("Respuesta a tu solicitud - Your Plan IPT Academy");
                   const denyBody = encodeURIComponent(
-                    `Hola ${contactName},\n\nAgradecemos tu interés en IPT Course y el tiempo dedicado a presentarnos tus requerimientos para Your Plan.\n\nTras analizar en detalle el alcance solicitado:\n"${descText}"\n\nLamentamos informarte que en este momento no disponemos de la disponibilidad docente o técnica requerida para atender estos requerimientos específicos con el nivel de calidad exigido, por lo que no es posible admitir tu solicitud en este ciclo.\n\nTe invitamos a explorar los programas regulares en nuestra plataforma o volver a contactarnos en el futuro.\n\nCordialmente,\nEquipo IPT Course\nhttps://iptapps.com`
+                    `Hola ${contactName},\n\nAgradecemos tu interés en IPT Academy y el tiempo dedicado a presentarnos tus requerimientos para Your Plan.\n\nTras analizar en detalle el alcance solicitado:\n"${descText}"\n\nLamentamos informarte que en este momento no disponemos de la disponibilidad docente o técnica requerida para atender estos requerimientos específicos con el nivel de calidad exigido, por lo que no es posible admitir tu solicitud en este ciclo.\n\nTe invitamos a explorar los programas regulares en nuestra plataforma o volver a contactarnos en el futuro.\n\nCordialmente,\nEquipo IPT Academy\nhttps://iptapps.com`
                   );
 
                   return (

@@ -125,7 +125,7 @@ export function QuestionBankView() {
       q.explanation,
     ]);
 
-    exportToCsv("Banco_Preguntas_IPT_Course", headers, rows);
+    exportToCsv("Banco_Preguntas_IPT_Academy", headers, rows);
   };
 
   // Exportar preguntas a JSON
@@ -134,7 +134,7 @@ export function QuestionBankView() {
       "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(questions, null, 2));
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", "banco_preguntas_ipt_course.json");
+    downloadAnchor.setAttribute("download", "banco_preguntas_ipt_academy.json");
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -228,7 +228,7 @@ export function QuestionBankView() {
             </span>
           </div>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Preguntas sincronizadas en tiempo real con los módulos existentes en ipt-course.
+            Preguntas sincronizadas en tiempo real con los módulos existentes en IPT Academy.
           </p>
         </div>
 
@@ -398,7 +398,7 @@ export function QuestionBankView() {
           <div>
             <h3 className="text-sm font-bold text-white">No hay preguntas registradas</h3>
             <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto">
-              Haz clic en "Nueva Pregunta" o importa un archivo JSON para vincular evaluaciones a los módulos de ipt-course.
+              Haz clic en "Nueva Pregunta" o importa un archivo JSON para vincular evaluaciones a los módulos de IPT Academy.
             </p>
           </div>
         </div>

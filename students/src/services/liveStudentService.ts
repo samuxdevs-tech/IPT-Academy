@@ -1,5 +1,5 @@
 /**
- * Servicio de Clases en Vivo y Gestión de Cupos para Estudiantes (IPT Course)
+ * Servicio de Clases en Vivo y Gestión de Cupos para Estudiantes (IPT Academy)
  * Conectado con Cloudflare Worker API (D1) y con sincronización en tiempo real vía Firebase.
  */
 

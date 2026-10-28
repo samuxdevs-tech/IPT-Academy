@@ -169,7 +169,7 @@ export function LegalComplianceAdmin() {
       l.verificationHash,
     ]);
 
-    exportToCsv("ipt_course_logs_aceptacion_litigios.csv", headers, rows);
+    exportToCsv("ipt_academy_logs_aceptacion_litigios.csv", headers, rows);
   };
 
   // Exportar reporte formal a PDF imprimible
@@ -190,7 +190,7 @@ export function LegalComplianceAdmin() {
 
     exportToPrintablePdf(
       "Reporte Oficial de Trazabilidad Legal y Consentimiento de Litigios",
-      "Bitácora forense de aceptación de términos del servicio y cláusulas arbitrales en IPT Course",
+      "Bitácora forense de aceptación de términos del servicio y cláusulas arbitrales en IPT Academy",
       headers,
       rows
     );

@@ -45,7 +45,7 @@ export function exportToPrintablePdf(title: string, subtitle: string, headers: s
     <!DOCTYPE html>
     <html>
       <head>
-        <title>${title} — IPT Course</title>
+        <title>${title} — IPT Academy</title>
         <meta charset="utf-8" />
         <style>
           @page { size: A4 landscape; margin: 15mm; }
@@ -65,7 +65,7 @@ export function exportToPrintablePdf(title: string, subtitle: string, headers: s
             <div class="subtitle">${subtitle}</div>
           </div>
           <div>
-            <span class="badge">IPT COURSE · OPERATORS</span>
+            <span class="badge">IPT ACADEMY · OPERATORS</span>
           </div>
         </div>
         ${metaHtml}
@@ -78,7 +78,7 @@ export function exportToPrintablePdf(title: string, subtitle: string, headers: s
           </tbody>
         </table>
         <div class="footer">
-          <span>Generado oficialmente por IPT Course (Ivan Perez Tech)</span>
+          <span>Generado oficialmente por IPT Academy (Ivan Perez Tech)</span>
           <span>Fecha y Hora UTC: ${new Date().toISOString()}</span>
         </div>
         <script>

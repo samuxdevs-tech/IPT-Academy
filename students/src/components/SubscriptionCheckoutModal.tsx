@@ -270,7 +270,7 @@ export default function SubscriptionCheckoutModal() {
             <img src="/logo-mark.svg" alt="IPT" className="w-8 h-8" />
             <div>
               <h2 id="ipt-subscription-modal-title" className="text-lg font-bold text-[#202230]">
-                Planes, Campus y Suscripciones IPT Course
+                Planes, Campus y Suscripciones IPT Academy
               </h2>
               <p className="text-xs text-[#595c73]">
                 Elige cómo quieres estudiar: cursos a tu ritmo, acompañamiento docente o clases en vivo
