@@ -12,15 +12,12 @@ import {
   Trash2,
   Bot,
   User as UserIcon,
-  GripHorizontal,
   CheckCircle2,
   AlertCircle,
   Calendar,
   Clock,
   Ticket,
-  ShieldCheck,
-  RefreshCw,
-  ChevronRight
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
@@ -68,10 +65,9 @@ export interface ChatMessage {
 
 type PositionZone = 'Abajo a la izquierda' | 'Abajo a la derecha' | 'Al medio';
 
-// Modelo local de alto rendimiento (1.5B - 2B) compatible con WebGPU para navegadores
 const WEBLLM_MODEL_ID = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
 
-// Helper seguro para formatear fechas sin riesgo de errores de undefined
+// Formato institucional amigable en español
 const safeDateSlice = (val?: string | null, len = 10): string => {
   if (!val || typeof val !== 'string') return 'Fecha pendiente';
   return val.slice(0, len);
@@ -79,7 +75,95 @@ const safeDateSlice = (val?: string | null, len = 10): string => {
 
 const safeDateTime = (val?: string | null): string => {
   if (!val || typeof val !== 'string') return 'Horario por definir';
-  return val.slice(0, 16).replace('T', ' ');
+  try {
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return val.slice(0, 16).replace('T', ' ');
+    return d.toLocaleString('es-CO', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch {
+    return val.slice(0, 16).replace('T', ' ');
+  }
+};
+
+// Detector de intenciones de cancelación
+const isCancelIntent = (text: string): boolean => {
+  const t = text.toLowerCase();
+  return (
+    t.includes('cancela') ||
+    t.includes('cancelar') ||
+    t.includes('cancélala') ||
+    t.includes('cancelala') ||
+    t.includes('cancélame') ||
+    t.includes('cancelame') ||
+    t.includes('cancélalo') ||
+    t.includes('cancelalo') ||
+    t.includes('anula') ||
+    t.includes('anular') ||
+    t.includes('anúlala') ||
+    t.includes('anulala') ||
+    t.includes('elimina la clase') ||
+    t.includes('eliminar la clase') ||
+    t.includes('elimina la cita') ||
+    t.includes('eliminar cita') ||
+    t.includes('quitar la cita') ||
+    t.includes('quitar cita') ||
+    t.includes('borrar cita') ||
+    t.includes('no puedo asistir') ||
+    t.includes('fue un error') ||
+    t.includes('descartar cita') ||
+    t.includes('me equivoque') ||
+    t.includes('me equivoqué') ||
+    /\b(cancela|cancelar|anula|anular|elimina|eliminar)\b/i.test(t)
+  );
+};
+
+// Parser inteligente de hora en lenguaje natural
+interface ParsedTimeQuery {
+  hasRequestedTime: boolean;
+  rawTimeStr?: string;
+  hour?: number; // 0 a 23
+  minute?: number;
+  isOutsideAcademicHours: boolean;
+}
+
+const parseRequestedTime = (text: string): ParsedTimeQuery => {
+  const t = text.toLowerCase();
+
+  // Coincidencias tipo "a las 5am", "a las 5:00 am", "5am", "10:30 am", "a las 3pm", "a las 17:00"
+  const match =
+    t.match(/(?:a\s+las\s+|a\s+la\s+|para\s+las\s+)(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i) ||
+    t.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)/i);
+
+  if (!match) {
+    return { hasRequestedTime: false, isOutsideAcademicHours: false };
+  }
+
+  let hour = parseInt(match[1], 10);
+  const minute = match[2] ? parseInt(match[2], 10) : 0;
+  const meridian = match[3] ? match[3].toLowerCase().replace(/\./g, '') : null;
+
+  if (meridian === 'pm' && hour < 12) {
+    hour += 12;
+  } else if (meridian === 'am' && hour === 12) {
+    hour = 0;
+  }
+
+  // Horario institucional de tutorías: 7:00 AM a 10:00 PM (07:00 a 22:00 COT)
+  const isOutsideAcademicHours = hour < 7 || hour > 22;
+
+  return {
+    hasRequestedTime: true,
+    rawTimeStr: match[0].trim(),
+    hour,
+    minute,
+    isOutsideAcademicHours
+  };
 };
 
 export default function LocalAiTutorWidget() {
@@ -95,6 +179,7 @@ export default function LocalAiTutorWidget() {
   ) {
     return null;
   }
+
   const { user, effectiveIsAdmin } = useAuth();
   const {
     subscription,
@@ -104,7 +189,6 @@ export default function LocalAiTutorWidget() {
     cancelLiveBooking
   } = useSubscription();
 
-  // La tutoría está habilitada a partir del Plan Pro (Pro, Pro+, Your Plan o Administradores)
   const isTutoringPlanActive =
     effectiveIsAdmin ||
     (subscription &&
@@ -129,7 +213,6 @@ export default function LocalAiTutorWidget() {
   const calendarEvents = Array.isArray(rawCalendarEvents) ? rawCalendarEvents : [];
   const liveSessions = Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
 
-  // Créditos en vivo y plan
   const availableCredits = entitlements?.availableLiveCredits ?? subscription?.remainingCredits ?? 0;
   const consumedCredits = subscription?.creditsConsumedInCycle ?? 0;
   const planTitle =
@@ -141,7 +224,7 @@ export default function LocalAiTutorWidget() {
       ? 'Your Plan'
       : 'Suscripción Activa';
 
-  // Directivas docentes en vivo desde Firebase RTDB
+  // Directivas de docentes en vivo
   const [teacherDirectives, setTeacherDirectives] = useState<
     Array<{ id: string; type: string; description: string }>
   >([]);
@@ -171,16 +254,12 @@ export default function LocalAiTutorWidget() {
     return () => unsub();
   }, []);
 
-  // Estado de carga silenciosa del motor IA (0 a 100)
   const [loadProgress, setLoadProgress] = useState<number>(0);
   const [isReady, setIsReady] = useState<boolean>(false);
   const [engineMode, setEngineMode] = useState<'webllm' | 'local-rag'>('local-rag');
   const engineRef = useRef<any>(null);
 
-  // Lecciones completadas del usuario actual sincronizadas desde Firebase
   const [completedLessonsCount, setCompletedLessonsCount] = useState<number>(0);
-
-  // Estado visual del widget e interacciones
   const [isHidden, setIsHidden] = useState<boolean>(false);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
@@ -211,14 +290,12 @@ export default function LocalAiTutorWidget() {
     moved: false
   });
 
-  // Conversación y memoria del usuario sincronizada con Firebase
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputPrompt, setInputPrompt] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const notifTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Detección reactiva de altura dinámica y teclado virtual móvil
   const [visualViewportHeight, setVisualViewportHeight] = useState<number | null>(null);
   const [keyboardOffset, setKeyboardOffset] = useState<number>(0);
 
@@ -320,7 +397,6 @@ export default function LocalAiTutorWidget() {
     []
   );
 
-  // Cargar historial de chat y progreso del usuario
   useEffect(() => {
     if (!user) {
       setMessages([]);
@@ -370,7 +446,6 @@ export default function LocalAiTutorWidget() {
     [user]
   );
 
-  // Inicialización de WebLLM / RAG local
   useEffect(() => {
     let cancelled = false;
 
@@ -445,7 +520,7 @@ export default function LocalAiTutorWidget() {
           }
         }
       } catch (err) {
-        // Fallback a motor RAG local optimizado
+        // Fallback a motor RAG local
       }
 
       if (!cancelled) {
@@ -492,34 +567,71 @@ export default function LocalAiTutorWidget() {
     }
   }, [messages, isChatOpen]);
 
-  // Sesiones activas y agendamientos confirmados
+  // Citas confirmadas en vivo
   const userConfirmedBookings = useMemo(() => {
     return (liveBookings || []).filter((b) => b.status === 'confirmed');
   }, [liveBookings]);
 
-  // Construir sesiones preparadas para agendamiento
+  // Lista base de sesiones disponibles para agendamiento
   const preparedSessions = useMemo(() => {
     const nowMs = Date.now();
     const fourHoursMs = 4 * 60 * 60 * 1000;
 
     let baseList = liveSessions.length > 0 ? liveSessions : [];
 
-    // Si no hay sesiones en vivo programadas, ofrecer sesión de tutoría institucional flexible
+    // Si no hay sesiones colectivas en el calendario, generar opciones de tutoría sincrónica personalizada
     if (baseList.length === 0) {
-      const tomorrow18 = new Date();
-      tomorrow18.setDate(tomorrow18.getDate() + 1);
-      tomorrow18.setHours(18, 0, 0, 0);
+      const d1 = new Date();
+      d1.setDate(d1.getDate() + 1);
+      d1.setHours(8, 0, 0, 0);
+
+      const d2 = new Date();
+      d2.setDate(d2.getDate() + 1);
+      d2.setHours(10, 0, 0, 0);
+
+      const d3 = new Date();
+      d3.setDate(d3.getDate() + 1);
+      d3.setHours(16, 0, 0, 0);
+
       baseList = [
         {
-          id: 'live_tutoria_personalizada',
-          title: 'Tutoría Sincrónica Personalizada (1 a 1)',
+          id: 'live_tutoria_08am',
+          title: 'Tutoría Sincrónica (Franja Matutina)',
           instructorName: 'Ing. Iván Pérez (Docente Titular)',
-          startTimeUtc: tomorrow18.toISOString(),
+          startTimeUtc: d1.toISOString(),
           durationMinutes: 60,
           courseSlug: 'ipt-master-fullstack',
           moduleId: 'mod_tutoria',
           provider: 'native_jitsi',
-          meetingCode: 'ipt-tutor-room',
+          meetingCode: 'ipt-tutor-08am',
+          joinUrl: '/live?mode=1on1',
+          cloudRecordingState: 'scheduled',
+          autoTranscribed: true
+        } as any,
+        {
+          id: 'live_tutoria_10am',
+          title: 'Tutoría Sincrónica (Media Mañana)',
+          instructorName: 'Ing. Iván Pérez (Docente Titular)',
+          startTimeUtc: d2.toISOString(),
+          durationMinutes: 60,
+          courseSlug: 'ipt-master-fullstack',
+          moduleId: 'mod_tutoria',
+          provider: 'native_jitsi',
+          meetingCode: 'ipt-tutor-10am',
+          joinUrl: '/live?mode=1on1',
+          cloudRecordingState: 'scheduled',
+          autoTranscribed: true
+        } as any,
+        {
+          id: 'live_tutoria_04pm',
+          title: 'Tutoría Sincrónica (Franja Vespertina)',
+          instructorName: 'Ing. Iván Pérez (Docente Titular)',
+          startTimeUtc: d3.toISOString(),
+          durationMinutes: 60,
+          courseSlug: 'ipt-master-fullstack',
+          moduleId: 'mod_tutoria',
+          provider: 'native_jitsi',
+          meetingCode: 'ipt-tutor-04pm',
           joinUrl: '/live?mode=1on1',
           cloudRecordingState: 'scheduled',
           autoTranscribed: true
@@ -548,7 +660,7 @@ export default function LocalAiTutorWidget() {
     });
   }, [liveSessions, userConfirmedBookings]);
 
-  // Construir conocimiento en tiempo real y System Prompt
+  // Contexto de conocimiento para el LLM
   const liveKnowledgeContext = useMemo(() => {
     const studentName =
       user?.displayName || (user?.email ? user.email.split('@')[0] : 'Estudiante');
@@ -602,9 +714,9 @@ export default function LocalAiTutorWidget() {
 
     const userBookingsSummary =
       userConfirmedBookings.length === 0
-        ? 'El estudiante no tiene citas agendadas actualmente.'
+        ? 'Sin citas activas en agenda.'
         : userConfirmedBookings
-            .map((b) => `Cita ID: ${b.id} para sesión ${b.sessionId} (reservada el ${safeDateTime(b.bookedAt)})`)
+            .map((b) => `Cita ID: ${b.id} para sesión ${b.sessionId} (${safeDateTime(b.bookedAt)})`)
             .join(' | ');
 
     const directivesSummary =
@@ -625,30 +737,15 @@ export default function LocalAiTutorWidget() {
       planTitle,
       userBookingsSummary,
       directivesSummary,
-      systemPrompt: `Eres TutorIA, el asistente y tutor de inteligencia artificial oficial de IPT Academy.
-Responde siempre en español claro, amable, conciso y profesional (máximo 2 a 3 párrafos cortos).
-Estás integrado con el sistema operativo académico y tienes facultades operativas completas:
-
-1. FACULTADES ACTIVAS:
-- Agendar citas de clases y tutorías en vivo para el estudiante (consume 1 crédito de su saldo mensual de forma atómica).
-- Cancelar citas previamente agendadas (con reembolso automático del crédito si faltan más de 4 horas para el inicio).
-- Consultar e informar el balance exacto de créditos de clases en vivo.
-- Enseñar y aplicar las 5 reglas del sistema institucional.
-
-2. ESTADO ACTUAL DEL ESTUDIANTE:
-- Nombre: ${studentName} (${roleLabel})
-- Plan de Suscripción: ${planTitle}
-- Créditos disponibles para clases y tutorías: ${availableCredits} (Créditos consumidos este ciclo: ${consumedCredits})
-- Citas confirmadas en agenda: ${userBookingsSummary}
-- Lecciones completadas: ${completedLessonsCount}
-- Tareas pendientes: ${pendingAssignments.length} | Promedio de notas: ${avgScore}
-
-3. REGLAS INSTITUCIONALES DEL SISTEMA DE CITAS:
-- 1 Cita = 1 Crédito mensual.
-- Ventana de 4 Horas: Reservas y cancelaciones requieren al menos 4 horas de antelación al inicio.
-- Reembolso automático: Si el estudiante cancela con > 4 horas, el crédito se reintegra de inmediato. Con < 4 horas no es reembolsable.
-- Quórum mínimo de 3 estudiantes: Evaluado a las 3 horas previas. Si no se alcanza, se cancela la sesión y se reembolsa el crédito al instante.
-- Directivas docentes vigentes: ${directivesSummary}`
+      systemPrompt: `Eres TutorIA, el tutor de inteligencia artificial de IPT Academy con capacidad activa de agendamiento y cancelación de citas.
+Responde siempre en español claro, humano, empático y directo.
+Tienes facultades plenas:
+- Agendar citas sincrónicas (consume 1 crédito de forma atómica).
+- Cancelar citas activas con reembolso automático si faltan > 4 horas.
+- Informar balance de créditos en tiempo real: ${availableCredits} disponibles (${consumedCredits} consumidos).
+- Horario de tutorías en vivo: 7:00 AM a 10:00 PM (hora Colombia). Si piden horas de madrugada (como 5:00 AM), explica la franja y ofrece alternativas a partir de las 7:00 AM o 8:00 AM.
+- Citas activas del estudiante: ${userBookingsSummary}.
+- Reglas: 1 cita = 1 crédito; cancelación/reserva con mínimo 4h de antelación; quórum de 3 evaluado a las 3h.`
     };
   }, [
     user,
@@ -663,23 +760,24 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
     teacherDirectives
   ]);
 
-  // Generador de respuestas contextuales enriquecidas con Action Cards
+  // Generador contextual con análisis inteligente de hora y cancelación
   const buildContextualResponse = useCallback(
     (question: string): { text: string; actionPayload?: InteractiveActionPayload } => {
       const q = question.toLowerCase().trim();
-      const { studentName, completedCount, pendingCount, avgScore, roleLabel } = liveKnowledgeContext;
+      const { studentName, completedCount, pendingCount, avgScore } = liveKnowledgeContext;
 
-      // 1. Consultar balance de créditos
+      // =====================================================================
+      // 1. INTENCIÓN: VER CRÉDITOS / CUPOS
+      // =====================================================================
       if (
         q.includes('credito') ||
         q.includes('crédito') ||
         q.includes('cupo') ||
         q.includes('saldo') ||
-        q.includes('puntos') ||
         q.includes('cuantas citas') ||
         q.includes('cuántas citas')
       ) {
-        const text = `Hola ${studentName}. En tu plan ${planTitle} cuentas actualmente con ${availableCredits} crédito(s) disponible(s) para clases y tutorías en vivo (has consumido ${consumedCredits} en este período). Cada cita reservada descuenta 1 crédito de tu bolsa mensual, y si cancelas con más de 4 horas de anticipación tu crédito se reintegra al instante.`;
+        const text = `Hola ${studentName}. En tu plan ${planTitle} dispones de **${availableCredits} crédito(s) para clases y tutorías sincrónicas** en este ciclo (has utilizado ${consumedCredits}). Cada cita consume 1 crédito de tu bolsa mensual, y si cancelas con más de 4 horas de anticipación tu crédito se reintegra al instante.`;
         return {
           text,
           actionPayload: {
@@ -694,55 +792,12 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
         };
       }
 
-      // 2. Agendar cita o ver clases disponibles
-      if (
-        q.includes('agendar') ||
-        q.includes('reservar') ||
-        q.includes('pedir cita') ||
-        q.includes('sacar cita') ||
-        q.includes('programar') ||
-        q.includes('quiero cita') ||
-        q.includes('ver clases') ||
-        q.includes('horarios')
-      ) {
-        if (availableCredits <= 0) {
-          const text = `Hola ${studentName}. En este momento tienes 0 créditos disponibles para agendar citas en tu ciclo actual de ${planTitle}. Para obtener más créditos mensuales puedes actualizar a nuestro plan Pro+ (4 créditos al mes) o esperar a la renovación de tu ciclo de facturación.`;
-          return {
-            text,
-            actionPayload: {
-              kind: 'credits_card',
-              credits: {
-                available: availableCredits,
-                consumed: consumedCredits,
-                planTitle,
-                cycleEnd: subscription?.currentPeriodEnd
-              }
-            }
-          };
-        }
-
-        const text = `Hola ${studentName}. Tienes ${availableCredits} crédito(s) disponible(s). A continuación te presento las sesiones y tutorías magistrales programadas. Puedes agendar tu lugar con 1 clic (se descontará 1 crédito):`;
-        return {
-          text,
-          actionPayload: {
-            kind: 'sessions_picker',
-            sessions: preparedSessions
-          }
-        };
-      }
-
-      // 3. Ver mis citas o cancelar cita
-      if (
-        q.includes('mis citas') ||
-        q.includes('cancelar cita') ||
-        q.includes('cancelar') ||
-        q.includes('anular') ||
-        q.includes('citas programadas') ||
-        q.includes('mis reservas') ||
-        q.includes('mis clases')
-      ) {
+      // =====================================================================
+      // 2. INTENCIÓN: CANCELAR CITA / ANULAR RESERVA
+      // =====================================================================
+      if (isCancelIntent(q)) {
         if (userConfirmedBookings.length === 0) {
-          const text = `Hola ${studentName}. No tienes ninguna cita activa agendada en este momento. Tienes ${availableCredits} crédito(s) disponible(s) en tu cuenta listos para usar cuando desees programar una clase con tu docente.`;
+          const text = `Hola ${studentName}. No tienes ninguna cita activa agendada en este momento para cancelar. Tienes ${availableCredits} crédito(s) disponibles listos para cuando desees programar una clase.`;
           return {
             text,
             actionPayload: {
@@ -761,7 +816,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
         const fourHoursMs = 4 * 60 * 60 * 1000;
         const mappedBookings = userConfirmedBookings.map((bkg) => {
           const session = liveSessions.find((s) => s.id === bkg.sessionId);
-          const title = session?.title || 'Tutoría Sincrónica con Docente';
+          const title = session?.title || 'Tutoría Sincrónica con Docente Titular';
           const instructorName = session?.instructorName || 'Ing. Iván Pérez';
           const startTimeUtc = session?.startTimeUtc || bkg.bookedAt;
           const sessionStartMs = new Date(startTimeUtc).getTime();
@@ -780,7 +835,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
           };
         });
 
-        const text = `Hola ${studentName}. Estas son tus citas y clases en vivo confirmadas en tu agenda institucional. Puedes revisarlas o cancelar cualquiera de ellas (si cancelas con más de 4 horas de antelación, tu crédito se reembolsará automáticamente a tu saldo):`;
+        const text = `Hola ${studentName}. He revisado tu agenda institucional. Aquí tienes tus citas activas. Puedes presionar "Cancelar (+1 crédito)" en la tarjeta para devolver tu crédito de inmediato a tu saldo:`;
         return {
           text,
           actionPayload: {
@@ -790,7 +845,148 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
         };
       }
 
-      // 4. Reglas del sistema y políticas de citas
+      // =====================================================================
+      // 3. INTENCIÓN: AGENDAR CITA / SOLICITUD DE HORA ESPECÍFICA
+      // =====================================================================
+      const isBookingKeyword =
+        q.includes('agendar') ||
+        q.includes('agenda') ||
+        q.includes('reservar') ||
+        q.includes('reserva') ||
+        q.includes('pedir cita') ||
+        q.includes('sacar cita') ||
+        q.includes('programar') ||
+        q.includes('quiero cita') ||
+        q.includes('quiero una clase') ||
+        q.includes('ver clases') ||
+        q.includes('horarios') ||
+        q.includes('clase a las') ||
+        q.includes('cita a las');
+
+      if (isBookingKeyword) {
+        if (availableCredits <= 0) {
+          const text = `Hola ${studentName}. En este momento tienes 0 créditos disponibles para agendar citas en este ciclo de tu plan ${planTitle}. Para obtener más créditos mensuales puedes actualizar al plan Pro+ (4 créditos al mes) o esperar a la renovación de tu período de facturación.`;
+          return {
+            text,
+            actionPayload: {
+              kind: 'credits_card',
+              credits: {
+                available: availableCredits,
+                consumed: consumedCredits,
+                planTitle,
+                cycleEnd: subscription?.currentPeriodEnd
+              }
+            }
+          };
+        }
+
+        // Analizar si el estudiante pidió una hora específica (ej. "a las 5am", "a las 10am")
+        const parsedTime = parseRequestedTime(q);
+
+        if (parsedTime.hasRequestedTime && parsedTime.isOutsideAcademicHours) {
+          // El estudiante pidió una hora fuera de la franja (ej. 5:00 AM)
+          const requestedStr = `${parsedTime.hour}:00 ${parsedTime.hour! < 12 ? 'AM' : 'PM'}`;
+          const text = `Hola ${studentName}. He identificado que solicitas tu clase a las **${requestedStr}**. Ten en cuenta que las tutorías sincrónicas con los docentes de IPT Academy operan en la franja institucional de **7:00 AM a 10:00 PM (hora de Colombia)** para garantizar el acompañamiento activo y en vivo del profesor titular.\n\nPara facilitarte el agendamiento, he preparado los horarios más tempranos y convenientes disponibles dentro de la jornada habilitada:`;
+
+          // Generar opciones matutinas para mañana a las 7:00 AM, 8:00 AM y 10:00 AM
+          const d7 = new Date();
+          d7.setDate(d7.getDate() + 1);
+          d7.setHours(7, 0, 0, 0);
+
+          const d8 = new Date();
+          d8.setDate(d8.getDate() + 1);
+          d8.setHours(8, 0, 0, 0);
+
+          const d10 = new Date();
+          d10.setDate(d10.getDate() + 1);
+          d10.setHours(10, 0, 0, 0);
+
+          const customEarlySessions = [
+            {
+              id: 'slot_custom_07am',
+              title: 'Tutoría Sincrónica (07:00 AM COT)',
+              instructorName: 'Ing. Iván Pérez (Docente Titular)',
+              startTimeUtc: d7.toISOString(),
+              durationMinutes: 60,
+              courseSlug: 'ipt-master-fullstack',
+              isBooked: false,
+              tooLateToBook: false,
+              hoursUntilStart: 17
+            },
+            {
+              id: 'slot_custom_08am',
+              title: 'Tutoría Sincrónica (08:00 AM COT)',
+              instructorName: 'Ing. Iván Pérez (Docente Titular)',
+              startTimeUtc: d8.toISOString(),
+              durationMinutes: 60,
+              courseSlug: 'ipt-master-fullstack',
+              isBooked: false,
+              tooLateToBook: false,
+              hoursUntilStart: 18
+            },
+            {
+              id: 'slot_custom_10am',
+              title: 'Tutoría Sincrónica (10:00 AM COT)',
+              instructorName: 'Ing. Iván Pérez (Docente Titular)',
+              startTimeUtc: d10.toISOString(),
+              durationMinutes: 60,
+              courseSlug: 'ipt-master-fullstack',
+              isBooked: false,
+              tooLateToBook: false,
+              hoursUntilStart: 20
+            }
+          ];
+
+          return {
+            text,
+            actionPayload: {
+              kind: 'sessions_picker',
+              sessions: customEarlySessions
+            }
+          };
+        } else if (parsedTime.hasRequestedTime && !parsedTime.isOutsideAcademicHours) {
+          // El estudiante pidió una hora válida dentro de la franja (ej. 10:00 AM o 3:00 PM)
+          const targetDate = new Date();
+          targetDate.setDate(targetDate.getDate() + 1);
+          targetDate.setHours(parsedTime.hour!, parsedTime.minute || 0, 0, 0);
+
+          const customSession = {
+            id: `slot_custom_${parsedTime.hour}_${parsedTime.minute || 0}`,
+            title: `Tutoría Sincrónica Personalizada (${safeDateTime(targetDate.toISOString())})`,
+            instructorName: 'Ing. Iván Pérez (Docente Titular)',
+            startTimeUtc: targetDate.toISOString(),
+            durationMinutes: 60,
+            courseSlug: 'ipt-master-fullstack',
+            isBooked: false,
+            tooLateToBook: false,
+            hoursUntilStart: 20
+          };
+
+          const text = `¡Perfecto, ${studentName}! He preparado la sesión en el horario exacto que me solicitaste (${safeDateTime(targetDate.toISOString())}) con el docente titular. Haz clic a continuación para confirmar tu cupo (se descontará 1 crédito):`;
+
+          return {
+            text,
+            actionPayload: {
+              kind: 'sessions_picker',
+              sessions: [customSession]
+            }
+          };
+        }
+
+        // Agendamiento general sin hora específica
+        const text = `Hola ${studentName}. Tienes **${availableCredits} crédito(s) disponible(s)**. Aquí tienes las sesiones y tutorías magistrales programadas. Puedes agendar tu lugar con 1 clic (se descontará 1 crédito), o si lo prefieres, dime a qué hora específica deseas tu clase:`;
+        return {
+          text,
+          actionPayload: {
+            kind: 'sessions_picker',
+            sessions: preparedSessions
+          }
+        };
+      }
+
+      // =====================================================================
+      // 4. INTENCIÓN: REGLAS DEL SISTEMA
+      // =====================================================================
       if (
         q.includes('regla') ||
         q.includes('norma') ||
@@ -803,7 +999,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
         q.includes('plazo') ||
         q.includes('reembolso')
       ) {
-        const text = `Hola ${studentName}. En IPT Academy el agendamiento de tutorías y clases en vivo está respaldado por 5 reglas claras e integradas al sistema contable atómico:`;
+        const text = `Hola ${studentName}. En IPT Academy el agendamiento y cancelación de tutorías se rige por las siguientes 5 reglas oficiales:`;
         return {
           text,
           actionPayload: {
@@ -812,7 +1008,9 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
         };
       }
 
-      // 5. Consultas sobre notas o calificaciones
+      // =====================================================================
+      // 5. CONSULTAS ACADÉMICAS (NOTAS, TAREAS, CURSOS)
+      // =====================================================================
       if (
         q.includes('nota') ||
         q.includes('promedio') ||
@@ -833,7 +1031,6 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
         };
       }
 
-      // 6. Consultas sobre tareas o entregas
       if (q.includes('tarea') || q.includes('entrega') || q.includes('pendiente') || q.includes('deber')) {
         if (assignments.length === 0) {
           return {
@@ -854,7 +1051,6 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
         };
       }
 
-      // 7. Búsqueda directa en los cursos y lecciones
       for (const course of courses) {
         for (const mod of course.modules || []) {
           for (const les of mod.lessons || []) {
@@ -875,11 +1071,11 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
         }
       }
 
-      // Respuesta general
+      // Respuesta por defecto con asistencia
       const firstCourse = courses[0];
       const activeTitle = firstCourse?.title || 'IPT Academy';
       return {
-        text: `Hola ${studentName}. Estoy lista para ayudarte con tus clases de "${activeTitle}", tus tareas pendientes, tus notas o el agendamiento de tus tutorías en vivo (tienes ${availableCredits} créditos disponibles). ¿Qué deseas consultar hoy?`,
+        text: `Hola ${studentName}. Estoy lista para ayudarte con tus clases de "${activeTitle}", tus tareas pendientes, tus notas o el agendamiento y cancelación de tus citas en vivo (tienes ${availableCredits} crédito(s) disponibles). ¿Qué deseas realizar?`,
         actionPayload: {
           kind: 'credits_card',
           credits: {
@@ -904,7 +1100,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
     ]
   );
 
-  // Ejecución de agendamiento atómico desde el chat
+  // Ejecución atómica de agendamiento
   const handleExecuteBooking = async (session: {
     id: string;
     title: string;
@@ -954,7 +1150,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
     }
   };
 
-  // Ejecución de cancelación atómica desde el chat
+  // Ejecución atómica de cancelación
   const handleExecuteCancellation = async (booking: {
     id: string;
     title: string;
@@ -990,7 +1186,6 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
     }
   };
 
-  // Enviar mensaje con fast intent
   const handleFastIntent = (intent: 'creditos' | 'agendar' | 'citas' | 'reglas' | string) => {
     const promptMap: Record<string, string> = {
       creditos: '¿Cuántos créditos de tutoría tengo disponibles?',
@@ -1002,6 +1197,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
     executeSendMessage(question);
   };
 
+  // Procesador principal de mensajes con ejecución proactiva inteligente
   const executeSendMessage = async (promptText: string) => {
     const cleanPrompt = promptText.trim();
     if (!cleanPrompt || isGenerating) return;
@@ -1019,12 +1215,61 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
     setIsGenerating(true);
 
     try {
-      const responseObj = buildContextualResponse(cleanPrompt);
+      const { studentName } = liveKnowledgeContext;
 
+      // ACCIÓN PROACTIVA: Si el usuario pide explícitamente cancelar y tiene exactamente 1 cita confirmada
+      if (isCancelIntent(cleanPrompt) && userConfirmedBookings.length === 1) {
+        const targetBooking = userConfirmedBookings[0];
+        const session = liveSessions.find((s) => s.id === targetBooking.sessionId);
+        const title = session?.title || 'Tutoría Sincrónica Personalizada (1 a 1)';
+        const startTimeUtc = session?.startTimeUtc || targetBooking.bookedAt;
+        const diffMs = new Date(startTimeUtc).getTime() - Date.now();
+        const fourHoursMs = 4 * 60 * 60 * 1000;
+
+        if (diffMs < fourHoursMs) {
+          const assistantMsg: ChatMessage = {
+            id: `msg-${Date.now() + 1}`,
+            role: 'assistant',
+            content: `Hola ${studentName}. Ubiqué tu cita para "${title}" (${safeDateTime(startTimeUtc)}). Sin embargo, faltan menos de 4 horas para su inicio. Según la regla de anticipación institucional, las cancelaciones con menos de 4 horas no reintegran el crédito automáticamente. Si se trata de un imprevisto de fuerza mayor, por favor comunícate con soporte institucional.`,
+            timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+          };
+          const finalMessages = [...nextMessages, assistantMsg];
+          setMessages(finalMessages);
+          persistMessagesToFirebase(finalMessages);
+          return;
+        }
+
+        try {
+          await cancelLiveBooking(targetBooking.id);
+          const assistantMsg: ChatMessage = {
+            id: `msg-${Date.now() + 1}`,
+            role: 'assistant',
+            content: `✅ ¡Cita cancelada con éxito, ${studentName}!\n\n• Clase cancelada: "${title}"\n• Horario que tenías reservado: ${safeDateTime(startTimeUtc)}\n• Reembolso: Tu crédito de tutoría ha sido reintegrado inmediatamente a tu cuenta (ahora tienes ${availableCredits + 1} crédito(s) disponibles).\n• Motivo registrado: Solicitud directa del estudiante ("${cleanPrompt}").\n\nSi deseas reprogramar en otro horario, sólo dime a qué hora prefieres tu clase (ejemplo: "Quiero una cita a las 8am").`,
+            timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+            actionPayload: {
+              kind: 'credits_card',
+              credits: {
+                available: availableCredits + 1,
+                consumed: Math.max(0, consumedCredits - 1),
+                planTitle
+              }
+            }
+          };
+          const finalMessages = [...nextMessages, assistantMsg];
+          setMessages(finalMessages);
+          persistMessagesToFirebase(finalMessages);
+          showTopBanner('ready', 'Cita cancelada: crédito reintegrado con éxito.', 5000);
+          return;
+        } catch (err: any) {
+          // Continuar con respuesta estándar si hubo error
+        }
+      }
+
+      // Si no fue cancelación inmediata, generar respuesta contextual
+      const responseObj = buildContextualResponse(cleanPrompt);
       let replyText = responseObj.text;
       let actionPayload = responseObj.actionPayload;
 
-      // Si es WebLLM y no es una acción determinista de citas/créditos/reglas, consultar WebLLM
       const isSystemAction =
         actionPayload?.kind === 'sessions_picker' ||
         actionPayload?.kind === 'bookings_list' ||
@@ -1055,7 +1300,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
           // Mantener respuesta contextual
         }
       } else {
-        await new Promise((r) => setTimeout(r, 300));
+        await new Promise((r) => setTimeout(r, 250));
       }
 
       const assistantMsg: ChatMessage = {
@@ -1079,7 +1324,6 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
     executeSendMessage(inputPrompt);
   };
 
-  // Manejo de arrastre
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('[data-hide-btn="true"]')) {
       return;
@@ -1204,7 +1448,6 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
           }`}
           title="TutorIA • IPT Academy (Arrastra para mover o haz clic para abrir)"
         >
-          {/* Botón discreto para ocultar */}
           <button
             type="button"
             data-hide-btn="true"
@@ -1219,7 +1462,6 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
             <EyeOff className="w-2.5 h-2.5" />
           </button>
 
-          {/* Anillo exterior SVG con indicador de progreso */}
           <div className="relative w-16 h-16 rounded-full flex items-center justify-center bg-slate-900 shadow-2xl border border-slate-700/80">
             <svg
               className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
@@ -1244,7 +1486,6 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
               />
             </svg>
 
-            {/* Contenido Interior del Círculo */}
             <div className="relative w-12 h-12 rounded-full overflow-hidden bg-white flex items-center justify-center p-1.5 shadow-inner">
               <Image
                 src="/favicon.png"
@@ -1254,7 +1495,6 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                 className="w-full h-full object-contain pointer-events-none select-none"
                 priority
               />
-              {/* Badge de créditos disponibles */}
               <div className="absolute -bottom-1 -right-1 bg-violet-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-white shadow-xs">
                 {availableCredits}
               </div>
@@ -1267,7 +1507,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
       {isChatOpen && isReady && !isHidden && (
         <div
           className={`fixed z-[96] bg-white rounded-2xl border border-[#d1d2e0] shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150 transition-all ${
-            'left-3 right-3 sm:left-auto sm:right-auto sm:w-[410px]'
+            'left-3 right-3 sm:left-auto sm:right-auto sm:w-[420px]'
           } ${
             keyboardOffset > 0 ? '' : 'bottom-20 sm:bottom-28'
           } ${
@@ -1283,8 +1523,8 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
               keyboardOffset > 0 && visualViewportHeight
                 ? `${Math.min(520, visualViewportHeight - 20)}px`
                 : visualViewportHeight
-                ? `${Math.min(580, visualViewportHeight - 110)}px`
-                : 'min(580px, calc(100dvh - 120px))'
+                ? `${Math.min(590, visualViewportHeight - 110)}px`
+                : 'min(590px, calc(100dvh - 120px))'
           }}
         >
           {/* Cabecera del TutorIA */}
@@ -1307,7 +1547,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
                 </div>
                 <p className="text-[10px] text-cyan-200/80 truncate">
-                  Asistente oficial con gestión de citas y créditos
+                  Asistente inteligente con facultades de agendamiento
                 </p>
               </div>
             </div>
@@ -1337,7 +1577,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
             </div>
           </div>
 
-          {/* Subcabecera Informativa: Créditos en Vivo y Acceso a Reglas */}
+          {/* Subcabecera Informativa */}
           <div className="bg-[#1e293b] px-4 py-2 flex items-center justify-between border-b border-slate-700/60 text-xs">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-violet-500/20 text-violet-300 flex items-center justify-center">
@@ -1369,7 +1609,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                   <span>¡Hola, {liveKnowledgeContext.studentName}!</span>
                 </div>
                 <p className="leading-relaxed text-[#475569]">
-                  Soy <strong>TutorIA</strong>, tu asistente académico con facultades operativas. Puedo ayudarte a agendar citas de clases en vivo, consultar o reembolsar tus créditos, explicarte las reglas de la academia y darte seguimiento a tus cursos y notas.
+                  Soy <strong>TutorIA</strong>. Puedo ayudarte a agendar citas a horas específicas, cancelar citas con reembolso automático, verificar tus créditos y resolver dudas académicas.
                 </p>
 
                 <div className="pt-1 flex flex-wrap gap-1.5">
@@ -1377,7 +1617,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                     { label: '🎟️ Ver mis créditos', intent: 'creditos' },
                     { label: '📅 Agendar cita', intent: 'agendar' },
                     { label: '📋 Mis citas', intent: 'citas' },
-                    { label: '⚖️ Reglas del sistema', intent: 'reglas' },
+                    { label: '⚖️ Reglas de citas', intent: 'reglas' },
                     { label: '📊 Mis notas', intent: '¿Cómo voy en mis notas?' },
                     { label: '📚 Curso actual', intent: 'Explícame el curso actual' }
                   ].map((btn) => (
@@ -1412,7 +1652,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                     )}
                   </div>
                   <div
-                    className={`max-w-[86%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-line shadow-2xs ${
+                    className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-line shadow-2xs ${
                       m.role === 'user'
                         ? 'bg-[#1d4ed8] text-white rounded-tr-xs'
                         : 'bg-white text-[#1e293b] border border-[#e2e8f0] rounded-tl-xs'
@@ -1420,15 +1660,15 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                   >
                     <p>{m.content}</p>
 
-                    {/* Tarjeta Interactiva de Acción */}
+                    {/* Tarjetas Interactivas de Acción */}
                     {m.actionPayload && (
                       <div className="mt-2.5">
-                        {/* 1. Selector de Sesiones Disponibles para Agendar */}
+                        {/* Selector de Sesiones */}
                         {m.actionPayload.kind === 'sessions_picker' && (
                           <div className="space-y-2 pt-2 border-t border-slate-100">
                             <p className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
                               <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                              Sesiones y Tutorías en Vivo
+                              Opciones de Agendamiento
                             </p>
                             {m.actionPayload.sessions && m.actionPayload.sessions.length > 0 ? (
                               m.actionPayload.sessions.map((sess) => (
@@ -1460,7 +1700,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                                     {!sess.isBooked && (
                                       sess.tooLateToBook ? (
                                         <span className="text-amber-700 font-medium">
-                                          Cerrada (&lt; 4h)
+                                          Antelación cerrada (&lt; 4h)
                                         </span>
                                       ) : (
                                         <button
@@ -1491,7 +1731,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                           </div>
                         )}
 
-                        {/* 2. Lista de Citas Programadas con opción de Cancelación */}
+                        {/* Lista de Citas Programadas con Botón de Cancelación */}
                         {m.actionPayload.kind === 'bookings_list' && (
                           <div className="space-y-2 pt-2 border-t border-slate-100">
                             <p className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
@@ -1552,7 +1792,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                           </div>
                         )}
 
-                        {/* 3. Tarjeta de Créditos */}
+                        {/* Tarjeta de Créditos */}
                         {m.actionPayload.kind === 'credits_card' && (
                           <div className="pt-2 border-t border-slate-100 p-3 rounded-xl bg-slate-900 text-white space-y-2">
                             <div className="flex items-center justify-between">
@@ -1572,7 +1812,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                               </span>
                             </div>
                             <p className="text-[10px] text-slate-300 leading-relaxed">
-                              Cada cita descuenta 1 crédito de tu bolsa mensual. Si cancelas con más de 4 horas de anticipación, tu crédito vuelve automáticamente.
+                              Cada cita descuenta 1 crédito de tu bolsa mensual. Si cancelas con más de 4 horas de anticipación, tu crédito vuelve automáticamente a tu cuenta.
                             </p>
                             <div className="flex items-center gap-2 pt-1">
                               <button
@@ -1593,7 +1833,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                           </div>
                         )}
 
-                        {/* 4. Tarjeta de Reglas Oficiales */}
+                        {/* Tarjeta de Reglas Oficiales */}
                         {m.actionPayload.kind === 'rules_card' && (
                           <div className="pt-2 border-t border-slate-100 p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 space-y-2 text-[11px]">
                             <div className="flex items-center gap-1.5 font-bold text-slate-900">
@@ -1604,13 +1844,13 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                               <li className="flex items-start gap-1.5">
                                 <span className="font-bold text-blue-600 shrink-0">1.</span>
                                 <span>
-                                  <strong>1 Cita = 1 Crédito:</strong> Agendar una sesión en vivo descuenta automáticamente un crédito de tu saldo mensual.
+                                  <strong>1 Cita = 1 Crédito:</strong> Agendar una sesión descuenta automáticamente 1 crédito de tu saldo mensual.
                                 </span>
                               </li>
                               <li className="flex items-start gap-1.5">
                                 <span className="font-bold text-blue-600 shrink-0">2.</span>
                                 <span>
-                                  <strong>Anticipación de 4 Horas:</strong> Las citas solo pueden reservarse o cancelarse con al menos 4 horas de margen previo al inicio.
+                                  <strong>Anticipación de 4 Horas:</strong> Las citas solo pueden reservarse o cancelarse con al menos 4 horas de antelación al inicio.
                                 </span>
                               </li>
                               <li className="flex items-start gap-1.5">
@@ -1622,13 +1862,13 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                               <li className="flex items-start gap-1.5">
                                 <span className="font-bold text-blue-600 shrink-0">4.</span>
                                 <span>
-                                  <strong>Quórum Mínimo:</strong> Se evalúa a las 3 horas previas (mínimo 3 estudiantes). Si no se alcanza, se cancela y tu crédito se reembolsa automáticamente.
+                                  <strong>Quórum Mínimo:</strong> Se evalúa 3 horas antes (mínimo 3 estudiantes). Si no se alcanza, se cancela y tu crédito se reembolsa.
                                 </span>
                               </li>
                               <li className="flex items-start gap-1.5">
                                 <span className="font-bold text-blue-600 shrink-0">5.</span>
                                 <span>
-                                  <strong>Ciclo Mensual:</strong> Los créditos corresponden a tu período mensual activo y se renuevan en tu fecha de corte.
+                                  <strong>Horario Institucional:</strong> Las tutorías operan entre las 7:00 AM y las 10:00 PM (hora Colombia).
                                 </span>
                               </li>
                             </ul>
@@ -1668,7 +1908,7 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
             {isGenerating && (
               <div className="flex items-center gap-2 text-xs text-[#64748b] px-2 py-1">
                 <div className="w-2 h-2 rounded-full bg-cyan-500 animate-ping" />
-                <span>TutorIA está analizando tu consulta...</span>
+                <span>TutorIA está analizando tu solicitud...</span>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -1688,14 +1928,14 @@ Estás integrado con el sistema operativo académico y tienes facultades operati
                   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
                 }, 150);
               }}
-              placeholder="Pregúntame sobre tus clases, créditos o pide una cita..."
+              placeholder="Escribe tu duda, pide una hora (ej. 'a las 8am') o cancela una cita..."
               className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-[#cbd5e1] focus:outline-none focus:border-[#1d4ed8] text-[#0f172a]"
             />
             <button
               type="submit"
               disabled={!inputPrompt.trim() || isGenerating}
               className="p-2.5 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 text-white transition-colors shrink-0 cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
-              aria-label="Enviar pregunta"
+              aria-label="Enviar mensaje"
             >
               <Send className="w-4 h-4" />
             </button>
