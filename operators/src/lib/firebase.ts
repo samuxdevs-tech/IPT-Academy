@@ -106,6 +106,11 @@ export interface ParsedIptStudent {
   lastActiveIso: string;
   legalConsentAccepted: boolean;
   legalConsentAt?: string;
+  identityVerified: boolean;
+  identityDocType?: string;
+  identityDocNumber?: string;
+  identityLegalName?: string;
+  identityVerifiedAtIso?: string;
 }
 
 /**
@@ -260,6 +265,13 @@ export function parseStudentRecordFromRtdb(
     ? Object.keys(rawLicenses).filter((k) => rawLicenses[k])
     : [];
 
+  const rawIdentity = u?.identityVerification || {};
+  const identityVerified = Boolean(rawIdentity.verified || rawIdentity.status === 'verified');
+  const identityDocType = rawIdentity.docType || undefined;
+  const identityDocNumber = rawIdentity.docNumber ? String(rawIdentity.docNumber) : undefined;
+  const identityLegalName = rawIdentity.legalName || undefined;
+  const identityVerifiedAtIso = rawIdentity.verifiedAtIso || undefined;
+
   const rawGroups = u?.groups || {};
   const groups = Array.isArray(rawGroups)
     ? rawGroups
@@ -314,6 +326,11 @@ export function parseStudentRecordFromRtdb(
     lastActiveIso: lastActivityIso,
     legalConsentAccepted: Boolean(legal?.accepted),
     legalConsentAt: legal?.acceptedAtIso,
+    identityVerified,
+    identityDocType,
+    identityDocNumber,
+    identityLegalName,
+    identityVerifiedAtIso,
   };
 }
 

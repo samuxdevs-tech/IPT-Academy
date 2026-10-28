@@ -19,6 +19,9 @@ import {
   UserCheck,
   Database,
   BookOpen,
+  ShieldCheck,
+  ShieldAlert,
+  FileCheck2,
 } from "lucide-react";
 import { rtdb, parseStudentRecordFromRtdb, ParsedIptStudent } from "@/lib/firebase";
 import { ref, onValue, set, remove } from "firebase/database";
@@ -164,6 +167,44 @@ export function RegisteredAccountsView() {
   }, []);
 
   // Alternar licencia criptográfica de un curso en el perfil de un estudiante en RTDB
+  // Cambiar estado de verificación de identidad nacional del estudiante
+  const handleToggleIdentityVerification = async (
+    stuUid: string,
+    stuName: string,
+    currentVerified: boolean,
+    docType: string = 'CC',
+    docNumber: string = '1004892310'
+  ) => {
+    const nextVerified = !currentVerified;
+    const confirmMsg = nextVerified
+      ? `¿Aprobar y verificar identidad nacional para ${stuName} (${docType}: ${docNumber})?`
+      : `¿Revocar verificación de identidad de ${stuName}? Los certificados generados volverán a mostrar la marca de agua disuasoria.`;
+
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      await set(ref(rtdb, `users/${stuUid}/identityVerification`), {
+        verified: nextVerified,
+        status: nextVerified ? 'verified' : 'unverified',
+        docType: docType || 'CC',
+        docNumber: docNumber || 'Sin número',
+        legalName: stuName,
+        verifiedAtIso: nextVerified ? new Date().toISOString() : null,
+        verificationMethod: 'ADMIN_MANUAL_REVIEW',
+        verifiedBy: 'Rectoría / Administración IPT',
+        updatedAtIso: new Date().toISOString(),
+      });
+      setToastMessage(
+        nextVerified
+          ? `Identidad de ${stuName} verificada exitosamente.`
+          : `Verificación revocada para ${stuName}.`
+      );
+      setTimeout(() => setToastMessage(null), 4000);
+    } catch (err) {
+      alert('Error al actualizar verificación de identidad en Firebase.');
+    }
+  };
+
   const handleToggleStudentLicense = async (
     studentUid: string,
     studentName: string,
@@ -437,6 +478,7 @@ export function RegisteredAccountsView() {
                       <th className="px-6 py-3.5">Estudiante & UID</th>
                       <th className="px-6 py-3.5">Plan & Suscripción</th>
                       <th className="px-6 py-3.5">Avance en Cursos & Módulos</th>
+                      <th className="px-6 py-3.5">Identidad Nacional & Cédula</th>
                       <th className="px-6 py-3.5">Licencias Criptográficas (/users/uid/licenses)</th>
                     </tr>
                   </thead>
@@ -469,6 +511,46 @@ export function RegisteredAccountsView() {
                                 {cp.courseSlug}: {cp.completedCount} clases · Promedio {cp.finalAverage.toFixed(1)}
                               </div>
                             ))}
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="space-y-1.5">
+                            {stu.identityVerified ? (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                <span>Verificada</span>
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                                <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                                <span>Sin Verificar (Con marca de agua)</span>
+                              </div>
+                            )}
+
+                            <div className="text-[11px] text-zinc-300 font-mono">
+                              <span className="text-zinc-500">{stu.identityDocType || 'Doc'}:</span> {stu.identityDocNumber || 'No registrado'}
+                            </div>
+
+                            <button
+                              onClick={() =>
+                                handleToggleIdentityVerification(
+                                  stu.uid,
+                                  stu.name,
+                                  stu.identityVerified,
+                                  stu.identityDocType,
+                                  stu.identityDocNumber
+                                )
+                              }
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-medium border transition-colors cursor-pointer ${
+                                stu.identityVerified
+                                  ? 'bg-rose-500/10 text-rose-300 border-rose-500/20 hover:bg-rose-500/20'
+                                  : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/20'
+                              }`}
+                            >
+                              <FileCheck2 className="w-3 h-3" />
+                              <span>{stu.identityVerified ? 'Revocar Verificación' : 'Aprobar Cédula'}</span>
+                            </button>
                           </div>
                         </td>
 
