@@ -17,6 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useSubscription } from '@/context/SubscriptionContext';
 import { useLms } from '@/context/LmsContext';
 import { ref, get, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
@@ -50,6 +51,20 @@ export default function LocalAiTutorWidget() {
     return null;
   }
   const { user, effectiveIsAdmin } = useAuth();
+  const { subscription } = useSubscription();
+
+  // La tutoría está habilitada a partir del Plan Pro (Pro, Pro+, Your Plan o Administradores)
+  const isTutoringPlanActive =
+    effectiveIsAdmin ||
+    (subscription &&
+      (subscription.planId === 'pro' ||
+        subscription.planId === 'pro_plus' ||
+        subscription.planId === 'your_plan') &&
+      (subscription.status === 'active' || subscription.status === 'trial'));
+
+  if (!isTutoringPlanActive) {
+    return null;
+  }
   const {
     courses,
     assignments,

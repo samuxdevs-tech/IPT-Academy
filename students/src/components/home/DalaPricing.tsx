@@ -34,9 +34,10 @@ export default function DalaPricing() {
       badge: 'Estudio Continuo',
       price: formatCop(79000),
       period: 'al mes',
-      description: 'Para profesionales que desean profundizar en especializaciones técnicas con evaluación.',
+      description: 'Para profesionales que desean profundizar en especializaciones técnicas con tutoría y evaluación.',
       features: [
         '1 Especialización dinámica activa',
+        'Tutoría académica para resolver dudas',
         'Intercambio flexible de cursos',
         'Acceso ilimitado a biblioteca de lecciones',
         'Emisión de certificados oficiales con folio',

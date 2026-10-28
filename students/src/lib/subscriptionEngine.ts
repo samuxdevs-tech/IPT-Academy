@@ -1,5 +1,5 @@
 /**
- * IPT Academy — Motor Transaccional de Suscripciones, Entitlements, Outbox, Quórum y Facturación (v6)
+ * IPT Academy — Motor Transaccional de Suscripciones, Entitlements, Outbox, Cuota Mínima y Facturación (v6)
  * Cumple 100% con el Plan Maestro Definitivo v6:
  * - ClockService inyectable (bloqueado en producción para manipulación temporal)
  * - Ciclos por mes calendario con Billing Anchor (1..31) y ajuste de fin de mes
@@ -1613,7 +1613,7 @@ export class SubscriptionPlatformService {
   }
 
   // --------------------------------------------------------------------------
-  // Clases en Vivo: Reserva Atómica, Cancelación (4h) y Quórum (3h)
+  // Clases en Vivo: Reserva Atómica, Cancelación (4h) y Cuota Mínima (3h)
   // --------------------------------------------------------------------------
 
   public async bookLiveSession(subId: string, sessionId: string): Promise<LiveBooking> {
@@ -1727,7 +1727,7 @@ export class SubscriptionPlatformService {
   }
 
   /**
-   * Evalúa el quórum de una sesión cuando faltan <= 3 horas.
+   * Evalúa la cuota mínima de una sesión cuando faltan <= 3 horas.
    * 100% idempotente: las devoluciones cambian cada booking de 'confirmed' a 'refunded_quorum'
    * dentro de la transacción, impidiendo dobles reintegros en ejecuciones repetidas.
    */
@@ -1776,7 +1776,7 @@ export class SubscriptionPlatformService {
         return { session: structuredClone(session), refundedBookingsCount: 0 };
       }
 
-      // Quórum no alcanzado -> cancelar sesión y reintegrar créditos
+      // Cuota mínima no alcanzada -> cancelar sesión y reintegrar créditos
       session.quorumStatus = 'failed';
       session.status = 'cancelled';
       this.liveSessions.set(session.id, session);
@@ -1800,7 +1800,7 @@ export class SubscriptionPlatformService {
             userId: b.userId,
             type: 'quorum_cancelled',
             title: 'Sesión reprogramada y crédito devuelto',
-            message: `La sesión "${session.title}" no alcanzó el quórum mínimo. Tu crédito ha sido reintegrado automáticamente.`,
+            message: `La sesión "${session.title}" no alcanzó la cuota mínima de estudiantes. Tu crédito ha sido reintegrado automáticamente.`,
             actionUrl: '/live',
             now,
           });

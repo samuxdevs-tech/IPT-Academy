@@ -418,6 +418,12 @@ export default function SubscriptionCheckoutModal() {
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-[#6d28d2] shrink-0 mt-0.5" />
+                        <span>
+                          <strong>Tutoría académica</strong> y resolución de dudas de tus clases
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-[#6d28d2] shrink-0 mt-0.5" />
                         <span>Campus Pro con seguimiento de rúbricas y notas</span>
                       </li>
                       <li className="flex items-start gap-2 text-[#9194ac]">

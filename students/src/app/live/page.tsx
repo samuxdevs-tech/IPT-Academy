@@ -322,7 +322,7 @@ function StudentLiveRoomContent() {
           <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1 bg-neutral-900 border border-neutral-800 rounded-xl">
             <Users className="w-3.5 h-3.5 text-amber-400" />
             <span className="text-neutral-300 font-medium">
-              Quórum: {bookedCount} / {quorumRequired} mín. (Cupo máx. {maxCapacity})
+              Cuota mínima: {bookedCount} / {quorumRequired} estudiantes (Cupo máx. {maxCapacity})
             </span>
           </div>
           <div className="flex items-center space-x-1.5 px-3 py-1 bg-neutral-900 border border-neutral-800 rounded-xl">
@@ -392,11 +392,11 @@ function StudentLiveRoomContent() {
               <div className="p-4 rounded-2xl bg-neutral-900/90 border border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-white">
-                    Estado de tu reserva y quórum de la sesión
+                    Estado de tu reserva y cuota mínima de estudiantes
                   </p>
                   <p className="text-[11px] text-neutral-400">
-                    Inscritos: <strong className="text-white">{bookedCount}</strong> · Quórum mínimo:{' '}
-                    <strong className="text-white">{quorumRequired}</strong> · Si no se alcanza el quórum 3 h antes, tu crédito se devuelve automáticamente.
+                    Inscritos: <strong className="text-white">{bookedCount}</strong> · Cuota mínima de estudiantes:{' '}
+                    <strong className="text-white">{quorumRequired}</strong> · Si no se alcanza la cuota mínima 3 h antes, tu crédito se devuelve automáticamente.
                   </p>
                 </div>
 
@@ -498,7 +498,7 @@ function StudentLiveRoomContent() {
                 </div>
                 <div className="flex items-center space-x-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Quórum y créditos protegidos</span>
+                  <span>Cuota mínima y créditos protegidos</span>
                 </div>
               </div>
             </div>
