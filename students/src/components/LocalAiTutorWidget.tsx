@@ -814,14 +814,20 @@ Tienes facultades plenas:
 
         const nowMs = Date.now();
         const fourHoursMs = 4 * 60 * 60 * 1000;
+        const defaultTomorrow = new Date();
+        defaultTomorrow.setDate(defaultTomorrow.getDate() + 1);
+        defaultTomorrow.setHours(18, 0, 0, 0);
+
         const mappedBookings = userConfirmedBookings.map((bkg) => {
           const session = liveSessions.find((s) => s.id === bkg.sessionId);
-          const title = session?.title || 'Tutoría Sincrónica con Docente Titular';
-          const instructorName = session?.instructorName || 'Ing. Iván Pérez';
-          const startTimeUtc = session?.startTimeUtc || bkg.bookedAt;
+          const title = (bkg as any).sessionTitle || session?.title || 'Tutoría Sincrónica con Docente Titular';
+          const instructorName = (bkg as any).sessionInstructor || session?.instructorName || 'Ing. Iván Pérez';
+          const startTimeUtc = (bkg as any).sessionStartTime || session?.startTimeUtc || defaultTomorrow.toISOString();
           const sessionStartMs = new Date(startTimeUtc).getTime();
           const diffMs = sessionStartMs - nowMs;
-          const canCancel = diffMs >= fourHoursMs;
+          const bookedAtMs = new Date(bkg.bookedAt).getTime();
+          const isRecentBooking = nowMs - bookedAtMs < 30 * 60 * 1000;
+          const canCancel = diffMs >= fourHoursMs || isRecentBooking;
           const hoursRemaining = Math.max(0, Math.round(diffMs / (1000 * 60 * 60)));
 
           return {
@@ -1221,47 +1227,84 @@ Tienes facultades plenas:
       if (isCancelIntent(cleanPrompt) && userConfirmedBookings.length === 1) {
         const targetBooking = userConfirmedBookings[0];
         const session = liveSessions.find((s) => s.id === targetBooking.sessionId);
-        const title = session?.title || 'Tutoría Sincrónica Personalizada (1 a 1)';
-        const startTimeUtc = session?.startTimeUtc || targetBooking.bookedAt;
+        const title = (targetBooking as any).sessionTitle || session?.title || 'Tutoría Sincrónica Personalizada (1 a 1)';
+
+        const defaultTomorrow = new Date();
+        defaultTomorrow.setDate(defaultTomorrow.getDate() + 1);
+        defaultTomorrow.setHours(18, 0, 0, 0);
+
+        const startTimeUtc = (targetBooking as any).sessionStartTime || session?.startTimeUtc || defaultTomorrow.toISOString();
         const diffMs = new Date(startTimeUtc).getTime() - Date.now();
         const fourHoursMs = 4 * 60 * 60 * 1000;
 
-        if (diffMs < fourHoursMs) {
+        const bookedAtMs = new Date(targetBooking.bookedAt).getTime();
+        const isRecentBooking = Date.now() - bookedAtMs < 30 * 60 * 1000; // Ventana de gracia de 30 min
+
+        const isForceCancel =
+          cleanPrompt.toLowerCase().includes('igual manera') ||
+          cleanPrompt.toLowerCase().includes('de todas formas') ||
+          cleanPrompt.toLowerCase().includes('de todos modos') ||
+          cleanPrompt.toLowerCase().includes('no importa') ||
+          cleanPrompt.toLowerCase().includes('hazlo igual') ||
+          cleanPrompt.toLowerCase().includes('cancela igual') ||
+          cleanPrompt.toLowerCase().includes('cancélala igual');
+
+        // Si es una reserva reciente por error O faltan más de 4 horas: cancelar con REEMBOLSO COMPLETO
+        if (diffMs >= fourHoursMs || isRecentBooking) {
+          try {
+            await cancelLiveBooking(targetBooking.id);
+            const assistantMsg: ChatMessage = {
+              id: `msg-${Date.now() + 1}`,
+              role: 'assistant',
+              content: `✅ ¡Cita cancelada con éxito, ${studentName}!\n\n• Clase cancelada: "${title}"\n• Horario que tenías reservado: ${safeDateTime(startTimeUtc)}\n• Reembolso: Tu crédito de tutoría ha sido reintegrado inmediatamente a tu cuenta (ahora tienes ${availableCredits + 1} crédito(s) disponibles).\n${isRecentBooking ? '• Ventana de gracia: Se aplicó la devolución inmediata de crédito por cancelación de reserva reciente.\n' : ''}\nSi deseas reprogramar en otro horario, sólo dime a qué hora prefieres tu clase (ejemplo: "Quiero una cita a las 8am").`,
+              timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+              actionPayload: {
+                kind: 'credits_card',
+                credits: {
+                  available: availableCredits + 1,
+                  consumed: Math.max(0, consumedCredits - 1),
+                  planTitle
+                }
+              }
+            };
+            const finalMessages = [...nextMessages, assistantMsg];
+            setMessages(finalMessages);
+            persistMessagesToFirebase(finalMessages);
+            showTopBanner('ready', 'Cita cancelada: crédito reintegrado con éxito.', 5000);
+            return;
+          } catch (err: any) {
+            // Continuar
+          }
+        } else if (isForceCancel) {
+          // El usuario insistió en cancelar aunque falten < 4 horas
+          try {
+            await cancelLiveBooking(targetBooking.id, { forceCancel: true });
+            const assistantMsg: ChatMessage = {
+              id: `msg-${Date.now() + 1}`,
+              role: 'assistant',
+              content: `✅ He cancelado la cita para "${title}" (${safeDateTime(startTimeUtc)}) de tu agenda tal como me lo indicaste.\n\n• Estado: Cita eliminada de tu calendario.\n• Créditos: Por haberse cancelado con menos de 4 horas y fuera de la ventana de gracia, no se reintegró el crédito según las normas institucionales.`,
+              timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+            };
+            const finalMessages = [...nextMessages, assistantMsg];
+            setMessages(finalMessages);
+            persistMessagesToFirebase(finalMessages);
+            showTopBanner('ready', 'Cita cancelada de tu agenda.', 4500);
+            return;
+          } catch (err: any) {
+            // Continuar
+          }
+        } else {
+          // Menos de 4 horas y no es reciente ni forceCancel: advertir y dar la opción explícita
           const assistantMsg: ChatMessage = {
             id: `msg-${Date.now() + 1}`,
             role: 'assistant',
-            content: `Hola ${studentName}. Ubiqué tu cita para "${title}" (${safeDateTime(startTimeUtc)}). Sin embargo, faltan menos de 4 horas para su inicio. Según la regla de anticipación institucional, las cancelaciones con menos de 4 horas no reintegran el crédito automáticamente. Si se trata de un imprevisto de fuerza mayor, por favor comunícate con soporte institucional.`,
+            content: `Hola ${studentName}. Ubiqué tu cita para "${title}" (${safeDateTime(startTimeUtc)}). Faltan menos de 4 horas para su inicio, por lo que la cancelación no reintegra el crédito automáticamente.\n\nSi deseas cancelarla de todas formas de tu calendario institucional, respóndeme **"cancélala de igual manera"** y la daré de baja de inmediato.`,
             timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
           };
           const finalMessages = [...nextMessages, assistantMsg];
           setMessages(finalMessages);
           persistMessagesToFirebase(finalMessages);
           return;
-        }
-
-        try {
-          await cancelLiveBooking(targetBooking.id);
-          const assistantMsg: ChatMessage = {
-            id: `msg-${Date.now() + 1}`,
-            role: 'assistant',
-            content: `✅ ¡Cita cancelada con éxito, ${studentName}!\n\n• Clase cancelada: "${title}"\n• Horario que tenías reservado: ${safeDateTime(startTimeUtc)}\n• Reembolso: Tu crédito de tutoría ha sido reintegrado inmediatamente a tu cuenta (ahora tienes ${availableCredits + 1} crédito(s) disponibles).\n• Motivo registrado: Solicitud directa del estudiante ("${cleanPrompt}").\n\nSi deseas reprogramar en otro horario, sólo dime a qué hora prefieres tu clase (ejemplo: "Quiero una cita a las 8am").`,
-            timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
-            actionPayload: {
-              kind: 'credits_card',
-              credits: {
-                available: availableCredits + 1,
-                consumed: Math.max(0, consumedCredits - 1),
-                planTitle
-              }
-            }
-          };
-          const finalMessages = [...nextMessages, assistantMsg];
-          setMessages(finalMessages);
-          persistMessagesToFirebase(finalMessages);
-          showTopBanner('ready', 'Cita cancelada: crédito reintegrado con éxito.', 5000);
-          return;
-        } catch (err: any) {
-          // Continuar con respuesta estándar si hubo error
         }
       }
 

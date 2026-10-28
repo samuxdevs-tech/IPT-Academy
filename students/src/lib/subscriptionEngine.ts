@@ -180,6 +180,9 @@ export interface LiveBooking {
   status: 'confirmed' | 'cancelled_by_user' | 'refunded_quorum' | 'cancelled_subscription_inactive';
   bookedAt: string;
   cancelledOrRefundedAt?: string;
+  sessionTitle?: string;
+  sessionStartTime?: string;
+  sessionInstructor?: string;
 }
 
 export interface PaymentAttempt {
@@ -1780,6 +1783,9 @@ export class SubscriptionPlatformService {
         subscriptionId: sub.id,
         status: 'confirmed',
         bookedAt: now.toISOString(),
+        sessionTitle: session.title,
+        sessionStartTime: session.startTime,
+        sessionInstructor: session.teacherId,
       };
 
       this.subscriptions.set(sub.id, sub);
@@ -1790,7 +1796,11 @@ export class SubscriptionPlatformService {
     });
   }
 
-  public async cancelLiveBooking(bookingId: string, requestingUserId: string): Promise<LiveBooking> {
+  public async cancelLiveBooking(
+    bookingId: string,
+    requestingUserId: string,
+    options?: { forceCancel?: boolean }
+  ): Promise<LiveBooking> {
     return this.runTransaction(async () => {
       const now = this.clock.now();
       const booking = this.liveBookings.get(bookingId);
@@ -1803,22 +1813,28 @@ export class SubscriptionPlatformService {
       }
 
       const session = this.liveSessions.get(booking.sessionId);
-      if (!session) throw new Error('LIVE_SESSION_NOT_FOUND');
+      const bookedAtMs = new Date(booking.bookedAt).getTime();
+      const isWithinGracePeriod = now.getTime() - bookedAtMs < 30 * 60 * 1000; // 30 min grace period
 
-      const sessionStartMs = new Date(session.startTime).getTime();
+      const sessionStartTime = session?.startTime || booking.sessionStartTime;
+      const sessionStartMs = sessionStartTime ? new Date(sessionStartTime).getTime() : 0;
       const fourHoursMs = 4 * 60 * 60 * 1000;
-      if (sessionStartMs - now.getTime() < fourHoursMs) {
+      const hasAnticipation = sessionStartMs ? sessionStartMs - now.getTime() >= fourHoursMs : false;
+
+      const shouldRefund = hasAnticipation || isWithinGracePeriod;
+
+      if (!hasAnticipation && !isWithinGracePeriod && !options?.forceCancel) {
         throw new Error('CANCELLATION_WINDOW_CLOSED_4H');
       }
 
       const sub = this.subscriptions.get(booking.subscriptionId);
-      if (sub && sub.status !== 'read_only') {
+      if (sub && sub.status !== 'read_only' && shouldRefund) {
         sub.remainingCredits += 1;
         sub.creditsConsumedInCycle = Math.max(0, sub.creditsConsumedInCycle - 1);
         this.subscriptions.set(sub.id, sub);
       }
 
-      if (session.bookedCount > 0) {
+      if (session && session.bookedCount > 0) {
         session.bookedCount -= 1;
         this.liveSessions.set(session.id, session);
       }

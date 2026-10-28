@@ -118,7 +118,7 @@ interface SubscriptionContextValue {
       maxCapacity?: number;
     }
   ) => Promise<LiveBooking>;
-  cancelLiveBooking: (bookingId: string) => Promise<LiveBooking>;
+  cancelLiveBooking: (bookingId: string, options?: { forceCancel?: boolean }) => Promise<LiveBooking>;
   submitYourPlanRequest: (
     input: Omit<
       YourPlanExecutiveRequest,
@@ -560,8 +560,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   );
 
   const cancelLiveBooking = useCallback(
-    async (bookingId: string) => {
-      const bkg = await engineRef.current.cancelLiveBooking(bookingId, effectiveUid);
+    async (bookingId: string, options?: { forceCancel?: boolean }) => {
+      const bkg = await engineRef.current.cancelLiveBooking(bookingId, effectiveUid, options);
       await syncEngineToStorageAndRtdb(effectiveUid);
       return bkg;
     },
