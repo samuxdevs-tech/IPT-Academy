@@ -19,12 +19,14 @@ import {
   Eye,
   RefreshCw,
   Stamp,
+  BookOpen,
+  ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { IptLogoIcon } from '@/components/IptLogoIcon';
 import { rtdb } from '@/lib/firebase';
-import { ref, onValue, set } from 'firebase/database';
+import { ref, onValue, set, get } from 'firebase/database';
 
 interface CertificateClientViewProps {
   courseSlug?: string;
@@ -100,6 +102,11 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
   const [uploadedDocBase64, setUploadedDocBase64] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState<boolean>(false);
+
+  // Estado de Progreso Real del Estudiante en el Curso Seleccionado
+  const [completedLessonsCount, setCompletedLessonsCount] = useState<number>(0);
+  const [totalLessonsCount, setTotalLessonsCount] = useState<number>(0);
+  const [progressLoading, setProgressLoading] = useState<boolean>(true);
 
   // Sincronizar estado de identidad con Firebase RTDB y almacenamiento local
   useEffect(() => {
@@ -212,6 +219,82 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
     const suffix = docNumber.slice(-4).padStart(4, '0');
     return `${activeTemplate.folioPrefix}-${suffix}`;
   }, [activeTemplate.folioPrefix, docNumber]);
+
+  // Sincronizar en tiempo real el progreso del estudiante en el curso seleccionado
+  useEffect(() => {
+    if (!user?.uid) {
+      setCompletedLessonsCount(0);
+      setTotalLessonsCount(12);
+      setProgressLoading(false);
+      return;
+    }
+
+    setProgressLoading(true);
+
+    // 1. Escuchar lecciones completadas en progress/{uid}/{selectedSlug}
+    const userCourseProgRef = ref(rtdb, `progress/${user.uid}/${selectedSlug}`);
+    const unsubCourseProg = onValue(userCourseProgRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        if (Array.isArray(val.completedLessons)) {
+          setCompletedLessonsCount(val.completedLessons.filter(Boolean).length);
+        } else if (typeof val.completedLessons === 'object' && val.completedLessons !== null) {
+          setCompletedLessonsCount(Object.values(val.completedLessons).filter(Boolean).length);
+        } else {
+          setCompletedLessonsCount(0);
+        }
+      } else {
+        // Fallback a progress/{uid} raíz
+        get(ref(rtdb, `progress/${user.uid}`)).then((rootSnap) => {
+          if (rootSnap.exists()) {
+            const rootVal = rootSnap.val();
+            const courseVal = rootVal[selectedSlug];
+            if (courseVal && Array.isArray(courseVal.completedLessons)) {
+              setCompletedLessonsCount(courseVal.completedLessons.filter(Boolean).length);
+            } else if (Array.isArray(rootVal.completedLessons)) {
+              setCompletedLessonsCount(rootVal.completedLessons.filter(Boolean).length);
+            } else {
+              setCompletedLessonsCount(0);
+            }
+          } else {
+            setCompletedLessonsCount(0);
+          }
+        }).catch(() => setCompletedLessonsCount(0));
+      }
+    });
+
+    // 2. Obtener el número real de lecciones del curso en courses/{selectedSlug}
+    get(ref(rtdb, `courses/${selectedSlug}`)).then((courseSnap) => {
+      if (courseSnap.exists()) {
+        const c = courseSnap.val();
+        let total = 0;
+        if (Array.isArray(c.modules)) {
+          c.modules.forEach((m: any) => {
+            if (Array.isArray(m?.lessons)) total += m.lessons.length;
+            else if (m?.lessons && typeof m.lessons === 'object') total += Object.keys(m.lessons).length;
+          });
+        }
+        setTotalLessonsCount(total > 0 ? total : 12);
+      } else {
+        setTotalLessonsCount(12);
+      }
+      setProgressLoading(false);
+    }).catch(() => {
+      setTotalLessonsCount(12);
+      setProgressLoading(false);
+    });
+
+    return () => unsubCourseProg();
+  }, [user?.uid, selectedSlug]);
+
+  const courseProgressPercent = useMemo(() => {
+    if (!totalLessonsCount || totalLessonsCount === 0) return 0;
+    return Math.min(100, Math.round((completedLessonsCount / totalLessonsCount) * 100));
+  }, [completedLessonsCount, totalLessonsCount]);
+
+  const isCourseCompleted = useMemo(() => {
+    return courseProgressPercent >= 100;
+  }, [courseProgressPercent]);
 
   // Ejecutar análisis OCR e Inteligencia Visual del documento nacional
   const handleRunOcrVerification = async (e: React.FormEvent) => {
@@ -534,9 +617,68 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
             </div>
           </div>
 
-          {/* Columna Derecha: Lienzo del Certificado Profesional de Alta Gala (Fondo Blanco Marfil, Marco Dorado y Tipografía Editorial) */}
+                    {/* Columna Derecha: Bloqueo Condicional de Requisito de Culminación del 100% */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="relative rounded-2xl overflow-hidden bg-[#faf8f5] text-[#1c1917] p-8 sm:p-14 shadow-2xl border border-[#e7e0d3] select-none print:shadow-none print:border-none print:p-6">
+            {!isCourseCompleted ? (
+              /* ESTADO BLOQUEADO: El estudiante no ha culminado el 100% de las clases del curso */
+              <div className="rounded-3xl border border-[#ffffff]/10 bg-[#09090b] p-8 sm:p-12 text-center space-y-6 shadow-2xl">
+                <div className="w-16 h-16 rounded-3xl bg-[#8052ff]/10 border border-[#8052ff]/30 flex items-center justify-center mx-auto text-[#8052ff]">
+                  <Lock className="w-8 h-8" />
+                </div>
+
+                <div className="max-w-md mx-auto space-y-2">
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#9a9a9a]">
+                    Requisito de Acreditación Académica
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-medium tracking-tight text-white">
+                    Certificación no disponible aún
+                  </h2>
+                  <p className="text-xs text-[#9a9a9a] leading-relaxed">
+                    El certificado oficial de <strong className="text-white">{activeTemplate.title}</strong> solo se
+                    emite de manera irrevocable tras completar el 100% de las lecciones y módulos prácticos del programa.
+                  </p>
+                </div>
+
+                {/* Barra de Progreso en Vivo */}
+                <div className="max-w-md mx-auto bg-[#000000] border border-[#ffffff]/10 rounded-2xl p-5 text-left space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#bdbdbd] flex items-center gap-1.5 font-medium">
+                      <BookOpen className="w-4 h-4 text-[#8052ff]" />
+                      <span>Progreso de clases:</span>
+                    </span>
+                    <span className="font-mono font-bold text-white">
+                      {completedLessonsCount} / {totalLessonsCount} lecciones ({courseProgressPercent}%)
+                    </span>
+                  </div>
+
+                  <div className="w-full h-2.5 rounded-full bg-[#ffffff]/10 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#8052ff] to-[#6d3df5] transition-all duration-500 rounded-full"
+                      style={{ width: `${courseProgressPercent}%` }}
+                    />
+                  </div>
+
+                  <div className="text-[11px] text-[#9a9a9a] flex items-center justify-between pt-1">
+                    <span>Restantes: {Math.max(0, totalLessonsCount - completedLessonsCount)} lecciones</span>
+                    <span className="text-amber-400 font-mono">Meta obligatoria: 100%</span>
+                  </div>
+                </div>
+
+                {/* Botón para continuar estudiando */}
+                <div className="pt-2">
+                  <Link
+                    href={`/course?slug=${selectedSlug}`}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-white text-xs font-semibold shadow-[0_0_30px_rgba(128,82,255,0.35)] transition-all cursor-pointer"
+                  >
+                    <span>Continuar cursando lecciones pendientes</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              /* ESTADO DESBLOQUEADO: El estudiante aprobó el 100% del curso */
+              <div className="space-y-6">
+<div className="relative rounded-2xl overflow-hidden bg-[#faf8f5] text-[#1c1917] p-8 sm:p-14 shadow-2xl border border-[#e7e0d3] select-none print:shadow-none print:border-none print:p-6">
               {/* Marco Exterior Ornamental Dorado */}
               <div className="absolute inset-3 border-2 border-[#cbb37a] rounded-xl pointer-events-none" />
               {/* Marco Interior Delgado Dorado */}
@@ -758,6 +900,9 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
                 </Link>
               </div>
             </div>
+
+              </div>
+            )}
           </div>
         </div>
       </div>
