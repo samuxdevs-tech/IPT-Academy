@@ -24,6 +24,11 @@ import { useSubscription } from '@/context/SubscriptionContext';
 import { useLms } from '@/context/LmsContext';
 import { ref, get, set, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase';
+import {
+  askTutorIAWithGroq,
+  GroqTutorContext,
+  GroqChatMessage
+} from '@/services/groqTutorService';
 
 export interface InteractiveActionPayload {
   kind: 'sessions_picker' | 'bookings_list' | 'credits_card' | 'rules_card';
@@ -1203,7 +1208,7 @@ Tienes facultades plenas:
     executeSendMessage(question);
   };
 
-  // Procesador principal de mensajes con ejecución proactiva inteligente
+  // Procesador autónomo de mensajes con IA y Tool Calling guiado por directrices inviolables
   const executeSendMessage = async (promptText: string) => {
     const cleanPrompt = promptText.trim();
     if (!cleanPrompt || isGenerating) return;
@@ -1221,129 +1226,258 @@ Tienes facultades plenas:
     setIsGenerating(true);
 
     try {
-      const { studentName } = liveKnowledgeContext;
+      const studentName =
+        user?.displayName || (user?.email ? user.email.split('@')[0] : 'Estudiante');
 
-      // ACCIÓN PROACTIVA: Si el usuario pide explícitamente cancelar y tiene exactamente 1 cita confirmada
-      if (isCancelIntent(cleanPrompt) && userConfirmedBookings.length === 1) {
-        const targetBooking = userConfirmedBookings[0];
-        const session = liveSessions.find((s) => s.id === targetBooking.sessionId);
-        const title = (targetBooking as any).sessionTitle || session?.title || 'Tutoría Sincrónica Personalizada (1 a 1)';
+      // Ensamblaje del contexto institucional para el modelo autónomo
+      const groqCtx: GroqTutorContext = {
+        studentName,
+        roleLabel: effectiveIsAdmin ? 'Administrador / Docente' : 'Estudiante',
+        planTitle,
+        availableCredits,
+        consumedCredits,
+        cycleEnd: subscription?.currentPeriodEnd,
+        activeBookings: userConfirmedBookings.map((b) => {
+          const session = liveSessions.find((s) => s.id === b.sessionId);
+          return {
+            id: b.id,
+            sessionId: b.sessionId,
+            title: (b as any).sessionTitle || session?.title || 'Tutoría Sincrónica con Docente Titular',
+            instructorName: (b as any).sessionInstructor || session?.instructorName || 'Ing. Iván Pérez',
+            startTimeUtc: (b as any).sessionStartTime || session?.startTimeUtc || '',
+            bookedAt: b.bookedAt
+          };
+        }),
+        availableSessions: preparedSessions.map((s) => ({
+          id: s.id,
+          title: s.title,
+          instructorName: s.instructorName,
+          startTimeUtc: s.startTimeUtc,
+          durationMinutes: s.durationMinutes,
+          courseSlug: s.courseSlug
+        })),
+        teacherDirectives,
+        coursesSummary: liveKnowledgeContext.coursesSummary,
+        assignmentsSummary: liveKnowledgeContext.assignmentsSummary
+      };
 
-        const defaultTomorrow = new Date();
-        defaultTomorrow.setDate(defaultTomorrow.getDate() + 1);
-        defaultTomorrow.setHours(18, 0, 0, 0);
+      const historyForAgent: GroqChatMessage[] = nextMessages.slice(-6).map((m) => ({
+        role: m.role,
+        content: m.content
+      }));
 
-        const startTimeUtc = (targetBooking as any).sessionStartTime || session?.startTimeUtc || defaultTomorrow.toISOString();
-        const diffMs = new Date(startTimeUtc).getTime() - Date.now();
-        const fourHoursMs = 4 * 60 * 60 * 1000;
+      // Invocación del Agente Autónomo (Groq openai/gpt-oss-120b)
+      let agentResponse;
+      try {
+        agentResponse = await askTutorIAWithGroq(cleanPrompt, historyForAgent, groqCtx);
+      } catch (err) {
+        console.warn('Groq Agent invocation fallback to local:', err);
+        const fallback = buildContextualResponse(cleanPrompt);
+        agentResponse = { text: fallback.text, toolCall: undefined };
+      }
 
-        const bookedAtMs = new Date(targetBooking.bookedAt).getTime();
-        const isRecentBooking = Date.now() - bookedAtMs < 30 * 60 * 1000; // Ventana de gracia de 30 min
+      let replyText = agentResponse.text || '';
+      let actionPayload: InteractiveActionPayload | undefined = undefined;
 
-        const isForceCancel =
-          cleanPrompt.toLowerCase().includes('igual manera') ||
-          cleanPrompt.toLowerCase().includes('de todas formas') ||
-          cleanPrompt.toLowerCase().includes('de todos modos') ||
-          cleanPrompt.toLowerCase().includes('no importa') ||
-          cleanPrompt.toLowerCase().includes('hazlo igual') ||
-          cleanPrompt.toLowerCase().includes('cancela igual') ||
-          cleanPrompt.toLowerCase().includes('cancélala igual');
+      // RESOLUCIÓN AUTÓNOMA DE HERRAMIENTAS (TOOL CALLING)
+      if (agentResponse.toolCall) {
+        const { name, arguments: args } = agentResponse.toolCall;
 
-        // Si es una reserva reciente por error O faltan más de 4 horas: cancelar con REEMBOLSO COMPLETO
-        if (diffMs >= fourHoursMs || isRecentBooking) {
-          try {
-            await cancelLiveBooking(targetBooking.id);
-            const assistantMsg: ChatMessage = {
-              id: `msg-${Date.now() + 1}`,
-              role: 'assistant',
-              content: `✅ ¡Cita cancelada con éxito, ${studentName}!\n\n• Clase cancelada: "${title}"\n• Horario que tenías reservado: ${safeDateTime(startTimeUtc)}\n• Reembolso: Tu crédito de tutoría ha sido reintegrado inmediatamente a tu cuenta (ahora tienes ${availableCredits + 1} crédito(s) disponibles).\n${isRecentBooking ? '• Ventana de gracia: Se aplicó la devolución inmediata de crédito por cancelación de reserva reciente.\n' : ''}\nSi deseas reprogramar en otro horario, sólo dime a qué hora prefieres tu clase (ejemplo: "Quiero una cita a las 8am").`,
-              timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
-              actionPayload: {
-                kind: 'credits_card',
-                credits: {
-                  available: availableCredits + 1,
-                  consumed: Math.max(0, consumedCredits - 1),
-                  planTitle
-                }
+        if (name === 'agendar_cita') {
+          if (availableCredits <= 0) {
+            replyText =
+              replyText ||
+              `Hola ${studentName}. Actualmente cuentas con 0 créditos en tu bolsa de clases en vivo. Cada sesión sincrónica requiere 1 crédito de tu suscripción mensual.`;
+            actionPayload = {
+              kind: 'credits_card',
+              credits: {
+                available: availableCredits,
+                consumed: consumedCredits,
+                planTitle,
+                cycleEnd: subscription?.currentPeriodEnd
               }
             };
-            const finalMessages = [...nextMessages, assistantMsg];
-            setMessages(finalMessages);
-            persistMessagesToFirebase(finalMessages);
-            showTopBanner('ready', 'Cita cancelada: crédito reintegrado con éxito.', 5000);
-            return;
-          } catch (err: any) {
-            // Continuar
-          }
-        } else if (isForceCancel) {
-          // El usuario insistió en cancelar aunque falten < 4 horas
-          try {
-            await cancelLiveBooking(targetBooking.id, { forceCancel: true });
-            const assistantMsg: ChatMessage = {
-              id: `msg-${Date.now() + 1}`,
-              role: 'assistant',
-              content: `✅ He cancelado la cita para "${title}" (${safeDateTime(startTimeUtc)}) de tu agenda tal como me lo indicaste.\n\n• Estado: Cita eliminada de tu calendario.\n• Créditos: Por haberse cancelado con menos de 4 horas y fuera de la ventana de gracia, no se reintegró el crédito según las normas institucionales.`,
-              timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+          } else {
+            replyText =
+              replyText ||
+              `Hola ${studentName}. Tienes ${availableCredits} crédito(s) disponible(s). A continuación te presento las sesiones y tutorías programadas. Puedes agendar tu lugar con 1 clic (se descontará 1 crédito):`;
+            actionPayload = {
+              kind: 'sessions_picker',
+              sessions: preparedSessions
             };
-            const finalMessages = [...nextMessages, assistantMsg];
-            setMessages(finalMessages);
-            persistMessagesToFirebase(finalMessages);
-            showTopBanner('ready', 'Cita cancelada de tu agenda.', 4500);
-            return;
-          } catch (err: any) {
-            // Continuar
           }
-        } else {
-          // Menos de 4 horas y no es reciente ni forceCancel: advertir y dar la opción explícita
-          const assistantMsg: ChatMessage = {
-            id: `msg-${Date.now() + 1}`,
-            role: 'assistant',
-            content: `Hola ${studentName}. Ubiqué tu cita para "${title}" (${safeDateTime(startTimeUtc)}). Faltan menos de 4 horas para su inicio, por lo que la cancelación no reintegra el crédito automáticamente.\n\nSi deseas cancelarla de todas formas de tu calendario institucional, respóndeme **"cancélala de igual manera"** y la daré de baja de inmediato.`,
-            timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+        } else if (name === 'cancelar_cita') {
+          if (userConfirmedBookings.length === 0) {
+            replyText =
+              replyText ||
+              `Hola ${studentName}. No tienes ninguna cita activa agendada en este momento para cancelar. Tienes ${availableCredits} crédito(s) disponibles para cuando desees programar.`;
+            actionPayload = {
+              kind: 'credits_card',
+              credits: {
+                available: availableCredits,
+                consumed: consumedCredits,
+                planTitle,
+                cycleEnd: subscription?.currentPeriodEnd
+              }
+            };
+          } else if (userConfirmedBookings.length === 1) {
+            const targetBooking = userConfirmedBookings[0];
+            const session = liveSessions.find((s) => s.id === targetBooking.sessionId);
+            const title =
+              (targetBooking as any).sessionTitle ||
+              session?.title ||
+              'Tutoría Sincrónica Personalizada (1 a 1)';
+            const defaultTomorrow = new Date();
+            defaultTomorrow.setDate(defaultTomorrow.getDate() + 1);
+            defaultTomorrow.setHours(18, 0, 0, 0);
+            const startTimeUtc =
+              (targetBooking as any).sessionStartTime ||
+              session?.startTimeUtc ||
+              defaultTomorrow.toISOString();
+
+            const diffMs = new Date(startTimeUtc).getTime() - Date.now();
+            const fourHoursMs = 4 * 60 * 60 * 1000;
+            const bookedAtMs = new Date(targetBooking.bookedAt).getTime();
+            const isRecentBooking = Date.now() - bookedAtMs < 30 * 60 * 1000; // Ventana de gracia de 30 min
+            const forceCancelRequested = Boolean(args?.forzarSinReembolso);
+
+            if (diffMs >= fourHoursMs || isRecentBooking) {
+              // Cancelación con reembolso total
+              try {
+                await cancelLiveBooking(targetBooking.id);
+                replyText = `✅ ¡Cita cancelada con éxito, ${studentName}!
+
+• Clase cancelada: "${title}"
+• Horario programado: ${safeDateTime(startTimeUtc)}
+• Reembolso: Tu crédito de tutoría ha sido reintegrado inmediatamente a tu cuenta (ahora tienes ${availableCredits + 1} crédito(s) disponibles).
+${
+                  isRecentBooking
+                    ? '• Ventana de gracia: Se aplicó la devolución inmediata de crédito por cancelación de reserva reciente.\n'
+                    : ''
+                }
+Puedes reprogramar en cualquier momento en el horario que prefieras.`;
+                actionPayload = {
+                  kind: 'credits_card',
+                  credits: {
+                    available: availableCredits + 1,
+                    consumed: Math.max(0, consumedCredits - 1),
+                    planTitle,
+                    cycleEnd: subscription?.currentPeriodEnd
+                  }
+                };
+                showTopBanner('ready', 'Cita cancelada: crédito reintegrado con éxito.', 5000);
+              } catch (err: any) {
+                replyText = `⚠️ No se pudo cancelar la cita: ${err?.message || 'Error al procesar la cancelación.'}`;
+              }
+            } else if (forceCancelRequested) {
+              // Estudiante insistió en cancelar aunque no haya reembolso
+              try {
+                await cancelLiveBooking(targetBooking.id, { forceCancel: true });
+                replyText = `✅ He cancelado la cita para "${title}" (${safeDateTime(startTimeUtc)}) de tu agenda institucional tal como lo indicaste.
+
+• Estado: Cita eliminada de tu calendario.
+• Créditos: Por haberse cancelado con menos de 4 horas de antelación y fuera de la ventana de gracia, no se reintegró el crédito según las directrices de IPT Academy.`;
+                actionPayload = {
+                  kind: 'credits_card',
+                  credits: {
+                    available: availableCredits,
+                    consumed: consumedCredits,
+                    planTitle,
+                    cycleEnd: subscription?.currentPeriodEnd
+                  }
+                };
+                showTopBanner('ready', 'Cita cancelada de tu agenda.', 4500);
+              } catch (err: any) {
+                replyText = `⚠️ No se pudo cancelar la cita: ${err?.message || 'Error al procesar la cancelación.'}`;
+              }
+            } else {
+              // Menos de 4 horas: advertir y dar la opción de cancelar de todas formas
+              replyText = `Hola ${studentName}. Ubiqué tu cita para "${title}" (${safeDateTime(startTimeUtc)}). Faltan menos de 4 horas para su inicio, por lo que la cancelación no reintegra el crédito automáticamente.
+
+Si deseas cancelarla de todas formas de tu calendario institucional, respóndeme **"cancélala de igual manera"** y la daré de baja de inmediato.`;
+            }
+          } else {
+            // Múltiples citas: mostrar tarjeta interactiva
+            const mappedBookings = userConfirmedBookings.map((bkg) => {
+              const session = liveSessions.find((s) => s.id === bkg.sessionId);
+              const title =
+                (bkg as any).sessionTitle ||
+                session?.title ||
+                'Tutoría Sincrónica con Docente Titular';
+              const instructorName =
+                (bkg as any).sessionInstructor || session?.instructorName || 'Ing. Iván Pérez';
+              const startTimeUtc =
+                (bkg as any).sessionStartTime || session?.startTimeUtc || new Date().toISOString();
+              const sessionStartMs = new Date(startTimeUtc).getTime();
+              const diffMs = sessionStartMs - Date.now();
+              const bookedAtMs = new Date(bkg.bookedAt).getTime();
+              const isRecent = Date.now() - bookedAtMs < 30 * 60 * 1000;
+              const canCancel = diffMs >= 4 * 60 * 60 * 1000 || isRecent;
+              const hoursRemaining = Math.max(0, Math.round(diffMs / (1000 * 60 * 60)));
+
+              return {
+                id: bkg.id,
+                sessionId: bkg.sessionId,
+                title,
+                instructorName,
+                startTimeUtc,
+                canCancel,
+                hoursRemaining
+              };
+            });
+
+            replyText =
+              replyText ||
+              `Hola ${studentName}. Aquí tienes tus citas activas. Puedes presionar "Cancelar" en la que desees gestionar:`;
+            actionPayload = {
+              kind: 'bookings_list',
+              bookings: mappedBookings
+            };
+          }
+        } else if (name === 'consultar_creditos') {
+          replyText =
+            replyText ||
+            `Hola ${studentName}. En tu plan ${planTitle} dispones de **${availableCredits} crédito(s) para clases y tutorías sincrónicas** en este ciclo (has utilizado ${consumedCredits}). Cada cita consume 1 crédito de tu bolsa mensual, y si cancelas con más de 4 horas de anticipación tu crédito se reintegra al instante.`;
+          actionPayload = {
+            kind: 'credits_card',
+            credits: {
+              available: availableCredits,
+              consumed: consumedCredits,
+              planTitle,
+              cycleEnd: subscription?.currentPeriodEnd
+            }
           };
-          const finalMessages = [...nextMessages, assistantMsg];
-          setMessages(finalMessages);
-          persistMessagesToFirebase(finalMessages);
-          return;
+        } else if (name === 'consultar_reglas') {
+          replyText =
+            replyText ||
+            `Estas son las normas y directrices institucionales de tutorías y clases sincrónicas en IPT Academy:`;
+          actionPayload = {
+            kind: 'rules_card'
+          };
+        } else if (name === 'consultar_tareas') {
+          const pending = assignments.filter((a) => a.status === 'pending');
+          if (pending.length === 0) {
+            replyText = `¡Excelente noticia, ${studentName}! Estás completamente al día: no tienes tareas pendientes de entrega.`;
+          } else {
+            const list = pending
+              .map(
+                (a) =>
+                  `• "${a.title}" (${a.courseTitle}) — Fecha límite: ${safeDateSlice(a.dueDateUtc)}`
+              )
+              .join('\n');
+            replyText = `Tienes ${pending.length} tarea(s) pendiente(s) en este momento:
+${list}
+
+Puedes subir tu entrega desde la pestaña "Tareas" en el menú superior.`;
+          }
         }
       }
 
-      // Si no fue cancelación inmediata, generar respuesta contextual
-      const responseObj = buildContextualResponse(cleanPrompt);
-      let replyText = responseObj.text;
-      let actionPayload = responseObj.actionPayload;
-
-      const isSystemAction =
-        actionPayload?.kind === 'sessions_picker' ||
-        actionPayload?.kind === 'bookings_list' ||
-        actionPayload?.kind === 'credits_card' ||
-        actionPayload?.kind === 'rules_card';
-
-      if (!isSystemAction && engineMode === 'webllm' && engineRef.current) {
-        try {
-          const historyForModel = nextMessages.slice(-6).map((m) => ({
-            role: m.role,
-            content: m.content
-          }));
-
-          const response = await engineRef.current.chat.completions.create({
-            messages: [
-              { role: 'system', content: liveKnowledgeContext.systemPrompt },
-              ...historyForModel
-            ],
-            temperature: 0.4,
-            max_tokens: 280
-          });
-
-          const webllmText = response?.choices?.[0]?.message?.content?.trim();
-          if (webllmText) {
-            replyText = webllmText;
-          }
-        } catch (webllmErr) {
-          // Mantener respuesta contextual
-        }
-      } else {
-        await new Promise((r) => setTimeout(r, 250));
+      // Si no hubo tool call y el replyText está vacío, proporcionar fallback
+      if (!replyText) {
+        const fallback = buildContextualResponse(cleanPrompt);
+        replyText = fallback.text;
+        actionPayload = fallback.actionPayload;
       }
 
       const assistantMsg: ChatMessage = {
@@ -1355,6 +1489,19 @@ Tienes facultades plenas:
       };
 
       const finalMessages = [...nextMessages, assistantMsg];
+      setMessages(finalMessages);
+      persistMessagesToFirebase(finalMessages);
+    } catch (err: any) {
+      console.error('Error in executeSendMessage:', err);
+      const fallback = buildContextualResponse(cleanPrompt);
+      const errorMsg: ChatMessage = {
+        id: `msg-${Date.now() + 1}`,
+        role: 'assistant',
+        content: fallback.text,
+        timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+        actionPayload: fallback.actionPayload
+      };
+      const finalMessages = [...nextMessages, errorMsg];
       setMessages(finalMessages);
       persistMessagesToFirebase(finalMessages);
     } finally {
