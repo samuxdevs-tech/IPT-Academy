@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { MessageSquareText, X, Send, AlertCircle, CheckCircle2, ShieldCheck, LogIn } from 'lucide-react';
 import { ref, push, set } from 'firebase/database';
@@ -17,6 +18,12 @@ export default function PqrSupportWidget() {
   const [loading, setLoading] = useState(false);
   const [successTicket, setSuccessTicket] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const pathname = usePathname();
+
+  // El canal flotante de PQRS / Solicitudes solo existe en la Home (/); desaparece al salir
+  if (pathname !== '/') {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
