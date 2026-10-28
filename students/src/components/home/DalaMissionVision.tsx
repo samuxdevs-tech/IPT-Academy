@@ -64,10 +64,10 @@ export default function DalaMissionVision() {
             <div className="pt-8">
               <button
                 type="button"
-                onClick={() => handleAuthAction('/home')}
+                onClick={() => handleAuthAction('/course?slug=introduccion-ingenieria-ipt&lesson=1')}
                 className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.04em] text-[#8052ff] hover:text-white transition-colors cursor-pointer"
               >
-                <span>Explorar campus de estudio</span>
+                <span>Acceder a la lección de prueba</span>
                 <span>→</span>
               </button>
             </div>

@@ -216,10 +216,10 @@ export default function DalaHeroArchitecturePreview() {
         </span>
         <button
           type="button"
-          onClick={() => handleAuthAction('/home')}
+          onClick={() => handleAuthAction('/course?slug=introduccion-ingenieria-ipt&lesson=1')}
           className="text-[#8052ff] hover:text-white font-semibold transition-colors flex items-center gap-1 cursor-pointer"
         >
-          <span>Probar campus</span>
+          <span>Lección de prueba</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>

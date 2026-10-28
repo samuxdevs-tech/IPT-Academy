@@ -49,10 +49,10 @@ export default function DalaFooter() {
                 <li>
                   <button
                     type="button"
-                    onClick={() => handleAuthAction('/home')}
+                    onClick={() => handleAuthAction('/course?slug=introduccion-ingenieria-ipt&lesson=1')}
                     className="hover:text-white transition-colors text-left cursor-pointer"
                   >
-                    Campus Estudiantil
+                    Lección de Prueba
                   </button>
                 </li>
                 <li>

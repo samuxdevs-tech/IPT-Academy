@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Play, ArrowRight, BookOpen } from 'lucide-react';
+import { Play, ArrowRight } from 'lucide-react';
 import { Course } from '@/types';
 import DalaHeroArchitecturePreview from '@/components/home/DalaHeroArchitecturePreview';
 import { useLoginTransition } from '@/context/LoginTransitionContext';
@@ -71,15 +71,6 @@ export default function DalaHero({ freeCourse }: DalaHeroProps) {
                 <Play className="w-4 h-4 fill-white" />
                 <span>Comenzar Lección 1 Ahora</span>
                 <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleAuthAction('/home')}
-                className="px-5 py-3.5 rounded-[24px] bg-[#ffffff]/10 hover:bg-[#ffffff]/15 text-white text-[13px] font-semibold flex items-center justify-center gap-2 transition-all border border-[#ffffff]/15 hover:border-[#ffffff]/30 cursor-pointer"
-              >
-                <BookOpen className="w-4 h-4 text-[#8052ff]" />
-                <span>Entrar al Campus</span>
               </button>
             </div>
           </div>
