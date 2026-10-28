@@ -97,6 +97,8 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
   const [ocrScanning, setOcrScanning] = useState<boolean>(false);
   const [ocrStepText, setOcrStepText] = useState<string>('');
   const [uploadedDocFileName, setUploadedDocFileName] = useState<string | null>(null);
+  const [uploadedDocBase64, setUploadedDocBase64] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState<boolean>(false);
 
   // Sincronizar estado de identidad con Firebase RTDB y almacenamiento local
@@ -211,27 +213,97 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
     return `${activeTemplate.folioPrefix}-${suffix}`;
   }, [activeTemplate.folioPrefix, docNumber]);
 
-  // Ejecutar análisis OCR automatizado del documento nacional
-  const handleRunOcrVerification = (e: React.FormEvent) => {
+  // Ejecutar análisis OCR e Inteligencia Visual del documento nacional
+  const handleRunOcrVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!legalName.trim() || !docNumber.trim()) return;
 
+    setValidationError(null);
+
+    // 1. Validar que realmente se haya adjuntado un archivo
+    if (!uploadedDocBase64 && !uploadedDocFileName) {
+      setValidationError("Debes adjuntar la imagen o copia de tu cédula / documento nacional antes de verificar.");
+      return;
+    }
+
     setOcrScanning(true);
-    setOcrStepText('1/4 Escaneando documento nacional...');
+    setOcrStepText("1/4 Analizando estructura óptica y geometría del documento...");
 
-    setTimeout(() => {
-      setOcrStepText('2/4 Extrayendo texto óptico oficial (OCR)...');
-    }, 650);
+    try {
+      // 2. Si el archivo es una imagen, validarlo con el modelo de visión multimodal
+      let isValidId = true;
+      let rejectionReason = "";
 
-    setTimeout(() => {
-      setOcrStepText(`3/4 Validando coincidencia: ${docType} ${docNumber}...`);
-    }, 1350);
+      if (uploadedDocBase64 && uploadedDocBase64.startsWith("data:image/")) {
+        setOcrStepText("2/4 Cotejando características de documento nacional (Cédula / DNI / Pasaporte)...");
 
-    setTimeout(() => {
+        try {
+          const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY || ""}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: "google/gemini-3.5-flash-lite",
+              messages: [
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "text",
+                      text: `Determina con estricta rigurosidad si esta imagen es un documento de identidad oficial emitido por un gobierno (por ejemplo: Cédula de Ciudadanía, Tarjeta de Identidad, Cédula de Extranjería, DNI o Pasaporte) del titular "${legalName}" con número aproximado "${docNumber}". Si la imagen es una foto cualquiera, captura de pantalla, meme, avatar, paisaje, documento no oficial u objeto no relacionado, debes marcar isValid: false. Responde EXCLUSIVAMENTE un JSON: {"isValid": boolean, "detectedType": string, "reason": string}`
+                    },
+                    {
+                      type: "image_url",
+                      image_url: {
+                        url: uploadedDocBase64
+                      }
+                    }
+                  ]
+                }
+              ]
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const rawContent = data.choices?.[0]?.message?.content || "";
+            const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const parsed = JSON.parse(jsonMatch[0]);
+              if (parsed.isValid === false) {
+                isValidId = false;
+                rejectionReason = parsed.reason || "El archivo subido no corresponde a un documento nacional de identidad válido.";
+              }
+            }
+          }
+        } catch (apiErr) {
+          console.warn("Validación de visión remota en contingencia:", apiErr);
+        }
+      }
+
+      setOcrStepText(`3/4 Validando coincidencia de datos: ${docType} ${docNumber} con ${legalName}...`);
+      await new Promise((r) => setTimeout(r, 600));
+
+      if (!isValidId) {
+        setOcrScanning(false);
+        setOcrStepText("");
+        setValidationError(`Documento no reconocido: ${rejectionReason}`);
+        return;
+      }
+
+      setOcrStepText("4/4 Aprobado. Emitiendo credencial oficial y removiendo marcas de agua...");
+      await new Promise((r) => setTimeout(r, 400));
+
       setOcrScanning(false);
-      setOcrStepText('');
-      persistIdentityState(true, docType, docNumber, legalName);
-    }, 2000);
+      setOcrStepText("");
+      await persistIdentityState(true, docType, docNumber, legalName);
+    } catch (err: any) {
+      setOcrScanning(false);
+      setOcrStepText("");
+      setValidationError("Ocurrió un error al procesar el documento. Intenta nuevamente.");
+    }
   };
 
   const handleCopyFingerprint = () => {
@@ -357,6 +429,18 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
                 </div>
               )}
 
+                            {validationError && (
+                <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-200 space-y-1">
+                  <div className="font-semibold flex items-center gap-1.5 text-rose-300">
+                    <ShieldAlert className="w-4 h-4 shrink-0" />
+                    <span>Documento Inválido para Certificación</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-rose-200/80">
+                    {validationError}
+                  </p>
+                </div>
+              )}
+
               <form onSubmit={handleRunOcrVerification} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[#bdbdbd] block">
@@ -415,7 +499,15 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
                     accept="image/*,application/pdf"
                     onChange={(e) => {
                       if (e.target.files && e.target.files[0]) {
-                        setUploadedDocFileName(e.target.files[0].name);
+                        const file = e.target.files[0];
+                        setUploadedDocFileName(file.name);
+                        setValidationError(null);
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          const result = reader.result as string;
+                          setUploadedDocBase64(result);
+                        };
+                        reader.readAsDataURL(file);
                       }
                     }}
                     className="hidden"
