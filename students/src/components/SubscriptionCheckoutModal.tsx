@@ -92,6 +92,7 @@ export default function SubscriptionCheckoutModal() {
   } | null>(null);
 
   const dynamicCoursesList = useMemo(() => {
+    if (!Array.isArray(courses)) return [];
     const list = courses.filter((c) => (c as any).courseType !== 'static');
     return list.length > 0 ? list : courses;
   }, [courses]);

@@ -291,6 +291,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       async (snap) => {
         if (snap.exists()) {
           const remoteSub = snap.val() as Subscription;
+          remoteSub.activeDynamicCourseSlugs = Array.isArray(remoteSub.activeDynamicCourseSlugs)
+            ? remoteSub.activeDynamicCourseSlugs
+            : [];
+          remoteSub.frozenDynamicCourseSlugs = Array.isArray(remoteSub.frozenDynamicCourseSlugs)
+            ? remoteSub.frozenDynamicCourseSlugs
+            : [];
+          remoteSub.courseLastActivityAt = remoteSub.courseLastActivityAt || {};
           engine.subscriptions.set(remoteSub.id, remoteSub);
           setSubscription(remoteSub);
 
@@ -381,7 +388,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       const engine = engineRef.current;
       const existingUser = engine.users.get(effectiveUid);
       if (existingUser) {
-        existingUser.phoneVerified = Boolean(params.phoneNumber.trim().length >= 7);
+        existingUser.phoneVerified = Boolean(
+          params.phoneNumber ? params.phoneNumber.trim().length >= 7 : true
+        );
         if (params.taxProfile) {
           existingUser.taxProfile = params.taxProfile;
         }

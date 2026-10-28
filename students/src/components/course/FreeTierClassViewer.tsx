@@ -707,7 +707,7 @@ export default function FreeTierClassViewer() {
                       : 'border-transparent text-[#9a9a9a] hover:text-white'
                   }`}
                 >
-                  Recursos ({activeLesson.resources.length})
+                  Recursos ({(activeLesson.resources || []).length})
                 </button>
               </div>
 
@@ -727,7 +727,7 @@ export default function FreeTierClassViewer() {
                       Conceptos Clave de la Lección:
                     </span>
                     <ul className="space-y-2 text-xs text-[#9a9a9a] font-light">
-                      {activeLesson.keyTakeaways.map((item, idx) => (
+                      {(activeLesson.keyTakeaways || []).map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2.5">
                           <CheckCircle2 className="w-3.5 h-3.5 text-[#8052ff] shrink-0 mt-0.5" />
                           <span>{item}</span>
@@ -738,7 +738,7 @@ export default function FreeTierClassViewer() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {activeLesson.resources.map((res, rIdx) => (
+                  {(activeLesson.resources || []).map((res, rIdx) => (
                     <div
                       key={rIdx}
                       className="p-4 rounded-xl bg-[#09090b] border border-[#ffffff]/10 flex items-center justify-between gap-4"

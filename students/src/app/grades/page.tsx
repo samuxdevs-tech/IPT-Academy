@@ -104,7 +104,7 @@ function StudentGradesContent() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY_ASSIGNMENTS);
         if (saved) {
-          setItems(JSON.parse(saved));
+          const parsed = JSON.parse(saved); if (Array.isArray(parsed)) setItems(parsed);
         }
       } catch {}
     }

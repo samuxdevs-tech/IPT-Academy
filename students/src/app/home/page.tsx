@@ -165,7 +165,7 @@ export default function StudentCampusPage() {
   const [queueTicketCode, setQueueTicketCode] = useState<string | null>(null);
 
   useEffect(() => {
-    if (selectedCourseIndex >= userCourses.length) {
+    if (selectedCourseIndex >= (userCourses?.length || 0)) {
       setSelectedCourseIndex(0);
     }
   }, [userCourses, selectedCourseIndex]);
@@ -261,7 +261,7 @@ export default function StudentCampusPage() {
         </div>
 
         {/* Selector de Especialización (Para Pro+ y Your Plan con múltiples cursos simultáneos) */}
-        {userCourses.length > 1 && (
+        {Array.isArray(userCourses) && userCourses.length > 1 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs uppercase tracking-[0.08em] font-semibold text-[#9a9a9a] flex items-center gap-2">

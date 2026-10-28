@@ -66,11 +66,16 @@ export default function LocalAiTutorWidget() {
     return null;
   }
   const {
-    courses,
-    assignments,
-    calendarEvents,
-    liveSessions,
+    courses: rawCourses,
+    assignments: rawAssignments,
+    calendarEvents: rawCalendarEvents,
+    liveSessions: rawLiveSessions,
   } = useLms();
+
+  const courses = Array.isArray(rawCourses) ? rawCourses : [];
+  const assignments = Array.isArray(rawAssignments) ? rawAssignments : [];
+  const calendarEvents = Array.isArray(rawCalendarEvents) ? rawCalendarEvents : [];
+  const liveSessions = Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
 
   // Estado de carga silenciosa del motor IA (0 a 100)
   const [loadProgress, setLoadProgress] = useState<number>(0);

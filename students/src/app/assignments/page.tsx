@@ -250,7 +250,7 @@ function StudentAssignmentsContent() {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(STORAGE_KEY_ASSIGNMENTS);
-        if (saved) return JSON.parse(saved);
+        if (saved) { const parsed = JSON.parse(saved); if (Array.isArray(parsed)) return parsed; }
       } catch {}
     }
     return INITIAL_ASSIGNMENTS;
@@ -467,7 +467,7 @@ function StudentAssignmentsContent() {
           <div className="lg:col-span-4 space-y-3">
             <div className="flex items-center justify-between px-1 mb-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#9a9a9a]">
-                Actividades del Curso ({assignments.length})
+                Actividades del Curso ({(assignments || []).length})
               </span>
               <span className="text-[11px] font-mono text-[#8052ff]">100 pts máx.</span>
             </div>

@@ -59,9 +59,9 @@ export default function UserProfileMenu({ courseSlug: propCourseSlug, className 
         return;
       }
     }
-    if (enrolledSlugs.length > 0) {
+    if (Array.isArray(enrolledSlugs) && enrolledSlugs.length > 0) {
       setActiveCourseSlug(enrolledSlugs[0]);
-    } else if (courses.length > 0) {
+    } else if (Array.isArray(courses) && courses.length > 0) {
       setActiveCourseSlug(courses[0].slug);
     }
   }, [propCourseSlug, enrolledSlugs, courses]);

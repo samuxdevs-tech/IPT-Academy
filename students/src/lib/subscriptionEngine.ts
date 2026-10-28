@@ -1492,6 +1492,9 @@ export class SubscriptionPlatformService {
   }
 
   private unfreezeCoursesUpToLimit(sub: Subscription, maxAllowed: number): void {
+    sub.frozenDynamicCourseSlugs = Array.isArray(sub.frozenDynamicCourseSlugs) ? sub.frozenDynamicCourseSlugs : [];
+    sub.activeDynamicCourseSlugs = Array.isArray(sub.activeDynamicCourseSlugs) ? sub.activeDynamicCourseSlugs : [];
+    sub.courseLastActivityAt = sub.courseLastActivityAt || {};
     if (sub.frozenDynamicCourseSlugs.length === 0) return;
     const sortedFrozen = [...sub.frozenDynamicCourseSlugs].sort((a, b) =>
       (sub.courseLastActivityAt[b] ?? '').localeCompare(sub.courseLastActivityAt[a] ?? '')

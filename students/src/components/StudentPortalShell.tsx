@@ -70,7 +70,7 @@ export default function StudentPortalShell({
     return <>{children}</>;
   }
 
-  const unreadNotifs = notifications.filter((n) => !n.read);
+  const unreadNotifs = Array.isArray(notifications) ? notifications.filter((n) => !n.read) : [];
 
   const navItems = [
     {
@@ -247,7 +247,7 @@ export default function StudentPortalShell({
                     </span>
                   </div>
                   <div className="max-h-72 overflow-y-auto divide-y divide-[#ffffff]/10">
-                    {notifications.length === 0 ? (
+                    {!Array.isArray(notifications) || notifications.length === 0 ? (
                       <div className="p-6 text-center text-xs text-[#9a9a9a]">
                         No tienes notificaciones pendientes.
                       </div>
