@@ -98,7 +98,7 @@ const TUTOR_TOOLS = [
           forzarSinReembolso: {
             type: 'boolean',
             description:
-              'true si el estudiante insiste explícitamente en cancelar aunque falten menos de 4 horas o no haya reembolso ("cancélala de igual manera", "de todas formas", "no importa"). false en cualquier otro caso.'
+              'true si el estudiante dice "igualmente", "de igual manera", "aunque no devuelvas el credito", "sin crédito", "de todas formas", "no importa", "cancela igual", o insiste en que se cancele la cita a pesar de no recibir reembolso. false solo si es una pregunta o petición inicial ordinaria.'
           },
           motivo: {
             type: 'string',
@@ -211,7 +211,7 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
 3. POLÍTICA DE CANCELACIONES Y REEMBOLSOS:
    - Anticipación reglamentaria: La cancelación ordinaria con más de 4 horas de anticipación reintegra el crédito de inmediato.
    - Ventana de gracia por error de reserva: Si el estudiante reservó hace menos de 30 minutos y dice que fue un error o pide cancelar, se le cancela con reembolso de crédito.
-   - Cancelación fuera de término / insistencia: Si faltan menos de 4 horas y el estudiante insiste expresamente en cancelar ("cancélala de igual manera", "de todas formas", "no importa"), llama a 'cancelar_cita' con forzarSinReembolso: true.
+   - Cancelación fuera de término / insistencia: Si el estudiante insiste expresamente en cancelar ("cancélala de igual manera", "igualmente", "de todas formas", "no importa", "aunque no devuelvas el crédito", "elimínala igual"), llama a 'cancelar_cita' con forzarSinReembolso: true.
 4. ESTILO DE COMUNICACIÓN:
    - Responde en español natural, humano, educado y directo.
    - PROHIBIDO usar jerga técnica de prompts, como "según mis directrices inviolables", "soy un modelo", "mi prompt dice". Habla como un tutor académico real de IPT Academy.`;

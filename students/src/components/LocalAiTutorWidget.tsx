@@ -1185,13 +1185,23 @@ Tienes facultades plenas:
       });
       showTopBanner('ready', `Cita cancelada: tu crédito fue reintegrado con éxito.`, 4500);
     } catch (err: any) {
-      const errorMsg: ChatMessage = {
-        id: `msg-${Date.now()}`,
-        role: 'assistant',
-        content: `⚠️ No se pudo cancelar la cita: ${err?.message || 'Error al procesar la cancelación.'}`,
-        timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      if (err?.message === 'CANCELLATION_WINDOW_CLOSED_4H') {
+        const warningMsg: ChatMessage = {
+          id: `msg-${Date.now()}`,
+          role: 'assistant',
+          content: `⚠️ La cita para "${booking.title}" está programada para dentro de menos de 4 horas, por lo que la cancelación con reembolso automático ya no aplica.\n\nSi deseas retirarla de tu calendario institucional de todas formas, respóndeme **"cancélala de igual manera"** y la cancelaré de inmediato.`,
+          timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages((prev) => [...prev, warningMsg]);
+      } else {
+        const errorMsg: ChatMessage = {
+          id: `msg-${Date.now()}`,
+          role: 'assistant',
+          content: `⚠️ No se pudo cancelar la cita: ${err?.message || 'Error al procesar la cancelación.'}`,
+          timestamp: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+      }
     } finally {
       setIsExecutingAction(null);
     }
@@ -1339,23 +1349,71 @@ Tienes facultades plenas:
             const fourHoursMs = 4 * 60 * 60 * 1000;
             const bookedAtMs = new Date(targetBooking.bookedAt).getTime();
             const isRecentBooking = Date.now() - bookedAtMs < 30 * 60 * 1000; // Ventana de gracia de 30 min
-            const forceCancelRequested = Boolean(args?.forzarSinReembolso);
+            const promptLower = cleanPrompt.toLowerCase();
+            const isExplicitForceCancel =
+              promptLower.includes('igualmente') ||
+              promptLower.includes('igual manera') ||
+              promptLower.includes('de todas formas') ||
+              promptLower.includes('de todos modos') ||
+              promptLower.includes('no importa') ||
+              promptLower.includes('aunque no') ||
+              promptLower.includes('sin credito') ||
+              promptLower.includes('sin crédito') ||
+              promptLower.includes('hazlo igual') ||
+              promptLower.includes('cancela igual') ||
+              promptLower.includes('cancélala igual');
 
-            if (diffMs >= fourHoursMs || isRecentBooking) {
+            const forceCancelRequested = Boolean(args?.forzarSinReembolso) || isExplicitForceCancel;
+
+            if (forceCancelRequested) {
+              // Estudiante insistió explícitamente en cancelar sin importar el reembolso
+              try {
+                let cancelledWithRefund = false;
+                try {
+                  await cancelLiveBooking(targetBooking.id);
+                  cancelledWithRefund = true;
+                } catch (windowErr: any) {
+                  // Si no hay ventana de reembolso, forzar la baja de la cita de inmediato
+                  await cancelLiveBooking(targetBooking.id, { forceCancel: true });
+                }
+
+                if (cancelledWithRefund) {
+                  replyText = `✅ ¡Cita cancelada con éxito, ${studentName}!\n\n• Clase cancelada: "${title}"\n• Horario programado: ${safeDateTime(startTimeUtc)}\n• Reembolso: Tu crédito de tutoría ha sido reintegrado inmediatamente a tu cuenta (ahora tienes ${availableCredits + 1} crédito(s) disponibles).\nPuedes reprogramar en cualquier momento en el horario que prefieras.`;
+                  actionPayload = {
+                    kind: 'credits_card',
+                    credits: {
+                      available: availableCredits + 1,
+                      consumed: Math.max(0, consumedCredits - 1),
+                      planTitle,
+                      cycleEnd: subscription?.currentPeriodEnd
+                    }
+                  };
+                  showTopBanner('ready', 'Cita cancelada: crédito reintegrado con éxito.', 5000);
+                } else {
+                  replyText = `✅ He cancelado la cita para "${title}" (${safeDateTime(startTimeUtc)}) de tu agenda institucional tal como lo indicaste.\n\n• Estado: Cita eliminada de tu calendario.\n• Créditos: Por haberse cancelado con menos de 4 horas de anticipación y fuera de la ventana de gracia, no se reintegró el crédito según las directrices de IPT Academy.`;
+                  actionPayload = {
+                    kind: 'credits_card',
+                    credits: {
+                      available: availableCredits,
+                      consumed: consumedCredits,
+                      planTitle,
+                      cycleEnd: subscription?.currentPeriodEnd
+                    }
+                  };
+                  showTopBanner('ready', 'Cita cancelada de tu agenda.', 4500);
+                }
+              } catch (err: any) {
+                replyText = `⚠️ No se pudo cancelar la cita: ${err?.message || 'Error al procesar la cancelación.'}`;
+              }
+            } else if (diffMs >= fourHoursMs || isRecentBooking) {
               // Cancelación con reembolso total
               try {
                 await cancelLiveBooking(targetBooking.id);
-                replyText = `✅ ¡Cita cancelada con éxito, ${studentName}!
-
-• Clase cancelada: "${title}"
-• Horario programado: ${safeDateTime(startTimeUtc)}
-• Reembolso: Tu crédito de tutoría ha sido reintegrado inmediatamente a tu cuenta (ahora tienes ${availableCredits + 1} crédito(s) disponibles).
-${
+                replyText = `✅ ¡Cita cancelada con éxito, ${studentName}!\n\n• Clase cancelada: "${title}"\n• Horario programado: ${safeDateTime(startTimeUtc)}\n• Reembolso: Tu crédito de tutoría ha sido reintegrado inmediatamente a tu cuenta (ahora tienes ${availableCredits + 1} crédito(s) disponibles).\n${
                   isRecentBooking
                     ? '• Ventana de gracia: Se aplicó la devolución inmediata de crédito por cancelación de reserva reciente.\n'
                     : ''
-                }
-Puedes reprogramar en cualquier momento en el horario que prefieras.`;
+                }\nPuedes reprogramar en cualquier momento en el horario que prefieras.`;
                 actionPayload = {
                   kind: 'credits_card',
                   credits: {
@@ -1367,34 +1425,15 @@ Puedes reprogramar en cualquier momento en el horario que prefieras.`;
                 };
                 showTopBanner('ready', 'Cita cancelada: crédito reintegrado con éxito.', 5000);
               } catch (err: any) {
-                replyText = `⚠️ No se pudo cancelar la cita: ${err?.message || 'Error al procesar la cancelación.'}`;
-              }
-            } else if (forceCancelRequested) {
-              // Estudiante insistió en cancelar aunque no haya reembolso
-              try {
-                await cancelLiveBooking(targetBooking.id, { forceCancel: true });
-                replyText = `✅ He cancelado la cita para "${title}" (${safeDateTime(startTimeUtc)}) de tu agenda institucional tal como lo indicaste.
-
-• Estado: Cita eliminada de tu calendario.
-• Créditos: Por haberse cancelado con menos de 4 horas de antelación y fuera de la ventana de gracia, no se reintegró el crédito según las directrices de IPT Academy.`;
-                actionPayload = {
-                  kind: 'credits_card',
-                  credits: {
-                    available: availableCredits,
-                    consumed: consumedCredits,
-                    planTitle,
-                    cycleEnd: subscription?.currentPeriodEnd
-                  }
-                };
-                showTopBanner('ready', 'Cita cancelada de tu agenda.', 4500);
-              } catch (err: any) {
-                replyText = `⚠️ No se pudo cancelar la cita: ${err?.message || 'Error al procesar la cancelación.'}`;
+                if (err?.message === 'CANCELLATION_WINDOW_CLOSED_4H') {
+                  replyText = `Hola ${studentName}. Ubiqué tu cita para "${title}" (${safeDateTime(startTimeUtc)}). Faltan menos de 4 horas para su inicio, por lo que la cancelación ordinaria no reintegra el crédito automáticamente.\n\nSi deseas cancelarla de todas formas de tu calendario institucional, respóndeme **"cancélala de igual manera"** y la daré de baja de inmediato.`;
+                } else {
+                  replyText = `⚠️ No se pudo cancelar la cita: ${err?.message || 'Error al procesar la cancelación.'}`;
+                }
               }
             } else {
               // Menos de 4 horas: advertir y dar la opción de cancelar de todas formas
-              replyText = `Hola ${studentName}. Ubiqué tu cita para "${title}" (${safeDateTime(startTimeUtc)}). Faltan menos de 4 horas para su inicio, por lo que la cancelación no reintegra el crédito automáticamente.
-
-Si deseas cancelarla de todas formas de tu calendario institucional, respóndeme **"cancélala de igual manera"** y la daré de baja de inmediato.`;
+              replyText = `Hola ${studentName}. Ubiqué tu cita para "${title}" (${safeDateTime(startTimeUtc)}). Faltan menos de 4 horas para su inicio, por lo que la cancelación no reintegra el crédito automáticamente.\n\nSi deseas cancelarla de todas formas de tu calendario institucional, respóndeme **"cancélala de igual manera"** y la daré de baja de inmediato.`;
             }
           } else {
             // Múltiples citas: mostrar tarjeta interactiva
