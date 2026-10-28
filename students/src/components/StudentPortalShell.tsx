@@ -44,17 +44,13 @@ export default function StudentPortalShell({
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // Rutas que tienen su propio encabezado autónomo completo
+    // Rutas que tienen su propio encabezado autónomo completo (login, registro, legal, landing pública)
   const isStandalone =
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
     pathname.startsWith('/legal') ||
     pathname.startsWith('/verify') ||
-    pathname === '/' ||
-    pathname === '/course' ||
-    pathname.startsWith('/course/') ||
-    pathname === '/free' ||
-    pathname.startsWith('/free/');
+    pathname === '/';
 
   const currentPlanId = useMemo<'free' | 'pro' | 'pro_plus' | 'your_plan'>(() => {
     if (!subscription || !subscription.planId) {

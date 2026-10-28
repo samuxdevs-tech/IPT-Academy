@@ -507,50 +507,43 @@ export default function FreeTierClassViewer() {
 
   return (
     <div className="min-h-screen bg-[#000000] text-white font-sans selection:bg-[#8052ff] selection:text-white flex flex-col">
-      {/* Cabecera Minimalista Dala (Dark Void) */}
-      <header className="sticky top-0 z-40 h-16 border-b border-[#ffffff]/10 bg-[#000000]/90 backdrop-blur-md px-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      {/* Sub-barra Contextual del Curso (Debajo del Navbar Principal del Campus) */}
+      <div className="border-b border-[#ffffff]/10 bg-[#09090b]/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
           <Link
             href="/home"
-            className="flex items-center gap-2 text-xs text-[#9a9a9a] hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-xs text-[#9a9a9a] hover:text-white transition-colors shrink-0"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Volver al Campus</span>
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Campus</span>
           </Link>
 
-          <div className="h-4 w-[1px] bg-[#ffffff]/15" />
+          <div className="h-3.5 w-[1px] bg-[#ffffff]/15 shrink-0" />
 
-          <div className="flex items-center gap-2.5">
-            <IptLogoIcon className="w-5 h-5" />
-            <span className="text-[13px] font-medium text-white truncate max-w-[200px] sm:max-w-md">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[12px] font-medium text-white truncate">
               Fundamentos de Arquitectura de Software e Ingeniería
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-[#15846e]/15 border border-[#15846e]/30 text-[#15846e] text-[10px] font-semibold uppercase tracking-wider hidden md:inline">
+            <span className="px-2 py-0.5 rounded-full bg-[#15846e]/15 border border-[#15846e]/30 text-[#15846e] text-[10px] font-semibold uppercase tracking-wider shrink-0 hidden md:inline">
               Free Tier
             </span>
           </div>
         </div>
 
         {/* Avance del Estudiante */}
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 text-xs text-[#9a9a9a]">
-            <span>{completedLessons.length} de {allLessons.length} lecciones</span>
-            <div className="w-20 h-1.5 rounded-full bg-[#ffffff]/10 overflow-hidden">
+        <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-2 text-xs text-[#9a9a9a]">
+            <span className="text-[11px]">{completedLessons.length}/{allLessons.length} lecciones</span>
+            <div className="w-16 sm:w-24 h-1.5 rounded-full bg-[#ffffff]/10 overflow-hidden">
               <div
                 className="h-full bg-[#15846e] transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
+            <span className="text-[10px] font-mono text-[#15846e] font-bold">{progressPercent}%</span>
           </div>
-
-          <Link
-            href="/"
-            className="text-xs text-[#9a9a9a] hover:text-white font-semibold transition-colors"
-          >
-            IPT Academy
-          </Link>
         </div>
-      </header>
+      </div>
 
       {/* Contenedor del Visor Estático: Reproductor + Temario Lateral */}
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
