@@ -98,7 +98,7 @@ function StudentLiveRoomContent() {
     cancelLiveBooking,
     liveBookings,
     zeroSumAccounting,
-    switchDemoTier,
+    openPricingModal,
   } = useSubscription();
 
   // Catálogo Fijo Semanal publicado por el Docente
@@ -283,33 +283,6 @@ function StudentLiveRoomContent() {
     );
   };
 
-  // Simular evaluación automática T-3h de Cuota Mínima de Estudiantes
-  const handleSimulateTMinus3hQuotaCheck = (session: TeacherCatalogSession) => {
-    if (session.enrolledCount >= session.minQuotaRequired) {
-      setCatalogSessions((prev) =>
-        prev.map((s) => (s.id === session.id ? { ...s, quotaStatus: 'confirmed' } : s))
-      );
-      setStatusMessage(
-        `Evaluación T-3h completada: La sesión cuenta con ${session.enrolledCount}/${session.minQuotaRequired} estudiantes inscritos. ¡Clase confirmada!`
-      );
-    } else {
-      setCatalogSessions((prev) =>
-        prev.map((s) =>
-          s.id === session.id
-            ? {
-                ...s,
-                quotaStatus: 'cancelled_refunded',
-                isBookedByCurrentStudent: false,
-              }
-            : s
-        )
-      );
-      setStatusMessage(
-        `Evaluación T-3h: La sesión "${session.title}" solo tenía ${session.enrolledCount} de ${session.minQuotaRequired} estudiantes requeridos. Sesión cancelada y créditos devueltos automáticamente (100% idempotente).`
-      );
-    }
-  };
-
   const handleSendChat = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -436,24 +409,16 @@ function StudentLiveRoomContent() {
                 Acceso Sincrónico de Nivel Pro+ y Your Plan
               </span>
               <p className="text-xs text-[#d1d5db]">
-                Las sesiones en vivo con bolsa de 8 créditos mensuales están incluidas en el Plan
-                Pro+ y Your Plan. Puedes activar la vista Pro+ con 1 clic para probar las reservas.
+                Las sesiones en vivo y asesorías 1 a 1 están disponibles para miembros con Plan Pro+ o Your Plan.
               </p>
             </div>
             <div className="flex items-center gap-2.5 shrink-0">
               <button
                 type="button"
-                onClick={() => switchDemoTier('pro_plus')}
-                className="px-4 py-2 rounded-full bg-[#ffb829] text-black text-xs font-bold cursor-pointer"
+                onClick={() => openPricingModal('pro_plus')}
+                className="px-4 py-2 rounded-full bg-[#ffb829] text-black text-xs font-bold cursor-pointer hover:bg-[#e5a524] transition-colors"
               >
-                Simular Vista Plan Pro+
-              </button>
-              <button
-                type="button"
-                onClick={() => switchDemoTier('your_plan')}
-                className="px-4 py-2 rounded-full bg-[#15846e] text-white text-xs font-bold cursor-pointer"
-              >
-                Simular Your Plan (1 a 1)
+                Actualizar a Plan Pro+
               </button>
             </div>
           </div>
@@ -837,14 +802,6 @@ function StudentLiveRoomContent() {
                         className="flex flex-wrap items-center gap-2 shrink-0"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <button
-                          type="button"
-                          onClick={() => handleSimulateTMinus3hQuotaCheck(sess)}
-                          className="px-3.5 py-2 rounded-full border border-[#ffffff]/15 hover:bg-[#ffffff]/10 text-[11px] font-medium text-[#bdbdbd] hover:text-white cursor-pointer"
-                        >
-                          Evaluar Cuota T-3h
-                        </button>
-
                         {sess.isBookedByCurrentStudent ? (
                           <button
                             type="button"

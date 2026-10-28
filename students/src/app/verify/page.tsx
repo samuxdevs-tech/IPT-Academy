@@ -264,30 +264,6 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
               {loading ? 'Consultando...' : 'Verificar Folio'}
             </button>
           </form>
-
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#9a9a9a]">
-            <span>Folios de prueba instantánea:</span>
-            <button
-              type="button"
-              onClick={() => {
-                setCode('IPT-2026-SW-ARCH-PRO');
-                resolveCertificate('IPT-2026-SW-ARCH-PRO');
-              }}
-              className="px-2.5 py-1 rounded-lg bg-[#15846e]/15 border border-[#15846e]/40 text-emerald-300 font-mono hover:bg-[#15846e]/25 transition-all cursor-pointer"
-            >
-              IPT-2026-SW-ARCH-PRO (Verificado OCR)
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setCode('IPT-2026-UNVERIFIED-DRAFT');
-                resolveCertificate('IPT-2026-UNVERIFIED-DRAFT');
-              }}
-              className="px-2.5 py-1 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 font-mono hover:bg-rose-500/25 transition-all cursor-pointer"
-            >
-              IPT-2026-UNVERIFIED-DRAFT (Sin Identidad Verificada)
-            </button>
-          </div>
         </section>
 
         {/* Resultado del Certificado */}

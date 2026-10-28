@@ -224,24 +224,22 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
             </p>
           </div>
 
-          {/* Conmutador Rápido de Prueba para Iván: Ver con / sin Marca de Agua Anti-IA */}
+          {/* Estado Real de Verificación y Exportación */}
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => persistIdentityState(!isIdentityVerified)}
-              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+            <div
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold border ${
                 isIdentityVerified
-                  ? 'bg-[#15846e]/15 border-[#15846e]/40 text-[#15846e] hover:bg-[#15846e]/25'
-                  : 'bg-rose-500/15 border-rose-500/40 text-rose-300 hover:bg-rose-500/25'
+                  ? 'bg-[#15846e]/15 border-[#15846e]/40 text-[#15846e]'
+                  : 'bg-rose-500/15 border-rose-500/40 text-rose-300'
               }`}
             >
               <Eye className="w-4 h-4" />
               <span>
                 {isIdentityVerified
-                  ? 'Estado: Identidad Verificada (Click para simular No Verificada)'
-                  : 'Estado: Identidad No Verificada con Marca Anti-IA (Click para simular OCR OK)'}
+                  ? 'Identidad Nacional Verificada por OCR'
+                  : 'Identidad Pendiente de Verificación'}
               </span>
-            </button>
+            </div>
 
             <button
               type="button"

@@ -440,30 +440,22 @@ function StudentAssignmentsContent() {
           <div className="rounded-2xl border border-[#8052ff]/40 bg-gradient-to-r from-[#8052ff]/15 via-[#09090b] to-[#09090b] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#8052ff]">
-                Vista Previa de Nivel Pro / Pro+
+                Información de Membresía
               </span>
               <h3 className="text-lg font-medium text-white">
                 La entrega y calificación docente con rúbricas está activa a partir del Plan Pro
               </h3>
               <p className="text-xs text-[#bdbdbd]">
-                Puedes explorar las rúbricas oficiales aquí o cambiar a la vista Pro en la barra
-                superior para probar el flujo completo de entrega y apelación.
+                Puedes explorar los criterios de evaluación y ejemplos de rúbricas aquí. Para entregar proyectos y recibir retroalimentación docente, activa tu suscripción Pro.
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <button
                 type="button"
-                onClick={() => switchDemoTier('pro')}
-                className="px-4 py-2.5 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-white text-xs font-semibold transition-all cursor-pointer"
-              >
-                Simular Vista Plan Pro
-              </button>
-              <button
-                type="button"
                 onClick={() => openPricingModal('pro')}
-                className="px-4 py-2.5 rounded-full border border-[#ffffff]/20 hover:bg-[#ffffff]/10 text-white text-xs font-medium transition-all cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-white text-xs font-semibold transition-all cursor-pointer"
               >
-                Ver Membresías
+                Activar Plan Pro
               </button>
             </div>
           </div>

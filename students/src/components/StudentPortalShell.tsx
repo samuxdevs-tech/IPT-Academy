@@ -33,7 +33,6 @@ export default function StudentPortalShell({
     notifications,
     openPricingModal,
     markNotificationRead,
-    switchDemoTier,
     zeroSumAccounting,
   } = useSubscription();
 
@@ -171,43 +170,43 @@ export default function StudentPortalShell({
             </nav>
           </div>
 
-          {/* Derecha: Conmutador de Nivel en Tiempo Real + Contabilidad + Notificaciones */}
+          {/* Derecha: Estado de Suscripción Real + Contabilidad + Notificaciones */}
           <div className="flex items-center gap-3">
-            {/* Selector Rápido de Nivel de Estudiante */}
-            <div className="hidden md:flex items-center bg-[#09090b] border border-[#ffffff]/15 rounded-full p-1 gap-0.5">
-              <span className="text-[10px] uppercase tracking-wider text-[#9a9a9a] px-2.5 font-medium">
-                Nivel:
+            {/* Indicador de Nivel Real del Estudiante */}
+            <div className="hidden sm:flex items-center bg-[#09090b] border border-[#ffffff]/15 rounded-full px-3 py-1 gap-2">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  currentPlanId === 'your_plan'
+                    ? 'bg-[#15846e]'
+                    : currentPlanId === 'pro_plus'
+                    ? 'bg-[#ffb829]'
+                    : currentPlanId === 'pro'
+                    ? 'bg-[#8052ff]'
+                    : 'bg-[#9a9a9a]'
+                }`}
+              />
+              <span className="text-[10px] uppercase tracking-wider text-[#9a9a9a] font-medium">
+                Membresía:
               </span>
-              {(
-                [
-                  { id: 'free', label: 'Free' },
-                  { id: 'pro', label: 'Pro' },
-                  { id: 'pro_plus', label: 'Pro+' },
-                  { id: 'your_plan', label: 'Your Plan' },
-                ] as const
-              ).map((tier) => {
-                const active = currentPlanId === tier.id;
-                return (
-                  <button
-                    key={tier.id}
-                    type="button"
-                    onClick={() => switchDemoTier(tier.id)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
-                      active
-                        ? tier.id === 'pro_plus'
-                          ? 'bg-[#ffb829] text-black shadow-[0_0_12px_rgba(255,184,41,0.4)]'
-                          : tier.id === 'your_plan'
-                          ? 'bg-[#15846e] text-white shadow-[0_0_12px_rgba(21,132,110,0.4)]'
-                          : tier.id === 'pro'
-                          ? 'bg-[#8052ff] text-white shadow-[0_0_12px_rgba(128,82,255,0.4)]'
-                          : 'bg-[#ffffff]/20 text-white'
-                        : 'text-[#9a9a9a] hover:text-white'
-                    }`}
-                  >
-                    {tier.label}
-                  </button>
-                );
-              })}
+              <span
+                className={`text-xs font-semibold ${
+                  currentPlanId === 'your_plan'
+                    ? 'text-[#15846e]'
+                    : currentPlanId === 'pro_plus'
+                    ? 'text-[#ffb829]'
+                    : currentPlanId === 'pro'
+                    ? 'text-[#8052ff]'
+                    : 'text-white'
+                }`}
+              >
+                {currentPlanId === 'your_plan'
+                  ? 'Your Plan'
+                  : currentPlanId === 'pro_plus'
+                  ? 'Plan Pro+'
+                  : currentPlanId === 'pro'
+                  ? 'Plan Pro'
+                  : 'Acceso Inicial (Free)'}
+              </span>
             </div>
 
             {/* Indicador de Partida Doble = 0 (Para planes con créditos) */}
@@ -298,29 +297,27 @@ export default function StudentPortalShell({
         {/* Drawer Móvil y Tablet */}
         {mobileMenuOpen && (
           <div className="xl:hidden border-b border-[#ffffff]/10 bg-[#09090b] px-4 py-4 space-y-3">
-            <div className="flex flex-wrap items-center gap-1.5 pb-3 border-b border-[#ffffff]/10">
-              <span className="text-[11px] text-[#9a9a9a] mr-2">Vista de Nivel:</span>
-              {(
-                [
-                  { id: 'free', label: 'Free' },
-                  { id: 'pro', label: 'Pro' },
-                  { id: 'pro_plus', label: 'Pro+' },
-                  { id: 'your_plan', label: 'Your Plan' },
-                ] as const
-              ).map((tier) => (
-                <button
-                  key={tier.id}
-                  type="button"
-                  onClick={() => switchDemoTier(tier.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    currentPlanId === tier.id
-                      ? 'bg-[#8052ff] text-white'
-                      : 'bg-[#ffffff]/5 text-[#9a9a9a]'
-                  }`}
-                >
-                  {tier.label}
-                </button>
-              ))}
+            <div className="flex items-center justify-between pb-3 border-b border-[#ffffff]/10">
+              <span className="text-[11px] text-[#9a9a9a]">Membresía actual:</span>
+              <span
+                className={`px-3 py-0.5 rounded-full text-xs font-semibold ${
+                  currentPlanId === 'your_plan'
+                    ? 'bg-[#15846e]/20 text-[#15846e] border border-[#15846e]/40'
+                    : currentPlanId === 'pro_plus'
+                    ? 'bg-[#ffb829]/20 text-[#ffb829] border border-[#ffb829]/40'
+                    : currentPlanId === 'pro'
+                    ? 'bg-[#8052ff]/20 text-[#8052ff] border border-[#8052ff]/40'
+                    : 'bg-white/10 text-white'
+                }`}
+              >
+                {currentPlanId === 'your_plan'
+                  ? 'Your Plan'
+                  : currentPlanId === 'pro_plus'
+                  ? 'Plan Pro+'
+                  : currentPlanId === 'pro'
+                  ? 'Plan Pro'
+                  : 'Acceso Inicial (Free)'}
+              </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {navItems.map((item) => {
