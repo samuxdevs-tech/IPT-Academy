@@ -55,10 +55,11 @@ const BUILTIN_CERTIFICATES: Record<string, ExtendedCertificate> = {};
 
 export function VerifyView({ forcedCode }: VerifyViewProps) {
   const searchParams = useSearchParams();
-  const queryCode = searchParams ? searchParams.get('code') || '' : '';
-  const initialCode = (forcedCode || queryCode).trim().toUpperCase();
+  const queryCode = searchParams
+    ? searchParams.get('code') || searchParams.get('firma') || searchParams.get('hash') || ''
+    : '';
 
-  const [code, setCode] = useState(initialCode || '');
+  const [code, setCode] = useState(forcedCode || queryCode || '');
   const [cert, setCert] = useState<ExtendedCertificate | null>(null);
   const [searchedCode, setSearchedCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -111,12 +112,16 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
           for (const [k, v] of Object.entries<any>(list)) {
             if (!v) continue;
             const folio = (v.folio || v.id || k).toUpperCase();
-            const hash = (v.sha256Hash || v.verificationHash || '').toUpperCase();
+            const rawHash = (v.sha256Hash || v.verificationHash || '').toUpperCase();
+            const cleanRawHash = rawHash.replace(/^SHA256:?/, '').trim();
+            const cleanSearchHash = cleanUpper.replace(/^SHA256:?/, '').trim();
             if (
               folio === cleanUpper ||
-              hash === cleanUpper ||
+              rawHash === cleanUpper ||
+              cleanRawHash === cleanSearchHash ||
               k.toUpperCase() === cleanUpper ||
-              k.toUpperCase() === cleanUnderscore
+              k.toUpperCase() === cleanUnderscore ||
+              k.toUpperCase() === safeKey
             ) {
               if (v.studentName || v.courseTitle) {
                 foundRecord = v;
@@ -150,8 +155,17 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
           for (const [k, v] of Object.entries<any>(list)) {
             if (!v) continue;
             const folio = (v.id || v.folio || k).toUpperCase();
-            const hash = (v.verificationHash || v.sha256Hash || '').toUpperCase();
-            if (folio === cleanUpper || hash === cleanUpper || k.toUpperCase() === cleanUpper) {
+            const rawHash = (v.verificationHash || v.sha256Hash || '').toUpperCase();
+            const cleanRawHash = rawHash.replace(/^SHA256:?/, '').trim();
+            const cleanSearchHash = cleanUpper.replace(/^SHA256:?/, '').trim();
+            if (
+              folio === cleanUpper ||
+              rawHash === cleanUpper ||
+              cleanRawHash === cleanSearchHash ||
+              k.toUpperCase() === cleanUpper ||
+              k.toUpperCase() === cleanUnderscore ||
+              k.toUpperCase() === safeKey
+            ) {
               foundRecord = v;
               resolvedId = v.id || v.folio || k;
               break;
@@ -223,11 +237,41 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
   };
 
   useEffect(() => {
-    if (initialCode) {
-      setCode(initialCode);
-      resolveCertificate(initialCode);
+    // 1. Prioridad: prop forzada
+    if (forcedCode) {
+      const cleanForced = decodeURIComponent(forcedCode).trim();
+      setCode(cleanForced);
+      resolveCertificate(cleanForced);
+      return;
     }
-  }, [initialCode]);
+
+    // 2. Query parameter (?code=, ?firma=, ?hash=)
+    if (queryCode) {
+      const cleanQuery = decodeURIComponent(queryCode).trim();
+      setCode(cleanQuery);
+      resolveCertificate(cleanQuery);
+      return;
+    }
+
+    // 3. Extracción de ruta directa /verify/{firma} o /verify/{folio}
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      const verifyPrefix = '/verify/';
+      const idx = pathname.indexOf(verifyPrefix);
+      if (idx !== -1) {
+        let codeFromPath = pathname.substring(idx + verifyPrefix.length).split('/')[0];
+        // En caso de que el navegador interprete '#' como URL fragment
+        if (window.location.hash) {
+          codeFromPath += window.location.hash;
+        }
+        const cleanPath = decodeURIComponent(codeFromPath).trim();
+        if (cleanPath && cleanPath.toLowerCase() !== 'verify' && cleanPath !== 'index.html') {
+          setCode(cleanPath);
+          resolveCertificate(cleanPath);
+        }
+      }
+    }
+  }, [forcedCode, queryCode]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,7 +280,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
 
   const handleCopyPublicUrl = () => {
     if (typeof window !== 'undefined' && cert) {
-      const url = `${window.location.origin}/verify?code=${encodeURIComponent(cert.id)}`;
+      const url = `${window.location.origin}/verify/${encodeURIComponent(cert.id)}`;
       navigator.clipboard.writeText(url);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);

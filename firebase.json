@@ -8,6 +8,10 @@
     "trailingSlash": false,
     "rewrites": [
       {
+        "source": "/verify/**",
+        "destination": "/verify/index.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
