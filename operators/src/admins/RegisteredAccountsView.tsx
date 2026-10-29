@@ -173,7 +173,7 @@ export function RegisteredAccountsView() {
     stuName: string,
     currentVerified: boolean,
     docType: string = 'CC',
-    docNumber: string = '1004892310'
+    docNumber: string = ''
   ) => {
     const nextVerified = !currentVerified;
     const confirmMsg = nextVerified

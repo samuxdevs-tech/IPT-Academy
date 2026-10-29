@@ -46,7 +46,7 @@ export function QuickGradingView() {
               assignment_id: val[k].assignment_id || "assign-01",
               student_uid: val[k].student_uid || val[k].student_id || "stu-001",
               student_name: val[k].student_name || "Estudiante IPT",
-              student_email: val[k].student_email || "estudiante@ipt.com",
+              student_email: val[k].student_email || "sin-correo@iptapps.com",
               submission_text_content: val[k].submission_text_content || "",
               submitted_at: val[k].submitted_at || new Date().toISOString(),
               status: val[k].status || 'pending',

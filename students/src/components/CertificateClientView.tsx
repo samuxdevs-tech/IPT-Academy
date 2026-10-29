@@ -92,9 +92,9 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
   // Estado de Identidad y Verificación OCR de Documento Nacional
   const [isIdentityVerified, setIsIdentityVerified] = useState<boolean>(false);
   const [docType, setDocType] = useState<'CC' | 'TI' | 'CE' | 'DNI' | 'PASSPORT'>('CC');
-  const [docNumber, setDocNumber] = useState<string>('1004892310');
+  const [docNumber, setDocNumber] = useState<string>('');
   const [legalName, setLegalName] = useState<string>(
-    user?.displayName || 'Iván Samuel Pérez Torrenegra'
+    user?.displayName || ''
   );
   const [ocrScanning, setOcrScanning] = useState<boolean>(false);
   const [ocrStepText, setOcrStepText] = useState<string>('');
@@ -321,48 +321,27 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
         setOcrStepText("2/4 Cotejando características de documento nacional (Cédula / DNI / Pasaporte)...");
 
         try {
-          const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          const res = await fetch("/api/verify-doc", {
             method: "POST",
             headers: {
-              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY || ""}`,
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              model: "google/gemini-3.5-flash-lite",
-              messages: [
-                {
-                  role: "user",
-                  content: [
-                    {
-                      type: "text",
-                      text: `Determina con estricta rigurosidad si esta imagen es un documento de identidad oficial emitido por un gobierno (por ejemplo: Cédula de Ciudadanía, Tarjeta de Identidad, Cédula de Extranjería, DNI o Pasaporte) del titular "${legalName}" con número aproximado "${docNumber}". Si la imagen es una foto cualquiera, captura de pantalla, meme, avatar, paisaje, documento no oficial u objeto no relacionado, debes marcar isValid: false. Responde EXCLUSIVAMENTE un JSON: {"isValid": boolean, "detectedType": string, "reason": string}`
-                    },
-                    {
-                      type: "image_url",
-                      image_url: {
-                        url: uploadedDocBase64
-                      }
-                    }
-                  ]
-                }
-              ]
+              legalName,
+              docNumber,
+              imageBase64: uploadedDocBase64
             })
           });
 
           if (res.ok) {
             const data = await res.json();
-            const rawContent = data.choices?.[0]?.message?.content || "";
-            const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]);
-              if (parsed.isValid === false) {
-                isValidId = false;
-                rejectionReason = parsed.reason || "El archivo subido no corresponde a un documento nacional de identidad válido.";
-              }
+            if (data && data.isValid === false) {
+              isValidId = false;
+              rejectionReason = data.reason || "El archivo subido no corresponde a un documento nacional de identidad válido.";
             }
           }
         } catch (apiErr) {
-          console.warn("Validación de visión remota en contingencia:", apiErr);
+          console.warn("Validación de visión en contingencia:", apiErr);
         }
       }
 

@@ -53,8 +53,12 @@ export interface GroqTutorResponse {
   toolCall?: GroqToolCall;
 }
 
-const getGroqApiKey = (): string => {
-  return process.env.NEXT_PUBLIC_GROQ_API_KEY || '';
+const postToTutorApi = async (payload: Record<string, any>) => {
+  return await fetch('/api/tutor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 };
 
 const GROQ_MODEL = 'openai/gpt-oss-120b';
@@ -261,19 +265,11 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
   }
 
   try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getGroqApiKey()}`
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: messagesPayload,
-        tools: TUTOR_TOOLS,
-        temperature: 0.3,
-        max_tokens: 600
-      })
+    const res = await postToTutorApi({
+      messages: messagesPayload,
+      tools: TUTOR_TOOLS,
+      temperature: 0.3,
+      max_tokens: 600
     });
 
     if (!res.ok) {
@@ -361,18 +357,10 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
           }
         ];
 
-        const res2 = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getGroqApiKey()}`
-          },
-          body: JSON.stringify({
-            model: GROQ_MODEL,
-            messages: turn2Messages,
-            temperature: 0.6,
-            max_tokens: 600
-          })
+        const res2 = await postToTutorApi({
+          messages: turn2Messages,
+          temperature: 0.6,
+          max_tokens: 600
         });
 
         if (res2.ok) {

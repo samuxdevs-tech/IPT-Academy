@@ -44,7 +44,7 @@ export function AdminGatekeeper({
       userProfile.isAdmin ||
       userProfile.role === "admin" ||
       userProfile.role === "owner" ||
-      userProfile.email === "samuxdevs@gmail.com";
+      (userProfile.role as string) === "owner" || userProfile.role === "rectoria";
 
     setIsClaimVerified(isAdmin);
     setChecking(false);

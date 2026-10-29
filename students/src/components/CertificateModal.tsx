@@ -85,7 +85,7 @@ export default function CertificateModal({
         id: newCertId,
         userId: uid,
         studentName: computedName,
-        studentEmail: user?.email || 'estudiante@ivanperez.tech',
+        studentEmail: user?.email || '',
         courseSlug,
         courseTitle,
         instructor: 'Equipo Académico de IPT Academy',
@@ -102,6 +102,20 @@ export default function CertificateModal({
       if (user?.uid) {
         await Promise.all([
           set(ref(db, `certificates/${newCertId}`), newCertificate),
+          set(ref(db, `issued_certificates/${newCertId}`), {
+            folio: newCertId,
+            studentUid: user.uid,
+            studentName: computedName,
+            studentEmail: user.email || '',
+            nationalDocNumber: 'Registrado',
+            courseSlug: courseSlug,
+            courseTitle: courseTitle,
+            finalGpa: scoreAverage || 96,
+            status: 'issued',
+            issuedAt: new Date().toISOString(),
+            sha256Hash: newCertificate.verificationHash,
+            rectoriaSignature: 'Ing. Iván Samuel Pérez Torrenegra (Rector Titular)',
+          }),
           set(ref(db, `users/${user.uid}/certificates/${courseSlug}`), newCertId),
           set(ref(db, `progress/${user.uid}/${courseSlug}/certificateId`), newCertId),
         ]).catch(() => {});

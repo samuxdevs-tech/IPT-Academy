@@ -99,6 +99,7 @@ export interface StudentSubscriptionRecord {
   uid: string;
   name: string;
   email: string;
+  docNumber?: string;
   planId: "free" | "pro" | "pro_plus" | "your_plan";
   status: "active" | "trial" | "read_only" | "cancelled";
   currentPeriodEnd?: string;
@@ -106,10 +107,20 @@ export interface StudentSubscriptionRecord {
 }
 
 // Hashes Criptográficos SHA-256 Autorizados para DevOps (Anti-Abuso)
-// Clave Upgrade: "IPT-DEVOPS-UPGRADE-SECURE-2026"
-// Clave Downgrade: "IPT-DEVOPS-DOWNGRADE-SECURE-2026"
-const AUTHORIZED_UPGRADE_PASSKEY = "IPT-DEVOPS-UPGRADE-SECURE-2026";
-const AUTHORIZED_DOWNGRADE_PASSKEY = "IPT-DEVOPS-DOWNGRADE-SECURE-2026";
+// Hashes criptográficos SHA-256 de autorización DevOps (Cero almacenamiento de texto plano en bundle cliente)
+const UPGRADE_SHA256_DIGEST = "e0cf90a408517477cb1a3804d121ca7a3d0d7fd974ca38120105cbd67eb2e928";
+const DOWNGRADE_SHA256_DIGEST = "d57508e9141215ab36e6f473eb4f2a10373c6de3e3731e32dda9198df8ce9f7c";
+
+async function computeSha256Hex(plain: string): Promise<string> {
+  if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(plain);
+    const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  return "";
+}
 
 async function sha256Hex(message: string): Promise<string> {
   const msgUint8 = new TextEncoder().encode(message.trim());
@@ -190,6 +201,12 @@ export function RectoriaDeskWorkspace({
     "1. Enfoque Estricto: Priorizar desacoplamiento de capas y manejo tipado de errores sobre atajos cosméticos.\n2. Exigencia en Rúbricas: Calificar de acuerdo al cumplimiento estricto del estándar Clean Architecture.\n3. TutorIA: Mantener tono sobrio, explicativo, sin respuestas genéricas y jamás anunciar componentes internos de UI.\n4. Cancelación con Respeto: Aplicar devolución de créditos automática si el estudiante cancela con más de 4 horas de anticipación."
   );
   const [isSavingDirectives, setIsSavingDirectives] = useState(false);
+  const [statusFeedback, setStatusFeedback] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showFeedback = (message: string, type: 'success' | 'error' = 'success') => {
+    setStatusFeedback({ message, type });
+    setTimeout(() => setStatusFeedback(null), 4500);
+  };
 
   // 1. Cargar ofertas en tiempo real desde Firebase RTDB
   useEffect(() => {
@@ -210,7 +227,7 @@ export function RectoriaDeskWorkspace({
     return () => unsub();
   }, []);
 
-  // 2. Cargar apelaciones de calificaciones
+  // 2. Cargar apelaciones reales de calificaciones (100% en Base de Datos)
   useEffect(() => {
     const appealsRef = ref(rtdb, "academic_appeals");
     const unsub = onValue(appealsRef, (snap) => {
@@ -222,98 +239,155 @@ export function RectoriaDeskWorkspace({
         }));
         setAppeals(list.reverse());
       } else {
-        // Mock institucional si está vacío
-        setAppeals([
-          {
-            id: "appeal-01",
-            folio: "APL-2026-084",
-            studentUid: "std-ivan-001",
-            studentName: "Iván Samuel Pérez Torrenegra",
-            studentEmail: "samuxdevs@gmail.com",
-            courseSlug: "ipt-master-fullstack",
-            courseTitle: "IPT Master: Arquitectura Fullstack e Inteligencia Artificial",
-            assignmentId: "asg-arch-01",
-            assignmentTitle: "Diseño de Separación de Capas y Contratos de Dominio",
-            criterionId: "crit-isolation",
-            criterionTitle: "Aislamiento y Pureza de la Capa de Dominio",
-            originalScore: 11,
-            maxScore: 20,
-            teacherComment: "En el servicio de reserva se utilizó una excepción genérica no tipada.",
-            studentAppealReason:
-              "Se adjuntó la interfaz DomainResult<T> en el archivo contracts/result.ts línea 45 que tipa de manera determinista los fallos de concurrencia sin usar excepciones de runtime.",
-            status: "pending_rectoria",
-            createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-          },
-        ]);
+        setAppeals([]);
       }
     });
     return () => unsub();
   }, []);
 
-  // 3. Cargar diplomas y suscriptores para el panel de DevOps
+  // 3. Cargar diplomas emitidos y estudiantes en tiempo real (Sincronizado con Admin)
   useEffect(() => {
-    // Suscriptores de lms_subscriptions
-    const subsRef = ref(rtdb, "lms_subscriptions");
-    const unsubSubs = onValue(subsRef, (snap) => {
+    // Directivas de Rectoría desde RTDB
+    const directivesRef = ref(rtdb, "rectoria_directives");
+    const unsubDirectives = onValue(directivesRef, (snap) => {
       if (snap.exists()) {
         const val = snap.val();
-        const list: StudentSubscriptionRecord[] = Object.keys(val).map((uid) => {
-          const s = val[uid];
-          return {
-            uid,
-            name: s.userName || s.name || `Estudiante (${uid.slice(0, 6)})`,
-            email: s.userEmail || s.email || "estudiante@ivanperez.tech",
-            planId: s.planId || "free",
-            status: s.status || "active",
-            currentPeriodEnd: s.currentPeriodEnd,
-            liveClassCreditsRemaining: s.liveClassCreditsRemaining ?? s.remainingCredits ?? 0,
-          };
-        });
-        setStudentsList(list);
-      } else {
-        setStudentsList([
-          {
-            uid: "guest_student_local",
-            name: "Iván Samuel Pérez Torrenegra",
-            email: "samuxdevs@gmail.com",
-            planId: "free",
-            status: "active",
-            liveClassCreditsRemaining: 0,
-          },
-        ]);
+        if (val && typeof val.content === "string") {
+          setPedagogicalDirectives(val.content);
+        }
       }
     });
 
-    // Diplomas emitidos
-    const certsRef = ref(rtdb, "issued_certificates");
+    // Sincronizar estudiantes combinando 'users' y 'lms_subscriptions'
+    let rawUsers: Record<string, any> = {};
+    let rawSubs: Record<string, any> = {};
+
+    const syncStudents = () => {
+      const uids = new Set([...Object.keys(rawUsers), ...Object.keys(rawSubs)]);
+      const list: StudentSubscriptionRecord[] = [];
+      uids.forEach((uid) => {
+        const u = rawUsers[uid] || {};
+        const s = rawSubs[uid] || {};
+        const profile = u?.profile || {};
+        const legal = u?.legalConsent || {};
+        const idVerif = u?.identityVerification || {};
+
+        const email =
+          profile.email ||
+          legal.email ||
+          (typeof u?.email === "string" ? u.email : "") ||
+          s?.userEmail ||
+          s?.email ||
+          "Sin correo";
+
+        const fullNameFromParts = [profile.firstName, profile.lastName]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
+
+        const name =
+          profile.displayName ||
+          fullNameFromParts ||
+          legal.displayName ||
+          idVerif.legalName ||
+          u?.displayName ||
+          u?.name ||
+          s?.userName ||
+          s?.name ||
+          (email && email !== "Sin correo" ? email.split("@")[0] : `Usuario ${uid.slice(0, 6)}`);
+
+        const docNumber = idVerif.docNumber || "";
+
+        list.push({
+          uid,
+          name,
+          email,
+          docNumber,
+          planId: s?.planId || "free",
+          status: s?.status || "active",
+          currentPeriodEnd: s?.currentPeriodEnd,
+          liveClassCreditsRemaining: s?.liveClassCreditsRemaining ?? s?.remainingCredits ?? 0,
+        });
+      });
+      setStudentsList(list);
+    };
+
+    const usersRef = ref(rtdb, "users");
+    const unsubUsers = onValue(usersRef, (snap) => {
+      rawUsers = snap.exists() ? snap.val() : {};
+      syncStudents();
+    });
+
+    const subsRef = ref(rtdb, "lms_subscriptions");
+    const unsubSubs = onValue(subsRef, (snap) => {
+      rawSubs = snap.exists() ? snap.val() : {};
+      syncStudents();
+    });
+
+    // Sincronizar diplomas combinando 'issued_certificates' y 'certificates'
+    let rawIssued: Record<string, any> = {};
+    let rawCerts: Record<string, any> = {};
+
+    const syncCertificates = () => {
+      const map = new Map<string, DegreeCertificateItem>();
+
+      Object.entries(rawCerts).forEach(([k, c]: [string, any]) => {
+        map.set(k, {
+          folio: c.id || k,
+          studentUid: c.userId || c.studentUid || "uid",
+          studentName: c.studentName || "Estudiante IPT",
+          studentEmail: c.studentEmail || "",
+          nationalDocNumber: c.nationalDocNumber || "Registrado",
+          courseSlug: c.courseSlug || "ipt-master-fullstack",
+          courseTitle: c.courseTitle || "Certificado Oficial IPT",
+          finalGpa: c.scoreAverage || 96,
+          status: c.status === "revoked" ? "revoked" : "issued",
+          issuedAt: c.issuedAt || c.date || new Date().toISOString(),
+          sha256Hash: c.verificationHash || k,
+          rectoriaSignature: c.rectoriaSignature || "Ing. Iván Samuel Pérez Torrenegra (Rector Titular)",
+          revocationReason: c.revocationReason,
+        });
+      });
+
+      Object.entries(rawIssued).forEach(([k, val]: [string, any]) => {
+        map.set(k, {
+          folio: val.folio || k,
+          studentUid: val.studentUid || "uid",
+          studentName: val.studentName || "Estudiante IPT",
+          studentEmail: val.studentEmail || "",
+          nationalDocNumber: val.nationalDocNumber || "Registrado",
+          courseSlug: val.courseSlug || "ipt-master-fullstack",
+          courseTitle: val.courseTitle || "Certificado Oficial IPT",
+          finalGpa: val.finalGpa || 96,
+          status: val.status || "issued",
+          issuedAt: val.issuedAt || new Date().toISOString(),
+          sha256Hash: val.sha256Hash || k,
+          rectoriaSignature: val.rectoriaSignature || "Ing. Iván Samuel Pérez Torrenegra (Rector Titular)",
+          revocationReason: val.revocationReason,
+        });
+      });
+
+      setCertificates(Array.from(map.values()));
+    };
+
+    const certsRef = ref(rtdb, "certificates");
     const unsubCerts = onValue(certsRef, (snap) => {
-      if (snap.exists()) {
-        const val = snap.val();
-        const list: DegreeCertificateItem[] = Object.keys(val).map((k) => val[k]);
-        setCertificates(list);
-      } else {
-        setCertificates([
-          {
-            folio: "IPT-CERT-2026-001",
-            studentUid: "guest_student_local",
-            studentName: "Iván Samuel Pérez Torrenegra",
-            studentEmail: "samuxdevs@gmail.com",
-            nationalDocNumber: "1004892310",
-            courseSlug: "ipt-master-fullstack",
-            courseTitle: "IPT Master: Arquitectura Fullstack e Inteligencia Artificial",
-            finalGpa: 94,
-            status: "issued",
-            issuedAt: "2026-10-25T18:00:00Z",
-            sha256Hash: "8f7d9a12c4b5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1",
-            rectoriaSignature: "Ing. Iván Samuel Pérez Torrenegra (Rector Titular)",
-          },
-        ]);
-      }
+      rawCerts = snap.exists() ? snap.val() : {};
+      syncCertificates();
+    });
+
+    const issuedRef = ref(rtdb, "issued_certificates");
+    const unsubIssued = onValue(issuedRef, (snap) => {
+      rawIssued = snap.exists() ? snap.val() : {};
+      syncCertificates();
     });
 
     return () => {
+      unsubDirectives();
+      unsubUsers();
       unsubSubs();
       unsubCerts();
+      unsubIssued();
     };
   }, []);
 
@@ -323,15 +397,28 @@ export function RectoriaDeskWorkspace({
     setIsSavingOffer(true);
     setOfferSavedNotice(null);
     try {
+      const now = new Date().toISOString();
       await set(ref(rtdb, "rectoria_trial_offers"), {
         ...rectoriaOffer,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now,
         updatedBy: userProfile.email,
       });
-      setOfferSavedNotice("Oferta de Rectoría actualizada y publicada en el Campus Virtual.");
-      setTimeout(() => setOfferSavedNotice(null), 5000);
+
+      // Trazabilidad en auditoría institucional compartida con Admin
+      await push(ref(rtdb, "audit_logs"), {
+        timestampUtc: now,
+        eventType: "critical_change",
+        severity: "info",
+        actorUid: userProfile.uid,
+        actorEmail: userProfile.email,
+        actionDescription: `Rectoría actualizó la oferta de fomento: ${rectoriaOffer.targetPlan.toUpperCase()} (${rectoriaOffer.durationDays} días) a ${rectoriaOffer.priceCop} COP`,
+        ipAddress: "127.0.0.1",
+        location: "Despacho de Rectoría",
+      });
+
+      showFeedback("Oferta de Rectoría actualizada y sincronizada en tiempo real con el Campus y Administración.");
     } catch (err: any) {
-      alert("Error al guardar oferta: " + err.message);
+      showFeedback("Error al guardar oferta: " + err.message, "error");
     } finally {
       setIsSavingOffer(false);
     }
@@ -370,12 +457,25 @@ export function RectoriaDeskWorkspace({
         );
       }
 
+      // Registrar fallo formal en auditoría institucional
+      await push(ref(rtdb, "audit_logs"), {
+        timestampUtc: now,
+        eventType: "critical_change",
+        severity: "info",
+        actorUid: userProfile.uid,
+        actorEmail: userProfile.email,
+        actionDescription: `Rectoría emitió fallo formal sobre apelación ${selectedAppeal.folio}: ${verdictType === "accepted" ? "Aceptada (Nota ajustada a " + verdictScore + ")" : "Ratificada / Desestimada"}`,
+        ipAddress: "127.0.0.1",
+        location: "Despacho de Rectoría",
+      });
+
       setAppeals((prev) =>
         prev.map((a) => (a.id === selectedAppeal.id ? updatedItem : a))
       );
       setSelectedAppeal(null);
+      showFeedback(`Fallo registrado oficialmente sobre el expediente ${selectedAppeal.folio}.`);
     } catch (err: any) {
-      alert("Error al dictaminar apelación: " + err.message);
+      showFeedback("Error al dictaminar apelación: " + err.message, "error");
     } finally {
       setIsSubmittingVerdict(false);
     }
@@ -384,28 +484,45 @@ export function RectoriaDeskWorkspace({
   // Revocar Diploma
   const handleRevokeDegree = async (folio: string) => {
     if (!revocationReasonInput.trim()) {
-      alert("Debes consignar la causal jurídica o ética para la revocación.");
+      showFeedback("Debes consignar la causal jurídica o ética para la revocación.", "error");
       return;
     }
     try {
       const now = new Date().toISOString();
-      await set(ref(rtdb, `issued_certificates/${folio}/status`), "revoked");
-      await set(ref(rtdb, `issued_certificates/${folio}/revocationReason`), revocationReasonInput.trim());
-      await set(ref(rtdb, `issued_certificates/${folio}/revokedAt`), now);
-      await set(ref(rtdb, `issued_certificates/${folio}/revokedBy`), userProfile.email);
+      const reason = revocationReasonInput.trim();
+
+      // Revocar atómicamente en issued_certificates y certificates para sincronía con el Alumno y Admin
+      await Promise.all([
+        set(ref(rtdb, `issued_certificates/${folio}/status`), "revoked"),
+        set(ref(rtdb, `issued_certificates/${folio}/revocationReason`), reason),
+        set(ref(rtdb, `issued_certificates/${folio}/revokedAt`), now),
+        set(ref(rtdb, `issued_certificates/${folio}/revokedBy`), userProfile.email),
+        set(ref(rtdb, `certificates/${folio}/status`), "revoked"),
+        set(ref(rtdb, `certificates/${folio}/revocationReason`), reason),
+        push(ref(rtdb, "audit_logs"), {
+          timestampUtc: now,
+          eventType: "critical_change",
+          severity: "critical",
+          actorUid: userProfile.uid,
+          actorEmail: userProfile.email,
+          actionDescription: `Rectoría revocó oficialmente el diploma ${folio}. Causal: ${reason}`,
+          ipAddress: "127.0.0.1",
+          location: "Despacho de Rectoría",
+        }),
+      ]);
 
       setCertificates((prev) =>
         prev.map((c) =>
           c.folio === folio
-            ? { ...c, status: "revoked", revocationReason: revocationReasonInput.trim() }
+            ? { ...c, status: "revoked", revocationReason: reason }
             : c
         )
       );
       setRevokingFolio(null);
       setRevocationReasonInput("");
-      alert(`Diploma con folio ${folio} revocado oficialmente.`);
+      showFeedback(`Diploma con folio ${folio} revocado oficialmente e invalidado en la base de datos.`);
     } catch (err: any) {
-      alert("Error al revocar diploma: " + err.message);
+      showFeedback("Error al revocar diploma: " + err.message, "error");
     }
   };
 
@@ -448,8 +565,7 @@ export function RectoriaDeskWorkspace({
       if (isUpgradeAction) {
         const isMatch =
           rawInputLower === expectedUpgradeHash ||
-          enteredHash === expectedUpgradeHash ||
-          rawInput === AUTHORIZED_UPGRADE_PASSKEY;
+          enteredHash === expectedUpgradeHash;
 
         if (!isMatch) {
           throw new Error("HASH_UPGRADE_INVALID: La clave o hash de autorización DevOps para UPGRADE es incorrecta.");
@@ -457,8 +573,7 @@ export function RectoriaDeskWorkspace({
       } else {
         const isMatch =
           rawInputLower === expectedDowngradeHash ||
-          enteredHash === expectedDowngradeHash ||
-          rawInput === AUTHORIZED_DOWNGRADE_PASSKEY;
+          enteredHash === expectedDowngradeHash;
 
         if (!isMatch) {
           throw new Error("HASH_DOWNGRADE_INVALID: La clave o hash de autorización DevOps para DOWNGRADE es incorrecta.");
@@ -475,16 +590,27 @@ export function RectoriaDeskWorkspace({
           ? 12
           : 0;
 
+      // Leer suscripción existente para preservar todos los atributos (esquema unificado con Admin)
+      const existingSnap = await get(ref(rtdb, `lms_subscriptions/${targetStudentForTier.uid}`));
+      const existingSub = existingSnap.exists() ? existingSnap.val() : {};
+
       const subData = {
+        ...existingSub,
+        id: existingSub.id || `sub_${targetStudentForTier.uid}`,
         userId: targetStudentForTier.uid,
-        userName: targetStudentForTier.name,
-        userEmail: targetStudentForTier.email,
+        userName: targetStudentForTier.name || existingSub.userName,
+        userEmail: targetStudentForTier.email || existingSub.userEmail,
         planId: targetNextPlan,
         status: "active",
+        cancelAtPeriodEnd: false,
+        billingAnchorDay: existingSub.billingAnchorDay || now.getUTCDate(),
         currentPeriodStart: now.toISOString(),
         currentPeriodEnd: periodEnd,
+        activeDynamicCourseSlugs: existingSub.activeDynamicCourseSlugs || ["ipt-master-fullstack"],
+        frozenDynamicCourseSlugs: existingSub.frozenDynamicCourseSlugs || [],
         liveClassCreditsRemaining: credits,
         remainingCredits: credits,
+        creditsConsumedInCycle: 0,
         updatedAt: now.toISOString(),
         authorizedByDevops: userProfile.email,
         authHashType: isUpgradeAction ? "upgrade_sha256" : "downgrade_sha256",
@@ -492,9 +618,9 @@ export function RectoriaDeskWorkspace({
 
       await set(ref(rtdb, `lms_subscriptions/${targetStudentForTier.uid}`), subData);
 
-      // Registrar en audit log inmutable con captura tolerante a fallos
-      try {
-        await push(ref(rtdb, "devops_audit_logs"), {
+      // Registrar atómicamente en ambos canales de auditoría
+      await Promise.all([
+        push(ref(rtdb, "devops_audit_logs"), {
           action: isUpgradeAction ? "SUBSCRIPTION_UPGRADE" : "SUBSCRIPTION_DOWNGRADE",
           targetUserId: targetStudentForTier.uid,
           targetEmail: targetStudentForTier.email,
@@ -502,10 +628,18 @@ export function RectoriaDeskWorkspace({
           toPlan: targetNextPlan,
           operatorEmail: userProfile.email,
           timestamp: now.toISOString(),
-        });
-      } catch (auditErr) {
-        console.warn("Registro secundario de auditoría omitido:", auditErr);
-      }
+        }),
+        push(ref(rtdb, "audit_logs"), {
+          timestampUtc: now.toISOString(),
+          eventType: "critical_change",
+          severity: "critical",
+          actorUid: userProfile.uid,
+          actorEmail: userProfile.email,
+          actionDescription: `[DevOps / Rectoría] Cambio de plan: ${targetStudentForTier.email} (${targetStudentForTier.planId} -> ${targetNextPlan})`,
+          ipAddress: "127.0.0.1",
+          location: "Despacho de Rectoría",
+        }),
+      ]);
 
       setStudentsList((prev) =>
         prev.map((s) =>
@@ -516,9 +650,7 @@ export function RectoriaDeskWorkspace({
       );
 
       setIsDevopsModalOpen(false);
-      alert(
-        `Autorización DevOps exitosa: Plan de ${targetStudentForTier.name} actualizado a ${targetNextPlan.toUpperCase()}.`
-      );
+      showFeedback(`Autorización DevOps exitosa: Plan de ${targetStudentForTier.name} actualizado a ${targetNextPlan.toUpperCase()}.`);
     } catch (err: any) {
       setDevopsError(err.message || "Fallo en la verificación criptográfica.");
     } finally {
@@ -526,11 +658,26 @@ export function RectoriaDeskWorkspace({
     }
   };
 
+  const filteredDegrees = useMemo(() => {
+    const q = degreeSearch.trim().toLowerCase();
+    if (!q) return certificates;
+    return certificates.filter(
+      (c) =>
+        c.folio.toLowerCase().includes(q) ||
+        c.studentName.toLowerCase().includes(q) ||
+        (c.nationalDocNumber && c.nationalDocNumber.toLowerCase().includes(q))
+    );
+  }, [certificates, degreeSearch]);
+
   const filteredStudents = useMemo(() => {
     const q = studentSearch.trim().toLowerCase();
     if (!q) return studentsList;
     return studentsList.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.email.toLowerCase().includes(q) ||
+        s.uid.toLowerCase().includes(q) ||
+        (s.docNumber && s.docNumber.toLowerCase().includes(q))
     );
   }, [studentsList, studentSearch]);
 
@@ -649,6 +796,28 @@ export function RectoriaDeskWorkspace({
 
       {/* Contenido Principal según Pestaña Activa */}
       <main className="flex-1 max-w-[1440px] w-full mx-auto p-6 sm:p-8">
+        {statusFeedback && (
+          <div className={`mb-6 p-4 rounded-2xl border text-xs font-semibold flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200 ${
+            statusFeedback.type === 'success'
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+          }`}>
+            <div className="flex items-center gap-2">
+              {statusFeedback.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-rose-400" />
+              )}
+              <span>{statusFeedback.message}</span>
+            </div>
+            <button
+              onClick={() => setStatusFeedback(null)}
+              className="text-zinc-400 hover:text-white text-xs font-mono px-2 py-0.5 rounded cursor-pointer"
+            >
+              Cerrar
+            </button>
+          </div>
+        )}
         {/* ========================================================
             PESTAÑA 1: OFERTAS Y BECAS DE RECTORÍA (PLAN, TIEMPO, PRECIO)
            ======================================================== */}
@@ -930,7 +1099,14 @@ export function RectoriaDeskWorkspace({
                   Bandeja de Reclamos ({appeals.length})
                 </span>
 
-                {appeals.map((appeal) => {
+                {appeals.length === 0 ? (
+                  <div className="p-8 rounded-2xl border border-white/10 bg-[#121217] text-center space-y-2">
+                    <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto opacity-70" />
+                    <p className="text-xs font-semibold text-white">No hay apelaciones registradas</p>
+                    <p className="text-[11px] text-zinc-400">Todos los reclamos se encuentran al día en la base de datos.</p>
+                  </div>
+                ) : (
+                  appeals.map((appeal) => {
                   const isSelected = selectedAppeal?.id === appeal.id;
                   return (
                     <div
@@ -984,7 +1160,7 @@ export function RectoriaDeskWorkspace({
                       </div>
                     </div>
                   );
-                })}
+                }))}
               </div>
 
               {/* Detalle y Emisión de Fallo (7 cols) */}
@@ -1182,7 +1358,7 @@ export function RectoriaDeskWorkspace({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {certificates.map((cert) => (
+                    {filteredDegrees.map((cert) => (
                       <tr key={cert.folio} className="hover:bg-white/[0.02]">
                         <td className="py-3.5 px-4 font-mono font-semibold text-[#f59e0b]">
                           {cert.folio}
@@ -1224,6 +1400,13 @@ export function RectoriaDeskWorkspace({
                         </td>
                       </tr>
                     ))}
+                    {filteredDegrees.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="text-center py-12 text-zinc-500 text-xs">
+                          No hay certificados registrados en la base de datos que coincidan con la búsqueda.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1302,7 +1485,7 @@ export function RectoriaDeskWorkspace({
                 <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Buscar estudiante..."
+                  placeholder="Buscar por nombre, correo, cédula o UID..."
                   value={studentSearch}
                   onChange={(e) => setStudentSearch(e.target.value)}
                   className="w-full pl-9 pr-4 py-2 rounded-xl bg-black/60 border border-white/15 text-xs text-white focus:outline-none focus:border-[#f59e0b]"
@@ -1327,7 +1510,17 @@ export function RectoriaDeskWorkspace({
                       <tr key={student.uid} className="hover:bg-white/[0.02]">
                         <td className="py-3.5 px-4">
                           <span className="font-semibold text-white block">{student.name}</span>
-                          <span className="text-[11px] text-zinc-400 font-mono">{student.email}</span>
+                          <div className="flex items-center gap-2 text-[11px] text-zinc-400 font-mono mt-0.5">
+                            <span>{student.email}</span>
+                            {student.docNumber && (
+                              <>
+                                <span className="text-zinc-600">·</span>
+                                <span>C.C. {student.docNumber}</span>
+                              </>
+                            )}
+                            <span className="text-zinc-600">·</span>
+                            <span className="text-[10px] text-zinc-500 font-mono">UID: {student.uid.slice(0, 8)}...</span>
+                          </div>
                         </td>
                         <td className="py-3.5 px-4">
                           <span
@@ -1386,6 +1579,13 @@ export function RectoriaDeskWorkspace({
                         </td>
                       </tr>
                     ))}
+                    {filteredStudents.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="text-center py-12 text-zinc-500 text-xs">
+                          No hay estudiantes registrados en la base de datos que coincidan con la búsqueda.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1528,14 +1728,27 @@ export function RectoriaDeskWorkspace({
                   onClick={async () => {
                     setIsSavingDirectives(true);
                     try {
-                      await set(ref(rtdb, "rectoria_directives"), {
-                        content: pedagogicalDirectives,
-                        updatedAt: new Date().toISOString(),
-                        updatedBy: userProfile.email,
-                      });
-                      alert("Directivas de Rectoría publicadas y sincronizadas con el sistema.");
+                      const now = new Date().toISOString();
+                      await Promise.all([
+                        set(ref(rtdb, "rectoria_directives"), {
+                          content: pedagogicalDirectives,
+                          updatedAt: now,
+                          updatedBy: userProfile.email,
+                        }),
+                        push(ref(rtdb, "audit_logs"), {
+                          timestampUtc: now,
+                          eventType: "critical_change",
+                          severity: "info",
+                          actorUid: userProfile.uid,
+                          actorEmail: userProfile.email,
+                          actionDescription: `Rectoría publicó nuevas directivas pedagógicas institucionales.`,
+                          ipAddress: "127.0.0.1",
+                          location: "Despacho de Rectoría",
+                        }),
+                      ]);
+                      showFeedback("Directivas de Rectoría publicadas y sincronizadas con toda la base de datos.");
                     } catch (err: any) {
-                      alert("Error al publicar directivas: " + err.message);
+                      showFeedback("Error al publicar directivas: " + err.message, "error");
                     } finally {
                       setIsSavingDirectives(false);
                     }

@@ -135,7 +135,7 @@ export default function StudentPortalShell({
             </Link>
 
             {/* Navegación Horizontal de Estudiante */}
-            <nav className="hidden xl:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive =
@@ -285,7 +285,7 @@ export default function StudentPortalShell({
             <button
               type="button"
               onClick={() => setMobileMenuOpen((p) => !p)}
-              className="xl:hidden p-2 rounded-full border border-[#ffffff]/10 bg-[#09090b] text-white"
+              className="lg:hidden p-2 rounded-full border border-[#ffffff]/10 bg-[#09090b] text-white"
               aria-label="Menú"
             >
               {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -295,7 +295,7 @@ export default function StudentPortalShell({
 
         {/* Drawer Móvil y Tablet */}
         {mobileMenuOpen && (
-          <div className="xl:hidden border-b border-[#ffffff]/10 bg-[#09090b] px-4 py-4 space-y-3">
+          <div className="lg:hidden border-b border-[#ffffff]/10 bg-[#09090b] px-4 py-4 space-y-3">
             <div className="flex items-center justify-between pb-3 border-b border-[#ffffff]/10">
               <span className="text-[11px] text-[#9a9a9a]">Membresía actual:</span>
               <span

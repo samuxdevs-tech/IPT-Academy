@@ -88,7 +88,7 @@ export default function PqrSupportWidget() {
   return (
     <>
       {/* Botón Flotante en la esquina inferior izquierda */}
-      <aside aria-label="Canal de atención y solicitudes" className="fixed bottom-6 left-6 z-50">
+      <aside aria-label="Canal de atención y solicitudes" className="fixed bottom-6 left-4 sm:left-6 z-50">
         <button
           type="button"
           onClick={() => {
@@ -96,12 +96,12 @@ export default function PqrSupportWidget() {
             setSuccessTicket(null);
             setError('');
           }}
-          className="group px-4 py-2.5 rounded-full bg-[#09090b]/90 hover:bg-[#12131a] border border-[#ffffff]/20 hover:border-[#8052ff] text-white shadow-2xl backdrop-blur-md flex items-center gap-2.5 text-xs font-semibold tracking-[-0.01em] transition-all hover:scale-105 cursor-pointer"
+          className="group p-2.5 sm:px-4 sm:py-2.5 rounded-full bg-[#09090b]/90 hover:bg-[#12131a] border border-[#ffffff]/20 hover:border-[#8052ff] text-white shadow-2xl backdrop-blur-md flex items-center gap-2.5 text-xs font-semibold tracking-[-0.01em] transition-all hover:scale-105 cursor-pointer"
         >
           <div className="w-6 h-6 rounded-full bg-[#8052ff]/20 flex items-center justify-center text-[#8052ff] group-hover:bg-[#8052ff] group-hover:text-white transition-colors">
             <MessageSquareText className="w-3.5 h-3.5" />
           </div>
-          <span>PQRS / Solicitudes</span>
+          <span className="hidden sm:inline">PQRS / Solicitudes</span>
         </button>
       </aside>
 

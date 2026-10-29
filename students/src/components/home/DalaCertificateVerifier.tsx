@@ -33,43 +33,38 @@ export default function DalaCertificateVerifier() {
       const certRef = ref(db, `certificates/${code}`);
       const snap = await get(certRef);
 
+      let data: any = null;
       if (snap.exists()) {
-        const data = snap.val();
+        data = snap.val();
+      } else {
+        const issuedSnap = await get(ref(db, `issued_certificates/${code}`));
+        if (issuedSnap.exists()) {
+          data = issuedSnap.val();
+        }
+      }
+
+      if (data) {
         setResult({
           found: true,
           folio: code,
           studentName: data.studentName || data.userName || 'Estudiante Acreditado',
           courseTitle: data.courseTitle || data.courseSlug || 'Especialización Técnica IPT',
-          issueDate: data.issueDateUtc || data.createdAt || '2026-10-26 UTC',
+          issueDate: data.issueDateUtc || data.createdAt || 'Registro Oficial IPT',
           isAuthentic: true,
         });
       } else {
-        const isValidFormat = /^IPT-[0-9]{4}-[A-Z0-9]{4,10}$/i.test(code);
-        if (isValidFormat) {
-          setResult({
-            found: true,
-            folio: code,
-            studentName: 'Titular Registrado en Bóveda Institucional',
-            courseTitle: 'Especialización en Sistemas y Desarrollo de Software',
-            issueDate: 'Registro Oficial IPT',
-            isAuthentic: true,
-          });
-        } else {
-          setResult({
-            found: false,
-            folio: code,
-          });
-        }
+        setResult({
+          found: false,
+          folio: code,
+          isAuthentic: false,
+        });
       }
     } catch (err) {
-      const isValidFormat = /^IPT-[0-9]{4}-[A-Z0-9]{4,10}$/i.test(code);
+      console.warn('Error en verificación de certificado:', err);
       setResult({
-        found: isValidFormat,
+        found: false,
         folio: code,
-        studentName: isValidFormat ? 'Titular Registrado' : undefined,
-        courseTitle: isValidFormat ? 'Especialización Técnica IPT' : undefined,
-        issueDate: isValidFormat ? 'Verificación Criptográfica' : undefined,
-        isAuthentic: isValidFormat,
+        isAuthentic: false,
       });
     } finally {
       setLoading(false);

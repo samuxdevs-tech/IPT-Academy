@@ -3,12 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { VerifyView } from '@/app/verify/page';
 
-const DEFAULT_CODES: string[] = [
-  'IPT-VERIFY',
-  'IPT-2026-SW-ARCH-PRO',
-  'IPT-2026-UNVERIFIED-DRAFT',
-  'IPT-CERT-2026-MASTER-PRO',
-];
+const DEFAULT_CODES: string[] = ['IPT-VERIFY'];
 
 export function generateStaticParams() {
   const codes = new Set<string>(DEFAULT_CODES);

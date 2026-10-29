@@ -16,7 +16,7 @@ const HELPFUL_TIPS = [
 ];
 
 const SESSION_KEY = 'ipt_preloader_student_seen_v2';
-const MIN_DISPLAY_MS = 2000; // Tiempo mínimo para lectura cómoda y transición armónica
+const MIN_DISPLAY_MS = 300; // Transición armónica sin retardo artificial
 
 export default function MinimalistPreloader() {
   const router = useRouter();

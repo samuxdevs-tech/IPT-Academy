@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { LoginScreen } from "@/components/LoginScreen";
+import { StudentAccessDenied } from "@/components/StudentAccessDenied";
 import { TeacherStudioWorkspace } from "@/teachers/TeacherStudioWorkspace";
 import { AdminGatekeeper } from "@/guards/AdminGatekeeper";
 import { RectoriaDeskWorkspace } from "@/rectoria/RectoriaDeskWorkspace";
@@ -47,6 +48,11 @@ export default function OperatorsRootPage() {
   // 2. Si no hay usuario autenticado, renderizar obligatoriamente pantalla de Login
   if (!user || !operatorProfile) {
     return <LoginScreen />;
+  }
+
+  // 2.1. Bloqueo estricto para estudiantes: no permitir acceso a la suite de operadores
+  if (operatorProfile.role === "student") {
+    return <StudentAccessDenied />;
   }
 
   const handleOpenPreview = () => {
@@ -249,7 +255,7 @@ export default function OperatorsRootPage() {
             <button
               onClick={handleOpenPreview}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 text-xs font-medium transition-all"
-              title="Abre la experiencia del curso con Estudiante Mock"
+              title="Vista previa del aula desde la perspectiva del alumno"
             >
               <Eye className="w-3.5 h-3.5 text-zinc-400" />
               <span className="hidden sm:inline">Modo Alumno</span>

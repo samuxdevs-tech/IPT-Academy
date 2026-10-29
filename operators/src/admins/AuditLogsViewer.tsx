@@ -24,41 +24,65 @@ export function AuditLogsViewer() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedType, setSelectedType] = useState<string>("all");
 
-  // Cargar logs reales de auditoría desde Firebase RTDB
+  // Cargar logs sincronizados de auditoría (Admin + Rectoría/DevOps) desde Firebase RTDB
   useEffect(() => {
-    const logsRef = ref(rtdb, "audit_logs");
-    const unsubscribe = onValue(
-      logsRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const list: AuditLogEntry[] = [];
-          Object.entries(data).forEach(([id, item]: [string, any]) => {
-            list.push({
-              id,
-              timestampUtc: item.timestampUtc || item.timestamp || new Date().toISOString(),
-              eventType: item.eventType || "system_error",
-              severity: item.severity || "info",
-              actorUid: item.actorUid || item.uid || "system",
-              actorEmail: item.actorEmail || item.email || "sistema@ipt.com",
-              actionDescription: item.actionDescription || item.message || "Evento registrado",
-              ipAddress: item.ipAddress || "127.0.0.1",
-              location: item.location || "Colombia"
-            });
-          });
-          setLogs(list.reverse()); // Más recientes primero
-        } else {
-          setLogs([]);
-        }
-        setLoading(false);
-      },
-      () => {
-        setLogs([]);
-        setLoading(false);
-      }
-    );
+    let generalLogs: AuditLogEntry[] = [];
+    let devopsLogs: AuditLogEntry[] = [];
 
-    return () => unsubscribe();
+    const combineLogs = () => {
+      const combined = [...generalLogs, ...devopsLogs].sort((a, b) => {
+        return new Date(b.timestampUtc).getTime() - new Date(a.timestampUtc).getTime();
+      });
+      setLogs(combined);
+      setLoading(false);
+    };
+
+    const logsRef = ref(rtdb, "audit_logs");
+    const unsubGeneral = onValue(logsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        generalLogs = Object.entries(data).map(([id, item]: [string, any]) => ({
+          id,
+          timestampUtc: item.timestampUtc || item.timestamp || new Date().toISOString(),
+          eventType: item.eventType || "system_error",
+          severity: item.severity || "info",
+          actorUid: item.actorUid || item.uid || "system",
+          actorEmail: item.actorEmail || item.email || "sistema@ipt.com",
+          actionDescription: item.actionDescription || item.message || "Evento registrado",
+          ipAddress: item.ipAddress || "127.0.0.1",
+          location: item.location || "Admin / Sistema"
+        }));
+      } else {
+        generalLogs = [];
+      }
+      combineLogs();
+    });
+
+    const devopsRef = ref(rtdb, "devops_audit_logs");
+    const unsubDevops = onValue(devopsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        devopsLogs = Object.entries(data).map(([id, item]: [string, any]) => ({
+          id: `devops_${id}`,
+          timestampUtc: item.timestamp || item.timestampUtc || new Date().toISOString(),
+          eventType: "critical_change",
+          severity: "critical",
+          actorUid: item.operatorUid || "rectoria",
+          actorEmail: item.operatorEmail || "rectoria@ipt.com",
+          actionDescription: `[Acción Rectoral / DevOps] ${item.action || "Operación"}: ${item.targetEmail || ""} (${item.fromPlan || ""} -> ${item.toPlan || ""})`,
+          ipAddress: "127.0.0.1",
+          location: "Despacho de Rectoría"
+        }));
+      } else {
+        devopsLogs = [];
+      }
+      combineLogs();
+    });
+
+    return () => {
+      unsubGeneral();
+      unsubDevops();
+    };
   }, []);
 
   const filteredLogs = logs.filter((log) => {

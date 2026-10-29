@@ -24,8 +24,8 @@ export default function DalaPricing() {
         'Visualización de rúbricas docentes',
         'Sin requerimiento de tarjeta de crédito',
       ],
-      ctaText: 'Iniciar Trial Gratuito',
-      ctaHref: '#curso-liberado',
+      ctaText: 'Iniciar Lección Gratuita',
+      ctaHref: '/course?slug=introduccion-ingenieria-ipt&lesson=1',
       isPrimary: false,
     },
     {

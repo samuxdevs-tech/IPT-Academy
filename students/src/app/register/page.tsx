@@ -88,7 +88,7 @@ export default function RegisterPage() {
         await recordUserLegalAcceptance(user, 'email_register');
       } catch {}
 
-      router.push('/');
+      router.push('/home');
     } catch (err: any) {
       setError(err.message || 'Error inesperado durante el registro.');
     } finally {
@@ -108,7 +108,7 @@ export default function RegisterPage() {
 
       await IptAuthService.verifyGoogleOAuth(idToken);
       await recordUserLegalAcceptance(result.user, 'google_register');
-      router.push('/');
+      router.push('/home');
     } catch {
       setError('No se pudo completar el registro con Google. Intenta nuevamente.');
     } finally {
@@ -195,7 +195,7 @@ export default function RegisterPage() {
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Juan"
+                placeholder="Nombres"
                 className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                 required
               />
@@ -208,7 +208,7 @@ export default function RegisterPage() {
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Pérez"
+                placeholder="Apellidos"
                 className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                 required
               />
@@ -223,7 +223,7 @@ export default function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="estudiante@ejemplo.com"
+              placeholder="tu@correo.com"
               className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
               required
             />
@@ -237,7 +237,7 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="••••••••"
               className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
               required
             />

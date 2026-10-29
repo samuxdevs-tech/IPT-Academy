@@ -201,8 +201,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [preselectedModalPlan, setPreselectedModalPlan] = useState<PlanId | null>(null);
 
   const effectiveUid = user?.uid || 'guest_student_local';
-  const effectiveEmail = user?.email || 'estudiante@ivanperez.tech';
-  const effectiveName = user?.displayName || 'Estudiante IPT';
+  const effectiveEmail = user?.email || '';
+  const effectiveName = user?.displayName || 'Estudiante';
 
   const syncEngineToStorageAndRtdb = useCallback(
     async (uid: string) => {

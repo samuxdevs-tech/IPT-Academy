@@ -206,7 +206,7 @@ export function AcademicFeatureGate({
           <div className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full bg-[#15846e]/20 blur-[100px] pointer-events-none" />
 
           {/* Botón de configuración para Rectoría / Admin */}
-          {(effectiveIsAdmin || user?.email === 'samuxdevs@gmail.com') && (
+          {effectiveIsAdmin && (
             <div className="absolute top-5 right-5 z-20">
               <button
                 type="button"

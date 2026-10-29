@@ -1937,7 +1937,7 @@ Tienes facultades plenas:
       {/* Ventana de Conversación del Tutor IA */}
       {isChatOpen && isReady && !isHidden && (
         <div
-          className={`fixed z-[96] bg-white rounded-2xl border border-[#d1d2e0] shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150 transition-all ${
+          className={`fixed z-[96] bg-[#09090b] text-white rounded-2xl border border-white/15 shadow-2xl backdrop-blur-xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150 transition-all ${
             'left-3 right-3 sm:left-auto sm:right-auto sm:w-[420px]'
           } ${
             keyboardOffset > 0 ? '' : 'bottom-20 sm:bottom-28'
@@ -2032,9 +2032,9 @@ Tienes facultades plenas:
           </div>
 
           {/* Cuerpo de Mensajes */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#f8fafc]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#000000]/95 text-white">
             {messages.length === 0 ? (
-              <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 space-y-3 text-xs text-[#334155]">
+              <div className="bg-[#121217] border border-white/10 rounded-xl p-4 space-y-3 text-xs text-[#d1d5db]">
                 <div className="flex items-center gap-2 text-[#1d4ed8] font-bold">
                   <Sparkles className="w-4 h-4" />
                   <span>¡Hola, {liveKnowledgeContext.studentName}!</span>
@@ -2056,7 +2056,7 @@ Tienes facultades plenas:
                       key={btn.label}
                       type="button"
                       onClick={() => handleFastIntent(btn.intent)}
-                      className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1d4ed8] font-semibold text-[11px] transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-[11px] transition-colors cursor-pointer"
                     >
                       {btn.label}
                     </button>
@@ -2073,7 +2073,7 @@ Tienes facultades plenas:
                 >
                   <div
                     className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                      m.role === 'user' ? 'bg-[#1d4ed8] text-white' : 'bg-[#0f172a] text-cyan-300'
+                      m.role === 'user' ? 'bg-[#8052ff] text-white' : 'bg-[#181820] text-[#8052ff]'
                     }`}
                   >
                     {m.role === 'user' ? (
@@ -2085,8 +2085,8 @@ Tienes facultades plenas:
                   <div
                     className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-line shadow-2xs ${
                       m.role === 'user'
-                        ? 'bg-[#1d4ed8] text-white rounded-tr-xs'
-                        : 'bg-white text-[#1e293b] border border-[#e2e8f0] rounded-tl-xs'
+                        ? 'bg-[#8052ff] text-white rounded-tr-xs'
+                        : 'bg-[#181820] text-white border border-white/10 rounded-tl-xs'
                     }`}
                   >
                     {renderFormattedContent(m.content)}
@@ -2393,7 +2393,7 @@ Tienes facultades plenas:
           {/* Formulario de Entrada */}
           <form
             onSubmit={handleSendMessage}
-            className="p-3 bg-white border-t border-[#e2e8f0] flex items-center gap-2"
+            className="p-3 bg-[#09090b] border-t border-white/10 flex items-center gap-2"
           >
             <input
               type="text"
@@ -2405,12 +2405,12 @@ Tienes facultades plenas:
                 }, 150);
               }}
               placeholder="Escribe tu duda, pide una hora (ej. 'a las 8am') o cancela una cita..."
-              className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-[#cbd5e1] focus:outline-none focus:border-[#1d4ed8] text-[#0f172a]"
+              className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-white/15 bg-black/60 focus:outline-none focus:border-[#8052ff] text-white placeholder-white/30"
             />
             <button
               type="submit"
               disabled={!inputPrompt.trim() || isGenerating}
-              className="p-2.5 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] disabled:opacity-40 text-white transition-colors shrink-0 cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
+              className="p-2.5 rounded-xl bg-[#8052ff] hover:bg-[#6e3df0] disabled:opacity-40 text-white transition-colors shrink-0 cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
               aria-label="Enviar mensaje"
             >
               <Send className="w-4 h-4" />

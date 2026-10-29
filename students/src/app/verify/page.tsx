@@ -47,69 +47,14 @@ interface ExtendedCertificate extends Partial<Certificate> {
   documentNumber?: string;
 }
 
-const BUILTIN_CERTIFICATES: Record<string, ExtendedCertificate> = {
-  'IPT-2026-SW-ARCH-PRO': {
-    id: 'IPT-2026-SW-ARCH-PRO',
-    studentId: 'student_ivan_perez',
-    studentName: 'Iván Samuel Pérez Torrenegra',
-    studentEmail: 'ivan@ipt.local',
-    courseId: 'course-sw-arch-01',
-    courseTitle: 'Arquitectura de Software Moderna y Sistemas Distribuidos',
-    issueDate: '2026-10-28',
-    issueDateFormatted: '28 de octubre de 2026',
-    completionHours: 48,
-    scoreAverage: 4.8,
-    verificationHash: 'SHA256-9F86D081884C7D659A2FEAA0C55AD015A3BF4F1B2B0B822CD15D6C15B0F00A08',
-    instructor: 'Ing. Iván Samuel Pérez Torrenegra',
-    instructorRole: 'Director General · Ivan Perez Tech (IPT)',
-    identityVerified: true,
-    documentType: 'C.C.',
-    documentNumber: '1.002.458.912',
-  },
-  'IPT-2026-UNVERIFIED-DRAFT': {
-    id: 'IPT-2026-UNVERIFIED-DRAFT',
-    studentId: 'student_ivan_perez',
-    studentName: 'Iván Samuel Pérez Torrenegra',
-    studentEmail: 'ivan@ipt.local',
-    courseId: 'course-sw-arch-01',
-    courseTitle: 'Arquitectura de Software Moderna y Sistemas Distribuidos',
-    issueDate: '2026-10-28',
-    issueDateFormatted: '28 de octubre de 2026',
-    completionHours: 48,
-    scoreAverage: 4.8,
-    verificationHash: 'BORRADOR-SIN-VALIDEZ-OFICIAL-FALTA-DOCUMENTO-IDENTIDAD',
-    instructor: 'Ing. Iván Samuel Pérez Torrenegra',
-    instructorRole: 'Director General · Ivan Perez Tech (IPT)',
-    identityVerified: false,
-    documentType: 'SIN VERIFICAR',
-    documentNumber: 'PENDIENTE',
-  },
-  'IPT-CERT-2026-MASTER-PRO': {
-    id: 'IPT-CERT-2026-MASTER-PRO',
-    studentId: 'student_ivan_perez',
-    studentName: 'Iván Samuel Pérez Torrenegra',
-    studentEmail: 'ivan@ipt.local',
-    courseId: 'course-sw-arch-01',
-    courseTitle: 'Arquitectura de Software Moderna y Sistemas Distribuidos',
-    issueDate: '2026-10-28',
-    issueDateFormatted: '28 de octubre de 2026',
-    completionHours: 48,
-    scoreAverage: 4.8,
-    verificationHash: 'SHA256-7C4A8D09CA3762AF61E59520943DC26494F8941B',
-    instructor: 'Ing. Iván Samuel Pérez Torrenegra',
-    instructorRole: 'Director General · Ivan Perez Tech (IPT)',
-    identityVerified: true,
-    documentType: 'C.C.',
-    documentNumber: '1.002.458.912',
-  },
-};
+const BUILTIN_CERTIFICATES: Record<string, ExtendedCertificate> = {};
 
 export function VerifyView({ forcedCode }: VerifyViewProps) {
   const searchParams = useSearchParams();
   const queryCode = searchParams ? searchParams.get('code') || '' : '';
   const initialCode = (forcedCode || queryCode).trim().toUpperCase();
 
-  const [code, setCode] = useState(initialCode || 'IPT-2026-SW-ARCH-PRO');
+  const [code, setCode] = useState(initialCode || '');
   const [cert, setCert] = useState<ExtendedCertificate | null>(null);
   const [searchedCode, setSearchedCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -135,7 +80,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
 
     if (BUILTIN_CERTIFICATES[clean]) {
       const base = { ...BUILTIN_CERTIFICATES[clean] };
-      if (clean === 'IPT-2026-SW-ARCH-PRO' && localIdentity?.status === 'verified') {
+      if (localIdentity?.status === 'verified') {
         base.studentName = localIdentity.verifiedFullName || base.studentName;
         base.documentType = localIdentity.documentType || base.documentType;
         base.documentNumber = localIdentity.documentNumber || base.documentNumber;
@@ -157,7 +102,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
         ...localCert,
         identityVerified: true,
         documentType: localIdentity?.documentType || 'C.C.',
-        documentNumber: localIdentity?.documentNumber || '1.002.458.912',
+        documentNumber: localIdentity?.documentNumber || '',
       });
       setNotFound(false);
       setLoading(false);
@@ -185,9 +130,10 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
   };
 
   useEffect(() => {
-    const target = initialCode || 'IPT-2026-SW-ARCH-PRO';
-    setCode(target);
-    resolveCertificate(target);
+    if (initialCode) {
+      setCode(initialCode);
+      resolveCertificate(initialCode);
+    }
   }, [initialCode]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -251,7 +197,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="Folio del certificado (ej. IPT-2026-SW-ARCH-PRO)"
+                placeholder="Folio del certificado o código de verificación"
                 className="w-full pl-11 pr-4 py-3 rounded-2xl bg-black border border-white/15 text-xs sm:text-sm font-mono text-white uppercase focus:outline-none focus:border-[#8052ff]"
                 required
               />
@@ -418,7 +364,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
               No se encontró ninguna credencial con el folio &ldquo;{searchedCode}&rdquo;
             </h2>
             <p className="text-xs sm:text-sm text-[#9a9a9a] max-w-md mx-auto">
-              Verifica haber escrito correctamente el folio que figura bajo el código QR del certificado (por ejemplo: <code className="text-white">IPT-2026-SW-ARCH-PRO</code>).
+              Verifica haber escrito correctamente el folio que figura bajo el código QR del certificado (por ejemplo: <code className="text-white">IPT-CERT-XXXXX</code>).
             </p>
           </section>
         )}

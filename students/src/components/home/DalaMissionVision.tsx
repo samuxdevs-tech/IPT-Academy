@@ -93,14 +93,14 @@ export default function DalaMissionVision() {
                   Nuestra Visión
                 </h3>
                 <p className="text-[15px] sm:text-[16px] font-extralight text-[#d1d5db] leading-[1.7]">
-                  Consolidar a IPT Academy como la institución digital referente en formación técnica y arquitectura de sistemas en Iberoamérica, democratizando el acceso a estándares de ingeniería nivel Big Tech, auditoría de código rigurosa y soberanía tecnológica para la próxima generación de constructores de software.
+                  Consolidar a IPT Academy como la academia digital líder en formación práctica de software, facilitando que cualquier persona aprenda a crear aplicaciones profesionales, seguras y de calidad real.
                 </p>
               </div>
 
               <div className="pt-4 border-t border-[#ffffff]/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-[#9a9a9a]">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-[#ffb829] shrink-0" />
-                  <span>Estándar Big Tech</span>
+                  <span>Calidad profesional</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-[#8052ff] shrink-0" />

@@ -123,7 +123,7 @@ const DEFAULT_COURSE: CourseData = {
           duration: "12:00",
           order: 1,
           videoType: "youtube",
-          videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          videoUrl: "",
           inVideoCheckpoints: [
             {
               id: "cp-01",
@@ -189,7 +189,7 @@ function normalizeCourseData(raw: any, fallbackSlug: string = "ipt-master-fullst
         duration: l?.duration || "10:00",
         order: l?.order || lIdx + 1,
         videoType: l?.videoType || "youtube",
-        videoUrl: l?.videoUrl || "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        videoUrl: l?.videoUrl || "",
         inVideoCheckpoints: Array.isArray(l?.inVideoCheckpoints) ? l.inVideoCheckpoints : [],
       })),
       resources: rawResources.map((r: any, rIdx: number) => ({
@@ -378,7 +378,7 @@ export function CourseBuilder({ onOpenPreview }: { onOpenPreview?: () => void })
       duration: "10:00",
       order: existingLessons.length + 1,
       videoType: "youtube",
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      videoUrl: "",
       inVideoCheckpoints: [],
     };
     const nextModules = [...modules];
@@ -537,7 +537,7 @@ export function CourseBuilder({ onOpenPreview }: { onOpenPreview?: () => void })
             ...l,
             order: lIdx + 1,
             videoType: l.videoType || "youtube",
-            videoUrl: l.videoUrl || "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            videoUrl: l.videoUrl || "",
             inVideoCheckpoints: l.inVideoCheckpoints || [],
           })),
           resources: m.resources || [],

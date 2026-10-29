@@ -91,7 +91,7 @@ function LoginContent() {
         await recordUserLegalAcceptance(cred.user, 'email_login');
       } catch {}
 
-      router.push('/');
+      router.push(redirectTarget || '/home');
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión.');
     } finally {
@@ -115,7 +115,7 @@ function LoginContent() {
         setLoading(false);
         return;
       }
-      router.push('/');
+      router.push(redirectTarget || '/home');
     } catch (err: any) {
       setError(err.message || 'Error en autenticación institucional.');
     } finally {
@@ -138,7 +138,7 @@ function LoginContent() {
       // Sincronizar y registrar sesión en Cloudflare D1
       await IptAuthService.verifyGoogleOAuth(idToken);
       await recordUserLegalAcceptance(result.user, 'google_login');
-      router.push('/');
+      router.push(redirectTarget || '/home');
     } catch (err: any) {
       setError('No se pudo completar el inicio de sesión con Google. Intenta nuevamente.');
     } finally {
@@ -262,7 +262,7 @@ function LoginContent() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="••••••••"
                   className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                   required
                 />
@@ -275,7 +275,7 @@ function LoginContent() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repite tu nueva contraseña"
+                  placeholder="••••••••"
                   className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                   required
                 />
@@ -298,7 +298,7 @@ function LoginContent() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="estudiante@ejemplo.com"
+                  placeholder="tu@correo.com"
                   className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                   required
                 />
@@ -411,7 +411,7 @@ function LoginContent() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="estudiante@ejemplo.com"
+                    placeholder="tu@correo.com"
                     className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                     required
                   />
@@ -438,7 +438,7 @@ function LoginContent() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Tu contraseña secreta"
+                    placeholder="••••••••"
                     className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                     required
                   />
@@ -533,7 +533,7 @@ function LoginContent() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="usuario@empresa.com"
+                    placeholder="nombre@empresa.com"
                     className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors"
                     required
                   />
@@ -547,7 +547,7 @@ function LoginContent() {
                     type="text"
                     value={corporateCode}
                     onChange={(e) => setCorporateCode(e.target.value)}
-                    placeholder="Ej: IPT-ORG-CORP o CORP2026"
+                    placeholder="Código institucional asignado"
                     className="w-full px-4 py-3 rounded-[20px] bg-[#000000] border border-[#ffffff]/20 text-white placeholder-[#9a9a9a]/50 text-[14px] focus:outline-none focus:border-[#8052ff] transition-colors uppercase font-mono"
                     required
                   />
