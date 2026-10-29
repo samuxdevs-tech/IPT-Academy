@@ -170,6 +170,30 @@
     "operator_settings": {
       ".read": true,
       ".write": true
+    },
+    "devops_audit_logs": {
+      ".read": true,
+      ".write": true
+    },
+    "rectoria_trial_offers": {
+      ".read": true,
+      ".write": true
+    },
+    "rectoria_directives": {
+      ".read": true,
+      ".write": true
+    },
+    "academic_appeals": {
+      ".read": true,
+      ".write": true
+    },
+    "issued_certificates": {
+      ".read": true,
+      ".write": true
+    },
+    "grades_override": {
+      ".read": true,
+      ".write": true
     }
   }
 }

@@ -492,16 +492,20 @@ export function RectoriaDeskWorkspace({
 
       await set(ref(rtdb, `lms_subscriptions/${targetStudentForTier.uid}`), subData);
 
-      // Registrar en audit log inmutable
-      await push(ref(rtdb, "devops_audit_logs"), {
-        action: isUpgradeAction ? "SUBSCRIPTION_UPGRADE" : "SUBSCRIPTION_DOWNGRADE",
-        targetUserId: targetStudentForTier.uid,
-        targetEmail: targetStudentForTier.email,
-        fromPlan: targetStudentForTier.planId,
-        toPlan: targetNextPlan,
-        operatorEmail: userProfile.email,
-        timestamp: now.toISOString(),
-      });
+      // Registrar en audit log inmutable con captura tolerante a fallos
+      try {
+        await push(ref(rtdb, "devops_audit_logs"), {
+          action: isUpgradeAction ? "SUBSCRIPTION_UPGRADE" : "SUBSCRIPTION_DOWNGRADE",
+          targetUserId: targetStudentForTier.uid,
+          targetEmail: targetStudentForTier.email,
+          fromPlan: targetStudentForTier.planId,
+          toPlan: targetNextPlan,
+          operatorEmail: userProfile.email,
+          timestamp: now.toISOString(),
+        });
+      } catch (auditErr) {
+        console.warn("Registro secundario de auditoría omitido:", auditErr);
+      }
 
       setStudentsList((prev) =>
         prev.map((s) =>
