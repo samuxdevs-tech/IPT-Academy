@@ -1,4 +1,7 @@
-'use client';
+"use client";
+
+import { generateIptCertificateFolio, sanitizeRtdbKey } from '@/lib/certificateFolio';
+
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -61,9 +64,10 @@ export default function CertificateModal({
     async (computedName: string) => {
       const uid = user?.uid || 'guest_student_local';
       const now = new Date();
+      // Formato oficial: IPT-{timestep hasta minutos}-{2 numeros de confirmacion/aleatoriedad}{caracter especial comun}
       const cleanUid = uid.replace(/[^a-zA-Z0-9]/g, '').slice(0, 5).toUpperCase();
-      const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const newCertId = `IPT-CERT-${cleanUid || 'ST'}-${randomPart}`;
+      const newCertId = generateIptCertificateFolio(now);
+      const safeKey = sanitizeRtdbKey(newCertId);
 
       const months = [
         'Enero',
@@ -101,8 +105,8 @@ export default function CertificateModal({
 
       if (user?.uid) {
         await Promise.all([
-          set(ref(db, `certificates/${newCertId}`), newCertificate),
-          set(ref(db, `issued_certificates/${newCertId}`), {
+          set(ref(db, `certificates/${safeKey}`), newCertificate),
+          set(ref(db, `issued_certificates/${safeKey}`), {
             folio: newCertId,
             studentUid: user.uid,
             studentName: computedName,

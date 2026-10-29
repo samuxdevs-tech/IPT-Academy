@@ -1,5 +1,7 @@
 "use client";
 
+import { generateIptCertificateFolio, sanitizeRtdbKey } from "@/lib/certificateFolio";
+
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import {
@@ -178,6 +180,14 @@ export function RectoriaDeskWorkspace({
   // ESTADO 3: CANCILLERÍA DE DIPLOMAS
   // ==========================================
   const [certificates, setCertificates] = useState<DegreeCertificateItem[]>([]);
+  const [showIssueModal, setShowIssueModal] = useState<boolean>(false);
+  const [diplomaStudentUid, setDiplomaStudentUid] = useState<string>("");
+  const [diplomaCustomName, setDiplomaCustomName] = useState<string>("");
+  const [diplomaCustomDoc, setDiplomaCustomDoc] = useState<string>("");
+  const [diplomaCourseSlug, setDiplomaCourseSlug] = useState<string>("ipt-master-fullstack");
+  const [diplomaGpaInput, setDiplomaGpaInput] = useState<string>("5.0");
+  const [generatedFolioPreview, setGeneratedFolioPreview] = useState<string>("");
+  const [isSubmittingDiploma, setIsSubmittingDiploma] = useState<boolean>(false);
   const [degreeSearch, setDegreeSearch] = useState("");
   const [revokingFolio, setRevokingFolio] = useState<string | null>(null);
   const [revocationReasonInput, setRevocationReasonInput] = useState("");
@@ -503,6 +513,80 @@ export function RectoriaDeskWorkspace({
       showFeedback("Error al dictaminar apelación: " + err.message, "error");
     } finally {
       setIsSubmittingVerdict(false);
+    }
+  };
+
+  // Expedir Nuevo Diploma Institucional con formato oficial
+  const handleIssueOfficialDiploma = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!generatedFolioPreview) return;
+    setIsSubmittingDiploma(true);
+    try {
+      const now = new Date().toISOString();
+      const safeKey = sanitizeRtdbKey(generatedFolioPreview);
+      const studentObj = studentsList.find((s) => s.uid === diplomaStudentUid);
+      const studentName = diplomaCustomName.trim() || studentObj?.name || "Estudiante IPT";
+      const studentEmail = studentObj?.email || "";
+      const docNumber = diplomaCustomDoc.trim() || studentObj?.docNumber || "Registrado";
+      const gpa = parseFloat(diplomaGpaInput) || 5.0;
+
+      const courseTitleMap: Record<string, string> = {
+        "ipt-master-fullstack": "IPT Master Fullstack & Clean Architecture",
+        "arquitectura-cloud-ipt": "Especialización en Arquitectura Cloud & Microservicios",
+        "arquitectura-software-ia-ipt": "Certificación Superior en Sistemas de Inteligencia Artificial",
+      };
+      const courseTitle = courseTitleMap[diplomaCourseSlug] || "Certificado Oficial IPT";
+
+      const certPayload = {
+        folio: generatedFolioPreview,
+        studentUid: diplomaStudentUid || "rectoria_direct_issuance",
+        studentName,
+        studentEmail,
+        nationalDocNumber: docNumber,
+        courseSlug: diplomaCourseSlug,
+        courseTitle,
+        finalGpa: gpa,
+        status: "issued",
+        issuedAt: now,
+        sha256Hash: `IPT-${Date.now().toString(16).toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+        rectoriaSignature: "Ing. Iván Samuel Pérez Torrenegra (Rector Titular)",
+      };
+
+      await Promise.all([
+        set(ref(rtdb, `issued_certificates/${safeKey}`), certPayload),
+        set(ref(rtdb, `certificates/${safeKey}`), {
+          id: generatedFolioPreview,
+          userId: diplomaStudentUid || "rectoria_direct_issuance",
+          studentName,
+          studentEmail,
+          courseSlug: diplomaCourseSlug,
+          courseTitle,
+          instructor: "Ing. Iván Samuel Pérez Torrenegra",
+          instructorRole: "Rector Titular e Ingeniero Principal · Ivan Perez Tech (IPT)",
+          issueDate: now,
+          scoreAverage: gpa,
+          completionHours: 48,
+          status: "valid",
+          verificationHash: certPayload.sha256Hash,
+        }),
+        push(ref(rtdb, "devops_audit_logs"), {
+          timestampUtc: now,
+          eventType: "degree_issued",
+          severity: "info",
+          actorUid: userProfile.uid,
+          actorEmail: userProfile.email,
+          actionDescription: `Rectoría expidió diploma oficial ${generatedFolioPreview} para ${studentName} (${docNumber})`,
+        }),
+      ]);
+
+      showFeedback(`Diploma ${generatedFolioPreview} expedido y sellado formalmente.`, "success");
+      setShowIssueModal(false);
+      setDiplomaCustomName("");
+      setDiplomaCustomDoc("");
+    } catch (err: any) {
+      showFeedback(`Error al expedir diploma: ${err?.message || "Fallo en RTDB"}`, "error");
+    } finally {
+      setIsSubmittingDiploma(false);
     }
   };
 
@@ -1357,15 +1441,28 @@ export function RectoriaDeskWorkspace({
                 </p>
               </div>
 
-              <div className="w-full sm:w-72 relative">
-                <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Buscar por folio, nombre o cédula..."
-                  value={degreeSearch}
-                  onChange={(e) => setDegreeSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-black/60 border border-white/15 text-xs text-white focus:outline-none focus:border-[#f59e0b]"
-                />
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGeneratedFolioPreview(generateIptCertificateFolio());
+                    setShowIssueModal(true);
+                  }}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#f59e0b] hover:bg-[#d97706] text-black text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-[#f59e0b]/20 transition-all shrink-0 cursor-pointer"
+                >
+                  <Award className="w-4 h-4" />
+                  <span>Expedir Diploma Oficial</span>
+                </button>
+                <div className="w-full sm:w-72 relative">
+                  <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Buscar por folio, nombre o cédula..."
+                    value={degreeSearch}
+                    onChange={(e) => setDegreeSearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-xs text-white focus:outline-none focus:border-[#f59e0b]"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1436,6 +1533,145 @@ export function RectoriaDeskWorkspace({
                 </table>
               </div>
             </div>
+
+            {/* Modal de Expedición de Diploma Institucional */}
+            {showIssueModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+                <div className="max-w-lg w-full bg-[#121217] border border-[#f59e0b]/40 rounded-3xl p-6 sm:p-7 space-y-5 shadow-2xl">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div className="flex items-center gap-2.5 text-[#f59e0b]">
+                      <Award className="w-5 h-5" />
+                      <h3 className="text-base font-semibold text-white">
+                        Expedir Diploma Oficial de Rectoría
+                      </h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowIssueModal(false)}
+                      className="text-zinc-400 hover:text-white p-1"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleIssueOfficialDiploma} className="space-y-4">
+                    {/* Folio Oficial Generado */}
+                    <div className="p-3.5 rounded-2xl bg-black/60 border border-[#f59e0b]/30 space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono">
+                        <span>FOLIO OFICIAL (FORMATO RECTORAL)</span>
+                        <button
+                          type="button"
+                          onClick={() => setGeneratedFolioPreview(generateIptCertificateFolio())}
+                          className="text-[#f59e0b] hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          <span>Generar otro</span>
+                        </button>
+                      </div>
+                      <div className="text-base font-mono font-bold text-[#f59e0b] tracking-wider">
+                        {generatedFolioPreview}
+                      </div>
+                      <p className="text-[10px] text-zinc-500">
+                        Estructura: IPT-{'{timestamp}'}-{'{2 dígitos aleatorios}'}{'{carácter especial}'}
+                      </p>
+                    </div>
+
+                    {/* Selector de Estudiante */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-zinc-300">Estudiante Registrado</label>
+                      <select
+                        value={diplomaStudentUid}
+                        onChange={(e) => {
+                          const uid = e.target.value;
+                          setDiplomaStudentUid(uid);
+                          const stu = studentsList.find((s) => s.uid === uid);
+                          if (stu) {
+                            setDiplomaCustomName(stu.name);
+                            setDiplomaCustomDoc(stu.docNumber || "");
+                          }
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:border-[#f59e0b] focus:outline-none"
+                      >
+                        <option value="">-- Ingresar estudiante directo / manual --</option>
+                        {studentsList.map((stu) => (
+                          <option key={stu.uid} value={stu.uid}>
+                            {stu.name} ({stu.email})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-zinc-300">Nombre Completo del Graduado</label>
+                        <input
+                          type="text"
+                          required
+                          value={diplomaCustomName}
+                          onChange={(e) => setDiplomaCustomName(e.target.value)}
+                          placeholder="Nombre y Apellidos"
+                          className="w-full px-3.5 py-2 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:border-[#f59e0b] focus:outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-zinc-300">Documento de Identidad (C.C.)</label>
+                        <input
+                          type="text"
+                          value={diplomaCustomDoc}
+                          onChange={(e) => setDiplomaCustomDoc(e.target.value)}
+                          placeholder="Cédula nacional"
+                          className="w-full px-3.5 py-2 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:border-[#f59e0b] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2 space-y-1.5">
+                        <label className="text-xs text-zinc-300">Programa Académico</label>
+                        <select
+                          value={diplomaCourseSlug}
+                          onChange={(e) => setDiplomaCourseSlug(e.target.value)}
+                          className="w-full px-3.5 py-2 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:border-[#f59e0b] focus:outline-none"
+                        >
+                          <option value="ipt-master-fullstack">IPT Master Fullstack & Clean Architecture</option>
+                          <option value="arquitectura-cloud-ipt">Especialización en Arquitectura Cloud</option>
+                          <option value="arquitectura-software-ia-ipt">Certificación Superior en Sistemas IA</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs text-zinc-300">PGA Final (0-5.0)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="5"
+                          value={diplomaGpaInput}
+                          onChange={(e) => setDiplomaGpaInput(e.target.value)}
+                          className="w-full px-3.5 py-2 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:border-[#f59e0b] focus:outline-none font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowIssueModal(false)}
+                        className="px-4 py-2 rounded-xl text-xs text-zinc-400 hover:text-white cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmittingDiploma}
+                        className="px-5 py-2.5 rounded-xl bg-[#f59e0b] hover:bg-[#d97706] text-black text-xs font-semibold flex items-center gap-2 shadow-lg shadow-[#f59e0b]/20 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {isSubmittingDiploma ? "Sellando..." : "Expedir y Sellar Diploma"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
             {/* Modal de Revocación de Diploma */}
             {revokingFolio && (

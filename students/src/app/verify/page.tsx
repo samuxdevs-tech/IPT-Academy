@@ -1,4 +1,6 @@
-'use client';
+"use client";
+
+import { sanitizeRtdbKey } from '@/lib/certificateFolio';
 
 import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
@@ -64,7 +66,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
   const [copiedLink, setCopiedLink] = useState(false);
 
   const resolveCertificate = async (targetCode: string) => {
-    const clean = targetCode.trim();
+    const clean = decodeURIComponent(targetCode).trim();
     if (!clean) return;
 
     setLoading(true);
@@ -86,7 +88,8 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
       let resolvedId = cleanUpper;
 
       // 1. Buscar en issued_certificates (cancillería y diplomas oficiales)
-      const issuedDirectSnap = await get(ref(db, `issued_certificates/${cleanUpper}`));
+      const safeKey = sanitizeRtdbKey(cleanUpper);
+      const issuedDirectSnap = await get(ref(db, `issued_certificates/${safeKey}`));
       if (issuedDirectSnap.exists() && issuedDirectSnap.val()?.studentName) {
         foundRecord = issuedDirectSnap.val();
         resolvedId = cleanUpper;
@@ -127,7 +130,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
 
       // 2. Buscar en certificates (certificados individuales de cursos)
       if (!foundRecord) {
-        const certDirectSnap = await get(ref(db, `certificates/${cleanUpper}`));
+        const certDirectSnap = await get(ref(db, `certificates/${safeKey}`));
         if (certDirectSnap.exists()) {
           foundRecord = certDirectSnap.val();
           resolvedId = cleanUpper;

@@ -1,4 +1,7 @@
-'use client';
+"use client";
+
+import { generateIptCertificateFolio } from '@/lib/certificateFolio';
+
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
