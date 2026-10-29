@@ -33,7 +33,7 @@ interface VerifyViewProps {
 
 const IDENTITY_STORAGE_KEY = 'ipt_identity_verification_v1';
 
-interface ExtendedCertificate extends Partial<Certificate> {
+interface ExtendedCertificate extends Omit<Partial<Certificate>, "status"> {
   id: string;
   studentName: string;
   courseTitle: string;
@@ -45,6 +45,8 @@ interface ExtendedCertificate extends Partial<Certificate> {
   identityVerified?: boolean;
   documentType?: string;
   documentNumber?: string;
+  status?: "valid" | "revoked" | "issued" | "unverified";
+  revocationReason?: string;
 }
 
 const BUILTIN_CERTIFICATES: Record<string, ExtendedCertificate> = {};
@@ -62,14 +64,13 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
   const [copiedLink, setCopiedLink] = useState(false);
 
   const resolveCertificate = async (targetCode: string) => {
-    const clean = targetCode.trim().toUpperCase();
+    const clean = targetCode.trim();
     if (!clean) return;
 
     setLoading(true);
     setNotFound(false);
     setSearchedCode(clean);
 
-    // Leer estado de verificación OCR local si existe
     let localIdentity: any = null;
     if (typeof window !== 'undefined') {
       try {
@@ -78,50 +79,139 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
       } catch {}
     }
 
-    if (BUILTIN_CERTIFICATES[clean]) {
-      const base = { ...BUILTIN_CERTIFICATES[clean] };
-      if (localIdentity?.status === 'verified') {
-        base.studentName = localIdentity.verifiedFullName || base.studentName;
-        base.documentType = localIdentity.documentType || base.documentType;
-        base.documentNumber = localIdentity.documentNumber || base.documentNumber;
-        base.identityVerified = true;
-      }
-      setCert(base);
-      setNotFound(false);
-      setLoading(false);
-      return;
-    }
-
-    const localDb = getLocalDatabase();
-    const localCert = localDb.certificates?.find(
-      (c) => c.id.toUpperCase() === clean || c.verificationHash?.toUpperCase() === clean
-    );
-
-    if (localCert) {
-      setCert({
-        ...localCert,
-        identityVerified: true,
-        documentType: localIdentity?.documentType || 'C.C.',
-        documentNumber: localIdentity?.documentNumber || '',
-      });
-      setNotFound(false);
-      setLoading(false);
-      return;
-    }
-
     try {
-      const snap = await get(ref(db, `certificates/${clean}`));
-      if (snap.exists()) {
+      const cleanUpper = clean.toUpperCase();
+      const cleanUnderscore = cleanUpper.replace(/-/g, '_');
+      let foundRecord: any = null;
+      let resolvedId = cleanUpper;
+
+      // 1. Buscar en issued_certificates (cancillería y diplomas oficiales)
+      const issuedDirectSnap = await get(ref(db, `issued_certificates/${cleanUpper}`));
+      if (issuedDirectSnap.exists() && issuedDirectSnap.val()?.studentName) {
+        foundRecord = issuedDirectSnap.val();
+        resolvedId = cleanUpper;
+      }
+
+      if (!foundRecord) {
+        const issuedUnderSnap = await get(ref(db, `issued_certificates/${cleanUnderscore}`));
+        if (issuedUnderSnap.exists() && issuedUnderSnap.val()?.studentName) {
+          foundRecord = issuedUnderSnap.val();
+          resolvedId = issuedUnderSnap.val().folio || cleanUpper;
+        }
+      }
+
+      if (!foundRecord) {
+        // Escanear issued_certificates por folio, sha256Hash o id
+        const allIssuedSnap = await get(ref(db, 'issued_certificates'));
+        if (allIssuedSnap.exists()) {
+          const list = allIssuedSnap.val() || {};
+          for (const [k, v] of Object.entries<any>(list)) {
+            if (!v) continue;
+            const folio = (v.folio || v.id || k).toUpperCase();
+            const hash = (v.sha256Hash || v.verificationHash || '').toUpperCase();
+            if (
+              folio === cleanUpper ||
+              hash === cleanUpper ||
+              k.toUpperCase() === cleanUpper ||
+              k.toUpperCase() === cleanUnderscore
+            ) {
+              if (v.studentName || v.courseTitle) {
+                foundRecord = v;
+                resolvedId = v.folio || k;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      // 2. Buscar en certificates (certificados individuales de cursos)
+      if (!foundRecord) {
+        const certDirectSnap = await get(ref(db, `certificates/${cleanUpper}`));
+        if (certDirectSnap.exists()) {
+          foundRecord = certDirectSnap.val();
+          resolvedId = cleanUpper;
+        } else {
+          const certUnderSnap = await get(ref(db, `certificates/${cleanUnderscore}`));
+          if (certUnderSnap.exists()) {
+            foundRecord = certUnderSnap.val();
+            resolvedId = certUnderSnap.val().id || cleanUpper;
+          }
+        }
+      }
+
+      if (!foundRecord) {
+        const allCertsSnap = await get(ref(db, 'certificates'));
+        if (allCertsSnap.exists()) {
+          const list = allCertsSnap.val() || {};
+          for (const [k, v] of Object.entries<any>(list)) {
+            if (!v) continue;
+            const folio = (v.id || v.folio || k).toUpperCase();
+            const hash = (v.verificationHash || v.sha256Hash || '').toUpperCase();
+            if (folio === cleanUpper || hash === cleanUpper || k.toUpperCase() === cleanUpper) {
+              foundRecord = v;
+              resolvedId = v.id || v.folio || k;
+              break;
+            }
+          }
+        }
+      }
+
+      // 3. Fallback a base de datos mock local si existe
+      if (!foundRecord) {
+        const localDb = getLocalDatabase();
+        const localCert = localDb.certificates?.find(
+          (c) => c.id.toUpperCase() === cleanUpper || c.verificationHash?.toUpperCase() === cleanUpper
+        );
+        if (localCert) {
+          foundRecord = localCert;
+          resolvedId = localCert.id || cleanUpper;
+        }
+      }
+
+      if (foundRecord) {
+        const score = typeof foundRecord.finalGpa === 'number'
+          ? foundRecord.finalGpa
+          : typeof foundRecord.scoreAverage === 'number'
+          ? foundRecord.scoreAverage
+          : 5.0;
+
+        const dateIso = foundRecord.issuedAt || foundRecord.issueDate || foundRecord.date || new Date().toISOString();
+        let formattedDate = 'Octubre de 2026';
+        try {
+          formattedDate = new Date(dateIso).toLocaleDateString('es-CO', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          });
+        } catch {}
+
         setCert({
-          ...(snap.val() as Certificate),
-          identityVerified: true,
-        });
+          id: resolvedId,
+          studentName: foundRecord.studentName || 'Estudiante IPT',
+          studentEmail: foundRecord.studentEmail || '',
+          courseTitle: foundRecord.courseTitle || 'Certificado Oficial IPT',
+          courseId: foundRecord.courseSlug || foundRecord.courseId || '',
+          verificationHash: foundRecord.sha256Hash || foundRecord.verificationHash || resolvedId,
+          instructor: foundRecord.rectoriaSignature || foundRecord.instructor || 'Ing. Iván Samuel Pérez Torrenegra',
+          instructorRole: 'Rector Titular e Ingeniero Principal · Ivan Perez Tech (IPT)',
+          scoreAverage: score,
+          completionHours: foundRecord.completionHours || 48,
+          issueDate: dateIso,
+          issueDateFormatted: formattedDate,
+          identityVerified: foundRecord.status !== 'unverified',
+          documentType: foundRecord.documentType || 'C.C.',
+          documentNumber: foundRecord.nationalDocNumber || foundRecord.documentNumber || (localIdentity?.documentNumber || 'Registrado'),
+          status: foundRecord.status || 'issued',
+          revocationReason: foundRecord.revocationReason,
+        } as ExtendedCertificate);
         setNotFound(false);
       } else {
         setCert(null);
         setNotFound(true);
       }
-    } catch {
+    } catch (err) {
+      console.error('Error resolving certificate:', err);
       setCert(null);
       setNotFound(true);
     } finally {
@@ -216,26 +306,36 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
         {cert && (
           <section
             className={`rounded-3xl bg-[#09090b] border overflow-hidden space-y-6 ${
-              cert.identityVerified !== false ? 'border-[#15846e]/50' : 'border-rose-500/50'
+              cert.status === 'revoked'
+                ? 'border-rose-500/60 shadow-[0_0_30px_rgba(244,63,94,0.15)]'
+                : cert.identityVerified !== false
+                ? 'border-[#15846e]/50 shadow-[0_0_30px_rgba(21,132,110,0.15)]'
+                : 'border-amber-500/50'
             }`}
           >
-            {/* Banner de estado */}
+            {/* Banner de estado: Revocado vs Acreditado */}
             <div
               className={`px-6 md:px-8 py-5 flex flex-wrap items-center justify-between gap-4 border-b ${
-                cert.identityVerified !== false
+                cert.status === 'revoked'
+                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'
+                  : cert.identityVerified !== false
                   ? 'bg-[#15846e]/15 border-[#15846e]/30'
-                  : 'bg-rose-500/15 border-rose-500/30'
+                  : 'bg-amber-500/15 border-amber-500/30'
               }`}
             >
               <div className="flex items-center gap-3.5">
                 <div
                   className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
-                    cert.identityVerified !== false
+                    cert.status === 'revoked'
+                      ? 'bg-rose-500/30 border border-rose-500/60 text-rose-300'
+                      : cert.identityVerified !== false
                       ? 'bg-[#15846e]/25 border border-[#15846e]/50 text-emerald-300'
-                      : 'bg-rose-500/25 border border-rose-500/50 text-rose-300'
+                      : 'bg-amber-500/25 border border-amber-500/50 text-amber-300'
                   }`}
                 >
-                  {cert.identityVerified !== false ? (
+                  {cert.status === 'revoked' ? (
+                    <AlertTriangle className="w-6 h-6 text-rose-400" />
+                  ) : cert.identityVerified !== false ? (
                     <BadgeCheck className="w-6 h-6" />
                   ) : (
                     <AlertTriangle className="w-6 h-6" />
@@ -244,22 +344,34 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm sm:text-base font-medium text-white">
-                      {cert.identityVerified !== false
+                      {cert.status === 'revoked'
+                        ? 'Diploma Revocado Oficialmente por Rectoría'
+                        : cert.identityVerified !== false
                         ? 'Certificado Oficial Auténtico · Identidad Nacional Verificada'
                         : 'Certificado con Marca de Agua · Identidad No Verificada'}
                     </span>
                     <span
                       className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
-                        cert.identityVerified !== false
+                        cert.status === 'revoked'
+                          ? 'bg-rose-600 text-white font-bold'
+                          : cert.identityVerified !== false
                           ? 'bg-[#15846e] text-white'
-                          : 'bg-rose-500 text-white'
+                          : 'bg-amber-600 text-white'
                       }`}
                     >
-                      {cert.identityVerified !== false ? 'VÁLIDO Y ACREDITADO' : 'IDENTIDAD PENDIENTE'}
+                      {cert.status === 'revoked'
+                        ? 'REVOCADO · SIN VALIDEZ'
+                        : cert.identityVerified !== false
+                        ? 'VÁLIDO Y ACREDITADO'
+                        : 'IDENTIDAD PENDIENTE'}
                     </span>
                   </div>
                   <p className="text-xs text-[#9a9a9a] mt-0.5">
-                    {cert.identityVerified !== false
+                    {cert.status === 'revoked'
+                      ? `Este diploma fue revocado formalmente por la autoridad académica de IPT.${
+                          cert.revocationReason ? ` Motivo: "${cert.revocationReason}"` : ''
+                        }`
+                      : cert.identityVerified !== false
                       ? 'El titular acreditó su documento oficial de identidad mediante validación biométrica/OCR.'
                       : 'Este documento fue generado en modo vista previa sin validar documento de identidad nacional.'}
                   </p>
@@ -282,7 +394,7 @@ export function VerifyView({ forcedCode }: VerifyViewProps) {
                   <p className="text-sm font-medium text-white truncate">{cert.studentName}</p>
                   <p className="text-[11px] font-mono text-[#9a9a9a]">
                     {cert.identityVerified !== false
-                      ? `${cert.documentType || 'C.C.'} ${cert.documentNumber || '1.002.458.912'}`
+                      ? `${cert.documentType || 'C.C.'} ${cert.documentNumber || 'Registrado'}`
                       : 'Documento sin verificar'}
                   </p>
                 </div>

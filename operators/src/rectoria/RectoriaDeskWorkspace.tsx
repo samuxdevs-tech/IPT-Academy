@@ -332,8 +332,9 @@ export function RectoriaDeskWorkspace({
       const map = new Map<string, DegreeCertificateItem>();
 
       Object.entries(rawCerts).forEach(([k, c]: [string, any]) => {
-        map.set(k, {
-          folio: c.id || k,
+        const folio = (c.id || c.folio || k).trim();
+        map.set(folio, {
+          folio,
           studentUid: c.userId || c.studentUid || "uid",
           studentName: c.studentName || "Estudiante IPT",
           studentEmail: c.studentEmail || "",
@@ -350,8 +351,32 @@ export function RectoriaDeskWorkspace({
       });
 
       Object.entries(rawIssued).forEach(([k, val]: [string, any]) => {
-        map.set(k, {
-          folio: val.folio || k,
+        const folio = (val.folio || k).trim();
+        const existing = map.get(folio);
+
+        // Si el registro es solo un stub huérfano sin estudiante ni título, fusionar o descartar
+        if (!val.studentName && !val.courseTitle) {
+          if (existing && val.status === 'revoked') {
+            existing.status = 'revoked';
+            existing.revocationReason = val.revocationReason || existing.revocationReason;
+          }
+          return;
+        }
+
+        if (existing) {
+          if (val.status === 'revoked') {
+            existing.status = 'revoked';
+            existing.revocationReason = val.revocationReason || existing.revocationReason;
+          }
+          if (val.studentName && val.studentName !== 'Estudiante IPT') existing.studentName = val.studentName;
+          if (val.courseTitle && val.courseTitle !== 'Certificado Oficial IPT') existing.courseTitle = val.courseTitle;
+          if (val.finalGpa) existing.finalGpa = val.finalGpa;
+          if (val.nationalDocNumber) existing.nationalDocNumber = val.nationalDocNumber;
+          return;
+        }
+
+        map.set(folio, {
+          folio,
           studentUid: val.studentUid || "uid",
           studentName: val.studentName || "Estudiante IPT",
           studentEmail: val.studentEmail || "",
