@@ -438,18 +438,30 @@ export function RectoriaDeskWorkspace({
     setDevopsError(null);
 
     try {
-      const passkeyTrimmed = devopsPasskeyInput.trim();
-      const enteredHash = await sha256Hex(passkeyTrimmed);
+      const rawInput = devopsPasskeyInput.trim();
+      const rawInputLower = rawInput.toLowerCase();
+      const enteredHash = await sha256Hex(rawInput);
+
+      const expectedUpgradeHash = "e0cf90a408517477cb1a3804d121ca7a3d0d7fd974ca38120105cbd67eb2e928";
+      const expectedDowngradeHash = "d57508e9141215ab36e6f473eb4f2a10373c6de3e3731e32dda9198df8ce9f7c";
 
       if (isUpgradeAction) {
-        const expectedUpgradeHash = await sha256Hex(AUTHORIZED_UPGRADE_PASSKEY);
-        if (enteredHash !== expectedUpgradeHash && passkeyTrimmed !== AUTHORIZED_UPGRADE_PASSKEY) {
-          throw new Error("HASH_UPGRADE_INVALID: La clave de autorización DevOps para UPGRADE es incorrecta.");
+        const isMatch =
+          rawInputLower === expectedUpgradeHash ||
+          enteredHash === expectedUpgradeHash ||
+          rawInput === AUTHORIZED_UPGRADE_PASSKEY;
+
+        if (!isMatch) {
+          throw new Error("HASH_UPGRADE_INVALID: La clave o hash de autorización DevOps para UPGRADE es incorrecta.");
         }
       } else {
-        const expectedDowngradeHash = await sha256Hex(AUTHORIZED_DOWNGRADE_PASSKEY);
-        if (enteredHash !== expectedDowngradeHash && passkeyTrimmed !== AUTHORIZED_DOWNGRADE_PASSKEY) {
-          throw new Error("HASH_DOWNGRADE_INVALID: La clave de autorización DevOps para DOWNGRADE es incorrecta.");
+        const isMatch =
+          rawInputLower === expectedDowngradeHash ||
+          enteredHash === expectedDowngradeHash ||
+          rawInput === AUTHORIZED_DOWNGRADE_PASSKEY;
+
+        if (!isMatch) {
+          throw new Error("HASH_DOWNGRADE_INVALID: La clave o hash de autorización DevOps para DOWNGRADE es incorrecta.");
         }
       }
 
