@@ -1829,24 +1829,8 @@ Tienes facultades plenas:
         }
       }
 
-      // Salvaguarda proactiva: Si no se activó actionPayload pero el estudiante pidió agendar, cancelar o créditos
-      const pLower = cleanPrompt.toLowerCase();
-      const userWantsBooking =
-        pLower.includes('agenda') ||
-        pLower.includes('cita') ||
-        pLower.includes('dentro de') ||
-        /\b(a las|para las)\b/i.test(pLower);
-
-      if (!actionPayload && userWantsBooking) {
-        const bookingRes = resolveBookingOptions(cleanPrompt);
-        if (!replyText || replyText.includes('ayudarte hoy') || replyText.length < 25) {
-          replyText = bookingRes.text;
-        }
-        actionPayload = bookingRes.actionPayload;
-      }
-
-      // Si no hubo tool call y el replyText está vacío o genérico, proporcionar fallback
-      if (!replyText || replyText.includes('¿En qué puedo ayudarte hoy')) {
+      // Si no hubo respuesta del modelo y el replyText está vacío, proporcionar fallback contextual
+      if (!replyText) {
         const fallback = buildContextualResponse(cleanPrompt);
         replyText = fallback.text;
         actionPayload = fallback.actionPayload || actionPayload;

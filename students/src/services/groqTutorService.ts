@@ -353,10 +353,17 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
    - PROHIBIDO TERMINANTEMENTE escribir o generar tablas de texto Markdown (con barras verticales |---|---|) para mostrar citas o reservas.
    - NUNCA expongas códigos o IDs técnicos internos como "bkg_live_..." al estudiante.
    - Cuando el estudiante pregunte por sus citas agendadas, citas pendientes o su agenda, simplemente llama a la herramienta 'consultar_citas'.
-6. AGENDAMIENTO INTELIGENTE Y RESPUESTA A HORARIOS:
-   - Si el estudiante dice "agendame una clase para dentro de 3h", "a las 4pm", "quiero una cita", "agenda para mañana", o simplemente menciona una hora como "a las 4pm" o "4pm", DEBES invocar OBLIGATORIAMENTE la herramienta 'agendar_cita' pasando en 'horaDeseada' lo solicitado.
-   - NUNCA des saludos genéricos o preguntes "¿En qué te puedo colaborar?" si el estudiante te está respondiendo con una hora o pidiendo una clase.
-   - Anticipación de 4 horas: Las tutorías requieren un mínimo de 4 horas de anticipación. Si el estudiante pide una hora con menos de 4 horas (ej. "dentro de 3h"), llama igualmente a 'agendar_cita' con horaDeseada='dentro de 3h' y explícale con empatía la regla de las 4 horas de anticipación para que el docente aliste la sala, invitándolo a confirmar el turno más cercano a partir de la 4ª hora.`;
+6. LÓGICA DE HERRAMIENTAS AUTÓNOMA Y COMPORTAMIENTO HUMANO:
+   - Actúa siempre como un ser humano real: cercano, empático, culto, inteligente y pedagógico. NO te rijas bajo lógica de cajas ni contestadores automáticos.
+   - Si el estudiante solo dice "quiero agendar una cita", "hola", o expresa una intención general sin especificar fecha/hora ni pedir que le muestres opciones, responde naturalmente como un tutor real:
+     "¡Sí, claro! Con gusto te ayudo a agendar tu cita. ¿Tienes algún horario específico en mente o te gustaría que te recomiende los turnos disponibles?"
+     (En este caso NO llames a ninguna herramienta, conversa con él y pregúntale qué prefiere).
+   - Cuando el estudiante te pida recomendaciones de horarios ("recomiéndame turnos", "muéstrame opciones", "qué horarios hay", "a qué horas puedo"), o te dé una hora o plazo específico ("para dentro de 4h", "a las 4pm", "mañana a las 8am", "el viernes"): busca si posees la herramienta para hacerlo (agendar_cita) e invócala con los parámetros correspondientes.
+   - Si el estudiante te pide cancelar una cita: busca si posees la herramienta para hacerlo (cancelar_cita) e invócala.
+   - Si el estudiante te pregunta por sus citas activas o su agenda: busca si posees la herramienta (consultar_citas) e invócala.
+   - Si el estudiante te pregunta cuántos créditos le quedan o su balance: busca si posees la herramienta (consultar_creditos) e invócala.
+   - Si el estudiante te pide ver sus tareas o notas: busca si posees la herramienta (consultar_tareas) e invócala.
+   - Si el estudiante solo está conversando o haciendo preguntas académicas: responde de forma didáctica y conversacional sin invocar herramientas innecesarias.`;
 
   const messagesPayload: any[] = [
     { role: 'system', content: systemPrompt }
@@ -379,56 +386,12 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
     });
   }
 
-  // Detección de intención para guiar tool_choice en Groq y asegurar Function Calling resolutivo
-  const pLower = prompt.toLowerCase().trim();
-  let toolChoice: any = 'auto';
-
-  const isBookingIntent =
-    pLower.includes('agenda') ||
-    pLower.includes('cita') ||
-    pLower.includes('clase') ||
-    pLower.includes('reserva') ||
-    pLower.includes('programar') ||
-    pLower.includes('dentro de') ||
-    /\b(a las|para las)\b/i.test(pLower) ||
-    /\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b/i.test(pLower);
-
-  const isCancelIntent =
-    pLower.includes('cancela') ||
-    pLower.includes('cancelar') ||
-    pLower.includes('anula') ||
-    pLower.includes('elimina') ||
-    pLower.includes('descartar');
-
-  const isCreditsIntent =
-    pLower.includes('credito') ||
-    pLower.includes('crédito') ||
-    pLower.includes('cupo') ||
-    pLower.includes('saldo');
-
-  const isBookingsListIntent =
-    pLower.includes('mis citas') ||
-    pLower.includes('que citas tengo') ||
-    pLower.includes('qué citas tengo') ||
-    pLower.includes('ver citas') ||
-    pLower.includes('agenda de hoy');
-
-  if (isBookingIntent && !isCancelIntent) {
-    toolChoice = { type: 'function', function: { name: 'agendar_cita' } };
-  } else if (isCancelIntent) {
-    toolChoice = { type: 'function', function: { name: 'cancelar_cita' } };
-  } else if (isCreditsIntent) {
-    toolChoice = { type: 'function', function: { name: 'consultar_creditos' } };
-  } else if (isBookingsListIntent) {
-    toolChoice = { type: 'function', function: { name: 'consultar_citas' } };
-  }
-
   try {
     const res = await postToTutorApi({
       messages: messagesPayload,
       tools: TUTOR_TOOLS,
-      tool_choice: toolChoice,
-      temperature: 0.2,
+      tool_choice: 'auto',
+      temperature: 0.3,
       max_tokens: 1024
     });
 

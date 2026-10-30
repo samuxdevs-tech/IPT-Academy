@@ -167,13 +167,10 @@ export function AcademicFeatureGate({
   // Si Rectoría asignó créditos a un estudiante (en cualquier plan), los créditos son sagrados e irrevocables.
   const sovereignCredits = Math.max(
     0,
-    Number(
-      entitlements?.availableLiveCredits ??
-      (subscription as any)?.rectoriaCreditsOverride ??
-      (subscription as any)?.liveClassCreditsRemaining ??
-      subscription?.remainingCredits ??
-      0
-    )
+    Number(entitlements?.availableLiveCredits || 0),
+    Number((subscription as any)?.rectoriaCreditsOverride || 0),
+    Number((subscription as any)?.liveClassCreditsRemaining || 0),
+    Number(subscription?.remainingCredits || 0)
   );
 
   // Determinar si el usuario tiene acceso
@@ -186,7 +183,7 @@ export function AcademicFeatureGate({
   //    - plan == free: no entra, se muestra banner para Plan Pro+.
   const hasAccess = React.useMemo(() => {
     if (feature === 'live') {
-      if (sovereignCredits > 0 || Boolean(entitlements?.canJoinLiveClasses)) {
+      if (sovereignCredits > 0 || Boolean(entitlements?.canJoinLiveClasses) || currentPlanId === 'your_plan') {
         return true;
       }
       return false;
@@ -282,12 +279,12 @@ export function AcademicFeatureGate({
 
           <div className="relative z-10 space-y-6">
             {/* CASO ESPECIAL: Salas en Vivo y Tutorías 1 a 1 sin créditos (credits <= 0) */}
-            {feature === 'live' && currentPlanId === 'pro' ? (
+            {feature === 'live' && (currentPlanId === 'pro' || currentPlanId === 'free') ? (
               <>
                 <div className="space-y-3">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffb829]/15 border border-[#ffb829]/30 text-[#ffb829] text-xs font-medium">
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Membresía Plan Pro Activa</span>
+                    <span>{currentPlanId === 'pro' ? 'Membresía Plan Pro Activa' : 'Membresía Plan Free'}</span>
                     <span className="text-white/40">·</span>
                     <span className="text-white/90">Requiere Créditos de Clase</span>
                   </div>
@@ -297,7 +294,9 @@ export function AcademicFeatureGate({
                   </h2>
 
                   <p className="text-sm font-light text-[#bdbdbd] leading-relaxed">
-                    Tu Plan Pro actual incluye entrega de tareas, rúbricas de ingeniería y acceso al material docente. Para ingresar a las Salas en Vivo y agendar Tutorías 1 a 1 en tiempo real, aumenta tu membresía a Plan Pro+ y recibe tu bolsa mensual de créditos para reservar tus sesiones con los docentes.
+                    {currentPlanId === 'pro'
+                      ? 'Tu Plan Pro actual incluye entrega de tareas, rúbricas de ingeniería y acceso al material docente. Para ingresar a las Salas en Vivo y agendar Tutorías 1 a 1 en tiempo real, aumenta tu membresía a Plan Pro+ y recibe tu bolsa mensual de créditos para reservar tus sesiones con los docentes.'
+                      : 'El acceso a las Salas en Vivo y el agendamiento de Tutorías 1 a 1 en tiempo real requieren una membresía Plan Pro+ con bolsa de créditos mensual o asignación rectoral.'}
                   </p>
                 </div>
 

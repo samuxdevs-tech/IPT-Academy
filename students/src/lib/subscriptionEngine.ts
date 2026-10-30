@@ -522,12 +522,9 @@ export function computeEntitlements(
   // Si Rectoría asignó créditos de tutoría a un estudiante (así sea Free o Pro), son válidos y habilitan la sala en vivo.
   const sovereignCredits = Math.max(
     0,
-    Number(
-      (sub as any)?.rectoriaCreditsOverride ??
-      (sub as any)?.liveClassCreditsRemaining ??
-      sub?.remainingCredits ??
-      0
-    )
+    Number((sub as any)?.rectoriaCreditsOverride || 0),
+    Number((sub as any)?.liveClassCreditsRemaining || 0),
+    Number(sub?.remainingCredits || 0)
   );
 
   if (!sub || sub.planId === 'free') {
@@ -1777,7 +1774,9 @@ export class SubscriptionPlatformService {
       const ent = this.getEntitlementsForSubscription(sub, now);
       const sovereignCredits = Math.max(
         0,
-        Number((sub as any).rectoriaCreditsOverride ?? (sub as any).liveClassCreditsRemaining ?? sub.remainingCredits ?? 0)
+        Number((sub as any).rectoriaCreditsOverride || 0),
+        Number((sub as any).liveClassCreditsRemaining || 0),
+        Number(sub.remainingCredits || 0)
       );
 
       if (sovereignCredits <= 0) {
@@ -2008,8 +2007,11 @@ export class SubscriptionPlatformService {
             if (!org || org.status !== 'active' || new Date(effectiveEnd).getTime() <= now.getTime()) {
               sub.status = 'read_only';
               sub.readOnlyReason = !org || org.status !== 'active' ? 'organization_invalid' : 'expired';
-              sub.remainingCredits = 0;
-              this.cancelFutureBookingsForSubscription(sub.id, now);
+              const sovereignCreds = Math.max(0, Number((sub as any).rectoriaCreditsOverride || 0), Number((sub as any).liveClassCreditsRemaining || 0));
+              sub.remainingCredits = sovereignCreds;
+              if (sovereignCreds <= 0) {
+                this.cancelFutureBookingsForSubscription(sub.id, now);
+              }
               this.subscriptions.set(sub.id, sub);
               processedCount++;
             }
@@ -2039,12 +2041,15 @@ export class SubscriptionPlatformService {
           if (sub.cancelAtPeriodEnd) {
             sub.status = 'read_only';
             sub.readOnlyReason = 'trial_ended_cancelled';
-            sub.remainingCredits = 0;
+            const sovereignCredsTrial = Math.max(0, Number((sub as any).rectoriaCreditsOverride || 0), Number((sub as any).liveClassCreditsRemaining || 0));
+            sub.remainingCredits = sovereignCredsTrial;
             sub.frozenDynamicCourseSlugs = [
               ...new Set([...sub.frozenDynamicCourseSlugs, ...sub.activeDynamicCourseSlugs]),
             ];
             sub.activeDynamicCourseSlugs = [];
-            this.cancelFutureBookingsForSubscription(sub.id, now);
+            if (sovereignCredsTrial <= 0) {
+              this.cancelFutureBookingsForSubscription(sub.id, now);
+            }
             this.subscriptions.set(sub.id, sub);
             processedCount++;
             continue;
@@ -2121,12 +2126,15 @@ export class SubscriptionPlatformService {
           if (sub.cancelAtPeriodEnd) {
             sub.status = 'read_only';
             sub.readOnlyReason = 'expired';
-            sub.remainingCredits = 0;
+            const sovereignCredsCycle = Math.max(0, Number((sub as any).rectoriaCreditsOverride || 0), Number((sub as any).liveClassCreditsRemaining || 0));
+            sub.remainingCredits = sovereignCredsCycle;
             sub.frozenDynamicCourseSlugs = [
               ...new Set([...sub.frozenDynamicCourseSlugs, ...sub.activeDynamicCourseSlugs]),
             ];
             sub.activeDynamicCourseSlugs = [];
-            this.cancelFutureBookingsForSubscription(sub.id, now);
+            if (sovereignCredsCycle <= 0) {
+              this.cancelFutureBookingsForSubscription(sub.id, now);
+            }
             this.subscriptions.set(sub.id, sub);
             processedCount++;
             break;
@@ -2151,7 +2159,9 @@ export class SubscriptionPlatformService {
               // Principio de Soberanía Rectoral: Rectoría tiene la palabra final, no destruir créditos otorgados
               const sovereignCredits = Math.max(
                 0,
-                Number((sub as any).rectoriaCreditsOverride ?? (sub as any).liveClassCreditsRemaining ?? 0)
+                Number((sub as any).rectoriaCreditsOverride || 0),
+                Number((sub as any).liveClassCreditsRemaining || 0),
+                Number(sub.remainingCredits || 0)
               );
               sub.remainingCredits = sovereignCredits;
               sub.creditsConsumedInCycle = 0;

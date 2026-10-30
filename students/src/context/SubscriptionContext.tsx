@@ -397,12 +397,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           // Principio de Soberanía Rectoral: Leer y consolidar créditos asignados por Rectoría
           const sovereignCredits = Math.max(
             0,
-            Number(
-              remoteSub.rectoriaCreditsOverride ??
-              remoteSub.liveClassCreditsRemaining ??
-              remoteSub.remainingCredits ??
-              0
-            )
+            Number(remoteSub.rectoriaCreditsOverride || 0),
+            Number(remoteSub.liveClassCreditsRemaining || 0),
+            Number(remoteSub.remainingCredits || 0)
           );
           remoteSub.remainingCredits = sovereignCredits;
           remoteSub.liveClassCreditsRemaining = sovereignCredits;
@@ -749,12 +746,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
       const sovereignCredits = Math.max(
         0,
-        Number(
-          (existingSub as any)?.rectoriaCreditsOverride ??
-          (existingSub as any)?.liveClassCreditsRemaining ??
-          existingSub?.remainingCredits ??
-          0
-        )
+        Number((existingSub as any)?.rectoriaCreditsOverride || 0),
+        Number((existingSub as any)?.liveClassCreditsRemaining || 0),
+        Number(existingSub?.remainingCredits || 0)
       );
 
       const defaultAllowance =
