@@ -1,0 +1,115 @@
+{
+  "targetBaseUrl": "https://academy.iptapps.com",
+  "startedAt": "2026-10-29T22:04:16.353Z",
+  "finishedAt": "2026-10-29T22:17:37.627Z",
+  "totalDurationSec": 801.27,
+  "totalUsersTarget": 100,
+  "totalCompletedUsers": 100,
+  "successfulUsers": 99,
+  "failedUsers": 1,
+  "successRatePercent": 99,
+  "overallThroughputUsersPerSec": 0.12,
+  "overallLatencyStats": {
+    "avgMs": 70966,
+    "minMs": 36962,
+    "maxMs": 76717,
+    "p50Ms": 72764,
+    "p90Ms": 74558,
+    "p95Ms": 76132,
+    "p99Ms": 76715,
+    "stdDevMs": 5282
+  },
+  "stepBreakdown": {
+    "REGISTER": {
+      "step": "REGISTER",
+      "count": 100,
+      "successCount": 100,
+      "failureCount": 0,
+      "avgDurationMs": 32902,
+      "minDurationMs": 27823,
+      "maxDurationMs": 39168,
+      "p50Ms": 32774,
+      "p90Ms": 34379,
+      "p95Ms": 38139,
+      "p99Ms": 38961
+    },
+    "LOGIN": {
+      "step": "LOGIN",
+      "count": 100,
+      "successCount": 99,
+      "failureCount": 1,
+      "avgDurationMs": 27924,
+      "minDurationMs": 556,
+      "maxDurationMs": 30530,
+      "p50Ms": 28234,
+      "p90Ms": 29482,
+      "p95Ms": 29856,
+      "p99Ms": 30244
+    },
+    "HOME_DASHBOARD": {
+      "step": "HOME_DASHBOARD",
+      "count": 100,
+      "successCount": 99,
+      "failureCount": 1,
+      "avgDurationMs": 5021,
+      "minDurationMs": 640,
+      "maxDurationMs": 8585,
+      "p50Ms": 5363,
+      "p90Ms": 7090,
+      "p95Ms": 7435,
+      "p99Ms": 8424
+    },
+    "COURSE_VIEWER": {
+      "step": "COURSE_VIEWER",
+      "count": 100,
+      "successCount": 99,
+      "failureCount": 1,
+      "avgDurationMs": 2335,
+      "minDurationMs": 221,
+      "maxDurationMs": 6434,
+      "p50Ms": 2355,
+      "p90Ms": 3597,
+      "p95Ms": 3764,
+      "p99Ms": 5168
+    },
+    "LESSON_INTERACTION": {
+      "step": "LESSON_INTERACTION",
+      "count": 100,
+      "successCount": 99,
+      "failureCount": 1,
+      "avgDurationMs": 1752,
+      "minDurationMs": 17,
+      "maxDurationMs": 4231,
+      "p50Ms": 1727,
+      "p90Ms": 2265,
+      "p95Ms": 2371,
+      "p99Ms": 2684
+    }
+  },
+  "failures": [
+    {
+      "personaId": "usr_023",
+      "email": "test_stress_user_023@iptapps.com",
+      "step": "LOGIN",
+      "errorMessage": "page.goto: net::ERR_CONNECTION_CLOSED at https://academy.iptapps.com/login\nCall log:\n\u001b[2m  - navigating to \"https://academy.iptapps.com/login\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "personaId": "usr_023",
+      "email": "test_stress_user_023@iptapps.com",
+      "step": "HOME_DASHBOARD",
+      "errorMessage": "page.goto: Navigation to \"https://academy.iptapps.com/home\" is interrupted by another navigation to \"chrome-error://chromewebdata/\"\nCall log:\n\u001b[2m  - navigating to \"https://academy.iptapps.com/home\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "personaId": "usr_023",
+      "email": "test_stress_user_023@iptapps.com",
+      "step": "COURSE_VIEWER",
+      "errorMessage": "page.goto: Navigation to \"https://academy.iptapps.com/course\" is interrupted by another navigation to \"https://academy.iptapps.com/home\"\nCall log:\n\u001b[2m  - navigating to \"https://academy.iptapps.com/course\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "personaId": "usr_023",
+      "email": "test_stress_user_023@iptapps.com",
+      "step": "LESSON_INTERACTION",
+      "errorMessage": "page.evaluate: Execution context was destroyed, most likely because of a navigation"
+    }
+  ]
+}

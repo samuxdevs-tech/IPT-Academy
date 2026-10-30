@@ -1,0 +1,21 @@
+{
+  "name": "ipt-course-stress-harness",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Banco de Pruebas Cuantitativo y Simulador de Estres E2E de 100 Usuarios para IPT Course",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "test:sample": "tsx src/index.ts --users=5 --concurrency=2",
+    "test:full": "tsx src/index.ts --users=100 --ramp=escalonada",
+    "clean": "tsx src/cleanup/purgeUsers.ts"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

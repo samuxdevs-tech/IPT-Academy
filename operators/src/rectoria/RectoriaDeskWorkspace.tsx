@@ -414,7 +414,10 @@ export function RectoriaDeskWorkspace({
         });
       });
 
-      setCertificates(Array.from(map.values()));
+      const validCerts = Array.from(map.values()).filter(
+        (cert) => cert.folio && cert.folio.trim().length > 3 && cert.studentName && cert.studentName.trim().length > 0
+      );
+      setCertificates(validCerts);
     };
 
     const certsRef = ref(rtdb, "certificates");
