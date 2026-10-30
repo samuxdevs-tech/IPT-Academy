@@ -166,7 +166,7 @@ const TUTOR_TOOLS = [
     function: {
       name: 'agendar_cita',
       description:
-        'OBLIGATORIA: Invoca esta herramienta SIEMPRE que el estudiante exprese la intención de agendar, programar, tomar una clase, reservar horario, o mencione una hora específica (ej: "a las 4pm", "a las 10am") o plazos relativos (ej: "dentro de 3h", "en 2 horas"). Pasa en horaDeseada la hora o plazo indicado.',
+        'Agenda o busca cupos para programar una tutoría sincrónica cuando el estudiante especifique un horario o fecha ("a las 4pm", "para dentro de 3h", "mañana a las 10am") o pida expresamente recomendaciones de horarios ("recomiéndame opciones", "qué turnos hay", "muéstrame horarios disponibles"). NO la invoques si el estudiante solo expresa una intención inicial abierta como "quiero agendar una cita" sin dar horas ni pedir opciones; en ese caso conversa humanamente primero.',
       parameters: {
         type: 'object',
         properties: {
