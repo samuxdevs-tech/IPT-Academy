@@ -6,6 +6,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import {
   Crown,
+  Coins,
+  PlusCircle,
+  MinusCircle,
   GraduationCap,
   Sparkles,
   Scale,
@@ -204,6 +207,14 @@ export function RectoriaDeskWorkspace({
   const [devopsPasskeyInput, setDevopsPasskeyInput] = useState("");
   const [devopsError, setDevopsError] = useState<string | null>(null);
   const [isApplyingDevopsTier, setIsApplyingDevopsTier] = useState(false);
+  const [devopsTierCreditsInput, setDevopsTierCreditsInput] = useState<number>(0);
+
+  // Estados dedicados para Mover / Ajustar Créditos en Gobierno DevOps
+  const [targetStudentForCredits, setTargetStudentForCredits] = useState<StudentSubscriptionRecord | null>(null);
+  const [isCreditsModalOpen, setIsCreditsModalOpen] = useState(false);
+  const [newCreditsValue, setNewCreditsValue] = useState<number>(0);
+  const [creditsChangeReason, setCreditsChangeReason] = useState<string>("Ajuste por Despacho de Rectoría");
+  const [isUpdatingCredits, setIsUpdatingCredits] = useState(false);
 
   // ==========================================
   // ESTADO 5: DIRECTIVAS RECTORALES
@@ -645,9 +656,91 @@ export function RectoriaDeskWorkspace({
   ) => {
     setTargetStudentForTier(student);
     setTargetNextPlan(targetPlan);
+    const defaultCredits = targetPlan === "pro_plus" ? 2 : targetPlan === "your_plan" ? 12 : 0;
+    setDevopsTierCreditsInput(defaultCredits);
     setDevopsPasskeyInput("");
     setDevopsError(null);
     setIsDevopsModalOpen(true);
+  };
+
+  // Apertura del modal dedicado de ajuste de créditos
+  const handleOpenCreditsModal = (student: StudentSubscriptionRecord) => {
+    setTargetStudentForCredits(student);
+    setNewCreditsValue(student.liveClassCreditsRemaining ?? 0);
+    setCreditsChangeReason("Ajuste por Despacho de Rectoría");
+    setIsCreditsModalOpen(true);
+  };
+
+  // Guardar mutación directa de créditos
+  const handleSaveCreditsMutation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!targetStudentForCredits) return;
+    setIsUpdatingCredits(true);
+
+    try {
+      const now = new Date();
+      const credits = Math.max(0, Math.floor(Number(newCreditsValue) || 0));
+
+      // Leer suscripción existente
+      const existingSnap = await get(ref(rtdb, `lms_subscriptions/${targetStudentForCredits.uid}`));
+      const existingSub = existingSnap.exists() ? existingSnap.val() : {};
+
+      const subData = {
+        ...existingSub,
+        id: existingSub.id || `sub_${targetStudentForCredits.uid}`,
+        userId: targetStudentForCredits.uid,
+        userName: targetStudentForCredits.name || existingSub.userName,
+        userEmail: targetStudentForCredits.email || existingSub.userEmail,
+        planId: existingSub.planId || targetStudentForCredits.planId || "free",
+        status: existingSub.status || "active",
+        liveClassCreditsRemaining: credits,
+        remainingCredits: credits,
+        updatedAt: now.toISOString(),
+        creditsModifiedBy: userProfile.email,
+        creditsModificationReason: creditsChangeReason.trim() || "Ajuste DevOps",
+      };
+
+      await set(ref(rtdb, `lms_subscriptions/${targetStudentForCredits.uid}`), subData);
+
+      // Auditoría forense atómica
+      await Promise.all([
+        push(ref(rtdb, "devops_audit_logs"), {
+          action: "CREDITS_MUTATION",
+          targetUserId: targetStudentForCredits.uid,
+          targetEmail: targetStudentForCredits.email,
+          previousCredits: targetStudentForCredits.liveClassCreditsRemaining ?? 0,
+          newCredits: credits,
+          reason: creditsChangeReason.trim(),
+          operatorEmail: userProfile.email,
+          timestamp: now.toISOString(),
+        }),
+        push(ref(rtdb, "audit_logs"), {
+          timestampUtc: now.toISOString(),
+          eventType: "credits_adjusted",
+          severity: "info",
+          actorUid: userProfile.uid,
+          actorEmail: userProfile.email,
+          actionDescription: `[DevOps / Rectoría] Ajuste de créditos: ${targetStudentForCredits.email} (${targetStudentForCredits.liveClassCreditsRemaining ?? 0} -> ${credits} créditos). Motivo: ${creditsChangeReason.trim()}`,
+          ipAddress: "127.0.0.1",
+          location: "Despacho de Rectoría",
+        }),
+      ]);
+
+      setStudentsList((prev) =>
+        prev.map((s) =>
+          s.uid === targetStudentForCredits.uid
+            ? { ...s, liveClassCreditsRemaining: credits }
+            : s
+        )
+      );
+
+      setIsCreditsModalOpen(false);
+      showFeedback(`Créditos de ${targetStudentForCredits.name} actualizados a ${credits} créditos de tutoría.`);
+    } catch (err: any) {
+      showFeedback(`Error al mover créditos: ${err?.message || "Fallo en RTDB"}`, "error");
+    } finally {
+      setIsUpdatingCredits(false);
+    }
   };
 
   const isUpgradeAction = useMemo(() => {
@@ -693,12 +786,7 @@ export function RectoriaDeskWorkspace({
       // Clave válida: ejecutar mutación autorizada
       const now = new Date();
       const periodEnd = new Date(now.getTime() + 30 * 86400000).toISOString();
-      const credits =
-        targetNextPlan === "pro_plus"
-          ? 2
-          : targetNextPlan === "your_plan"
-          ? 12
-          : 0;
+      const credits = Math.max(0, Math.floor(Number(devopsTierCreditsInput) || 0));
 
       // Leer suscripción existente para preservar todos los atributos (esquema unificado con Admin)
       const existingSnap = await get(ref(rtdb, `lms_subscriptions/${targetStudentForTier.uid}`));
@@ -1810,9 +1898,32 @@ export function RectoriaDeskWorkspace({
                           </span>
                         </td>
                         <td className="py-3.5 px-4 font-mono">
-                          {student.liveClassCreditsRemaining ?? 0} créditos
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-white">
+                              {student.liveClassCreditsRemaining ?? 0} créditos
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenCreditsModal(student)}
+                              className="p-1.5 rounded-lg bg-[#f59e0b]/10 hover:bg-[#f59e0b]/20 text-[#f59e0b] border border-[#f59e0b]/30 transition-all cursor-pointer"
+                              title="Ajustar saldo de créditos"
+                            >
+                              <Coins className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                         <td className="py-3.5 px-4 text-right space-x-2">
+                          {/* Botón Mover Créditos */}
+                          <button
+                            type="button"
+                            onClick={() => handleOpenCreditsModal(student)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#f59e0b]/15 hover:bg-[#f59e0b]/25 text-[#f59e0b] border border-[#f59e0b]/30 text-[11px] font-medium transition-all cursor-pointer"
+                            title="Mover o transferir créditos de tutoría"
+                          >
+                            <Coins className="w-3.5 h-3.5" />
+                            <span>Mover Créditos</span>
+                          </button>
+
                           {/* Botón Upgrade */}
                           <button
                             onClick={() =>
@@ -1863,6 +1974,167 @@ export function RectoriaDeskWorkspace({
               </div>
             </div>
 
+            
+            {/* Modal Dedicado para Mover / Ajustar Créditos de Tutoría */}
+            {isCreditsModalOpen && targetStudentForCredits && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+                <div className="max-w-md w-full bg-[#121217] border border-[#f59e0b]/40 rounded-3xl p-6 sm:p-7 space-y-5 shadow-2xl relative">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-[#f59e0b]/20 text-[#f59e0b] border border-[#f59e0b]/40 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                        <Coins className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-mono uppercase text-zinc-400 block">
+                          Gobierno DevOps · Balance de Tutorías
+                        </span>
+                        <h3 className="text-base font-semibold text-white">
+                          Mover y Asignar Créditos
+                        </h3>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsCreditsModalOpen(false)}
+                      className="text-zinc-400 hover:text-white p-1 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-black/50 border border-white/10 text-xs space-y-1.5 font-mono">
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Estudiante:</span>
+                      <span className="text-white font-sans font-medium">{targetStudentForCredits.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Correo:</span>
+                      <span className="text-zinc-300">{targetStudentForCredits.email}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Plan Actual:</span>
+                      <span className="text-amber-400 font-bold uppercase">{targetStudentForCredits.planId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Saldo Actual en Vivo:</span>
+                      <span className="text-emerald-400 font-bold">{targetStudentForCredits.liveClassCreditsRemaining ?? 0} créditos</span>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSaveCreditsMutation} className="space-y-4">
+                    {/* Control de Nuevo Balance */}
+                    <div className="space-y-2">
+                      <label className="text-xs text-zinc-300 font-medium flex items-center justify-between">
+                        <span>Nuevo Saldo Total de Créditos</span>
+                        <span className="text-[11px] font-mono text-[#f59e0b]">
+                          Diferencia: {newCreditsValue - (targetStudentForCredits.liveClassCreditsRemaining ?? 0) >= 0 ? '+' : ''}{newCreditsValue - (targetStudentForCredits.liveClassCreditsRemaining ?? 0)}
+                        </span>
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setNewCreditsValue((prev) => Math.max(0, prev - 1))}
+                          className="w-11 h-11 rounded-2xl bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 flex items-center justify-center font-bold text-lg cursor-pointer transition-all active:scale-95"
+                          title="Restar 1 crédito"
+                        >
+                          -1
+                        </button>
+                        <input
+                          type="number"
+                          min="0"
+                          max="500"
+                          required
+                          value={newCreditsValue}
+                          onChange={(e) => setNewCreditsValue(Math.max(0, parseInt(e.target.value) || 0))}
+                          className="flex-1 px-4 py-3 rounded-2xl bg-black border border-white/20 text-center font-mono text-xl font-bold text-[#f59e0b] focus:border-[#f59e0b] focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setNewCreditsValue((prev) => prev + 1)}
+                          className="w-11 h-11 rounded-2xl bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 flex items-center justify-center font-bold text-lg cursor-pointer transition-all active:scale-95"
+                          title="Sumar 1 crédito"
+                        >
+                          +1
+                        </button>
+                      </div>
+
+                      {/* Botones de Ajuste Rápido */}
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setNewCreditsValue((prev) => prev + 2)}
+                          className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-zinc-300 cursor-pointer"
+                        >
+                          +2
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNewCreditsValue((prev) => prev + 5)}
+                          className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-zinc-300 cursor-pointer"
+                        >
+                          +5
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNewCreditsValue((prev) => prev + 10)}
+                          className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-zinc-300 cursor-pointer"
+                        >
+                          +10
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNewCreditsValue(0)}
+                          className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-[11px] font-mono text-rose-300 cursor-pointer"
+                        >
+                          Poner en 0
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const def = targetStudentForCredits.planId === "your_plan" ? 12 : targetStudentForCredits.planId === "pro_plus" ? 2 : 0;
+                            setNewCreditsValue(def);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-[#8052ff]/10 hover:bg-[#8052ff]/20 border border-[#8052ff]/20 text-[11px] font-mono text-purple-300 cursor-pointer"
+                        >
+                          Default del Plan
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Motivo de Auditoría */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-zinc-300 font-medium">Motivo o Justificación del Movimiento</label>
+                      <input
+                        type="text"
+                        value={creditsChangeReason}
+                        onChange={(e) => setCreditsChangeReason(e.target.value)}
+                        placeholder="Ej: Bono de Rectoría, reposición de clase cancelada..."
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:border-[#f59e0b] focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="pt-2 border-t border-white/10 flex items-center justify-end gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setIsCreditsModalOpen(false)}
+                        className="px-4 py-2 rounded-xl text-xs text-zinc-400 hover:text-white cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isUpdatingCredits}
+                        className="px-5 py-2.5 rounded-xl bg-[#f59e0b] hover:bg-[#d97706] text-black text-xs font-semibold flex items-center gap-2 shadow-lg shadow-[#f59e0b]/20 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        <Coins className="w-4 h-4" />
+                        <span>{isUpdatingCredits ? "Sincronizando..." : "Aplicar Mutación de Créditos"}</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
             {/* Modal de Desafío de Seguridad Criptográfico DevOps */}
             {isDevopsModalOpen && targetStudentForTier && (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
@@ -1905,6 +2177,17 @@ export function RectoriaDeskWorkspace({
                       >
                         {targetNextPlan.toUpperCase()}
                       </span>
+                    </div>
+                    <div className="flex justify-between items-center pt-1 border-t border-white/5">
+                      <span className="text-zinc-500">Créditos de Tutoría:</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="200"
+                        value={devopsTierCreditsInput}
+                        onChange={(e) => setDevopsTierCreditsInput(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-20 px-2 py-0.5 rounded bg-black border border-white/20 text-right text-xs font-mono font-bold text-amber-400 focus:outline-none focus:border-[#f59e0b]"
+                      />
                     </div>
                   </div>
 
