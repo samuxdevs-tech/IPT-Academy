@@ -5,14 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   Video,
-  VideoOff,
-  Mic,
-  MicOff,
+  Play,
   Users,
   MessageSquare,
   Hand,
   PenTool,
-  Play,
   CheckCircle2,
   Clock,
   ShieldCheck,
@@ -25,18 +22,27 @@ import {
   Download,
   AlertCircle,
   Sparkles,
+  Volume2,
+  HelpCircle,
+  Monitor,
 } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLms } from '@/context/LmsContext';
 import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
-import { ref, onValue, push } from 'firebase/database';
+import { ref, onValue, push, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { LiveVirtualSession } from '@/types';
+import {
+  WebRtcViewerSubscriber,
+  HostLiveState,
+  WhiteboardStroke,
+} from '@/lib/liveClassWebRtc';
 
 interface LiveChatMessage {
   id: string;
   sender: string;
+  role?: 'teacher' | 'student';
   text: string;
   time: string;
   timestamp?: number;
@@ -51,9 +57,17 @@ interface StoredRecording {
   videoUrl?: string;
 }
 
+interface ActiveLiveQuizData {
+  active: boolean;
+  sessionId?: string;
+  question?: string;
+  options?: string[];
+  correctOptionIndex?: number;
+  launchedAt?: string;
+}
+
 function StudentLiveRoomContent() {
   const searchParams = useSearchParams();
-  const modeParam = searchParams?.get('mode');
   const { user } = useAuth();
   const {
     subscription,
@@ -61,7 +75,6 @@ function StudentLiveRoomContent() {
     bookLiveSession,
     cancelLiveBooking,
     liveBookings,
-    zeroSumAccounting,
     openPricingModal,
   } = useSubscription();
 
@@ -87,83 +100,146 @@ function StudentLiveRoomContent() {
   const [activeStudioTab, setActiveStudioTab] = useState<'stream' | 'whiteboard' | 'recordings'>('stream');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  // Controles multimedia locales WebRTC del estudiante
-  const [micEnabled, setMicEnabled] = useState<boolean>(false);
-  const [camEnabled, setCamEnabled] = useState<boolean>(false);
+  // WebRTC Subscriber y Transmisión del Docente
+  const [hostState, setHostState] = useState<HostLiveState | null>(null);
+  const [isReceivingStream, setIsReceivingStream] = useState<boolean>(false);
+  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+  const subscriberRef = useRef<WebRtcViewerSubscriber | null>(null);
+
+  // Participación: Mano levantada y Asistencia
   const [handRaised, setHandRaised] = useState<boolean>(false);
   const [attendanceSeconds, setAttendanceSeconds] = useState<number>(0);
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
 
   // Chat en tiempo real conectado a Firebase RTDB
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
 
-  const currentRoomChatId = useMemo(() => {
-    if (modeParam === '1on1') {
-      return `chat_1on1_${user?.uid || 'guest'}`;
-    }
-    return activeSession?.id ? `chat_session_${activeSession.id}` : 'chat_general';
-  }, [modeParam, user?.uid, activeSession?.id]);
+  // Pizarra Digital
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [strokeColor, setStrokeColor] = useState<string>('#8052ff');
+  const [isDrawing, setIsDrawing] = useState(false);
 
+  // Quiz en Vivo
+  const [activeQuiz, setActiveQuiz] = useState<ActiveLiveQuizData | null>(null);
+  const [selectedQuizOption, setSelectedQuizOption] = useState<number | null>(null);
+  const [quizSubmitted, setQuizSubmitted] = useState<boolean>(false);
+
+  // Grabaciones Anteriores
+  const [recordings] = useState<StoredRecording[]>([
+    {
+      id: 'rec-01',
+      title: 'Taller Magistral: Interpretación de Aforos e Índice UGM',
+      date: '24 de Octubre, 2026',
+      duration: '52 min',
+      instructor: 'Ing. Iván Samuel Pérez Torrenegra',
+      videoUrl: 'https://academy.iptapps.com/videos/datagan-promo.mp4',
+    },
+    {
+      id: 'rec-02',
+      title: 'Cátedra en Vivo: Gobernanza de Lotes y Registros ICA',
+      date: '17 de Octubre, 2026',
+      duration: '45 min',
+      instructor: 'Equipo Zootécnico DataGan',
+      videoUrl: 'https://academy.iptapps.com/videos/datagan-promo.mp4',
+    },
+  ]);
+
+  // 1. Conexión WebRTC de Espectador cuando hay una sesión seleccionada
   useEffect(() => {
-    const chatRef = ref(db, `lms_live_chat/${currentRoomChatId}`);
-    const unsub = onValue(
-      chatRef,
-      (snap) => {
-        if (snap.exists()) {
-          const val = snap.val();
-          const list: LiveChatMessage[] = Object.keys(val).map((k) => ({
-            id: k,
-            sender: val[k].sender || 'Estudiante',
-            text: val[k].text || '',
-            time: val[k].time || '',
-            timestamp: val[k].timestamp || 0,
-          }));
-          list.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-          setChatMessages(list);
-        } else {
-          setChatMessages([]);
+    if (!selectedSessionId || !user) return;
+
+    const studentUid = user.uid;
+    const studentName = user.displayName || user.email?.split('@')[0] || 'Estudiante';
+
+    const subscriber = new WebRtcViewerSubscriber(selectedSessionId, studentUid, studentName);
+    subscriberRef.current = subscriber;
+
+    subscriber.join({
+      onStream: (stream) => {
+        setIsReceivingStream(true);
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = stream;
         }
       },
-      () => setChatMessages([])
-    );
-    return () => unsub();
-  }, [currentRoomChatId]);
-
-  // Grabaciones almacenadas en Firebase RTDB
-  const [recordings, setRecordings] = useState<StoredRecording[]>([]);
-  useEffect(() => {
-    const recRef = ref(db, 'lms_recordings');
-    const unsub = onValue(
-      recRef,
-      (snap) => {
-        if (snap.exists()) {
-          const val = snap.val();
-          const list: StoredRecording[] = Object.keys(val).map((k) => ({
-            id: k,
-            title: val[k].title || 'Clase grabada',
-            date: val[k].date || '',
-            duration: val[k].duration || '',
-            instructor: val[k].instructor || 'Docente IPT',
-            videoUrl: val[k].videoUrl,
-          }));
-          setRecordings(list);
-        } else {
-          setRecordings([]);
+      onHostState: (state) => {
+        setHostState(state);
+        if (!state?.isLive) {
+          setIsReceivingStream(false);
         }
       },
-      () => setRecordings([])
-    );
-    return () => unsub();
+      onWhiteboardStroke: (stroke: WhiteboardStroke) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx || stroke.points.length < 2) return;
+
+        ctx.beginPath();
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.width;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (let i = 1; i < stroke.points.length; i++) {
+          ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        }
+        ctx.stroke();
+      },
+      onWhiteboardClear: () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      },
+    });
+
+    return () => {
+      subscriber.leave();
+      subscriberRef.current = null;
+      setIsReceivingStream(false);
+    };
+  }, [selectedSessionId, user]);
+
+  // 2. Escuchar Chat en Vivo en Firebase RTDB
+  useEffect(() => {
+    if (!selectedSessionId) return;
+    const chatRef = ref(db, `live_rooms/${selectedSessionId}/chat`);
+    const unsubscribe = onValue(chatRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const list: LiveChatMessage[] = Array.isArray(data)
+          ? data.filter(Boolean)
+          : Object.keys(data).map((k) => ({ id: k, ...data[k] }));
+        setChatMessages(list);
+      } else {
+        setChatMessages([]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [selectedSessionId]);
+
+  // 3. Escuchar Quizzes en Vivo en RTDB
+  useEffect(() => {
+    const quizRef = ref(db, 'active_live_quiz');
+    const unsubscribe = onValue(quizRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const val = snapshot.val() as ActiveLiveQuizData;
+        if (val.active) {
+          setActiveQuiz(val);
+          setQuizSubmitted(false);
+          setSelectedQuizOption(null);
+        } else {
+          setActiveQuiz(null);
+        }
+      } else {
+        setActiveQuiz(null);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  // Pizarra HTML5 Canvas
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [strokeColor, setStrokeColor] = useState('#8052ff');
-
-  // Contador de tiempo en sala
+  // 4. Contador de Asistencia acumulada en vivo
   useEffect(() => {
     const timer = setInterval(() => {
       setAttendanceSeconds((prev) => prev + 1);
@@ -171,58 +247,62 @@ function StudentLiveRoomContent() {
     return () => clearInterval(timer);
   }, []);
 
-  // Activar / Desactivar cámara real WebRTC
-  const toggleCameraWebRtc = async () => {
-    if (camEnabled) {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
-        mediaStreamRef.current = null;
-      }
-      setCamEnabled(false);
-    } else {
-      try {
-        if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: 640, height: 360 },
-            audio: false,
-          });
-          mediaStreamRef.current = stream;
-          setCamEnabled(true);
-        } else {
-          alert('Tu navegador no cuenta con soporte para cámara WebRTC.');
-        }
-      } catch {
-        alert('No se pudo acceder a la cámara. Revisa los permisos de tu navegador.');
-      }
+  // 5. Alternar Mano Levantada
+  const toggleHandRaise = async () => {
+    const nextState = !handRaised;
+    setHandRaised(nextState);
+    if (subscriberRef.current) {
+      await subscriberRef.current.setHandRaised(nextState);
     }
   };
 
-  // Enlace reactivo del stream WebRTC al elemento <video> cuando se monta en el DOM
-  useEffect(() => {
-    if (camEnabled && localVideoRef.current && mediaStreamRef.current) {
-      localVideoRef.current.srcObject = mediaStreamRef.current;
+  // 6. Enviar Respuesta al Quiz en Vivo
+  const handleSubmitQuiz = async () => {
+    if (selectedQuizOption === null || !user) return;
+    try {
+      const studentName = user.displayName || user.email?.split('@')[0] || 'Estudiante';
+      await set(ref(db, `active_live_quiz/responses/${user.uid}`), {
+        studentName,
+        optionIndex: selectedQuizOption,
+        answeredAt: new Date().toISOString(),
+      });
+      setQuizSubmitted(true);
+    } catch (err) {
+      console.warn('Error enviando respuesta del quiz:', err);
     }
-  }, [camEnabled]);
+  };
 
-  useEffect(() => {
-    return () => {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
-      }
-    };
-  }, []);
+  // 7. Enviar Mensaje al Chat de la Clase
+  const handleSendChat = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim() || !selectedSessionId) return;
 
-  // Funciones de la Pizarra
+    try {
+      const chatRef = push(ref(db, `live_rooms/${selectedSessionId}/chat`));
+      await set(chatRef, {
+        sender: user?.displayName || user?.email?.split('@')[0] || 'Estudiante',
+        role: 'student',
+        text: chatInput.trim(),
+        time: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: Date.now(),
+      });
+      setChatInput('');
+    } catch (err) {
+      console.warn('Error enviando mensaje al chat:', err);
+    }
+  };
+
+  // Funciones de la Pizarra de Apuntes
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
     ctx.beginPath();
-    ctx.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+    ctx.moveTo(x, y);
     setIsDrawing(true);
   };
 
@@ -233,9 +313,9 @@ function StudentLiveRoomContent() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    ctx.lineTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+    ctx.lineTo(x, y);
     ctx.strokeStyle = strokeColor;
     ctx.lineWidth = strokeColor === '#000000' ? 16 : 3;
     ctx.lineCap = 'round';
@@ -273,28 +353,6 @@ function StudentLiveRoomContent() {
 
   const currentPlanId = subscription?.planId || 'free';
 
-  const daysUntilRenewal = useMemo(() => {
-    if (!subscription) return 30;
-    const targetIso = subscription.creditsResetAt || subscription.currentPeriodEnd;
-    if (!targetIso) return 30;
-    const diffMs = new Date(targetIso).getTime() - Date.now();
-    return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-  }, [subscription]);
-
-  const formattedRenewalDate = useMemo(() => {
-    if (!subscription) return '';
-    const targetIso = subscription.creditsResetAt || subscription.currentPeriodEnd;
-    if (!targetIso) return '';
-    try {
-      return new Date(targetIso).toLocaleDateString('es-CO', {
-        day: 'numeric',
-        month: 'long',
-      });
-    } catch {
-      return '';
-    }
-  }, [subscription]);
-
   // Reserva real de cupos
   const isBooked = useMemo(() => {
     if (!activeSession) return false;
@@ -309,11 +367,8 @@ function StudentLiveRoomContent() {
       if (currentPlanId === 'free' || currentPlanId === 'pro') {
         setStatusMessage('No cuentas con créditos disponibles. Aumenta tu membresía a Plan Pro+ para reservar cupo.');
         openPricingModal('pro_plus');
-      } else if (currentPlanId === 'pro_plus') {
-        setStatusMessage(`Has consumido tus créditos de este ciclo. Se regenerarán en ${daysUntilRenewal} días o puedes aumentar a Your Plan.`);
-        openPricingModal('your_plan');
       } else {
-        setStatusMessage(`Has consumido tus créditos de este ciclo. Se regenerarán en ${daysUntilRenewal} días.`);
+        setStatusMessage('Has consumido tus créditos de este ciclo. Se regenerarán en tu próxima fecha de corte.');
       }
       return;
     }
@@ -345,158 +400,45 @@ function StudentLiveRoomContent() {
     }
   };
 
-  const handleSendChat = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-    const textToSend = chatInput.trim();
-    setChatInput('');
-
-    try {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-      await push(ref(db, `lms_live_chat/${currentRoomChatId}`), {
-        sender: user?.displayName || 'Estudiante',
-        text: textToSend,
-        time: timeStr,
-        timestamp: Date.now(),
-      });
-    } catch {
-      // Local fallback si no hay conexión
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          id: `m-${Date.now()}`,
-          sender: user?.displayName || 'Estudiante',
-          text: textToSend,
-          time: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#000000] text-white py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-[1400px] mx-auto space-y-6">
-        {/* Barra Superior de Estado */}
-        <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-                <Radio className="w-3.5 h-3.5 animate-pulse" />
-                <span>
-                  {modeParam === '1on1' ? 'Asesoría Individual 1 a 1' : 'Sala de Clases en Vivo'}
+    <div className="min-h-screen bg-[#000000] text-white selection:bg-[#8052ff] selection:text-white pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+        {/* Cabecera Principal */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#ffffff]/10">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
+                Aula de Clases en Vivo
+              </h1>
+              {hostState?.isLive ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-600 text-white animate-pulse">
+                  <Radio className="w-3.5 h-3.5 animate-ping" />
+                  <span>TRANSMISIÓN EN DIRECTO</span>
                 </span>
-              </span>
-              <span className="text-xs font-mono text-[#9a9a9a]">
-                Tiempo en sala: {formatTimer(attendanceSeconds)}
-              </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#ffffff]/10 text-[#9a9a9a]">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>SALA EN ESPERA</span>
+                </span>
+              )}
             </div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-white">
-              {modeParam === '1on1'
-                ? 'Asesoría Individual 1 a 1 con el Docente'
-                : activeSession?.title || 'Clase en Vivo'}
-            </h1>
+            <p className="text-xs sm:text-sm text-[#9a9a9a] mt-1">
+              Sesiones sincrónicas magistrales en directo con el docente, pizarra en tiempo real y quizzes interactivos.
+            </p>
           </div>
 
-          {/* Información de Créditos */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="px-4 py-2 rounded-2xl bg-[#000000] border border-[#15846e]/40 flex items-center gap-2.5 text-xs">
-              <ShieldCheck className="w-4 h-4 text-[#15846e]" />
-              <div>
-                <span className="text-[#9a9a9a] block text-[10px]">
-                  Tus créditos disponibles
-                </span>
-                <span className="font-semibold text-white">
-                  {entitlements.availableLiveCredits} de {zeroSumAccounting.issuedCredits} créditos este mes
-                </span>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2 rounded-2xl bg-[#09090b] border border-[#ffffff]/10 flex items-center gap-3 text-xs font-mono">
+              <span className="text-[#9a9a9a]">Permanencia:</span>
+              <span className="text-emerald-400 font-bold">{formatTimer(attendanceSeconds)}</span>
+            </div>
+
+            <div className="px-4 py-2 rounded-2xl bg-[#09090b] border border-[#ffffff]/10 flex items-center gap-2 text-xs">
+              <span className="text-[#9a9a9a]">Cupos Disponibles:</span>
+              <span className="font-bold text-[#8052ff]">{entitlements.availableLiveCredits}</span>
             </div>
           </div>
         </div>
-
-        {/* CASO 1: TIENE CRÉDITOS ACTIVOS (credits > 0) */}
-        {entitlements.availableLiveCredits > 0 && (
-          (currentPlanId === 'free' || currentPlanId === 'pro') && (
-            <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
-                  Créditos Autorizados por Despacho de Rectoría
-                </span>
-                <p className="text-xs text-[#d1d5db]">
-                  Cuentas con {entitlements.availableLiveCredits} crédito(s) activo(s) para reservar cupos y participar en sesiones en vivo y tutorías.
-                </p>
-              </div>
-            </div>
-          )
-        )}
-
-        {/* CASO 2: SIN CRÉDITOS (credits <= 0) - VALIDACIÓN POR PLAN */}
-        {entitlements.availableLiveCredits <= 0 && (
-          <>
-            {/* Si es Free o Pro: Banner para aumentar de membresía a Plan Pro+ */}
-            {(currentPlanId === 'free' || currentPlanId === 'pro') && (
-              <div className="rounded-2xl border border-[#ffb829]/40 bg-gradient-to-r from-[#ffb829]/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#ffb829]">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Aumentar Membresía · Clases en Vivo y Tutorías 1 a 1</span>
-                  </div>
-                  <p className="text-xs text-[#d1d5db]">
-                    No cuentas con créditos disponibles para clases en vivo. Actualiza a Plan Pro+ para recibir tus créditos mensuales de clase con los profesores y resolución de dudas en tiempo real.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => openPricingModal('pro_plus')}
-                    className="px-5 py-2.5 rounded-full bg-[#ffb829] hover:bg-[#e5a524] text-black text-xs font-bold cursor-pointer transition-colors shadow-[0_0_15px_rgba(255,184,41,0.3)]"
-                  >
-                    Aumentar a Plan Pro+
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Si es Pro+: Avisar que espere N días para regenerar créditos o aumentar a Your Plan */}
-            {currentPlanId === 'pro_plus' && (
-              <div className="rounded-2xl border border-[#8052ff]/40 bg-gradient-to-r from-[#8052ff]/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#a78bfa]">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Créditos de Clase Consumidos · Plan Pro+</span>
-                  </div>
-                  <p className="text-xs text-[#d1d5db]">
-                    Has utilizado tus créditos incluidos en este ciclo. Tus créditos se regenerarán automáticamente en <strong className="text-white font-semibold">{daysUntilRenewal} días</strong>{formattedRenewalDate ? ` (el ${formattedRenewalDate})` : ''}, o puedes aumentar a <strong className="text-[#a78bfa]">Your Plan</strong> para recibir 12 créditos mensuales y temario individual 1 a 1 a la medida.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => openPricingModal('your_plan')}
-                    className="px-5 py-2.5 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-white text-xs font-bold cursor-pointer transition-colors shadow-[0_0_20px_rgba(128,82,255,0.4)]"
-                  >
-                    Aumentar a Your Plan
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Si es Your Plan: Aviso de ciclo */}
-            {currentPlanId === 'your_plan' && (
-              <div className="rounded-2xl border border-[#15846e]/40 bg-gradient-to-r from-[#15846e]/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#34d399]">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Créditos del Ciclo Consumidos · Your Plan</span>
-                  </div>
-                  <p className="text-xs text-[#d1d5db]">
-                    Has completado tus sesiones de este ciclo. Tu balance de 12 créditos se regenerará automáticamente en <strong className="text-white font-semibold">{daysUntilRenewal} días</strong>{formattedRenewalDate ? ` (el ${formattedRenewalDate})` : ''}.
-                  </p>
-                </div>
-              </div>
-            )}
-          </>
-        )}
 
         {statusMessage && (
           <div className="p-4 rounded-2xl bg-[#8052ff]/15 border border-[#8052ff]/40 text-xs text-white flex items-center justify-between gap-4">
@@ -514,16 +456,72 @@ function StudentLiveRoomContent() {
           </div>
         )}
 
-        {/* Grid Principal: Video/Pizarra Izquierda (8 cols) + Chat y Agenda Derecha (4 cols) */}
+        {/* Modal / Card Interactivo de Quiz en Vivo */}
+        {activeQuiz && (
+          <div className="p-5 rounded-3xl bg-gradient-to-r from-violet-950/80 via-black to-[#09090b] border-2 border-[#8052ff] shadow-2xl space-y-4 animate-in slide-in-from-top-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#8052ff] animate-bounce" />
+                <span className="text-xs font-bold uppercase tracking-wider text-violet-300">
+                  Pregunta en Vivo del Profesor
+                </span>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-violet-600/30 text-violet-300 text-[11px] font-mono">
+                Evaluación Instantánea
+              </span>
+            </div>
+
+            <h3 className="text-base font-bold text-white">{activeQuiz.question}</h3>
+
+            {!quizSubmitted ? (
+              <div className="space-y-2">
+                {activeQuiz.options?.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSelectedQuizOption(idx)}
+                    className={`w-full p-3 rounded-2xl border text-left text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${
+                      selectedQuizOption === idx
+                        ? 'bg-[#8052ff] border-white text-white shadow-lg'
+                        : 'bg-black/40 border-white/10 text-zinc-300 hover:border-white/20'
+                    }`}
+                  >
+                    <span>{String.fromCharCode(65 + idx)}. {opt}</span>
+                    <span className="w-4 h-4 rounded-full border border-white/30 flex items-center justify-center text-[10px]">
+                      {selectedQuizOption === idx && '✓'}
+                    </span>
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={handleSubmitQuiz}
+                  disabled={selectedQuizOption === null}
+                  className="w-full mt-2 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-emerald-600/30"
+                >
+                  Enviar Mi Respuesta al Profesor
+                </button>
+              </div>
+            ) : (
+              <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-center space-y-1">
+                <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto" />
+                <p className="text-xs font-bold text-emerald-300">¡Tu respuesta ha sido registrada con éxito!</p>
+                <p className="text-[11px] text-zinc-400">El profesor compartirá los resultados en pantalla al cerrar la votación.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Grid Principal: Video/Pizarra Izquierda (8 cols) + Chat Derecha (4 cols) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-8 space-y-5">
             {/* Pestañas de la Sala */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-[#09090b] border border-[#ffffff]/10 rounded-2xl p-2">
               <div className="flex items-center gap-1.5">
                 {[
-                  { id: 'stream', label: 'Videollamada en Vivo', icon: Video },
-                  { id: 'whiteboard', label: 'Pizarra de Dibujo y Apuntes', icon: PenTool },
-                  { id: 'recordings', label: 'Clases Grabadas Anteriores', icon: BookOpen },
+                  { id: 'stream', label: 'Transmisión en Vivo', icon: Video },
+                  { id: 'whiteboard', label: 'Pizarra de Apuntes', icon: PenTool },
+                  { id: 'recordings', label: 'Grabaciones Anteriores', icon: BookOpen },
                 ].map((tab) => {
                   const Icon = tab.icon;
                   const active = activeStudioTab === tab.id;
@@ -544,120 +542,89 @@ function StudentLiveRoomContent() {
                   );
                 })}
               </div>
+
+              {hostState?.isLive && (
+                <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-black border border-white/10 text-xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-zinc-300">
+                    Modo: {hostState.streamMode === 'screen' ? 'Pantalla Compartida' : hostState.streamMode === 'whiteboard' ? 'Pizarra Digital' : 'Cámara'}
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* PESTAÑA 1: VIDEOLLAMADA */}
+            {/* PESTAÑA 1: VIDEOLLAMADA / STREAM MAGISTRAL */}
             {activeStudioTab === 'stream' && (
               <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl overflow-hidden shadow-2xl">
-                <div className="relative aspect-video bg-[#050507] flex flex-col justify-between p-6">
-                  {/* Cabecera sobre video */}
-                  <div className="flex items-center justify-between z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#ffffff]/15 text-xs">
+                <div className="relative aspect-video bg-[#050507] flex flex-col justify-between overflow-hidden">
+                  {/* Elemento de Video Remoto del Profesor */}
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    controls={false}
+                    className={`w-full h-full object-contain ${isReceivingStream ? 'block' : 'hidden'}`}
+                  />
+
+                  {/* Estado si el profesor no está transmitiendo video aún */}
+                  {!isReceivingStream && (
+                    <div className="my-auto max-w-xl mx-auto text-center space-y-4 p-8 z-10">
+                      <div className="w-16 h-16 rounded-3xl bg-violet-600/15 border border-violet-500/30 text-[#8052ff] flex items-center justify-center mx-auto shadow-lg shadow-violet-600/20">
+                        <Video className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl sm:text-2xl font-semibold text-white">
+                          {activeSession?.title || 'Sala de Clases en Vivo'}
+                        </h2>
+                        <p className="text-xs text-[#9a9a9a] max-w-md mx-auto mt-2 leading-relaxed">
+                          {hostState?.isLive
+                            ? 'Conectando con la transmisión en directo del profesor...'
+                            : 'La sala virtual está lista. El docente iniciará la transmisión en los horarios programados.'}
+                        </p>
+                      </div>
+                      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-white/10 text-xs text-zinc-300">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                        <span>Profesor: {activeSession?.instructorName || 'Docente IPT'}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Barra Flotante Superior */}
+                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20 pointer-events-none">
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-[#ffffff]/15 text-xs">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
                       <span className="font-medium text-white">
                         {activeSession?.instructorName || 'Docente IPT'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      {handRaised && (
-                        <span className="px-3 py-1 rounded-full bg-[#ffb829]/20 border border-[#ffb829]/50 text-[#ffb829] text-xs font-semibold flex items-center gap-1.5">
-                          <Hand className="w-3.5 h-3.5" />
-                          <span>Mano levantada</span>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Estado Central de la Sala */}
-                  <div className="my-auto max-w-xl mx-auto text-center space-y-3 z-10">
-                    <h2 className="text-xl sm:text-2xl font-semibold text-white">
-                      {activeSession?.title || 'Sala de Clases en Vivo'}
-                    </h2>
-                    <p className="text-xs text-[#bdbdbd] max-w-md mx-auto">
-                      La videollamada se realiza directamente dentro de la plataforma. Puedes activar tu micrófono o cámara para participar en la clase.
-                    </p>
-                  </div>
-
-                  {/* Ventana de cámara local del estudiante */}
-                  {camEnabled && (
-                    <div className="absolute bottom-20 right-6 w-44 aspect-video rounded-2xl border-2 border-[#8052ff] bg-[#000000] overflow-hidden shadow-2xl z-20 flex items-center justify-center">
-                      <video
-                        ref={localVideoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="w-full h-full object-cover"
-                      />
-                      <span className="absolute bottom-1.5 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-white">
-                        Tú ({micEnabled ? 'Mic Activo' : 'Silenciado'})
+                    {handRaised && (
+                      <span className="px-3 py-1 rounded-full bg-[#ffb829]/20 border border-[#ffb829]/50 text-[#ffb829] text-xs font-semibold flex items-center gap-1.5 shadow-lg">
+                        <Hand className="w-3.5 h-3.5" />
+                        <span>Mano Levantada</span>
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
-                  {/* Controles de Videollamada */}
-                  <div className="z-10 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#ffffff]/10 bg-black/40 backdrop-blur-md -mx-6 -mb-6 px-6 py-4">
-                    <div className="flex items-center gap-2.5">
+                  {/* Controles de Participación Inferiores */}
+                  <div className="z-10 flex flex-wrap items-center justify-between gap-4 p-4 border-t border-[#ffffff]/10 bg-black/80 backdrop-blur-md">
+                    <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => setMicEnabled((p) => !p)}
-                        className={`px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-                          micEnabled
-                            ? 'bg-[#15846e] text-white'
-                            : 'bg-[#ffffff]/10 hover:bg-[#ffffff]/15 text-white'
-                        }`}
-                      >
-                        {micEnabled ? (
-                          <>
-                            <Mic className="w-4 h-4" />
-                            <span>Micrófono Activo</span>
-                          </>
-                        ) : (
-                          <>
-                            <MicOff className="w-4 h-4 text-rose-400" />
-                            <span>Activar Micrófono</span>
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={toggleCameraWebRtc}
-                        className={`px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-                          camEnabled
-                            ? 'bg-[#8052ff] text-white'
-                            : 'bg-[#ffffff]/10 hover:bg-[#ffffff]/15 text-white'
-                        }`}
-                      >
-                        {camEnabled ? (
-                          <>
-                            <Video className="w-4 h-4" />
-                            <span>Cámara Activa</span>
-                          </>
-                        ) : (
-                          <>
-                            <VideoOff className="w-4 h-4 text-rose-400" />
-                            <span>Activar Cámara</span>
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setHandRaised((p) => !p)}
+                        onClick={toggleHandRaise}
                         className={`px-4 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
                           handRaised
-                            ? 'bg-[#ffb829] text-black font-bold'
+                            ? 'bg-[#ffb829] text-black font-bold shadow-lg'
                             : 'bg-[#ffffff]/10 hover:bg-[#ffffff]/15 text-white'
                         }`}
                       >
                         <Hand className="w-4 h-4" />
-                        <span>{handRaised ? 'Bajar Mano' : 'Levantar la Mano'}</span>
+                        <span>{handRaised ? 'Bajar la Mano' : 'Levantar la Mano'}</span>
                       </button>
                     </div>
 
                     {activeSession && (
-                      <div>
+                      <div className="flex items-center gap-2">
                         {isBooked ? (
                           <button
                             type="button"
@@ -670,7 +637,7 @@ function StudentLiveRoomContent() {
                           <button
                             type="button"
                             onClick={handleReserveSeat}
-                            className="px-4 py-2 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-xs font-semibold text-white cursor-pointer"
+                            className="px-4 py-2 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-xs font-semibold text-white cursor-pointer shadow-md shadow-[#8052ff]/30"
                           >
                             Reservar Cupo (1 Crédito)
                           </button>
@@ -682,7 +649,7 @@ function StudentLiveRoomContent() {
               </div>
             )}
 
-            {/* PESTAÑA 2: PIZARRA */}
+            {/* PESTAÑA 2: PIZARRA DE APUNTES Y DIBUJO */}
             {activeStudioTab === 'whiteboard' && (
               <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl p-5 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#ffffff]/10">
@@ -757,50 +724,41 @@ function StudentLiveRoomContent() {
                   </p>
                 </div>
 
-                {recordings.length === 0 ? (
-                  <div className="p-8 text-center rounded-2xl bg-black border border-white/10 space-y-2">
-                    <BookOpen className="w-8 h-8 text-[#9a9a9a] mx-auto opacity-40" />
-                    <p className="text-xs text-[#9a9a9a]">
-                      Aún no hay grabaciones de clases anteriores disponibles en este curso.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {recordings.map((rec) => (
-                      <div
-                        key={rec.id}
-                        className="p-4 rounded-2xl bg-black border border-[#ffffff]/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                      >
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-semibold text-white">{rec.title}</h4>
-                          <div className="flex items-center gap-3 text-xs text-[#9a9a9a]">
-                            <span>{rec.instructor}</span>
-                            <span>•</span>
-                            <span>{rec.date}</span>
-                            {rec.duration && (
-                              <>
-                                <span>•</span>
-                                <span>{rec.duration}</span>
-                              </>
-                            )}
-                          </div>
+                <div className="space-y-3">
+                  {recordings.map((rec) => (
+                    <div
+                      key={rec.id}
+                      className="p-4 rounded-2xl bg-black border border-[#ffffff]/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-semibold text-white">{rec.title}</h4>
+                        <div className="flex items-center gap-3 text-xs text-[#9a9a9a]">
+                          <span>{rec.instructor}</span>
+                          <span>•</span>
+                          <span>{rec.date}</span>
+                          {rec.duration && (
+                            <>
+                              <span>•</span>
+                              <span>{rec.duration}</span>
+                            </>
+                          )}
                         </div>
-
-                        {rec.videoUrl && (
-                          <a
-                            href={rec.videoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 py-2 rounded-full bg-[#8052ff] text-xs font-semibold text-white flex items-center gap-2 hover:bg-[#6d3df5]"
-                          >
-                            <Play className="w-3.5 h-3.5" />
-                            <span>Ver Grabación</span>
-                          </a>
-                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
+
+                      {rec.videoUrl && (
+                        <a
+                          href={rec.videoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 rounded-full bg-[#8052ff] text-xs font-semibold text-white flex items-center gap-2 hover:bg-[#6d3df5]"
+                        >
+                          <Play className="w-3.5 h-3.5" />
+                          <span>Ver Grabación</span>
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -878,13 +836,13 @@ function StudentLiveRoomContent() {
 
           {/* Columna Derecha (4 cols): Chat en Vivo Real */}
           <div className="lg:col-span-4 space-y-5">
-            <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl flex flex-col h-[580px] overflow-hidden">
+            <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-3xl flex flex-col h-[580px] overflow-hidden shadow-xl">
               <div className="px-5 py-4 border-b border-[#ffffff]/10 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="w-4 h-4 text-[#8052ff]" />
                   <span className="text-xs font-semibold text-white">Chat de la Clase</span>
                 </div>
-                <span className="text-[11px] font-mono text-[#15846e]">En línea</span>
+                <span className="text-[11px] font-mono text-emerald-400">En vivo</span>
               </div>
 
               {/* Mensajes del chat */}
@@ -900,10 +858,16 @@ function StudentLiveRoomContent() {
                   chatMessages.map((msg) => (
                     <div
                       key={msg.id}
-                      className="p-3.5 rounded-2xl bg-[#000000] border border-[#ffffff]/10 space-y-1 text-xs"
+                      className={`p-3.5 rounded-2xl border space-y-1 text-xs ${
+                        msg.role === 'teacher'
+                          ? 'bg-violet-600/20 border-violet-500/40 text-white shadow-sm'
+                          : 'bg-[#000000] border-[#ffffff]/10 text-zinc-300'
+                      }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-white">{msg.sender}</span>
+                        <span className={`font-semibold ${msg.role === 'teacher' ? 'text-violet-300' : 'text-white'}`}>
+                          {msg.sender} {msg.role === 'teacher' && '(Docente)'}
+                        </span>
                         <span className="text-[10px] text-[#9a9a9a]">{msg.time}</span>
                       </div>
                       <p className="text-[#d1d5db] leading-relaxed">{msg.text}</p>
