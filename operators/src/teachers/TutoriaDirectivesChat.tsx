@@ -12,7 +12,8 @@ import {
   Bot,
   User,
   RefreshCw,
-  Calendar
+  Calendar,
+  AlertCircle
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
 import { ref, onValue, set, push, remove } from "firebase/database";
@@ -31,12 +32,76 @@ interface ActiveDirective {
   createdAt: string;
 }
 
+const GROQ_MODEL = "openai/gpt-oss-120b";
+const GROQ_API_KEY =
+  process.env.NEXT_PUBLIC_GROQ_API_KEY ||
+  process.env.GROQ_API_KEY ||
+  "";
+
+const TEACHER_TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "eliminar_directiva",
+      description:
+        "Elimina o levanta una directiva o bloqueo existente de la agenda. Úsala cuando el docente solicite eliminar, borrar, quitar, levantar o revocar una regla, horario bloqueado o recomendación existente.",
+      parameters: {
+        type: "object",
+        properties: {
+          id: {
+            type: ["string", "null"],
+            description: "ID exacto de la directiva en RTDB a eliminar (ej: '-P51lDj-LsnlMSHr-lFG')"
+          },
+          criterio: {
+            type: ["string", "null"],
+            description: "Texto o palabras clave de la directiva si no se tiene el ID exacto"
+          }
+        }
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "crear_directiva",
+      description:
+        "Crea una nueva directiva de agenda. Úsala cuando el docente solicite bloquear una franja/día ('block') o recomendar/priorizar un horario ('recommend'). NUNCA la invoques si el docente está pidiendo eliminar o quitar una regla existente.",
+      parameters: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            enum: ["block", "recommend"],
+            description: "'block' para bloqueos estrictos; 'recommend' para horarios recomendados"
+          },
+          description: {
+            type: "string",
+            description: "Descripción concisa y profesional de la directiva a aplicar"
+          }
+        },
+        required: ["type", "description"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "consultar_directivas",
+      description: "Consulta y lista las directivas de agenda actualmente activas.",
+      parameters: {
+        type: "object",
+        properties: {}
+      }
+    }
+  }
+];
+
 export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
   const [messages, setMessages] = useState<DirectiveMessage[]>([
     {
       id: "init-msg",
       sender: "tutoria",
-      text: "Hola, profesor Iván. Soy TutorIA para docentes. Estoy atenta a tus directivas pedagógicas y de agenda. Puedes decirme qué horarios específicos recomendar o bloquear para los estudiantes.",
+      text: "Hola, profesor Iván. Soy TutorIA para docentes. Estoy atenta a tus directivas pedagógicas y de agenda. Puedes decirme qué horarios específicos recomendar, bloquear o eliminar para los estudiantes.",
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     }
   ]);
@@ -82,6 +147,15 @@ export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handleDeleteDirective = async (id: string) => {
+    try {
+      const itemRef = ref(rtdb, `tutoria_directives/${id}`);
+      await remove(itemRef);
+    } catch (err) {
+      alert("No se pudo eliminar la directiva.");
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!inputVal.trim() || isSending) return;
 
@@ -98,7 +172,217 @@ export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
 
     setMessages((prev) => [...prev, userMsg]);
 
+    // Resumen formateado de directivas para el LLM
+    const directivesSummary =
+      directives.length === 0
+        ? "No hay directivas activas en la agenda actualmente."
+        : directives
+            .map(
+              (d) =>
+                `- ID "${d.id}": [${d.type.toUpperCase()}] "${d.description}" (creada el ${d.createdAt})`
+            )
+            .join("\n");
+
+    const systemPrompt = `Eres TutorIA para Docentes, la asistente ejecutiva de agenda y orquestadora pedagógica personal del Ing. Iván Pérez (Docente Titular y Director de IPT Academy).
+Tu misión es gestionar las directivas de agenda que los alumnos verán y obedecerán al interactuar con TutorIA.
+
+DIRECTIVAS ACTIVAS EN ESTE MOMENTO EN LA AGENDA:
+${directivesSummary}
+
+INSTRUCCIONES CLAVE DE RESOLUCIÓN:
+1. ELIMINACIÓN DE DIRECTIVAS:
+   - Si el profesor Iván pide eliminar, quitar, borrar o levantar una regla o bloqueo existente (ej: "Elimina el bloqueo de 1 pm a 8pm", "quita la directiva...", "borra el bloqueo"):
+     Revisa la lista de directivas activas, identifica el ID correspondiente y llama a 'eliminar_directiva' con su ID.
+     ¡NUNCA crees una nueva directiva de bloqueo cuando te están pidiendo eliminarla!
+2. CREACIÓN DE DIRECTIVAS:
+   - Si pide un bloqueo (ej: "No me agendes antes de...", "bloquea viernes..."): llama a 'crear_directiva' con type: "block".
+   - Si pide una recomendación (ej: "Recomienda los lunes...", "prioriza las mañanas..."): llama a 'crear_directiva' con type: "recommend".
+3. CONSULTAS Y CONVERSACIÓN:
+   - Si saluda o hace preguntas generales, responde con trato respetuoso, ejecutivo y cercano ("profesor Iván"), con naturalidad humana y sin invocar herramientas innecesarias.`;
+
+    try {
+      // 1. Invocación a Groq Cloud con Tool Calling
+      const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...messages.slice(-4).map((m) => ({
+              role: m.sender === "teacher" ? "user" : "assistant",
+              content: m.text
+            })),
+            { role: "user", content: userText }
+          ],
+          tools: TEACHER_TOOLS,
+          tool_choice: "auto",
+          temperature: 0.3,
+          max_tokens: 512
+        })
+      });
+
+      if (groqRes.ok) {
+        const groqData = await groqRes.json();
+        const choice = groqData?.choices?.[0]?.message;
+
+        if (choice?.tool_calls && choice.tool_calls.length > 0) {
+          const toolCall = choice.tool_calls[0];
+          const toolName = toolCall.function?.name;
+          let toolArgs: Record<string, any> = {};
+          try {
+            toolArgs = JSON.parse(toolCall.function?.arguments || "{}");
+          } catch {}
+
+          if (toolName === "eliminar_directiva") {
+            const targetId = toolArgs.id;
+            let matched = directives.find((d) => d.id === targetId);
+
+            // Búsqueda difusa si no coincide por ID directo
+            if (!matched && toolArgs.criterio) {
+              const critLower = toolArgs.criterio.toLowerCase();
+              matched = directives.find((d) => d.description.toLowerCase().includes(critLower));
+            }
+            if (!matched) {
+              const userLower = userText.toLowerCase();
+              matched = directives.find((d) => {
+                const desc = d.description.toLowerCase();
+                return (
+                  (desc.includes("1") && desc.includes("8")) ||
+                  desc.includes("1pm") ||
+                  desc.includes("bloqueo") ||
+                  userLower.includes(desc) ||
+                  desc.includes(userLower)
+                );
+              });
+            }
+
+            if (matched) {
+              await remove(ref(rtdb, `tutoria_directives/${matched.id}`));
+              const replyMsg: DirectiveMessage = {
+                id: `reply-${Date.now()}`,
+                sender: "tutoria",
+                text: `Entendido perfectamente, profesor Iván. He eliminado la directiva de bloqueo "${matched.description}". Esa franja horaria queda liberada y disponible en la agenda para los estudiantes.`,
+                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              };
+              setMessages((prev) => [...prev, replyMsg]);
+            } else {
+              const replyMsg: DirectiveMessage = {
+                id: `reply-${Date.now()}`,
+                sender: "tutoria",
+                text: `Profesor Iván, no encontré una directiva activa que coincida exactamente con ese horario. Actualmente tienes vigentes:\n${directivesSummary}`,
+                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              };
+              setMessages((prev) => [...prev, replyMsg]);
+            }
+            setIsSending(false);
+            return;
+          }
+
+          if (toolName === "crear_directiva") {
+            const dirRef = ref(rtdb, "tutoria_directives");
+            const newDirItem = push(dirRef);
+            await set(newDirItem, {
+              type: toolArgs.type === "block" ? "block" : "recommend",
+              description: toolArgs.description || userText,
+              createdAt: new Date().toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }),
+              teacherUid: "samuxdevs"
+            });
+
+            const replyMsg: DirectiveMessage = {
+              id: `reply-${Date.now()}`,
+              sender: "tutoria",
+              text:
+                toolArgs.type === "block"
+                  ? `Entendido perfectamente, profesor Iván. He registrado el bloqueo estricto: "${toolArgs.description}". Cuando los estudiantes soliciten sesiones en ese rango, les informaré que no estás disponible y les sugeriré otros horarios.`
+                  : `Excelente directiva, profesor Iván. He priorizado este horario: "${toolArgs.description}". A los alumnos que consulten por tutorías les recomendaré preferentemente estos turnos.`,
+              time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            };
+            setMessages((prev) => [...prev, replyMsg]);
+            setIsSending(false);
+            return;
+          }
+
+          if (toolName === "consultar_directivas") {
+            const replyMsg: DirectiveMessage = {
+              id: `reply-${Date.now()}`,
+              sender: "tutoria",
+              text: `Profesor Iván, estas son tus directivas de agenda activas en este momento:\n\n${directivesSummary}`,
+              time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            };
+            setMessages((prev) => [...prev, replyMsg]);
+            setIsSending(false);
+            return;
+          }
+        }
+
+        // Respuesta conversacional directa del modelo
+        const replyText = choice?.content?.trim();
+        if (replyText) {
+          const replyMsg: DirectiveMessage = {
+            id: `reply-${Date.now()}`,
+            sender: "tutoria",
+            text: replyText,
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          };
+          setMessages((prev) => [...prev, replyMsg]);
+          setIsSending(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Groq request failed, evaluating fallback:", err);
+    }
+
+    // RESOLUCIÓN SEMÁNTICA DE FALLBACK (SI GROQ NO RESPONDIÓ)
     const lower = userText.toLowerCase();
+    const isDeleteIntent =
+      lower.includes("elimina") ||
+      lower.includes("borra") ||
+      lower.includes("quita") ||
+      lower.includes("remover") ||
+      lower.includes("desbloque") ||
+      lower.includes("levantar");
+
+    if (isDeleteIntent) {
+      // Buscar la directiva a eliminar
+      const matched = directives.find((d) => {
+        const desc = d.description.toLowerCase();
+        return (
+          (desc.includes("1") && desc.includes("8")) ||
+          desc.includes("1pm") ||
+          desc.includes("8pm") ||
+          lower.includes(desc) ||
+          desc.includes("bloqueo")
+        );
+      });
+
+      if (matched) {
+        await remove(ref(rtdb, `tutoria_directives/${matched.id}`));
+        const tutoriaReply: DirectiveMessage = {
+          id: `reply-${Date.now()}`,
+          sender: "tutoria",
+          text: `Entendido perfectamente, profesor Iván. He eliminado la directiva: "${matched.description}". Esa franja queda liberada en la agenda.`,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        };
+        setMessages((prev) => [...prev, tutoriaReply]);
+      } else {
+        const tutoriaReply: DirectiveMessage = {
+          id: `reply-${Date.now()}`,
+          sender: "tutoria",
+          text: `Profesor Iván, no encontré una directiva que coincida con esa solicitud. Puedes usar el botón de papelera en el panel derecho si deseas retirar alguna regla.`,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        };
+        setMessages((prev) => [...prev, tutoriaReply]);
+      }
+      setIsSending(false);
+      return;
+    }
+
+    // Caso de creación estándar de directiva
     const isBlock = lower.includes("bloque") || lower.includes("no") || lower.includes("cancel");
     const directiveType: "block" | "recommend" = isBlock ? "block" : "recommend";
 
@@ -112,29 +396,25 @@ export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
         teacherUid: "samuxdevs"
       });
 
-      setTimeout(() => {
-        const tutoriaReply: DirectiveMessage = {
-          id: `reply-${Date.now()}`,
-          sender: "tutoria",
-          text: isBlock
-            ? `Entendido perfectamente, profesor. He bloqueado esa franja horaria en la agenda. Cuando los estudiantes soliciten agendar conmigo en ese lapso, les informaré que no estás disponible y les sugeriré alternativas.`
-            : `Excelente directiva, profesor Iván. He priorizado este horario en mi motor de recomendación. A los estudiantes que consulten por tutorías les propondré preferentemente estas horas.`,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-        };
-        setMessages((prev) => [...prev, tutoriaReply]);
-        setIsSending(false);
-      }, 700);
-    } catch (err) {
+      const tutoriaReply: DirectiveMessage = {
+        id: `reply-${Date.now()}`,
+        sender: "tutoria",
+        text: isBlock
+          ? `Entendido perfectamente, profesor Iván. He registrado el bloqueo estricto en la agenda. Cuando los estudiantes soliciten agendar conmigo en ese lapso, les informaré que no estás disponible y les sugeriré alternativas.`
+          : `Excelente directiva, profesor Iván. He priorizado este horario en mi motor de recomendación. A los estudiantes que consulten por tutorías les propondré preferentemente estas horas.`,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      };
+      setMessages((prev) => [...prev, tutoriaReply]);
+    } catch {
+      const tutoriaReply: DirectiveMessage = {
+        id: `reply-${Date.now()}`,
+        sender: "tutoria",
+        text: "Hubo un error de conexión al procesar la directiva en la base de datos. Por favor reintenta.",
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      };
+      setMessages((prev) => [...prev, tutoriaReply]);
+    } finally {
       setIsSending(false);
-    }
-  };
-
-  const handleDeleteDirective = async (id: string) => {
-    try {
-      const itemRef = ref(rtdb, `tutoria_directives/${id}`);
-      await remove(itemRef);
-    } catch (err) {
-      alert("No se pudo eliminar la directiva.");
     }
   };
 
@@ -229,7 +509,7 @@ export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
             <div className="flex items-center gap-2">
               <input
                 type="text"
-                placeholder="Escribe una directiva (ej: 'Bloquear martes de 14:00 a 16:00' o 'Recomendar viernes por la mañana')..."
+                placeholder="Escribe una directiva (ej: 'Elimina el bloqueo de 1 a 8pm', 'Recomendar lunes por la mañana')..."
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
@@ -294,7 +574,7 @@ export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
 
                   <button
                     onClick={() => handleDeleteDirective(dir.id)}
-                    className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0"
+                    className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0 cursor-pointer"
                     title="Eliminar directiva"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
