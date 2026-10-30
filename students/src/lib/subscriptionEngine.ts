@@ -2148,9 +2148,16 @@ export class SubscriptionPlatformService {
               ];
               sub.activeDynamicCourseSlugs = [];
               sub.monthlyCreditsAllowance = 0;
-              sub.remainingCredits = 0;
+              // Principio de Soberanía Rectoral: Rectoría tiene la palabra final, no destruir créditos otorgados
+              const sovereignCredits = Math.max(
+                0,
+                Number((sub as any).rectoriaCreditsOverride ?? (sub as any).liveClassCreditsRemaining ?? 0)
+              );
+              sub.remainingCredits = sovereignCredits;
               sub.creditsConsumedInCycle = 0;
-              this.cancelFutureBookingsForSubscription(sub.id, now);
+              if (sovereignCredits <= 0) {
+                this.cancelFutureBookingsForSubscription(sub.id, now);
+              }
               this.subscriptions.set(sub.id, sub);
               processedCount++;
               break;

@@ -747,12 +747,25 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           ? ['ipt-master-fullstack']
           : ['ipt-master-fullstack', 'arquitectura-cloud-ipt', 'sistemas-distribuidos-ipt'];
 
-      const creditsAllowance =
+      const sovereignCredits = Math.max(
+        0,
+        Number(
+          (existingSub as any)?.rectoriaCreditsOverride ??
+          (existingSub as any)?.liveClassCreditsRemaining ??
+          existingSub?.remainingCredits ??
+          0
+        )
+      );
+
+      const defaultAllowance =
         targetPlanId === 'free' || targetPlanId === 'pro'
           ? 0
           : targetPlanId === 'pro_plus'
           ? 8
           : 12;
+
+      // Rectoría tiene la palabra final: si hay créditos de fomento rectoral, se protegen y prevalecen
+      const effectiveCredits = sovereignCredits > 0 ? sovereignCredits : defaultAllowance;
 
       const updatedSub: Subscription = {
         id: existingSub?.id || `sub_${effectiveUid}`,
@@ -774,16 +787,22 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           'arquitectura-cloud-ipt': now.toISOString(),
           'sistemas-distribuidos-ipt': now.toISOString(),
         },
-        monthlyCreditsAllowance: creditsAllowance,
-        remainingCredits: creditsAllowance,
+        monthlyCreditsAllowance: defaultAllowance,
+        remainingCredits: effectiveCredits,
         creditsConsumedInCycle: 0,
         creditsResetAt: nextMonth.toISOString(),
         pendingDowngrade: null,
         adminOverrides:
           targetPlanId === 'your_plan'
             ? { maxDynamicCourses: 4, monthlyLiveCredits: 12, allowLiveAccess: true }
+            : sovereignCredits > 0
+            ? { allowLiveAccess: true }
             : null,
       };
+      (updatedSub as any).liveClassCreditsRemaining = effectiveCredits;
+      if (sovereignCredits > 0) {
+        (updatedSub as any).rectoriaCreditsOverride = sovereignCredits;
+      }
 
       engine.subscriptions.set(updatedSub.id, updatedSub);
       await syncEngineToStorageAndRtdb(effectiveUid);

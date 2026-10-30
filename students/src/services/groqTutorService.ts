@@ -106,31 +106,37 @@ const GROQ_MODEL = 'openai/gpt-oss-120b';
 const GROQ_CLIENT_KEY = process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.GROQ_API_KEY || '';
 
 const postToTutorApi = async (payload: Record<string, any>) => {
-  try {
-    const localRes = await fetch('/api/tutor', {
+  // En Next.js exportado estáticamente para Firebase Hosting, invocamos directamente a Groq Cloud con CORS
+  if (GROQ_CLIENT_KEY) {
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${GROQ_CLIENT_KEY}`
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        ...payload
+      })
     });
-    if (localRes.ok) {
-      return localRes;
+    if (groqRes.ok) {
+      return groqRes;
     }
-  } catch {
-    // Si /api/tutor falla (por ejemplo en hosting estático de Firebase), procedemos con llamada directa
+    const errText = await groqRes.text().catch(() => '');
+    throw new Error(`Groq API (${groqRes.status}): ${errText || groqRes.statusText}`);
   }
 
-  // Invocación directa a Groq Cloud con soporte CORS
-  return await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  // Fallback para entornos con API route activa verificando que la respuesta sea JSON real
+  const localRes = await fetch('/api/tutor', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${GROQ_CLIENT_KEY}`
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      ...payload
-    })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   });
+  const cType = localRes.headers.get('content-type') || '';
+  if (localRes.ok && cType.includes('application/json')) {
+    return localRes;
+  }
+  throw new Error('No se pudo establecer conexión con el motor de IA.');
 };
 
 const TUTOR_TOOLS = [

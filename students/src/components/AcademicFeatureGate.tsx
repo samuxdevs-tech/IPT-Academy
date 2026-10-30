@@ -149,9 +149,19 @@ export function AcademicFeatureGate({
   const [draftBadge, setDraftBadge] = useState<string>(rectoriaOffer.badge);
   const [isSavingConfig, setIsSavingConfig] = useState(false);
 
-  const currentPlanId = subscription?.planId || 'free';
   const meta = FEATURE_METADATA[feature] || FEATURE_METADATA.custom;
   const effectiveMinPlan = minPlan || meta.defaultMinPlan;
+
+  // Unificación robusta del Plan ID (coherente con StudentPortalShell y entitlements)
+  const currentPlanId = React.useMemo<'free' | 'pro' | 'pro_plus' | 'your_plan'>(() => {
+    if (!subscription || !subscription.planId) {
+      if (entitlements.campusTheme === 'campus-pro-plus') return 'pro_plus';
+      if (entitlements.campusTheme === 'campus-pro') return 'pro';
+      if (entitlements.campusTheme === 'campus-enterprise') return 'your_plan';
+      return 'free';
+    }
+    return subscription.planId;
+  }, [subscription, entitlements.campusTheme]);
 
   // PRINCIPIO DE SOBERANÍA RECTORAL:
   // Si Rectoría asignó créditos a un estudiante (en cualquier plan), los créditos son sagrados e irrevocables.
