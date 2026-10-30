@@ -659,7 +659,13 @@ export function RectoriaDeskWorkspace({
   ) => {
     setTargetStudentForTier(student);
     setTargetNextPlan(targetPlan);
-    const defaultCredits = targetPlan === "pro_plus" ? 2 : targetPlan === "your_plan" ? 12 : 0;
+    const existingCredits = student.liveClassCreditsRemaining ?? 0;
+    const defaultCredits =
+      targetPlan === "pro_plus"
+        ? Math.max(2, existingCredits)
+        : targetPlan === "your_plan"
+        ? Math.max(12, existingCredits)
+        : existingCredits;
     setDevopsTierCreditsInput(defaultCredits);
     setDevopsPasskeyInput("");
     setDevopsError(null);
@@ -698,9 +704,15 @@ export function RectoriaDeskWorkspace({
         status: existingSub.status || "active",
         liveClassCreditsRemaining: credits,
         remainingCredits: credits,
+        rectoriaCreditsOverride: credits,
+        allowLiveAccess: credits > 0 ? true : Boolean(existingSub.allowLiveAccess),
+        adminOverrides: {
+          ...(existingSub.adminOverrides || {}),
+          allowLiveAccess: credits > 0 ? true : existingSub.adminOverrides?.allowLiveAccess,
+        },
         updatedAt: now.toISOString(),
         creditsModifiedBy: userProfile.email,
-        creditsModificationReason: creditsChangeReason.trim() || "Ajuste DevOps",
+        creditsModificationReason: creditsChangeReason.trim() || "Ajuste por Despacho de Rectoría",
       };
 
       await set(ref(rtdb, `lms_subscriptions/${targetStudentForCredits.uid}`), subData);
@@ -811,6 +823,12 @@ export function RectoriaDeskWorkspace({
         frozenDynamicCourseSlugs: existingSub.frozenDynamicCourseSlugs || [],
         liveClassCreditsRemaining: credits,
         remainingCredits: credits,
+        rectoriaCreditsOverride: credits,
+        allowLiveAccess: credits > 0 ? true : Boolean(existingSub.allowLiveAccess),
+        adminOverrides: {
+          ...(existingSub.adminOverrides || {}),
+          allowLiveAccess: credits > 0 ? true : existingSub.adminOverrides?.allowLiveAccess,
+        },
         creditsConsumedInCycle: 0,
         updatedAt: now.toISOString(),
         authorizedByDevops: userProfile.email,

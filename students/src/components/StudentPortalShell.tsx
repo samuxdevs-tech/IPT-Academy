@@ -101,8 +101,10 @@ export default function StudentPortalShell({
       icon: Video,
       visible: true,
       badge:
-        currentPlanId === 'pro_plus' || currentPlanId === 'your_plan'
+        entitlements.availableLiveCredits > 0
           ? `${entitlements.availableLiveCredits} créd.`
+          : currentPlanId === 'pro_plus' || currentPlanId === 'your_plan'
+          ? '0 créd.'
           : 'Pro+',
     },
     {
@@ -208,8 +210,8 @@ export default function StudentPortalShell({
               </span>
             </div>
 
-            {/* Créditos disponibles para clases */}
-            {(currentPlanId === 'pro_plus' || currentPlanId === 'your_plan') && (
+            {/* Créditos disponibles para clases (Soberanía Rectoral: visible si tiene créditos o plan Pro+/Your Plan) */}
+            {(entitlements.availableLiveCredits > 0 || currentPlanId === 'pro_plus' || currentPlanId === 'your_plan') && (
               <div
                 title="Créditos disponibles para clases en vivo este mes"
                 className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#15846e]/10 border border-[#15846e]/30 text-xs text-emerald-400 font-medium"

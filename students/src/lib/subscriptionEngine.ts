@@ -518,12 +518,40 @@ export function computeEntitlements(
   planConfigs: Record<StandardPlanId, PlanConfig>,
   now: Date
 ): Entitlements {
+  // PRINCIPIO DE SOBERANÍA RECTORAL: RECTORÍA TIENE LA PALABRA FINAL EN TODO SIEMPRE
+  // Si Rectoría asignó créditos de tutoría a un estudiante (así sea Free o Pro), son válidos y habilitan la sala en vivo.
+  const sovereignCredits = Math.max(
+    0,
+    Number(
+      (sub as any)?.rectoriaCreditsOverride ??
+      (sub as any)?.liveClassCreditsRemaining ??
+      sub?.remainingCredits ??
+      0
+    )
+  );
+
   if (!sub || sub.planId === 'free') {
-    return freeEntitlements();
+    const base = freeEntitlements();
+    if (sovereignCredits > 0) {
+      return {
+        ...base,
+        canJoinLiveClasses: true,
+        availableLiveCredits: sovereignCredits,
+      };
+    }
+    return base;
   }
 
   if (sub.status === 'read_only') {
-    return readOnlyEntitlements(sub.readOnlyReason ?? 'expired');
+    const base = readOnlyEntitlements(sub.readOnlyReason ?? 'expired');
+    if (sovereignCredits > 0) {
+      return {
+        ...base,
+        canJoinLiveClasses: true,
+        availableLiveCredits: sovereignCredits,
+      };
+    }
+    return base;
   }
 
   const trialEnded = sub.trialEnd ? new Date(sub.trialEnd).getTime() <= now.getTime() : false;
@@ -639,7 +667,7 @@ export function computeEntitlements(
   const defaultLiveAllowed = inActiveTrial
     ? config.allowsLiveAccess && config.trialLiveCredits > 0
     : config.allowsLiveAccess;
-  const liveAllowed = sub.adminOverrides?.allowLiveAccess ?? defaultLiveAllowed;
+  const liveAllowed = sub.adminOverrides?.allowLiveAccess ?? (sovereignCredits > 0 ? true : defaultLiveAllowed);
 
   const effectiveSlugs = selectMostRecentCourses(
     sub.activeDynamicCourseSlugs,
@@ -653,8 +681,8 @@ export function computeEntitlements(
     canAccessAllStatic: config.allowsAllStatic,
     maxDynamicCourses: maxDyn,
     effectiveActiveCourseSlugs: effectiveSlugs,
-    canJoinLiveClasses: liveAllowed,
-    availableLiveCredits: liveAllowed ? sub.remainingCredits : 0,
+    canJoinLiveClasses: liveAllowed || sovereignCredits > 0,
+    availableLiveCredits: sovereignCredits > 0 ? sovereignCredits : (liveAllowed ? sub.remainingCredits : 0),
     canSubmitAssignments: true,
     canViewCertificates: true,
     canClaimCertificates: !inActiveTrial && !trialPendingCharge && sub.status === 'active',
@@ -1737,13 +1765,20 @@ export class SubscriptionPlatformService {
         throw new Error('LIVE_SESSION_CANCELLED');
       }
 
-      // Validar entitlements reales en servidor
+      // Validar entitlements reales en servidor con principio de soberanía rectoral
       const ent = this.getEntitlementsForSubscription(sub, now);
-      if (ent.isReadOnly || !ent.canJoinLiveClasses) {
-        throw new Error('LIVE_ACCESS_FORBIDDEN');
-      }
-      if (ent.availableLiveCredits <= 0 || sub.remainingCredits <= 0) {
-        throw new Error('INSUFFICIENT_LIVE_CREDITS');
+      const sovereignCredits = Math.max(
+        0,
+        Number((sub as any).rectoriaCreditsOverride ?? (sub as any).liveClassCreditsRemaining ?? sub.remainingCredits ?? 0)
+      );
+
+      if (sovereignCredits <= 0) {
+        if (ent.isReadOnly || !ent.canJoinLiveClasses) {
+          throw new Error('LIVE_ACCESS_FORBIDDEN');
+        }
+        if (ent.availableLiveCredits <= 0 || sub.remainingCredits <= 0) {
+          throw new Error('INSUFFICIENT_LIVE_CREDITS');
+        }
       }
 
       // Validar que la hora de inicio (leída del servidor) sea >= 4 horas en el futuro
@@ -1772,7 +1807,10 @@ export class SubscriptionPlatformService {
         throw new Error('ALREADY_BOOKED_THIS_SESSION');
       }
 
-      sub.remainingCredits -= 1;
+      const nextRemaining = Math.max(0, sovereignCredits - 1);
+      sub.remainingCredits = nextRemaining;
+      (sub as any).liveClassCreditsRemaining = nextRemaining;
+      (sub as any).rectoriaCreditsOverride = nextRemaining;
       sub.creditsConsumedInCycle += 1;
       session.bookedCount += 1;
 
@@ -1830,6 +1868,8 @@ export class SubscriptionPlatformService {
       const sub = this.subscriptions.get(booking.subscriptionId);
       if (sub && sub.status !== 'read_only' && shouldRefund) {
         sub.remainingCredits += 1;
+        (sub as any).liveClassCreditsRemaining = sub.remainingCredits;
+        (sub as any).rectoriaCreditsOverride = sub.remainingCredits;
         sub.creditsConsumedInCycle = Math.max(0, sub.creditsConsumedInCycle - 1);
         this.subscriptions.set(sub.id, sub);
       }

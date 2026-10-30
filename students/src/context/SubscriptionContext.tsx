@@ -234,7 +234,34 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
       if (user?.uid && sub) {
         try {
-          await set(ref(db, `lms_subscriptions/${uid}`), cleanForFirebase(sub));
+          // Principio de Soberanía Rectoral: Proteger créditos otorgados por Rectoría en RTDB
+          const rtdbSnap = await get(ref(db, `lms_subscriptions/${uid}`)).catch(() => null);
+          let remoteCredits = 0;
+          if (rtdbSnap && rtdbSnap.exists()) {
+            const rData = rtdbSnap.val();
+            remoteCredits = Math.max(
+              0,
+              Number(rData.rectoriaCreditsOverride ?? rData.liveClassCreditsRemaining ?? rData.remainingCredits ?? 0)
+            );
+          }
+
+          const localCredits = Math.max(
+            0,
+            Number((sub as any).rectoriaCreditsOverride ?? (sub as any).liveClassCreditsRemaining ?? sub.remainingCredits ?? 0)
+          );
+
+          // Rectoría tiene la palabra final: prevalece siempre el crédito soberano mayor
+          const sovereignCredits = Math.max(localCredits, remoteCredits);
+
+          const payload = {
+            ...cleanForFirebase(sub),
+            remainingCredits: sovereignCredits,
+            liveClassCreditsRemaining: sovereignCredits,
+            rectoriaCreditsOverride: sovereignCredits,
+            allowLiveAccess: sovereignCredits > 0 ? true : Boolean((sub as any).allowLiveAccess),
+          };
+
+          await set(ref(db, `lms_subscriptions/${uid}`), payload);
           const uProf = engine.users.get(uid);
           if (uProf) {
             await set(ref(db, `users/${uid}/hasUsedTrial`), Boolean(uProf.hasUsedTrial));
@@ -336,7 +363,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       }
     } catch {}
 
-    // Asegurar migración idempotente a Free si no tiene suscripción aún
+    // Asegurar migración idempotente local a Free si no tiene suscripción aún en memoria
     engine.migrateExistingUsersToFree([
       {
         uid: effectiveUid,
@@ -345,7 +372,18 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       },
     ]);
 
-    syncEngineToStorageAndRtdb(effectiveUid);
+    // Solo sincronizar localmente al montar; NO sobreescribir RTDB antes de recibir el estado soberano de la nube
+    try {
+      const snapshot = {
+        sub: Array.from(engine.subscriptions.values()).find((s) => s.userId === effectiveUid) || null,
+        userProfile: engine.users.get(effectiveUid) || null,
+        invoices: [],
+        notifications: [],
+        bookings: [],
+        virtualTimeIso: clockRef.current.now().toISOString(),
+      };
+      localStorage.setItem(`${LOCAL_STORAGE_KEY}_${effectiveUid}`, JSON.stringify(snapshot));
+    } catch {}
 
     if (!user?.uid) return;
 
@@ -355,7 +393,20 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       subRef,
       async (snap) => {
         if (snap.exists()) {
-          const remoteSub = snap.val() as Subscription;
+          const remoteSub = snap.val() as any;
+          // Principio de Soberanía Rectoral: Leer y consolidar créditos asignados por Rectoría
+          const sovereignCredits = Math.max(
+            0,
+            Number(
+              remoteSub.rectoriaCreditsOverride ??
+              remoteSub.liveClassCreditsRemaining ??
+              remoteSub.remainingCredits ??
+              0
+            )
+          );
+          remoteSub.remainingCredits = sovereignCredits;
+          remoteSub.liveClassCreditsRemaining = sovereignCredits;
+          remoteSub.rectoriaCreditsOverride = sovereignCredits;
           remoteSub.activeDynamicCourseSlugs = Array.isArray(remoteSub.activeDynamicCourseSlugs)
             ? remoteSub.activeDynamicCourseSlugs
             : [];

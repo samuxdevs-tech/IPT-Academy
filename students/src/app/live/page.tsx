@@ -379,8 +379,22 @@ function StudentLiveRoomContent() {
           </div>
         </div>
 
-        {/* Aviso si el usuario no tiene plan con clases en vivo */}
-        {(currentPlanId === 'free' || currentPlanId === 'pro') && (
+        {/* Aviso si el usuario cuenta con créditos especiales autorizados por Rectoría */}
+        {(currentPlanId === 'free' || currentPlanId === 'pro') && entitlements.availableLiveCredits > 0 && (
+          <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+                Créditos Autorizados por Despacho de Rectoría
+              </span>
+              <p className="text-xs text-[#d1d5db]">
+                Cuentas con {entitlements.availableLiveCredits} crédito(s) activo(s) para reservar cupos y participar en sesiones en vivo.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Aviso si el usuario no tiene plan con clases en vivo ni créditos especiales */}
+        {(currentPlanId === 'free' || currentPlanId === 'pro') && entitlements.availableLiveCredits <= 0 && (
           <div className="rounded-2xl border border-[#ffb829]/40 bg-gradient-to-r from-[#ffb829]/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#ffb829]">
