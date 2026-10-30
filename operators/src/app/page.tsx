@@ -85,7 +85,18 @@ export default function OperatorsRootPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <a
+              href="https://academy.iptapps.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 text-xs font-semibold transition-all shadow-sm"
+              title="Abrir IPT Academy en vivo"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-violet-400" />
+              <span>Academia</span>
+            </a>
+
             <button
               onClick={handleOpenPreview}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 text-xs font-medium transition-all"
@@ -252,6 +263,17 @@ export default function OperatorsRootPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
+            <a
+              href="https://academy.iptapps.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 text-xs font-semibold transition-all shadow-sm cursor-pointer"
+              title="Abrir IPT Academy en vivo"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-violet-400" />
+              <span>Academia</span>
+            </a>
+
             <button
               onClick={handleOpenPreview}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 text-xs font-medium transition-all"

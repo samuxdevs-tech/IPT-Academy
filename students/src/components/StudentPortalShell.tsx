@@ -71,8 +71,8 @@ export default function StudentPortalShell({
   const navItems = [
     {
       href: '/home',
-      label: 'Campus',
-      icon: Layers,
+      label: 'Academia',
+      icon: GraduationCap,
       visible: true,
     },
     {

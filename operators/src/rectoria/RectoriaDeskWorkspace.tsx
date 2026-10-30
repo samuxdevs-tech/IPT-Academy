@@ -6,6 +6,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import {
   Crown,
+  GraduationCap,
   Sparkles,
   Scale,
   Award,
@@ -815,6 +816,16 @@ export function RectoriaDeskWorkspace({
 
           {/* Accesos Rápidos Inter-Suites */}
           <div className="flex items-center gap-2">
+            <a
+              href="https://academy.iptapps.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/30 text-xs font-medium transition-all shadow-sm"
+              title="Abrir IPT Academy en vivo"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-violet-400" />
+              <span>Academia</span>
+            </a>
             {onGoToTeacher && (
               <button
                 onClick={onGoToTeacher}
