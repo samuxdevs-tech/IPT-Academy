@@ -801,11 +801,23 @@ export function RectoriaDeskWorkspace({
       // Clave válida: ejecutar mutación autorizada
       const now = new Date();
       const periodEnd = new Date(now.getTime() + 30 * 86400000).toISOString();
-      const credits = Math.max(0, Math.floor(Number(devopsTierCreditsInput) || 0));
 
       // Leer suscripción existente para preservar todos los atributos (esquema unificado con Admin)
       const existingSnap = await get(ref(rtdb, `lms_subscriptions/${targetStudentForTier.uid}`));
       const existingSub = existingSnap.exists() ? existingSnap.val() : {};
+      const existingCredits = Math.max(
+        0,
+        Number(
+          existingSub.rectoriaCreditsOverride ??
+          existingSub.liveClassCreditsRemaining ??
+          existingSub.remainingCredits ??
+          0
+        )
+      );
+      // Principio de Soberanía Rectoral: Si no se ingresó un nuevo valor explícito de créditos (> 0), se preservan los créditos existentes
+      const credits = devopsTierCreditsInput > 0
+        ? Math.max(0, Math.floor(devopsTierCreditsInput))
+        : existingCredits;
 
       const subData = {
         ...existingSub,

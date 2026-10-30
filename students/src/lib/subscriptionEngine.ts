@@ -584,7 +584,15 @@ export function computeEntitlements(
     effectivePlanId = sub.pendingDowngrade.targetPlanId;
     preferredDowngradeSlug = sub.pendingDowngrade.selectedDynamicCourseSlug;
     if (effectivePlanId === 'free') {
-      return freeEntitlements();
+      const base = freeEntitlements();
+      if (sovereignCredits > 0) {
+        return {
+          ...base,
+          canJoinLiveClasses: true,
+          availableLiveCredits: sovereignCredits,
+        };
+      }
+      return base;
     }
   }
 

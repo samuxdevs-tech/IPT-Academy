@@ -292,7 +292,18 @@ export function SubscriptionsGovernanceAdmin() {
         ? [coursesList[0].slug]
         : [];
 
-    const liveCredits =
+    // Principio de Soberanía Rectoral: Preservar créditos asignados por Rectoría
+    const existingCredits = Math.max(
+      0,
+      Number(
+        existingSub.rectoriaCreditsOverride ??
+        existingSub.liveClassCreditsRemaining ??
+        existingSub.remainingCredits ??
+        0
+      )
+    );
+
+    const defaultPlanCredits =
       nextPlanId === "pro_plus"
         ? nextStatus === "trial"
           ? planConfigs.pro_plus.trialLiveCredits
@@ -300,6 +311,8 @@ export function SubscriptionsGovernanceAdmin() {
         : nextPlanId === "your_plan"
         ? 12
         : 0;
+
+    const liveCredits = existingCredits > 0 ? existingCredits : defaultPlanCredits;
 
     const updatedSub = {
       ...existingSub,
@@ -317,6 +330,9 @@ export function SubscriptionsGovernanceAdmin() {
       activeDynamicCourseSlugs: defaultDynamicSlugs,
       frozenDynamicCourseSlugs: existingSub.frozenDynamicCourseSlugs || [],
       liveClassCreditsRemaining: liveCredits,
+      remainingCredits: liveCredits,
+      rectoriaCreditsOverride: existingCredits > 0 ? existingCredits : (existingSub.rectoriaCreditsOverride || undefined),
+      allowLiveAccess: liveCredits > 0 ? true : Boolean(existingSub.allowLiveAccess),
       creditsConsumedInCycle: 0,
       updatedAt: now.toISOString(),
     };
