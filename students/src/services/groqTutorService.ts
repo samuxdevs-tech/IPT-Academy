@@ -171,17 +171,17 @@ const TUTOR_TOOLS = [
         type: 'object',
         properties: {
           horaDeseada: {
-            type: 'string',
+            type: ['string', 'null'],
             description:
-              'Hora o plazo solicitado por el estudiante (ej: "dentro de 3h", "a las 4pm", "10:30 am", "mañana a las 8am")'
+              'Hora o plazo solicitado por el estudiante (ej: "dentro de 3h", "a las 4pm", "10:30 am", "mañana a las 8am"), o null si no especificó hora'
           },
           motivo: {
-            type: 'string',
-            description: 'Tema académico o motivo de la tutoría'
+            type: ['string', 'null'],
+            description: 'Tema académico o motivo de la tutoría, o null si no lo especificó'
           },
           sessionId: {
-            type: 'string',
-            description: 'ID de la sesión específica si fue seleccionada o referenciada'
+            type: ['string', 'null'],
+            description: 'ID de la sesión específica si fue seleccionada o referenciada, o null'
           }
         }
       }
@@ -197,17 +197,17 @@ const TUTOR_TOOLS = [
         type: 'object',
         properties: {
           forzarSinReembolso: {
-            type: 'boolean',
+            type: ['boolean', 'null'],
             description:
-              'true si el estudiante dice "igualmente", "de igual manera", "aunque no devuelvas el credito", "sin crédito", "de todas formas", "no importa", "cancela igual", o insiste en que se cancele la cita a pesar de no recibir reembolso. false solo si es una pregunta o petición inicial ordinaria.'
+              'true si el estudiante dice "igualmente", "de igual manera", "aunque no devuelvas el credito", "sin crédito", "de todas formas", "no importa", "cancela igual", o insiste en que se cancele la cita a pesar de no recibir reembolso. false solo si es una pregunta o petición inicial ordinaria, o null.'
           },
           motivo: {
-            type: 'string',
-            description: 'Razón de la cancelación si fue expresada por el estudiante'
+            type: ['string', 'null'],
+            description: 'Razón de la cancelación si fue expresada por el estudiante, o null'
           },
           bookingId: {
-            type: 'string',
-            description: 'ID de la reserva específica si fue indicada'
+            type: ['string', 'null'],
+            description: 'ID de la reserva específica si fue indicada, o null'
           }
         }
       }
