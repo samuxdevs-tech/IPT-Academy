@@ -82,7 +82,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
     courseTitle: 'IPT Master: Arquitectura Fullstack e Inteligencia Artificial',
     title: 'Diseño de Separación de Capas y Contratos de Dominio',
     dueDate: '2026-11-05T23:59:00Z',
-    status: 'graded',
+    status: 'pending',
     description:
       'Diseñar e implementar la capa de dominio y casos de uso desacoplados de la base de datos para un sistema transaccional de reservas, garantizando inmutabilidad y validación estricta en los bordes.',
     deliverablesExpected: [
@@ -90,63 +90,38 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
       'Implementación de contratos de entrada y entidades de dominio.',
       'Explicación breve (escrita o en nota de voz) sobre las decisiones de desacoplamiento.',
     ],
-    finalScore: 86,
-    gradedBy: 'Comité Docente IPT',
-    gradedAt: '2026-10-27 18:40',
-    teacherGeneralFeedback:
-      'Excelente aislamiento de las reglas de negocio respecto al motor de persistencia.En el criterio de manejo de errores faltó tipar explícitamente las excepciones de concurrencia.',
-    submittedAssets: {
-      textNotes:
-        'Se separó el dominio en tres módulos independientes sin dependencias hacia el ORM. Se adjunta el diagrama arquitectónico y las pruebas de contrato.',
-      repoUrl: 'https://github.com/estudiante-ipt/clean-domain-contracts',
-      files: [
-        { name: 'arquitectura-capas-v1.pdf', sizeMb: 1.4, type: 'application/pdf' },
-        { name: 'contratos-dominio.ts', sizeMb: 0.12, type: 'text/typescript' },
-      ],
-      voiceNoteDurationSec: 42,
-      submittedAt: '2026-10-26 21:15',
-    },
     rubric: [
       {
         id: 'crit-1',
         title: 'Aislamiento y Pureza de la Capa de Dominio',
         weightPercent: 35,
         maxPoints: 35,
-        awardedPoints: 34,
         description:
           'Las entidades y reglas de negocio no importan librerías de infraestructura, frameworks web ni clientes HTTP.',
-        teacherComment: 'Cumplimiento impecable de la regla de dependencia.',
       },
       {
         id: 'crit-2',
         title: 'Contratos y Validación de Esquemas en Bordes',
         weightPercent: 30,
         maxPoints: 30,
-        awardedPoints: 28,
         description:
           'Todo dato externo es validado con esquemas deterministas antes de instanciar objetos de valor.',
-        teacherComment: 'Muy bien estructurado con tipos estrictos.',
       },
       {
         id: 'crit-3',
         title: 'Manejo Determinista de Errores y Estados',
         weightPercent: 20,
         maxPoints: 20,
-        awardedPoints: 11,
         description:
           'Uso de resultados tipados (Result Pattern) en lugar de excepciones genéricas no controladas.',
-        teacherComment:
-          'En el servicio de reserva se lanzó un Error genérico en la línea 84 en lugar de un error de dominio tipado.',
       },
       {
         id: 'crit-4',
         title: 'Claridad de Documentación y Justificación Técnica',
         weightPercent: 15,
         maxPoints: 15,
-        awardedPoints: 13,
         description:
           'El diagrama y la explicación justifican con precisión el porqué de cada frontera modular.',
-        teacherComment: 'Diagrama claro y nota de voz directa al grano.',
       },
     ],
   },
@@ -198,20 +173,13 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
     courseTitle: 'Arquitectura Cloud Resiliente y Microservicios',
     title: 'Patrón Transactional Outbox y Consistencia Eventual',
     dueDate: '2026-11-19T23:59:00Z',
-    status: 'submitted',
+    status: 'pending',
     description:
       'Implementar una tabla de salida transaccional (Outbox) que garantice que cada actualización en base de datos emita su evento correspondiente sin pérdida de mensajes.',
     deliverablesExpected: [
       'Esquema de tabla Outbox y worker de despacho.',
       'Evidencia de recuperación ante caída del bus de eventos.',
     ],
-    submittedAssets: {
-      textNotes:
-        'Se implementó el almacenamiento atómico en la misma transacción local y un despachador con bloqueo optimista.',
-      repoUrl: 'https://github.com/estudiante-ipt/outbox-pattern-demo',
-      files: [{ name: 'outbox-worker-diagram.pdf', sizeMb: 2.1, type: 'application/pdf' }],
-      submittedAt: '2026-10-28 08:10',
-    },
     rubric: [
       {
         id: 'crit-301',
@@ -240,7 +208,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
   },
 ];
 
-const STORAGE_KEY_ASSIGNMENTS = 'ipt_student_assignments_v2';
+const STORAGE_KEY_ASSIGNMENTS = 'ipt_student_assignments_v3_clean';
 
 function StudentAssignmentsContent() {
   const searchParams = useSearchParams();

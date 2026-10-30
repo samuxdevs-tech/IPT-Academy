@@ -21,7 +21,7 @@ import { useSubscription } from '@/context/SubscriptionContext';
 import { AssignmentItem } from '@/app/assignments/page';
 import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
 
-const STORAGE_KEY_ASSIGNMENTS = 'ipt_student_assignments_v2';
+const STORAGE_KEY_ASSIGNMENTS = 'ipt_student_assignments_v3_clean';
 
 const DEFAULT_GRADES_SNAPSHOT: AssignmentItem[] = [
   {
@@ -31,19 +31,15 @@ const DEFAULT_GRADES_SNAPSHOT: AssignmentItem[] = [
     courseTitle: 'IPT Master: Arquitectura Fullstack e Inteligencia Artificial',
     title: 'Diseño de Separación de Capas y Contratos de Dominio',
     dueDate: '2026-11-05T23:59:00Z',
-    status: 'graded',
+    status: 'pending',
     description: 'Separación de dominio y validación de esquemas.',
     deliverablesExpected: [],
-    finalScore: 86,
-    gradedBy: 'Comité Docente IPT',
-    gradedAt: '2026-10-27 18:40',
     rubric: [
       {
         id: 'crit-1',
         title: 'Aislamiento y Pureza de la Capa de Dominio',
         weightPercent: 35,
         maxPoints: 35,
-        awardedPoints: 34,
         description: '',
       },
       {
@@ -51,7 +47,6 @@ const DEFAULT_GRADES_SNAPSHOT: AssignmentItem[] = [
         title: 'Contratos y Validación de Esquemas en Bordes',
         weightPercent: 30,
         maxPoints: 30,
-        awardedPoints: 28,
         description: '',
       },
       {
@@ -59,7 +54,6 @@ const DEFAULT_GRADES_SNAPSHOT: AssignmentItem[] = [
         title: 'Manejo Determinista de Errores y Estados',
         weightPercent: 20,
         maxPoints: 20,
-        awardedPoints: 11,
         description: '',
       },
       {
@@ -67,7 +61,6 @@ const DEFAULT_GRADES_SNAPSHOT: AssignmentItem[] = [
         title: 'Claridad de Documentación y Justificación Técnica',
         weightPercent: 15,
         maxPoints: 15,
-        awardedPoints: 13,
         description: '',
       },
     ],
@@ -80,7 +73,7 @@ const DEFAULT_GRADES_SNAPSHOT: AssignmentItem[] = [
     title: 'Políticas de Reintento (Backoff) e Idempotencia en Pagos',
     dueDate: '2026-11-12T23:59:00Z',
     status: 'pending',
-    description: '',
+    description: 'Políticas de reintento deterministas con jitter.',
     deliverablesExpected: [],
     rubric: [],
   },
@@ -91,8 +84,8 @@ const DEFAULT_GRADES_SNAPSHOT: AssignmentItem[] = [
     courseTitle: 'Arquitectura Cloud Resiliente y Microservicios',
     title: 'Patrón Transactional Outbox y Consistencia Eventual',
     dueDate: '2026-11-19T23:59:00Z',
-    status: 'submitted',
-    description: '',
+    status: 'pending',
+    description: 'Outbox transaccional y consistencia eventual.',
     deliverablesExpected: [],
     rubric: [],
   },
