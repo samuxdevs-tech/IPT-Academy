@@ -12,8 +12,14 @@ interface DalaHeroProps {
 }
 
 export default function DalaHero({ freeCourse }: DalaHeroProps) {
-  const trialSlug = freeCourse?.slug || 'introduccion-ingenieria-ipt';
+  const trialSlug = freeCourse?.slug || 'ipt-master-fullstack';
   const { handleAuthAction } = useLoginTransition();
+
+  const lessonCount = freeCourse?.modules?.reduce(
+    (acc, m) =>
+      acc + (Array.isArray(m?.lessons) ? m.lessons.length : Object.keys(m?.lessons || {}).length),
+    0
+  ) || 0;
 
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center px-6 py-20 z-10 overflow-hidden">
@@ -48,17 +54,17 @@ export default function DalaHero({ freeCourse }: DalaHeroProps) {
                 Puerta de Entrada Oficial
               </span>
               <div className="flex items-center gap-4 text-[12px] text-[#9a9a9a] font-light">
-                <span>18 lecciones</span>
+                <span>{lessonCount > 0 ? `${lessonCount} lecciones` : 'Programa Académico'}</span>
                 <span>Acceso libre</span>
               </div>
             </div>
 
             <div>
               <h3 className="text-[20px] sm:text-[22px] font-normal text-white tracking-[-0.02em] mb-2">
-                IPT Master: Arquitectura de Software e Inteligencia Artificial
+                {freeCourse?.title || 'IPT Master: Arquitectura de Software e Inteligencia Artificial'}
               </h3>
               <p className="text-[13px] font-extralight text-[#bdbdbd] leading-relaxed font-light">
-                Aprende a diseñar sistemas distribuidos, microservicios y aplicaciones de producción con los estándares de IPT.
+                {freeCourse?.description || 'Aprende a diseñar sistemas distribuidos, microservicios y aplicaciones de producción con los estándares de IPT.'}
               </p>
             </div>
 

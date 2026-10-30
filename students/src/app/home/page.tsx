@@ -37,48 +37,6 @@ interface SpecializationItem {
   isFreePublic?: boolean;
 }
 
-const SYSTEM_COURSES: SpecializationItem[] = [
-  {
-    slug: 'introduccion-ingenieria-ipt',
-    title: 'Fundamentos de Arquitectura de Software e Ingeniería',
-    subtitle: 'Curso Liberado · Acceso Libre',
-    description:
-      'Aprende los principios estructurales del software moderno, separación de responsabilidades y metodologías de diseño escalable sin costo.',
-    category: 'Ingeniería de Software',
-    lessonsCount: 18,
-    isFreePublic: true,
-  },
-  {
-    slug: 'ipt-master-fullstack',
-    title: 'IPT Master: Arquitectura Fullstack e Inteligencia Artificial',
-    subtitle: 'Especialización Dinámica 1',
-    description:
-      'Construcción de aplicaciones distribuidas modernas, bases de datos reactivas, micro-frontends y despliegues serverless de alta concurrencia.',
-    category: 'Ingeniería de Software',
-    lessonsCount: 24,
-  },
-  {
-    slug: 'arquitectura-cloud-ipt',
-    title: 'Arquitectura Cloud Resiliente y Microservicios',
-    subtitle: 'Especialización Dinámica 2',
-    description:
-      'Topologías de alta disponibilidad, orquestación de contenedores, balanceo de carga en producción y recuperación ante desastres.',
-    category: 'Cloud & Sistemas',
-    lessonsCount: 20,
-  },
-  {
-    slug: 'sistemas-distribuidos-ipt',
-    title: 'Sistemas Distribuidos y Procesamiento de Eventos',
-    subtitle: 'Especialización Dinámica 3',
-    description:
-      'Patrones de consistencia eventual, colas de mensajería con idempotencia, streaming reactivo y telemetría de observabilidad en tiempo real.',
-    category: 'Sistemas Distribuidos',
-    lessonsCount: 22,
-  },
-];
-
-
-
 export default function StudentCampusPage() {
   const { user } = useAuth();
   const {
@@ -92,13 +50,16 @@ export default function StudentCampusPage() {
   const { liveSessions: rawLiveSessions } = useLms();
   const liveSessions = Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
 
-  const [allCoursesList, setAllCoursesList] = useState<SpecializationItem[]>(SYSTEM_COURSES);
+  const [allCoursesList, setAllCoursesList] = useState<SpecializationItem[]>([]);
 
   // Sincronización en tiempo real con cursos creados/editados por docentes en RTDB (courses/)
   useEffect(() => {
     const coursesRef = ref(db, 'courses');
     const unsub = onValue(coursesRef, (snap) => {
-      if (!snap.exists()) return;
+      if (!snap.exists()) {
+        setAllCoursesList([]);
+        return;
+      }
       const data = snap.val();
       const loaded: SpecializationItem[] = Object.keys(data).map((k) => {
         const item = data[k];
@@ -115,16 +76,7 @@ export default function StudentCampusPage() {
         };
       });
 
-      if (loaded.length > 0) {
-        // Combinar preservando cursos base
-        const merged = [...SYSTEM_COURSES];
-        loaded.forEach((nc) => {
-          const idx = merged.findIndex((ec) => ec.slug === nc.slug);
-          if (idx >= 0) merged[idx] = { ...merged[idx], ...nc };
-          else merged.push(nc);
-        });
-        setAllCoursesList(merged);
-      }
+      setAllCoursesList(loaded);
     });
 
     return () => unsub();
@@ -149,7 +101,7 @@ export default function StudentCampusPage() {
       const activeSlug =
         subscription?.activeDynamicCourseSlugs?.[0] || 'ipt-master-fullstack';
       const found = allCoursesList.find((c) => c.slug === activeSlug);
-      return found ? [found] : [allCoursesList[1] || SYSTEM_COURSES[1]];
+      return found ? [found] : (allCoursesList.length > 0 ? [allCoursesList[0]] : []);
     }
     if (currentPlanId === 'pro_plus') {
       return allCoursesList.filter((c) => !c.isFreePublic);
@@ -183,7 +135,15 @@ export default function StudentCampusPage() {
   }, [userCourses, selectedCourseIndex]);
 
   const activeCourse =
-    userCourses[selectedCourseIndex] || userCourses[0] || SYSTEM_COURSES[0];
+    userCourses[selectedCourseIndex] || userCourses[0] || allCoursesList[0] || {
+      slug: 'sin-curso',
+      title: 'Campus Académico IPT',
+      subtitle: 'Programas Oficiales',
+      description: 'Bienvenido al campus. Los cursos oficiales configurados desde el portal administrativo aparecerán aquí en tiempo real.',
+      category: 'Ingeniería IPT',
+      lessonsCount: 0,
+      isFreePublic: true,
+    };
 
   const planBadgeConfig = useMemo(() => {
     switch (currentPlanId) {
@@ -703,7 +663,7 @@ export default function StudentCampusPage() {
               rúbrica. Tu progreso en los demás cursos se conserva intacto.
             </p>
             <div className="space-y-2.5">
-              {SYSTEM_COURSES.filter((c) => !c.isFreePublic).map((c) => {
+              {allCoursesList.filter((c) => !c.isFreePublic).map((c) => {
                 const isCurrent = c.slug === activeCourse.slug;
                 return (
                   <button

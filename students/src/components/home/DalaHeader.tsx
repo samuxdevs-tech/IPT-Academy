@@ -76,6 +76,15 @@ export default function DalaHeader() {
             </button>
           ) : (
             <>
+              {/* Botón permanente de Academia en la cabecera */}
+              <Link
+                href="/home"
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] text-white text-[13px] font-semibold uppercase tracking-[0.03em] transition-all shadow-[0_0_15px_rgba(128,82,255,0.4)]"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                Academia
+              </Link>
+
               {isOperator ? (
                 <a
                   href="https://ac-administrator.iptapps.com"
@@ -98,14 +107,7 @@ export default function DalaHeader() {
                   Consola Docente
                   <ExternalLink className="w-3 h-3 opacity-70" />
                 </a>
-              ) : (
-                <Link
-                  href="/home"
-                  className="inline-flex items-center justify-center px-5 py-2 rounded-[24px] bg-[#8052ff] hover:bg-[#6e3df0] text-white text-[13px] font-semibold uppercase tracking-[0.03em] transition-all shadow-[0_0_15px_rgba(128,82,255,0.4)]"
-                >
-                  Panel de Estudio
-                </Link>
-              )}
+              ) : null}
 
               {/* Botón de Salir */}
               <button

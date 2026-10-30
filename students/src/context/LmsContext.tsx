@@ -87,9 +87,9 @@ function parseRtdbList<T>(val: unknown): T[] {
 export function LmsProvider({ children }: { children: React.ReactNode }) {
   const { user, effectiveIsAdmin, userLicenses } = useAuth();
   const [studentGroups, setStudentGroups] = useState<any[]>([]);
-  const [courses, setCourses] = useState<Course[]>(() => getLocalDatabase().courses);
-  const [assignments, setAssignments] = useState<AssignmentItem[]>(() => getLocalDatabase().assignments);
-  const [calendarEvents, setCalendarEvents] = useState<InstitutionalCalendarEvent[]>(() => getLocalDatabase().calendar);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentItem[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<InstitutionalCalendarEvent[]>([]);
   const [liveSessions, setLiveSessions] = useState<LiveVirtualSession[]>([]);
   const [rawUsers, setRawUsers] = useState<Record<string, any>>({});
   const [rawProgress, setRawProgress] = useState<Record<string, any>>({});
@@ -155,12 +155,12 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
                   slug: data[key].slug || key,
                 })
               );
-              setCourses(list.length > 0 ? list : getLocalDatabase().courses);
+              setCourses(list);
             } else {
-              setCourses(getLocalDatabase().courses);
+              setCourses([]);
             }
           },
-          () => setCourses(getLocalDatabase().courses)
+          () => setCourses([])
         )
       );
 
@@ -170,12 +170,12 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
           (snap) => {
             if (snap.exists()) {
               const list = parseRtdbList<AssignmentItem>(snap.val());
-              setAssignments(list.length > 0 ? list : getLocalDatabase().assignments);
+              setAssignments(list);
             } else {
-              setAssignments(getLocalDatabase().assignments);
+              setAssignments([]);
             }
           },
-          () => setAssignments(getLocalDatabase().assignments)
+          () => setAssignments([])
         )
       );
 
@@ -185,12 +185,12 @@ export function LmsProvider({ children }: { children: React.ReactNode }) {
           (snap) => {
             if (snap.exists()) {
               const list = parseRtdbList<InstitutionalCalendarEvent>(snap.val());
-              setCalendarEvents(list.length > 0 ? list : getLocalDatabase().calendar);
+              setCalendarEvents(list);
             } else {
-              setCalendarEvents(getLocalDatabase().calendar);
+              setCalendarEvents([]);
             }
           },
-          () => setCalendarEvents(getLocalDatabase().calendar)
+          () => setCalendarEvents([])
         )
       );
 
