@@ -129,22 +129,56 @@ const isCancelIntent = (text: string): boolean => {
   );
 };
 
-// Parser inteligente de hora en lenguaje natural
+// Parser inteligente de hora en lenguaje natural con soporte para horas relativas y regla de 4h
 interface ParsedTimeQuery {
   hasRequestedTime: boolean;
   rawTimeStr?: string;
   hour?: number; // 0 a 23
   minute?: number;
+  isRelativeHours?: boolean;
+  relativeHoursAmount?: number;
+  targetDate?: Date;
+  isTooSoon?: boolean; // < 4 horas en el futuro
+  hoursUntilTarget?: number;
   isOutsideAcademicHours: boolean;
 }
 
 const parseRequestedTime = (text: string): ParsedTimeQuery => {
-  const t = text.toLowerCase();
+  const t = text.toLowerCase().trim();
+  const now = new Date();
 
-  // Coincidencias tipo "a las 5am", "a las 5:00 am", "5am", "10:30 am", "a las 3pm", "a las 17:00"
+  // 1. Detección de horas relativas: "dentro de 3h", "en 3 horas", "en 2h", "dentro de 4 horas"
+  const relMatch =
+    t.match(/(?:dentro\s+de|en)\s+(\d{1,2})\s*(?:h|hora|horas)/i) ||
+    t.match(/para\s+dentro\s+de\s+(\d{1,2})\s*(?:h|hora|horas)/i);
+
+  if (relMatch) {
+    const relHours = parseInt(relMatch[1], 10);
+    const targetDate = new Date(now.getTime() + relHours * 60 * 60 * 1000);
+    const hour = targetDate.getHours();
+    const minute = targetDate.getMinutes();
+    const isTooSoon = relHours < 4;
+    const isOutsideAcademicHours = hour < 7 || hour > 22;
+
+    return {
+      hasRequestedTime: true,
+      rawTimeStr: `dentro de ${relHours} hora${relHours === 1 ? '' : 's'}`,
+      hour,
+      minute,
+      isRelativeHours: true,
+      relativeHoursAmount: relHours,
+      targetDate,
+      isTooSoon,
+      hoursUntilTarget: relHours,
+      isOutsideAcademicHours
+    };
+  }
+
+  // 2. Coincidencias de hora específica: "a las 4pm", "a las 5:00 am", "5am", "10:30 am", "4pm", "a las 16:00", "a las 4"
   const match =
-    t.match(/(?:a\s+las\s+|a\s+la\s+|para\s+las\s+)(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i) ||
-    t.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)/i);
+    t.match(/(?:a\s+las\s+|a\s+la\s+|para\s+las\s+|para\s+la\s+)(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i) ||
+    t.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)/i) ||
+    t.match(/(?:a\s+las\s+|para\s+las\s+)(\d{1,2})(?::(\d{2}))?/i);
 
   if (!match) {
     return { hasRequestedTime: false, isOutsideAcademicHours: false };
@@ -158,16 +192,42 @@ const parseRequestedTime = (text: string): ParsedTimeQuery => {
     hour += 12;
   } else if (meridian === 'am' && hour === 12) {
     hour = 0;
+  } else if (!meridian) {
+    // Si no especificó AM/PM y el número es entre 1 y 6, suele ser la tarde (13:00 a 18:00)
+    if (hour >= 1 && hour <= 6) {
+      hour += 12;
+    }
   }
 
   // Horario institucional de tutorías: 7:00 AM a 10:00 PM (07:00 a 22:00 COT)
   const isOutsideAcademicHours = hour < 7 || hour > 22;
 
+  // Calcular la fecha objetivo
+  const targetDate = new Date();
+  targetDate.setHours(hour, minute, 0, 0);
+
+  // Si la hora de hoy ya pasó (o es en menos de 10 min), se proyecta para mañana
+  if (targetDate.getTime() <= now.getTime()) {
+    targetDate.setDate(targetDate.getDate() + 1);
+  }
+
+  const diffMs = targetDate.getTime() - now.getTime();
+  const hoursUntilTarget = diffMs / (1000 * 60 * 60);
+  // Regla institucional: reservas requieren >= 4 horas de anticipación
+  const isTooSoon = hoursUntilTarget < 4;
+
+  const rawMeridianStr = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  const displayMin = minute > 0 ? `:${minute.toString().padStart(2, '0')}` : '';
+
   return {
     hasRequestedTime: true,
-    rawTimeStr: match[0].trim(),
+    rawTimeStr: `${displayHour}${displayMin} ${rawMeridianStr}`,
     hour,
     minute,
+    targetDate,
+    isTooSoon,
+    hoursUntilTarget,
     isOutsideAcademicHours
   };
 };
@@ -874,6 +934,188 @@ Tienes facultades plenas:
     teacherDirectives
   ]);
 
+  // Resolvedor inteligente de opciones de agendamiento (usado tanto por Groq Tool Calling como por Fallback)
+  const resolveBookingOptions = useCallback(
+    (queryText: string): { text: string; actionPayload?: InteractiveActionPayload } => {
+      const studentName =
+        user?.displayName || (user?.email ? user.email.split('@')[0] : 'Estudiante');
+      const timeCheck = parseRequestedTime(queryText);
+      const now = new Date();
+
+      if (availableCredits <= 0) {
+        return {
+          text: `Hola ${studentName}. En este momento tienes 0 créditos disponibles para agendar citas en este ciclo de tu plan ${planTitle}. Para obtener más créditos mensuales puedes actualizar al plan Pro+ (4 créditos al mes) o esperar a la renovación de tu período de facturación.`,
+          actionPayload: {
+            kind: 'credits_card',
+            credits: {
+              available: availableCredits,
+              consumed: consumedCredits,
+              planTitle,
+              cycleEnd: subscription?.currentPeriodEnd
+            }
+          }
+        };
+      }
+
+      if (timeCheck.hasRequestedTime) {
+        // Caso A: Solicitó hora con menos de 4 horas de anticipación (ej. "dentro de 3h")
+        if (timeCheck.isTooSoon) {
+          const earliestTime = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+          if (earliestTime.getMinutes() > 0 && earliestTime.getMinutes() <= 30) {
+            earliestTime.setMinutes(30, 0, 0);
+          } else if (earliestTime.getMinutes() > 30) {
+            earliestTime.setHours(earliestTime.getHours() + 1, 0, 0, 0);
+          }
+
+          const slot1 = {
+            id: `slot_soon_${earliestTime.getTime()}`,
+            title: `Tutoría Sincrónica (${safeDateTime(earliestTime.toISOString())})`,
+            instructorName: 'Ing. Iván Pérez (Docente Titular)',
+            startTimeUtc: earliestTime.toISOString(),
+            durationMinutes: 60,
+            courseSlug: 'ipt-master-fullstack',
+            isBooked: false,
+            tooLateToBook: false,
+            hoursUntilStart: 4
+          };
+
+          const laterTime = new Date(earliestTime.getTime() + 2 * 60 * 60 * 1000);
+          const slot2 = {
+            id: `slot_soon_${laterTime.getTime()}`,
+            title: `Tutoría Sincrónica (${safeDateTime(laterTime.toISOString())})`,
+            instructorName: 'Ing. Iván Pérez (Docente Titular)',
+            startTimeUtc: laterTime.toISOString(),
+            durationMinutes: 60,
+            courseSlug: 'ipt-master-fullstack',
+            isBooked: false,
+            tooLateToBook: false,
+            hoursUntilStart: 6
+          };
+
+          const dTomorrow = new Date();
+          dTomorrow.setDate(dTomorrow.getDate() + 1);
+          dTomorrow.setHours(8, 0, 0, 0);
+          const slot3 = {
+            id: `slot_soon_tomorrow_${dTomorrow.getTime()}`,
+            title: `Tutoría Sincrónica (${safeDateTime(dTomorrow.toISOString())})`,
+            instructorName: 'Ing. Iván Pérez (Docente Titular)',
+            startTimeUtc: dTomorrow.toISOString(),
+            durationMinutes: 60,
+            courseSlug: 'ipt-master-fullstack',
+            isBooked: false,
+            tooLateToBook: false,
+            hoursUntilStart: 18
+          };
+
+          const text = `Hola ${studentName}. He recibido tu solicitud para agendar ${timeCheck.rawTimeStr}. Ten en cuenta la directriz institucional de IPT Academy: las tutorías sincrónicas requieren programarse con un mínimo de **4 horas de anticipación** para que el docente titular prepare el aula interactiva y los laboratorios.\n\nPara facilitarte el agendamiento hoy mismo, he preparado para ti las opciones válidas más próximas a partir de la 4ª hora en adelante:`;
+
+          return {
+            text,
+            actionPayload: {
+              kind: 'sessions_picker',
+              sessions: [slot1, slot2, slot3]
+            }
+          };
+        }
+
+        // Caso B: Fuera de franja académica institucional (7:00 AM a 10:00 PM COT)
+        if (timeCheck.isOutsideAcademicHours) {
+          const text = `Hola ${studentName}. He identificado que solicitas tu clase a las **${timeCheck.rawTimeStr}**. Ten en cuenta que las tutorías sincrónicas con los docentes de IPT Academy operan en la franja institucional de **7:00 AM a 10:00 PM (hora de Colombia)** para garantizar el acompañamiento activo y en vivo del profesor titular.\n\nPara facilitarte el agendamiento, he preparado los horarios más convenientes dentro de la jornada habilitada:`;
+
+          const d7 = new Date();
+          d7.setDate(d7.getDate() + 1);
+          d7.setHours(7, 0, 0, 0);
+
+          const d8 = new Date();
+          d8.setDate(d8.getDate() + 1);
+          d8.setHours(8, 0, 0, 0);
+
+          const d10 = new Date();
+          d10.setDate(d10.getDate() + 1);
+          d10.setHours(10, 0, 0, 0);
+
+          return {
+            text,
+            actionPayload: {
+              kind: 'sessions_picker',
+              sessions: [
+                {
+                  id: 'slot_custom_07am',
+                  title: 'Tutoría Sincrónica (07:00 AM COT)',
+                  instructorName: 'Ing. Iván Pérez (Docente Titular)',
+                  startTimeUtc: d7.toISOString(),
+                  durationMinutes: 60,
+                  courseSlug: 'ipt-master-fullstack',
+                  isBooked: false,
+                  tooLateToBook: false,
+                  hoursUntilStart: 17
+                },
+                {
+                  id: 'slot_custom_08am',
+                  title: 'Tutoría Sincrónica (08:00 AM COT)',
+                  instructorName: 'Ing. Iván Pérez (Docente Titular)',
+                  startTimeUtc: d8.toISOString(),
+                  durationMinutes: 60,
+                  courseSlug: 'ipt-master-fullstack',
+                  isBooked: false,
+                  tooLateToBook: false,
+                  hoursUntilStart: 18
+                },
+                {
+                  id: 'slot_custom_10am',
+                  title: 'Tutoría Sincrónica (10:00 AM COT)',
+                  instructorName: 'Ing. Iván Pérez (Docente Titular)',
+                  startTimeUtc: d10.toISOString(),
+                  durationMinutes: 60,
+                  courseSlug: 'ipt-master-fullstack',
+                  isBooked: false,
+                  tooLateToBook: false,
+                  hoursUntilStart: 20
+                }
+              ]
+            }
+          };
+        }
+
+        // Caso C: Hora específica válida (>= 4 horas de anticipación y dentro de franja institucional)
+        const targetDate = timeCheck.targetDate || new Date(now.getTime() + 4 * 60 * 60 * 1000);
+        const formattedDateStr = safeDateTime(targetDate.toISOString());
+        const customSession = {
+          id: `slot_custom_${targetDate.getTime()}`,
+          title: `Tutoría Sincrónica Personalizada (${formattedDateStr})`,
+          instructorName: 'Ing. Iván Pérez (Docente Titular)',
+          startTimeUtc: targetDate.toISOString(),
+          durationMinutes: 60,
+          courseSlug: 'ipt-master-fullstack',
+          isBooked: false,
+          tooLateToBook: false,
+          hoursUntilStart: Math.max(4, Math.round(timeCheck.hoursUntilTarget || 4))
+        };
+
+        const text = `¡Perfecto, ${studentName}! He preparado la sesión en el horario exacto que me solicitaste (${formattedDateStr}) con el docente titular. Haz clic a continuación para confirmar tu cupo con 1 solo clic (se descontará 1 crédito):\n\n• Clase: Tutoría Sincrónica Personalizada\n• Docente: Ing. Iván Pérez (Docente Titular)\n• Horario: ${formattedDateStr} (60 min)\n• Descuento: 1 crédito de tu bolsa mensual\n• Política de cancelación: Con más de 4 horas de anticipación se reembolsa el 100% de tu crédito.`;
+
+        return {
+          text,
+          actionPayload: {
+            kind: 'sessions_picker',
+            sessions: [customSession]
+          }
+        };
+      }
+
+      // Caso D: Agendamiento general sin hora específica
+      const text = `Hola ${studentName}. Tienes **${availableCredits} crédito(s) disponible(s)**. Aquí tienes las sesiones y tutorías magistrales programadas. Puedes agendar tu lugar con 1 clic (se descontará 1 crédito), o si lo prefieres, dime a qué hora específica deseas tu clase (ej: "a las 4pm"):`;
+      return {
+        text,
+        actionPayload: {
+          kind: 'sessions_picker',
+          sessions: preparedSessions
+        }
+      };
+    },
+    [user, availableCredits, consumedCredits, planTitle, subscription, preparedSessions]
+  );
+
   // Generador contextual con análisis inteligente de hora y cancelación
   const buildContextualResponse = useCallback(
     (question: string): { text: string; actionPayload?: InteractiveActionPayload } => {
@@ -966,9 +1208,11 @@ Tienes facultades plenas:
       }
 
       // =====================================================================
-      // 3. INTENCIÓN: AGENDAR CITA / SOLICITUD DE HORA ESPECÍFICA
+      // 3. INTENCIÓN: AGENDAR CITA / SOLICITUD DE HORA ESPECÍFICA / RESPUESTA DE HORA
       // =====================================================================
+      const timeCheck = parseRequestedTime(q);
       const isBookingKeyword =
+        timeCheck.hasRequestedTime ||
         q.includes('agendar') ||
         q.includes('agenda') ||
         q.includes('reservar') ||
@@ -981,127 +1225,12 @@ Tienes facultades plenas:
         q.includes('ver clases') ||
         q.includes('horarios') ||
         q.includes('clase a las') ||
-        q.includes('cita a las');
+        q.includes('cita a las') ||
+        q.includes('a las') ||
+        q.includes('dentro de');
 
       if (isBookingKeyword) {
-        if (availableCredits <= 0) {
-          const text = `Hola ${studentName}. En este momento tienes 0 créditos disponibles para agendar citas en este ciclo de tu plan ${planTitle}. Para obtener más créditos mensuales puedes actualizar al plan Pro+ (4 créditos al mes) o esperar a la renovación de tu período de facturación.`;
-          return {
-            text,
-            actionPayload: {
-              kind: 'credits_card',
-              credits: {
-                available: availableCredits,
-                consumed: consumedCredits,
-                planTitle,
-                cycleEnd: subscription?.currentPeriodEnd
-              }
-            }
-          };
-        }
-
-        // Analizar si el estudiante pidió una hora específica (ej. "a las 5am", "a las 10am")
-        const parsedTime = parseRequestedTime(q);
-
-        if (parsedTime.hasRequestedTime && parsedTime.isOutsideAcademicHours) {
-          // El estudiante pidió una hora fuera de la franja (ej. 5:00 AM)
-          const requestedStr = `${parsedTime.hour}:00 ${parsedTime.hour! < 12 ? 'AM' : 'PM'}`;
-          const text = `Hola ${studentName}. He identificado que solicitas tu clase a las **${requestedStr}**. Ten en cuenta que las tutorías sincrónicas con los docentes de IPT Academy operan en la franja institucional de **7:00 AM a 10:00 PM (hora de Colombia)** para garantizar el acompañamiento activo y en vivo del profesor titular.\n\nPara facilitarte el agendamiento, he preparado los horarios más tempranos y convenientes disponibles dentro de la jornada habilitada:`;
-
-          // Generar opciones matutinas para mañana a las 7:00 AM, 8:00 AM y 10:00 AM
-          const d7 = new Date();
-          d7.setDate(d7.getDate() + 1);
-          d7.setHours(7, 0, 0, 0);
-
-          const d8 = new Date();
-          d8.setDate(d8.getDate() + 1);
-          d8.setHours(8, 0, 0, 0);
-
-          const d10 = new Date();
-          d10.setDate(d10.getDate() + 1);
-          d10.setHours(10, 0, 0, 0);
-
-          const customEarlySessions = [
-            {
-              id: 'slot_custom_07am',
-              title: 'Tutoría Sincrónica (07:00 AM COT)',
-              instructorName: 'Ing. Iván Pérez (Docente Titular)',
-              startTimeUtc: d7.toISOString(),
-              durationMinutes: 60,
-              courseSlug: 'ipt-master-fullstack',
-              isBooked: false,
-              tooLateToBook: false,
-              hoursUntilStart: 17
-            },
-            {
-              id: 'slot_custom_08am',
-              title: 'Tutoría Sincrónica (08:00 AM COT)',
-              instructorName: 'Ing. Iván Pérez (Docente Titular)',
-              startTimeUtc: d8.toISOString(),
-              durationMinutes: 60,
-              courseSlug: 'ipt-master-fullstack',
-              isBooked: false,
-              tooLateToBook: false,
-              hoursUntilStart: 18
-            },
-            {
-              id: 'slot_custom_10am',
-              title: 'Tutoría Sincrónica (10:00 AM COT)',
-              instructorName: 'Ing. Iván Pérez (Docente Titular)',
-              startTimeUtc: d10.toISOString(),
-              durationMinutes: 60,
-              courseSlug: 'ipt-master-fullstack',
-              isBooked: false,
-              tooLateToBook: false,
-              hoursUntilStart: 20
-            }
-          ];
-
-          return {
-            text,
-            actionPayload: {
-              kind: 'sessions_picker',
-              sessions: customEarlySessions
-            }
-          };
-        } else if (parsedTime.hasRequestedTime && !parsedTime.isOutsideAcademicHours) {
-          // El estudiante pidió una hora válida dentro de la franja (ej. 10:00 AM o 3:00 PM)
-          const targetDate = new Date();
-          targetDate.setDate(targetDate.getDate() + 1);
-          targetDate.setHours(parsedTime.hour!, parsedTime.minute || 0, 0, 0);
-
-          const customSession = {
-            id: `slot_custom_${parsedTime.hour}_${parsedTime.minute || 0}`,
-            title: `Tutoría Sincrónica Personalizada (${safeDateTime(targetDate.toISOString())})`,
-            instructorName: 'Ing. Iván Pérez (Docente Titular)',
-            startTimeUtc: targetDate.toISOString(),
-            durationMinutes: 60,
-            courseSlug: 'ipt-master-fullstack',
-            isBooked: false,
-            tooLateToBook: false,
-            hoursUntilStart: 20
-          };
-
-          const text = `¡Perfecto, ${studentName}! He preparado la sesión en el horario exacto que me solicitaste (${safeDateTime(targetDate.toISOString())}) con el docente titular. Haz clic a continuación para confirmar tu cupo (se descontará 1 crédito):`;
-
-          return {
-            text,
-            actionPayload: {
-              kind: 'sessions_picker',
-              sessions: [customSession]
-            }
-          };
-        }
-
-        // Agendamiento general sin hora específica
-        const text = `Hola ${studentName}. Tienes **${availableCredits} crédito(s) disponible(s)**. Aquí tienes las sesiones y tutorías magistrales programadas. Puedes agendar tu lugar con 1 clic (se descontará 1 crédito), o si lo prefieres, dime a qué hora específica deseas tu clase:`;
-        return {
-          text,
-          actionPayload: {
-            kind: 'sessions_picker',
-            sessions: preparedSessions
-          }
-        };
+        return resolveBookingOptions(q);
       }
 
       // =====================================================================
@@ -1448,28 +1577,9 @@ Tienes facultades plenas:
         const { name, arguments: args } = agentResponse.toolCall;
 
         if (name === 'agendar_cita') {
-          if (availableCredits <= 0) {
-            replyText =
-              replyText ||
-              `Hola ${studentName}. Actualmente cuentas con 0 créditos en tu bolsa de clases en vivo. Cada sesión sincrónica requiere 1 crédito de tu suscripción mensual.`;
-            actionPayload = {
-              kind: 'credits_card',
-              credits: {
-                available: availableCredits,
-                consumed: consumedCredits,
-                planTitle,
-                cycleEnd: subscription?.currentPeriodEnd
-              }
-            };
-          } else {
-            replyText =
-              replyText ||
-              `Hola ${studentName}. Tienes ${availableCredits} crédito(s) disponible(s). A continuación te presento las sesiones y tutorías programadas. Puedes agendar tu lugar con 1 clic (se descontará 1 crédito):`;
-            actionPayload = {
-              kind: 'sessions_picker',
-              sessions: preparedSessions
-            };
-          }
+          const bookingRes = resolveBookingOptions(args?.horaDeseada || cleanPrompt);
+          replyText = replyText || bookingRes.text;
+          actionPayload = bookingRes.actionPayload;
         } else if (name === 'cancelar_cita') {
           if (userConfirmedBookings.length === 0) {
             replyText =

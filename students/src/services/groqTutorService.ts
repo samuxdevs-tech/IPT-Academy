@@ -53,15 +53,36 @@ export interface GroqTutorResponse {
   toolCall?: GroqToolCall;
 }
 
+const GROQ_MODEL = 'openai/gpt-oss-120b';
+const GROQ_CLIENT_KEY = process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.GROQ_API_KEY || '';
+
 const postToTutorApi = async (payload: Record<string, any>) => {
-  return await fetch('/api/tutor', {
+  try {
+    const localRes = await fetch('/api/tutor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (localRes.ok) {
+      return localRes;
+    }
+  } catch {
+    // Si /api/tutor falla (por ejemplo en hosting estático de Firebase), procedemos con llamada directa
+  }
+
+  // Invocación directa a Groq Cloud con soporte CORS
+  return await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${GROQ_CLIENT_KEY}`
+    },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      ...payload
+    })
   });
 };
-
-const GROQ_MODEL = 'openai/gpt-oss-120b';
 
 const TUTOR_TOOLS = [
   {
@@ -69,14 +90,14 @@ const TUTOR_TOOLS = [
     function: {
       name: 'agendar_cita',
       description:
-        'Muestra opciones de sesiones y permite agendar una cita o tutoría sincrónica para el estudiante. Úsala cuando el estudiante exprese la intención de agendar, programar, tomar una clase o reservar horario.',
+        'OBLIGATORIA: Invoca esta herramienta SIEMPRE que el estudiante exprese la intención de agendar, programar, tomar una clase, reservar horario, o mencione una hora específica (ej: "a las 4pm", "a las 10am") o plazos relativos (ej: "dentro de 3h", "en 2 horas"). Pasa en horaDeseada la hora o plazo indicado.',
       parameters: {
         type: 'object',
         properties: {
           horaDeseada: {
             type: 'string',
             description:
-              'Hora o fecha solicitada por el estudiante si la especificó (ej: 5am, 8:00 am, mañana en la tarde)'
+              'Hora o plazo solicitado por el estudiante (ej: "dentro de 3h", "a las 4pm", "10:30 am", "mañana a las 8am")'
           },
           motivo: {
             type: 'string',
@@ -241,7 +262,11 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
 5. REGLAS DE FORMATO Y PRESENTACIÓN VISUAL:
    - PROHIBIDO TERMINANTEMENTE escribir o generar tablas de texto Markdown (con barras verticales |---|---|) para mostrar citas o reservas.
    - NUNCA expongas códigos o IDs técnicos internos como "bkg_live_..." al estudiante.
-   - Cuando el estudiante pregunte por sus citas agendadas, citas pendientes o su agenda, simplemente llama a la herramienta 'consultar_citas'.`;
+   - Cuando el estudiante pregunte por sus citas agendadas, citas pendientes o su agenda, simplemente llama a la herramienta 'consultar_citas'.
+6. AGENDAMIENTO INTELIGENTE Y RESPUESTA A HORARIOS:
+   - Si el estudiante dice "agendame una clase para dentro de 3h", "a las 4pm", "quiero una cita", "agenda para mañana", o simplemente menciona una hora como "a las 4pm" o "4pm", DEBES invocar OBLIGATORIAMENTE la herramienta 'agendar_cita' pasando en 'horaDeseada' lo solicitado.
+   - NUNCA des saludos genéricos o preguntes "¿En qué te puedo colaborar?" si el estudiante te está respondiendo con una hora o pidiendo una clase.
+   - Anticipación de 4 horas: Las tutorías requieren un mínimo de 4 horas de anticipación. Si el estudiante pide una hora con menos de 4 horas (ej. "dentro de 3h"), llama igualmente a 'agendar_cita' con horaDeseada='dentro de 3h' y explícale con empatía la regla de las 4 horas de anticipación para que el docente aliste la sala, invitándolo a confirmar el turno más cercano a partir de la 4ª hora.`;
 
   const messagesPayload: any[] = [
     { role: 'system', content: systemPrompt }
