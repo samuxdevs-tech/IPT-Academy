@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { ref, onValue } from 'firebase/database';
+import { db } from '@/lib/firebase';
 import {
   Calendar as CalendarIcon,
   Download,
@@ -17,7 +19,7 @@ import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
 interface CalendarScheduleItem {
   id: string;
   title: string;
-  category: 'live_class' | 'assignment_due';
+  category: 'live_class' | 'assignment_due' | 'institutional' | 'tutoring' | 'exam';
   courseTitle: string;
   dateLabel: string;
   timeLabel: string;
@@ -31,11 +33,49 @@ export default function InstitutionalCalendarPage() {
   const { liveSessions: rawLiveSessions, assignments: rawAssignments } = useLms();
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [exportNotice, setExportNotice] = useState<string | null>(null);
+  const [rtdbEvents, setRtdbEvents] = useState<any[]>([]);
+
+  // Sincronización en tiempo real con Firebase RTDB (lms_calendar agendado por docentes)
+  useEffect(() => {
+    const calRef = ref(db, 'lms_calendar');
+    const unsub = onValue(calRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        const list = Array.isArray(val) ? val.filter(Boolean) : Object.values(val);
+        setRtdbEvents(list);
+      } else {
+        setRtdbEvents([]);
+      }
+    });
+
+    return () => unsub();
+  }, []);
 
   const realEvents = useMemo<CalendarScheduleItem[]>(() => {
     const list: CalendarScheduleItem[] = [];
 
-    // Clases en vivo reales de la plataforma
+    // 1. Eventos institucionales y clases programadas por docentes en RTDB (lms_calendar)
+    if (Array.isArray(rtdbEvents)) {
+      rtdbEvents.forEach((ev) => {
+        list.push({
+          id: `rtdb-${ev.id || Math.random()}`,
+          title: ev.title || 'Evento Académico IPT',
+          category: ev.category || 'institutional',
+          courseTitle: ev.courseTitle || ev.courseSlug || 'IPT Academy',
+          dateLabel: ev.startUtc
+            ? new Date(ev.startUtc).toLocaleDateString('es-CO', { dateStyle: 'long' })
+            : 'Fecha confirmada',
+          timeLabel: ev.startUtc
+            ? new Date(ev.startUtc).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+            : 'Hora coordinada',
+          instructorOrNote: ev.description || ev.locationOrUrl || 'Agenda Oficial Docente',
+          actionHref: ev.category === 'live_class' ? '/live' : '/home',
+          actionLabel: ev.category === 'live_class' ? 'Entrar a Sala en Vivo' : 'Ver Detalles',
+        });
+      });
+    }
+
+    // 2. Clases en vivo reales de la plataforma
     if (Array.isArray(rawLiveSessions)) {
       rawLiveSessions.forEach((sess) => {
         list.push({
@@ -52,7 +92,7 @@ export default function InstitutionalCalendarPage() {
       });
     }
 
-    // Tareas reales con fecha límite
+    // 3. Tareas reales con fecha límite
     if (Array.isArray(rawAssignments)) {
       rawAssignments.forEach((asg) => {
         list.push({
@@ -70,7 +110,7 @@ export default function InstitutionalCalendarPage() {
     }
 
     return list;
-  }, [rawLiveSessions, rawAssignments]);
+  }, [rtdbEvents, rawLiveSessions, rawAssignments]);
 
   const visibleEvents = useMemo(() => {
     if (filterCategory === 'all') return realEvents;

@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { ref, onValue } from 'firebase/database';
+import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useLms } from '@/context/LmsContext';
@@ -90,6 +92,44 @@ export default function StudentCampusPage() {
   const { liveSessions: rawLiveSessions } = useLms();
   const liveSessions = Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
 
+  const [allCoursesList, setAllCoursesList] = useState<SpecializationItem[]>(SYSTEM_COURSES);
+
+  // Sincronización en tiempo real con cursos creados/editados por docentes en RTDB (courses/)
+  useEffect(() => {
+    const coursesRef = ref(db, 'courses');
+    const unsub = onValue(coursesRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.val();
+      const loaded: SpecializationItem[] = Object.keys(data).map((k) => {
+        const item = data[k];
+        const modules = Array.isArray(item.modules) ? item.modules : [];
+        const lessonCount = modules.reduce((acc: number, m: any) => acc + (Array.isArray(m.lessons) ? m.lessons.length : 0), 0);
+        return {
+          slug: item.slug || k,
+          title: item.title || item.name || 'Especialización IPT',
+          subtitle: item.subtitle || (item.courseType === 'dynamic' ? 'Especialización Dinámica' : 'Curso Oficial IPT'),
+          description: item.description || 'Programa de alta ingeniería de software y arquitectura.',
+          category: item.category || 'Ingeniería de Software',
+          lessonsCount: lessonCount > 0 ? lessonCount : (item.lessonsCount || 20),
+          isFreePublic: item.courseType === 'free' || k === 'introduccion-ingenieria-ipt',
+        };
+      });
+
+      if (loaded.length > 0) {
+        // Combinar preservando cursos base
+        const merged = [...SYSTEM_COURSES];
+        loaded.forEach((nc) => {
+          const idx = merged.findIndex((ec) => ec.slug === nc.slug);
+          if (idx >= 0) merged[idx] = { ...merged[idx], ...nc };
+          else merged.push(nc);
+        });
+        setAllCoursesList(merged);
+      }
+    });
+
+    return () => unsub();
+  }, []);
+
   const currentPlanId = useMemo<'free' | 'pro' | 'pro_plus' | 'your_plan'>(() => {
     if (!subscription || !subscription.planId) {
       if (entitlements.campusTheme === 'campus-pro-plus') return 'pro_plus';
@@ -103,16 +143,16 @@ export default function StudentCampusPage() {
   // Cursos dinámicos disponibles para el estudiante según su nivel
   const userCourses = useMemo<SpecializationItem[]>(() => {
     if (currentPlanId === 'free') {
-      return SYSTEM_COURSES.filter((c) => c.isFreePublic);
+      return allCoursesList.filter((c) => c.isFreePublic);
     }
     if (currentPlanId === 'pro') {
       const activeSlug =
         subscription?.activeDynamicCourseSlugs?.[0] || 'ipt-master-fullstack';
-      const found = SYSTEM_COURSES.find((c) => c.slug === activeSlug);
-      return found ? [found] : [SYSTEM_COURSES[1]];
+      const found = allCoursesList.find((c) => c.slug === activeSlug);
+      return found ? [found] : [allCoursesList[1] || SYSTEM_COURSES[1]];
     }
     if (currentPlanId === 'pro_plus') {
-      return SYSTEM_COURSES.filter((c) => !c.isFreePublic);
+      return allCoursesList.filter((c) => !c.isFreePublic);
     }
     return [
       {
@@ -124,9 +164,9 @@ export default function StudentCampusPage() {
         category: 'Mentoría Especializada',
         lessonsCount: 16,
       },
-      ...SYSTEM_COURSES.filter((c) => !c.isFreePublic),
+      ...allCoursesList.filter((c) => !c.isFreePublic),
     ];
-  }, [currentPlanId, subscription]);
+  }, [currentPlanId, subscription, allCoursesList]);
 
   const [selectedCourseIndex, setSelectedCourseIndex] = useState(0);
   const [swapModalOpen, setSwapModalOpen] = useState(false);

@@ -3,6 +3,8 @@
 import React, { useState, useMemo, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { ref, set, onValue } from 'firebase/database';
+import { db } from '@/lib/firebase';
 import {
   Upload,
   FileText,
@@ -263,6 +265,86 @@ function StudentAssignmentsContent() {
     } catch {}
   }, [assignments]);
 
+  // Sincronización en tiempo real con Firebase RTDB (submissions y academic_appeals)
+  useEffect(() => {
+    const subsRef = ref(db, 'submissions');
+    const unsubSubs = onValue(subsRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.val();
+      const currentUid = user?.uid;
+      const currentEmail = user?.email?.toLowerCase();
+
+      setAssignments((prev) =>
+        prev.map((asg) => {
+          // Buscar entrega coincidente para esta tarea y este usuario
+          const matchedSub = Object.values(data).find((s: any) => {
+            const matchesAsg = s.assignment_id === asg.id || s.assignmentId === asg.id;
+            const matchesUser =
+              (currentUid && s.student_uid === currentUid) ||
+              (currentEmail && s.student_email?.toLowerCase() === currentEmail);
+            return matchesAsg && matchesUser;
+          }) as any;
+
+          if (!matchedSub) return asg;
+
+          return {
+            ...asg,
+            status: matchedSub.status === 'graded' ? 'graded' : 'submitted',
+            finalScore: typeof matchedSub.final_grade === 'number' ? matchedSub.final_grade : asg.finalScore,
+            teacherGeneralFeedback: matchedSub.teacher_feedback_text || asg.teacherGeneralFeedback,
+            gradedBy: matchedSub.graded_by || asg.gradedBy,
+            gradedAt: matchedSub.graded_at || asg.gradedAt,
+            submittedAssets: {
+              textNotes: matchedSub.submission_text_content || 'Entrega técnica registrada.',
+              repoUrl: matchedSub.repo_url || undefined,
+              files: Array.isArray(matchedSub.files) ? matchedSub.files : asg.submittedAssets?.files || [],
+              voiceNoteDurationSec: matchedSub.voice_note_duration_sec,
+              submittedAt: matchedSub.submitted_at || asg.submittedAssets?.submittedAt || new Date().toISOString(),
+            },
+          };
+        })
+      );
+    });
+
+    const appealsRef = ref(db, 'academic_appeals');
+    const unsubAppeals = onValue(appealsRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.val();
+      const currentUid = user?.uid;
+
+      setAssignments((prev) =>
+        prev.map((asg) => {
+          const matchedAppeal = Object.values(data).find(
+            (a: any) =>
+              (a.assignmentId === asg.id || a.assignment_id === asg.id) &&
+              (!currentUid || a.studentUid === currentUid)
+          ) as any;
+
+          if (!matchedAppeal) return asg;
+
+          return {
+            ...asg,
+            status: matchedAppeal.status === 'accepted_adjusted' ? 'graded' : 'appealed',
+            finalScore: typeof matchedAppeal.adjustedScore === 'number' ? matchedAppeal.adjustedScore : asg.finalScore,
+            appealRecord: {
+              folio: matchedAppeal.folio || matchedAppeal.id,
+              criterionId: matchedAppeal.criterionId,
+              criterionTitle: matchedAppeal.criterionTitle,
+              reason: matchedAppeal.studentAppealReason,
+              status: matchedAppeal.status === 'accepted_adjusted' || matchedAppeal.status === 'ratified_rejected' ? 'resolved' : 'pending_rectoria',
+              createdAt: matchedAppeal.createdAt,
+            },
+          };
+        })
+      );
+    });
+
+    return () => {
+      unsubSubs();
+      unsubAppeals();
+    };
+  }, [user]);
+
   const [selectedId, setSelectedId] = useState<string>(
     requestedId || INITIAL_ASSIGNMENTS[0].id
   );
@@ -326,13 +408,47 @@ function StudentAssignmentsContent() {
     setStagedFiles((prev) => [...prev, ...added]);
   };
 
-  const handleDeliverAssignment = (e: React.FormEvent) => {
+  const handleDeliverAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!notesInput.trim() && stagedFiles.length === 0 && !repoUrlInput.trim()) {
       return;
     }
 
-    const nowStr = new Date().toISOString().slice(0, 16).replace('T', ' ');
+    const nowIso = new Date().toISOString();
+    const nowStr = nowIso.slice(0, 16).replace('T', ' ');
+    const studentUid = user?.uid || 'usr_anon_student';
+    const studentName = user?.displayName || user?.email?.split('@')[0] || 'Estudiante IPT';
+    const studentEmail = user?.email || 'estudiante@iptapps.com';
+
+    const submissionPayload = {
+      id: `sub_${activeAssignment.id}_${studentUid}`,
+      assignment_id: activeAssignment.id,
+      assignment_title: activeAssignment.title,
+      course_slug: activeAssignment.courseSlug,
+      student_uid: studentUid,
+      student_name: studentName,
+      student_email: studentEmail,
+      submission_text_content: notesInput.trim() || 'Entrega técnica adjunta.',
+      repo_url: repoUrlInput.trim() || null,
+      files:
+        stagedFiles.length > 0
+          ? stagedFiles
+          : [{ name: 'entrega-arquitectura.pdf', sizeMb: 1.1, type: 'application/pdf' }],
+      voice_note_duration_sec: voiceDurationSec > 0 ? voiceDurationSec : null,
+      submitted_at: nowIso,
+      status: 'pending',
+      final_grade: null,
+      teacher_feedback_text: null,
+    };
+
+    // 1. Guardar en tiempo real en Firebase RTDB (leído por QuickGradingView del docente)
+    try {
+      await set(ref(db, `submissions/${submissionPayload.id}`), submissionPayload);
+    } catch (err) {
+      console.warn('Error guardando entrega en RTDB:', err);
+    }
+
+    // 2. Actualizar estado local reactivo
     setAssignments((prev) =>
       prev.map((item) =>
         item.id === activeAssignment.id
@@ -342,10 +458,7 @@ function StudentAssignmentsContent() {
               submittedAssets: {
                 textNotes: notesInput.trim() || 'Entrega técnica adjunta.',
                 repoUrl: repoUrlInput.trim() || undefined,
-                files:
-                  stagedFiles.length > 0
-                    ? stagedFiles
-                    : [{ name: 'entrega-arquitectura.pdf', sizeMb: 1.1, type: 'application/pdf' }],
+                files: submissionPayload.files,
                 voiceNoteDurationSec: voiceDurationSec > 0 ? voiceDurationSec : undefined,
                 submittedAt: nowStr,
               },
@@ -358,11 +471,11 @@ function StudentAssignmentsContent() {
     setStagedFiles([]);
     setVoiceDurationSec(0);
     setSubmitBanner(
-      'Tu entrega ha sido registrada y enviada al flujo de evaluación con rúbrica.'
+      'Tu entrega ha sido sincronizada en tiempo real con el Studio Docente para su evaluación.'
     );
   };
 
-  const handleFormalAppealSubmit = (e: React.FormEvent) => {
+  const handleFormalAppealSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!appealReason.trim()) return;
 
@@ -370,8 +483,40 @@ function StudentAssignmentsContent() {
       activeAssignment.rubric.find((c) => c.id === appealCriterionId) ||
       activeAssignment.rubric[0];
     const folio = `APL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const nowStr = new Date().toISOString().slice(0, 16).replace('T', ' ');
+    const nowIso = new Date().toISOString();
+    const nowStr = nowIso.slice(0, 16).replace('T', ' ');
+    const studentUid = user?.uid || 'usr_anon_student';
+    const studentName = user?.displayName || user?.email?.split('@')[0] || 'Estudiante IPT';
+    const studentEmail = user?.email || 'estudiante@iptapps.com';
 
+    const appealPayload = {
+      id: folio,
+      folio,
+      studentUid,
+      studentName,
+      studentEmail,
+      courseSlug: activeAssignment.courseSlug,
+      courseTitle: activeAssignment.courseTitle,
+      assignmentId: activeAssignment.id,
+      assignmentTitle: activeAssignment.title,
+      criterionId: crit.id,
+      criterionTitle: crit.title,
+      originalScore: crit.awardedPoints ?? 0,
+      maxScore: crit.maxPoints,
+      teacherComment: crit.teacherComment || 'Sin comentario inicial',
+      studentAppealReason: appealReason.trim(),
+      status: 'pending_rectoria',
+      createdAt: nowIso,
+    };
+
+    // 1. Guardar en tiempo real en Firebase RTDB (leído por RectoriaDeskWorkspace)
+    try {
+      await set(ref(db, `academic_appeals/${folio}`), appealPayload);
+    } catch (err) {
+      console.warn('Error guardando apelación en RTDB:', err);
+    }
+
+    // 2. Actualizar estado local reactivo
     setAssignments((prev) =>
       prev.map((item) =>
         item.id === activeAssignment.id
@@ -394,7 +539,7 @@ function StudentAssignmentsContent() {
     setAppealModalOpen(false);
     setAppealReason('');
     setAppealBanner(
-      `Apelación formal radicada ante Rectoría con folio ${folio}. Tu solicitud será auditada frente a la evidencia entregada.`
+      `Apelación formal radicada en vivo ante Rectoría con folio ${folio}. Tu solicitud será auditada frente a la evidencia entregada.`
     );
   };
 

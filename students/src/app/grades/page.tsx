@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { ref, onValue } from 'firebase/database';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 import {
   Award,
   CheckCircle2,
@@ -96,20 +99,86 @@ const DEFAULT_GRADES_SNAPSHOT: AssignmentItem[] = [
 ];
 
 function StudentGradesContent() {
+  const { user } = useAuth();
   const { subscription, switchDemoTier } = useSubscription();
   const [items, setItems] = useState<AssignmentItem[]>(DEFAULT_GRADES_SNAPSHOT);
   const [selectedCourseFilter, setSelectedCourseFilter] = useState<string>('all');
 
   useEffect(() => {
+    // 1. Cargar caché local primero para respuesta inmediata
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(STORAGE_KEY_ASSIGNMENTS);
         if (saved) {
-          const parsed = JSON.parse(saved); if (Array.isArray(parsed)) setItems(parsed);
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) setItems(parsed);
         }
       } catch {}
     }
-  }, []);
+
+    // 2. Suscribirse en tiempo real a Firebase RTDB (submissions y grades_override)
+    const subsRef = ref(db, 'submissions');
+    const unsubSubs = onValue(subsRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.val();
+      const currentUid = user?.uid;
+      const currentEmail = user?.email?.toLowerCase();
+
+      setItems((prev) =>
+        prev.map((asg) => {
+          const matchedSub = Object.values(data).find((s: any) => {
+            const matchesAsg = s.assignment_id === asg.id || s.assignmentId === asg.id;
+            const matchesUser =
+              (currentUid && s.student_uid === currentUid) ||
+              (currentEmail && s.student_email?.toLowerCase() === currentEmail);
+            return matchesAsg && matchesUser;
+          }) as any;
+
+          if (!matchedSub) return asg;
+
+          const isGraded = matchedSub.status === 'graded' && typeof matchedSub.final_grade === 'number';
+
+          return {
+            ...asg,
+            status: isGraded ? 'graded' : 'submitted',
+            finalScore: isGraded ? matchedSub.final_grade : asg.finalScore,
+            gradedBy: matchedSub.graded_by || 'Comité Docente IPT',
+            gradedAt: matchedSub.graded_at || asg.gradedAt || new Date().toISOString().slice(0, 16).replace('T', ' '),
+            description: matchedSub.teacher_feedback_text || asg.description,
+          };
+        })
+      );
+    });
+
+    const overrideRef = ref(db, 'grades_override');
+    const unsubOverride = onValue(overrideRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.val();
+      const currentUid = user?.uid;
+      if (!currentUid || !data[currentUid]) return;
+
+      const userOverrides = data[currentUid];
+      setItems((prev) =>
+        prev.map((asg) => {
+          const overrideScore = userOverrides[asg.id];
+          if (typeof overrideScore === 'number') {
+            return {
+              ...asg,
+              status: 'graded',
+              finalScore: overrideScore,
+              gradedBy: 'Rectoría Titular IPT (Ajuste)',
+            };
+          }
+          return asg;
+        })
+      );
+    });
+
+    return () => {
+      unsubSubs();
+      unsubOverride();
+    };
+  }, [user]);
 
   const filteredItems = useMemo(() => {
     if (selectedCourseFilter === 'all') return items;

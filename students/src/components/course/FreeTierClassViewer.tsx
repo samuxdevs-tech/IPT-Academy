@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { ref, set, onValue } from 'firebase/database';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 import { IptLogoIcon } from '@/components/IptLogoIcon';
 import {
   Play,
@@ -385,6 +388,7 @@ export const FREE_TIER_COURSE_MODULES: ModuleItem[] = [
 export default function FreeTierClassViewer() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
 
   // Obtener la lección solicitada por query (?lesson=1 o ?code=1.1)
   const initialLessonCode = searchParams?.get('code') || searchParams?.get('lesson') || '1.1';
@@ -401,6 +405,24 @@ export default function FreeTierClassViewer() {
     }
     return [];
   });
+
+  // Sincronizar en tiempo real el progreso del estudiante con Firebase RTDB (progress/{uid})
+  useEffect(() => {
+    if (!user?.uid) return;
+    const progressRef = ref(db, `progress/${user.uid}/completedLessons`);
+    const unsub = onValue(progressRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        if (Array.isArray(val)) {
+          setCompletedLessons(val);
+          try {
+            localStorage.setItem('ipt_free_course_progress', JSON.stringify(val));
+          } catch {}
+        }
+      }
+    });
+    return () => unsub();
+  }, [user]);
 
   // Todas las lecciones aplanadas para navegación secuencial sencilla
   const allLessons = useMemo(() => {
@@ -439,7 +461,7 @@ export default function FreeTierClassViewer() {
     'mod-4': false,
   });
 
-  // Toggle de completitud de la lección
+  // Toggle de completitud de la lección con persistencia viva en RTDB
   const toggleLessonCompleted = (lessonId: string) => {
     setCompletedLessons((prev) => {
       const next = prev.includes(lessonId)
@@ -449,6 +471,11 @@ export default function FreeTierClassViewer() {
         try {
           localStorage.setItem('ipt_free_course_progress', JSON.stringify(next));
         } catch {}
+      }
+      if (user?.uid) {
+        set(ref(db, `progress/${user.uid}/completedLessons`), next).catch(() => {});
+        set(ref(db, `progress/${user.uid}/lastActiveLesson`), lessonId).catch(() => {});
+        set(ref(db, `progress/${user.uid}/updatedAt`), new Date().toISOString()).catch(() => {});
       }
       return next;
     });
