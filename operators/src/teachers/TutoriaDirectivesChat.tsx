@@ -32,76 +32,17 @@ interface ActiveDirective {
   createdAt: string;
 }
 
-const GROQ_MODEL = "openai/gpt-oss-120b";
-const GROQ_API_KEY =
-  process.env.NEXT_PUBLIC_GROQ_API_KEY ||
-  process.env.GROQ_API_KEY ||
-  "";
-
-const TEACHER_TOOLS = [
-  {
-    type: "function",
-    function: {
-      name: "eliminar_directiva",
-      description:
-        "Elimina o levanta una directiva o bloqueo existente de la agenda. Úsala cuando el docente solicite eliminar, borrar, quitar, levantar o revocar una regla, horario bloqueado o recomendación existente.",
-      parameters: {
-        type: "object",
-        properties: {
-          id: {
-            type: ["string", "null"],
-            description: "ID exacto de la directiva en RTDB a eliminar (ej: '-P51lDj-LsnlMSHr-lFG')"
-          },
-          criterio: {
-            type: ["string", "null"],
-            description: "Texto o palabras clave de la directiva si no se tiene el ID exacto"
-          }
-        }
-      }
-    }
-  },
-  {
-    type: "function",
-    function: {
-      name: "crear_directiva",
-      description:
-        "Crea una nueva directiva de agenda. Úsala cuando el docente solicite bloquear una franja/día ('block') o recomendar/priorizar un horario ('recommend'). NUNCA la invoques si el docente está pidiendo eliminar o quitar una regla existente.",
-      parameters: {
-        type: "object",
-        properties: {
-          type: {
-            type: "string",
-            enum: ["block", "recommend"],
-            description: "'block' para bloqueos estrictos; 'recommend' para horarios recomendados"
-          },
-          description: {
-            type: "string",
-            description: "Descripción concisa y profesional de la directiva a aplicar"
-          }
-        },
-        required: ["type", "description"]
-      }
-    }
-  },
-  {
-    type: "function",
-    function: {
-      name: "consultar_directivas",
-      description: "Consulta y lista las directivas de agenda actualmente activas.",
-      parameters: {
-        type: "object",
-        properties: {}
-      }
-    }
-  }
-];
+const WORKERS_API_URL =
+  process.env.NEXT_PUBLIC_API_URL?.includes("ipt-course-api.vercel.app")
+    ? "https://ipt-course-api.samuxdevs.workers.dev"
+    : (process.env.NEXT_PUBLIC_API_URL || "https://ipt-course-api.samuxdevs.workers.dev");
 
 export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
   const [messages, setMessages] = useState<DirectiveMessage[]>([
     {
       id: "init-msg",
       sender: "tutoria",
-      text: "Hola, profesor Iván. Soy TutorIA para docentes. Estoy atenta a tus directivas pedagógicas y de agenda. Puedes decirme qué horarios específicos recomendar, bloquear o eliminar para los estudiantes.",
+      text: "Hola, profesor Iván. Soy TutorIA para docentes (Cloudflare Workers AI). Estoy atenta a tus directivas pedagógicas y de agenda. Puedes decirme qué horarios específicos recomendar, bloquear o eliminar para los estudiantes.",
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     }
   ]);
@@ -172,133 +113,49 @@ export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
 
     setMessages((prev) => [...prev, userMsg]);
 
-    // Resumen formateado de directivas para el LLM
-    const directivesSummary =
-      directives.length === 0
-        ? "No hay directivas activas en la agenda actualmente."
-        : directives
-            .map(
-              (d) =>
-                `- ID "${d.id}": [${d.type.toUpperCase()}] "${d.description}" (creada el ${d.createdAt})`
-            )
-            .join("\n");
-
-    const systemPrompt = `Eres TutorIA para Docentes, la asistente ejecutiva de agenda y orquestadora pedagógica personal del Ing. Iván Pérez (Docente Titular y Director de IPT Academy).
-Tu misión es gestionar las directivas de agenda que los alumnos verán y obedecerán al interactuar con TutorIA.
-
-DIRECTIVAS ACTIVAS EN ESTE MOMENTO EN LA AGENDA:
-${directivesSummary}
-
-INSTRUCCIONES CLAVE DE RESOLUCIÓN:
-1. ELIMINACIÓN DE DIRECTIVAS:
-   - Si el profesor Iván pide eliminar, quitar, borrar o levantar una regla o bloqueo existente (ej: "Elimina el bloqueo de 1 pm a 8pm", "quita la directiva...", "borra el bloqueo"):
-     Revisa la lista de directivas activas, identifica el ID correspondiente y llama a 'eliminar_directiva' con su ID.
-     ¡NUNCA crees una nueva directiva de bloqueo cuando te están pidiendo eliminarla!
-2. CREACIÓN DE DIRECTIVAS:
-   - Si pide un bloqueo (ej: "No me agendes antes de...", "bloquea viernes..."): llama a 'crear_directiva' con type: "block".
-   - Si pide una recomendación (ej: "Recomienda los lunes...", "prioriza las mañanas..."): llama a 'crear_directiva' con type: "recommend".
-3. CONSULTAS Y CONVERSACIÓN:
-   - Si saluda o hace preguntas generales, responde con trato respetuoso, ejecutivo y cercano ("profesor Iván"), con naturalidad humana y sin invocar herramientas innecesarias.`;
-
     try {
-      // 1. Invocación a Groq Cloud con Tool Calling
-      const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      // Invocación a Cloudflare Workers AI en ipt-course-api
+      const aiRes = await fetch(`${WORKERS_API_URL}/api/tutoria/teacher-directives`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${GROQ_API_KEY}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: GROQ_MODEL,
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...messages.slice(-4).map((m) => ({
-              role: m.sender === "teacher" ? "user" : "assistant",
-              content: m.text
-            })),
-            { role: "user", content: userText }
-          ],
-          tools: TEACHER_TOOLS,
-          tool_choice: "auto",
-          temperature: 0.3,
-          max_tokens: 512
+          message: userText,
+          activeDirectives: directives
         })
       });
 
-      if (groqRes.ok) {
-        const groqData = await groqRes.json();
-        const choice = groqData?.choices?.[0]?.message;
-
-        if (choice?.tool_calls && choice.tool_calls.length > 0) {
-          const toolCall = choice.tool_calls[0];
-          const toolName = toolCall.function?.name;
-          let toolArgs: Record<string, any> = {};
-          try {
-            toolArgs = JSON.parse(toolCall.function?.arguments || "{}");
-          } catch {}
-
-          if (toolName === "eliminar_directiva") {
-            const targetId = toolArgs.id;
-            let matched = directives.find((d) => d.id === targetId);
-
-            // Búsqueda difusa si no coincide por ID directo
-            if (!matched && toolArgs.criterio) {
-              const critLower = toolArgs.criterio.toLowerCase();
-              matched = directives.find((d) => d.description.toLowerCase().includes(critLower));
-            }
-            if (!matched) {
-              const userLower = userText.toLowerCase();
-              matched = directives.find((d) => {
-                const desc = d.description.toLowerCase();
-                return (
-                  (desc.includes("1") && desc.includes("8")) ||
-                  desc.includes("1pm") ||
-                  desc.includes("bloqueo") ||
-                  userLower.includes(desc) ||
-                  desc.includes(userLower)
-                );
-              });
-            }
-
-            if (matched) {
-              await remove(ref(rtdb, `tutoria_directives/${matched.id}`));
-              const replyMsg: DirectiveMessage = {
-                id: `reply-${Date.now()}`,
-                sender: "tutoria",
-                text: `Entendido perfectamente, profesor Iván. He eliminado la directiva de bloqueo "${matched.description}". Esa franja horaria queda liberada y disponible en la agenda para los estudiantes.`,
-                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-              };
-              setMessages((prev) => [...prev, replyMsg]);
-            } else {
-              const replyMsg: DirectiveMessage = {
-                id: `reply-${Date.now()}`,
-                sender: "tutoria",
-                text: `Profesor Iván, no encontré una directiva activa que coincida exactamente con ese horario. Actualmente tienes vigentes:\n${directivesSummary}`,
-                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-              };
-              setMessages((prev) => [...prev, replyMsg]);
-            }
+      if (aiRes.ok) {
+        const json = await aiRes.json();
+        const data = json?.data;
+        if (data) {
+          if (data.action === "delete" && data.targetId) {
+            await remove(ref(rtdb, `tutoria_directives/${data.targetId}`));
+            const replyMsg: DirectiveMessage = {
+              id: `reply-${Date.now()}`,
+              sender: "tutoria",
+              text: data.reply || "Entendido perfectamente, profesor Iván. He eliminado la directiva de la agenda.",
+              time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            };
+            setMessages((prev) => [...prev, replyMsg]);
             setIsSending(false);
             return;
           }
 
-          if (toolName === "crear_directiva") {
+          if (data.action === "create" && data.directive) {
             const dirRef = ref(rtdb, "tutoria_directives");
             const newDirItem = push(dirRef);
             await set(newDirItem, {
-              type: toolArgs.type === "block" ? "block" : "recommend",
-              description: toolArgs.description || userText,
+              type: data.directive.type || "block",
+              description: data.directive.description || userText,
               createdAt: new Date().toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }),
               teacherUid: "samuxdevs"
             });
-
             const replyMsg: DirectiveMessage = {
               id: `reply-${Date.now()}`,
               sender: "tutoria",
-              text:
-                toolArgs.type === "block"
-                  ? `Entendido perfectamente, profesor Iván. He registrado el bloqueo estricto: "${toolArgs.description}". Cuando los estudiantes soliciten sesiones en ese rango, les informaré que no estás disponible y les sugeriré otros horarios.`
-                  : `Excelente directiva, profesor Iván. He priorizado este horario: "${toolArgs.description}". A los alumnos que consulten por tutorías les recomendaré preferentemente estos turnos.`,
+              text: data.reply || "Entendido perfectamente, profesor Iván. Directiva registrada con éxito.",
               time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             };
             setMessages((prev) => [...prev, replyMsg]);
@@ -306,38 +163,24 @@ INSTRUCCIONES CLAVE DE RESOLUCIÓN:
             return;
           }
 
-          if (toolName === "consultar_directivas") {
+          if (data.reply) {
             const replyMsg: DirectiveMessage = {
               id: `reply-${Date.now()}`,
               sender: "tutoria",
-              text: `Profesor Iván, estas son tus directivas de agenda activas en este momento:\n\n${directivesSummary}`,
+              text: data.reply,
               time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             };
             setMessages((prev) => [...prev, replyMsg]);
             setIsSending(false);
             return;
           }
-        }
-
-        // Respuesta conversacional directa del modelo
-        const replyText = choice?.content?.trim();
-        if (replyText) {
-          const replyMsg: DirectiveMessage = {
-            id: `reply-${Date.now()}`,
-            sender: "tutoria",
-            text: replyText,
-            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          };
-          setMessages((prev) => [...prev, replyMsg]);
-          setIsSending(false);
-          return;
         }
       }
     } catch (err) {
-      console.warn("Groq request failed, evaluating fallback:", err);
+      console.warn("Workers AI invocation error, proceeding to client fallback:", err);
     }
 
-    // RESOLUCIÓN SEMÁNTICA DE FALLBACK (SI GROQ NO RESPONDIÓ)
+    // RESOLUCIÓN SEMÁNTICA DE FALLBACK
     const lower = userText.toLowerCase();
     const isDeleteIntent =
       lower.includes("elimina") ||
@@ -348,7 +191,6 @@ INSTRUCCIONES CLAVE DE RESOLUCIÓN:
       lower.includes("levantar");
 
     if (isDeleteIntent) {
-      // Buscar la directiva a eliminar
       const matched = directives.find((d) => {
         const desc = d.description.toLowerCase();
         return (
@@ -365,7 +207,7 @@ INSTRUCCIONES CLAVE DE RESOLUCIÓN:
         const tutoriaReply: DirectiveMessage = {
           id: `reply-${Date.now()}`,
           sender: "tutoria",
-          text: `Entendido perfectamente, profesor Iván. He eliminado la directiva: "${matched.description}". Esa franja queda liberada en la agenda.`,
+          text: `Entendido perfectamente, profesor Iván. He eliminado la directiva: "${matched.description}". Esa franja horaria queda liberada en la agenda.`,
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
         };
         setMessages((prev) => [...prev, tutoriaReply]);
@@ -373,7 +215,7 @@ INSTRUCCIONES CLAVE DE RESOLUCIÓN:
         const tutoriaReply: DirectiveMessage = {
           id: `reply-${Date.now()}`,
           sender: "tutoria",
-          text: `Profesor Iván, no encontré una directiva que coincida con esa solicitud. Puedes usar el botón de papelera en el panel derecho si deseas retirar alguna regla.`,
+          text: `Profesor Iván, no encontré una directiva activa que coincida con esa solicitud. Puedes usar el botón de papelera en el panel derecho si deseas retirar alguna regla manualmente.`,
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
         };
         setMessages((prev) => [...prev, tutoriaReply]);
@@ -438,7 +280,7 @@ INSTRUCCIONES CLAVE DE RESOLUCIÓN:
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <h2 className="text-base font-bold text-white tracking-tight mt-0.5">
-              Chat Privado con TutorIA para Docentes
+              Chat Privado con TutorIA para Docentes (Workers AI)
             </h2>
             <p className="text-xs text-zinc-400 mt-0.5">
               Dicta pautas de agenda, franjas recomendadas y bloqueos técnicos. TutorIA las aplicará en tiempo real cuando converse con los alumnos.
@@ -457,7 +299,7 @@ INSTRUCCIONES CLAVE DE RESOLUCIÓN:
               </div>
               <div>
                 <h4 className="text-xs font-bold text-white">TutorIA · Orquestadora de Agenda</h4>
-                <p className="text-[10px] text-zinc-400 font-mono">Motor sincronizado con base de datos de estudiantes</p>
+                <p className="text-[10px] text-zinc-400 font-mono">Motor Cloudflare Workers AI sincronizado con base de datos de estudiantes</p>
               </div>
             </div>
           </div>
