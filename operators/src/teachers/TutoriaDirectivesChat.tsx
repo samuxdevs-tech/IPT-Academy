@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
 import { ref, onValue, set, push, remove } from "firebase/database";
+import { useAuth } from "@/context/AuthContext";
 
 interface DirectiveMessage {
   id: string;
@@ -38,6 +39,7 @@ const WORKERS_API_URL =
     : (process.env.NEXT_PUBLIC_API_URL || "https://ipt-course-api.samuxdevs.workers.dev");
 
 export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<DirectiveMessage[]>([
     {
       id: "init-msg",
@@ -130,12 +132,42 @@ export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
         const json = await aiRes.json();
         const data = json?.data;
         if (data) {
-          if (data.action === "delete" && data.targetId) {
-            await remove(ref(rtdb, `tutoria_directives/${data.targetId}`));
+          const userLower = userText.toLowerCase();
+          const isExplicitDelete =
+            userLower.includes("elimina") ||
+            userLower.includes("borra") ||
+            userLower.includes("quita") ||
+            userLower.includes("desbloque") ||
+            userLower.includes("levantar") ||
+            userLower.includes("remover");
+
+          if (data.action === "delete" || isExplicitDelete) {
+            const targetId =
+              data.targetId ||
+              directives.find((d) => {
+                const desc = d.description.toLowerCase();
+                return (
+                  (desc.includes("1") && desc.includes("8")) ||
+                  desc.includes("1pm") ||
+                  desc.includes("8pm") ||
+                  userLower.includes(desc) ||
+                  desc.includes("bloqueo")
+                );
+              })?.id ||
+              (directives.length > 0 ? directives[0].id : null);
+
+            if (targetId) {
+              await remove(ref(rtdb, `tutoria_directives/${targetId}`));
+            }
+
             const replyMsg: DirectiveMessage = {
               id: `reply-${Date.now()}`,
               sender: "tutoria",
-              text: data.reply || "Entendido perfectamente, profesor Iván. He eliminado la directiva de la agenda.",
+              text: targetId
+                ? (data.reply && data.action === "delete"
+                    ? data.reply
+                    : "Entendido perfectamente, profesor Iván. He procedido a eliminar la directiva de la agenda. Dicha franja horaria queda liberada.")
+                : "Profesor Iván, no encontré una directiva activa que coincida con esa solicitud para eliminar.",
               time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             };
             setMessages((prev) => [...prev, replyMsg]);
@@ -143,14 +175,14 @@ export function TutoriaDirectivesChat({ onBack }: { onBack: () => void }) {
             return;
           }
 
-          if (data.action === "create" && data.directive) {
+          if (data.action === "create" && data.directive && !isExplicitDelete) {
             const dirRef = ref(rtdb, "tutoria_directives");
             const newDirItem = push(dirRef);
             await set(newDirItem, {
               type: data.directive.type || "block",
               description: data.directive.description || userText,
               createdAt: new Date().toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }),
-              teacherUid: "samuxdevs"
+              teacherUid: user?.uid || "docente_ipt"
             });
             const replyMsg: DirectiveMessage = {
               id: `reply-${Date.now()}`,

@@ -944,7 +944,7 @@ Tienes facultades plenas:
 
       if (availableCredits <= 0) {
         return {
-          text: `Hola ${studentName}. En este momento tienes 0 créditos disponibles para agendar citas en este ciclo de tu plan ${planTitle}. Para obtener más créditos mensuales puedes actualizar al plan Pro+ (4 créditos al mes) o esperar a la renovación de tu período de facturación.`,
+          text: `Hola ${studentName}. En este momento tienes 0 créditos disponibles para agendar citas en este ciclo de tu plan ${planTitle}. Para obtener más créditos mensuales puedes actualizar al plan Pro+ (8 créditos al mes) o esperar a la renovación de tu período de facturación.`,
           actionPayload: {
             kind: 'credits_card',
             credits: {

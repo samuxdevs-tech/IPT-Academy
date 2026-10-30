@@ -187,9 +187,6 @@ function StudentLiveRoomContent() {
             audio: false,
           });
           mediaStreamRef.current = stream;
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = stream;
-          }
           setCamEnabled(true);
         } else {
           alert('Tu navegador no cuenta con soporte para cámara WebRTC.');
@@ -199,6 +196,13 @@ function StudentLiveRoomContent() {
       }
     }
   };
+
+  // Enlace reactivo del stream WebRTC al elemento <video> cuando se monta en el DOM
+  useEffect(() => {
+    if (camEnabled && localVideoRef.current && mediaStreamRef.current) {
+      localVideoRef.current.srcObject = mediaStreamRef.current;
+    }
+  }, [camEnabled]);
 
   useEffect(() => {
     return () => {

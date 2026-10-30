@@ -143,7 +143,10 @@ export function QuickGradingView() {
 
     // 3. Sincronizar en progress/${student_uid} para el libro de notas del estudiante
     try {
-      await set(ref(rtdb, `progress/${currentSub.student_uid}/ipt-master-fullstack/corte1Grade`), finalGrade);
+      const courseSlug = (currentSub as any).courseSlug || (currentSub as any).course_slug || 'ipt-master-fullstack';
+      const cutRaw = (currentSub as any).cutId || (currentSub as any).cut_id || 'corte1';
+      const cutGradeKey = cutRaw.toLowerCase().includes('grade') ? cutRaw : `${cutRaw.replace(/-([0-9])/, '$1')}Grade`;
+      await set(ref(rtdb, `progress/${currentSub.student_uid}/${courseSlug}/${cutGradeKey}`), finalGrade);
     } catch {}
 
     // 4. Respaldar en API si está disponible

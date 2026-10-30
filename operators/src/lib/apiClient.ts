@@ -33,6 +33,8 @@ export interface SubmissionItem {
   final_grade: number | null;
   teacher_feedback_text: string | null;
   teacher_audio_r2_url: string | null;
+  courseSlug?: string;
+  cutId?: string;
   files?: any[];
   rubricEvaluations?: any[];
   inlineAnnotations?: any[];
@@ -53,36 +55,36 @@ export const ApiClient = {
       return [
         {
           id: 'assign-1',
-          courseSlug: 'IPT Academy-360',
+          courseSlug: 'ipt-master-fullstack',
           courseTitle: 'IPT Master: Arquitectura de Software e IA',
-          moduleTitle: 'Módulo 1 · Cimientos Operativos',
-          cutId: 'corte-1',
+          moduleTitle: 'Módulo 1 · Cimientos y Clean Architecture',
+          cutId: 'corte1',
           weightInCutPercent: 30,
-          title: 'Taller de Parametrización y Aforo de Potreros',
-          instructions: 'Descarga la plantilla oficial, calcula la carga en UGM/ha y adjunta el informe en PDF con tus conclusiones.',
+          title: 'Taller de Contratos de Dominio, Zod y Control de Concurrencia',
+          instructions: 'Implementa los casos de uso con arquitectura limpia, tipado estricto en TypeScript y pruebas unitarias de idempotencia.',
           dueDateUtc: new Date(Date.now() + 86400000 * 5).toISOString(),
-          allowedExtensions: ['.pdf', '.xlsx', '.docx'],
+          allowedExtensions: ['.zip', '.pdf', '.ts'],
           maxFileSizeMb: 25,
           status: 'active',
           rubric: [
             {
               id: 'crit-1',
-              title: 'Cálculo Matemático de Capacidad de Carga',
+              title: 'Diseño de Entidades y Tipado Estricto',
               weightPercent: 40,
               levels: [
-                { title: 'Sobresaliente', points: 5.0, description: 'Cálculo impecable aplicando la fórmula zootécnica oficial.' },
-                { title: 'Aceptable', points: 3.5, description: 'Errores menores en redondeo pero metodología correcta.' },
-                { title: 'Insuficiente', points: 1.5, description: 'Valores erróneos y omisión de pérdidas por pisoteo.' }
+                { title: 'Sobresaliente', points: 5.0, description: 'Separación impecable de capas de dominio e infraestructura con esquemas Zod.' },
+                { title: 'Aceptable', points: 3.5, description: 'Estructura correcta con pequeñas redundancias de tipado.' },
+                { title: 'Insuficiente', points: 1.5, description: 'Acoplamiento excesivo y ausencia de validadores de entrada.' }
               ]
             },
             {
               id: 'crit-2',
-              title: 'Análisis Crítico y Recomendaciones Técnicas',
+              title: 'Manejo de Errores y Resiliencia en Edge',
               weightPercent: 60,
               levels: [
-                { title: 'Sobresaliente', points: 5.0, description: 'Propone rotación estratégica y ajuste estacional.' },
-                { title: 'Aceptable', points: 3.5, description: 'Recomendaciones básicas sin soporte numérico.' },
-                { title: 'Insuficiente', points: 1.0, description: 'Texto genérico copiado sin análisis propio.' }
+                { title: 'Sobresaliente', points: 5.0, description: 'Idempotencia probada ante reintentos y tolerancia a fallos.' },
+                { title: 'Aceptable', points: 3.5, description: 'Manejo básico de excepciones sin cobertura de contingencias concurrentes.' },
+                { title: 'Insuficiente', points: 1.0, description: 'Fallas silenciosas y ausencia de pruebas unitarias.' }
               ]
             }
           ]
@@ -108,15 +110,17 @@ export const ApiClient = {
           assignment_id: 'assign-1',
           student_uid: 'stu-alpha-1',
           student_name: 'Carlos Alberto Restrepo',
-          student_email: 'carlos.restrepo@agrovalle.com',
-          submission_text_content: 'Adjunto el informe de aforo de la Hacienda San Jerónimo. La capacidad calculada fue de 2.1 UGM/ha con rotación cada 28 días.',
+          student_email: 'carlos.restrepo@ivanperez.tech',
+          submission_text_content: 'Adjunto la implementación del servicio con outbox pattern en SQLite D1 y tipado con Zod. La tasa de idempotencia fue verificada con pruebas concurrentes.',
           submitted_at: new Date(Date.now() - 3600000 * 4).toISOString(),
           status: 'pending',
           final_grade: null,
           teacher_feedback_text: null,
           teacher_audio_r2_url: null,
+          courseSlug: 'ipt-master-fullstack',
+          cutId: 'corte1',
           files: [
-            { id: 'f-1', file_name: 'Informe_Aforo_Hda_SanJeronimo.pdf', file_size: 1450000, file_type: 'application/pdf', download_url: '#' }
+            { id: 'f-1', file_name: 'Solucion_Arquitectura_Limpia.zip', file_size: 1450000, file_type: 'application/zip', download_url: '#' }
           ]
         },
         {
@@ -124,15 +128,17 @@ export const ApiClient = {
           assignment_id: 'assign-1',
           student_uid: 'stu-alpha-2',
           student_name: 'María Fernanda Gómez',
-          student_email: 'mfgomez.vet@gmail.com',
-          submission_text_content: 'Profesor, envío la tabla de aforos con 3 repeticiones de marco de 1m². Encontré un forraje verde por metro cuadrado de 850 gramos.',
+          student_email: 'mfgomez.dev@ivanperez.tech',
+          submission_text_content: 'Profesor Iván, envío la separación de capas domain/application/infraestructura con pruebas de integración y métricas de latencia en Cloudflare Workers.',
           submitted_at: new Date(Date.now() - 3600000 * 2).toISOString(),
           status: 'pending',
           final_grade: null,
           teacher_feedback_text: null,
           teacher_audio_r2_url: null,
+          courseSlug: 'ipt-master-fullstack',
+          cutId: 'corte1',
           files: [
-            { id: 'f-2', file_name: 'Matriz_Aforo_Gomez.xlsx', file_size: 650000, file_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', download_url: '#' }
+            { id: 'f-2', file_name: 'Benchmark_Latencia_Worker.pdf', file_size: 650000, file_type: 'application/pdf', download_url: '#' }
           ]
         }
       ];
@@ -150,26 +156,26 @@ export const ApiClient = {
     } catch (err) {
       console.warn("Fallo en Workers AI remoto, generando revisión predictiva local asistida:", err);
       return {
-        suggestedFinalGrade: 4.6,
-        generalFeedback: 'El estudiante demuestra un dominio sobresaliente del concepto de aforo zootécnico y aplicación de la constante de pérdida por pisoteo. Se recomienda profundizar en el balance de materia seca durante época seca.',
+        suggestedFinalGrade: 4.8,
+        generalFeedback: 'El estudiante demuestra un dominio sobresaliente de Clean Architecture, tipado estricto y separación de capas de dominio. Se evidencia un correcto diseño de esquemas de validación Zod y pruebas de idempotencia.',
         criteriaEvaluations: [
           {
-            criterionTitle: 'Cálculo Matemático de Capacidad de Carga',
-            aiSuggestedPoints: 4.8,
-            aiQuote: 'La capacidad calculada fue de 2.1 UGM/ha con rotación cada 28 días.',
-            reasoning: 'El planteamiento numérico coincide exactamente con la fórmula estándar de IPT Master.'
+            criterionTitle: 'Diseño de Entidades y Tipado Estricto',
+            aiSuggestedPoints: 4.9,
+            aiQuote: 'tipado con Zod y contratos de dominio desacoplados de infraestructura',
+            reasoning: 'El planteamiento de los esquemas coincide con los estándares de producción de IPT Academy.'
           },
           {
-            criterionTitle: 'Análisis Crítico y Recomendaciones Técnicas',
-            aiSuggestedPoints: 4.4,
-            aiQuote: 'rotación cada 28 días',
-            reasoning: 'La rotación propuesta es coherente con el ciclo fenológico de la pastura Brachiaria decumbens.'
+            criterionTitle: 'Manejo de Errores y Resiliencia en Edge',
+            aiSuggestedPoints: 4.7,
+            aiQuote: 'outbox pattern en SQLite D1 y pruebas concurrentes',
+            reasoning: 'La estrategia de idempotencia mitiga efectivamente posibles condiciones de carrera en ejecuciones distribuidas.'
           }
         ],
         suggestedAnnotations: [
           {
-            lineOrSelection: 'capacidad calculada fue de 2.1 UGM/ha',
-            commentText: 'Excelente precisión en la estimación de forraje aprovechable.'
+            lineOrSelection: 'outbox pattern en SQLite D1',
+            commentText: 'Excelente arquitectura de resiliencia para entornos serverless en el edge.'
           }
         ]
       };

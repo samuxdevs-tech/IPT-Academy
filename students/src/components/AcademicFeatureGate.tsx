@@ -65,11 +65,11 @@ const FEATURE_METADATA: Record<
   grades: {
     icon: GraduationCap,
     badge: 'Registro Académico Institucional',
-    headline: 'Mis Notas y Kárdex Oficial',
+    headline: 'Mis Calificaciones y Registro Académico',
     subheadline:
       'Historial de rendimiento acumulado, ponderación por competencias y constancia de notas descargable.',
     whyLocked:
-      'El Kárdex oficial y la expedición de certificados de notas están reservados para estudiantes matriculados en planes de formación activa (Pro y Pro+).',
+      'El registro oficial de notas y la expedición de certificados de rendimiento académico están reservados para estudiantes matriculados en planes de formación activa (Pro y Pro+).',
     defaultMinPlan: 'pro',
   },
   live: {
@@ -333,7 +333,7 @@ export function AcademicFeatureGate({
                         Plan Pro+
                       </span>
                       <span className="text-[10px] text-emerald-400 block">
-                        Bolsa mensual de 4 créditos de tutoría
+                        Bolsa mensual de 8 créditos de tutoría
                       </span>
                     </div>
                   </div>

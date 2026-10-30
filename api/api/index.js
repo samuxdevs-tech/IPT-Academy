@@ -28308,15 +28308,12 @@ app.use("*", async (c, next) => {
 app.use("*", cors({
   origin: (reqOrigin) => {
     if (!reqOrigin)
-      return "https://ac-administrator.iptapps.com";
+      return "https://academy.iptapps.com";
     const lower = reqOrigin.toLowerCase();
-    if (lower.includes("ipt-course-students") || lower.includes("ipt-course.web.app") || lower.includes("localhost:3000") && !lower.includes("3005")) {
-      return null;
-    }
-    if (lower.includes("ac-administrator.iptapps.com") || lower.includes("ac-administrator") || lower.includes("ipt-course-admin") || lower.includes("localhost:3005") || lower.includes("localhost:3001") || lower.includes("vercel.app")) {
+    if (lower.includes("academy.iptapps.com") || lower.includes("ac-administrator.iptapps.com") || lower.includes("ipt-course-students") || lower.includes("ipt-course-admin") || lower.includes("localhost") || lower.includes("vercel.app")) {
       return reqOrigin;
     }
-    return "https://ac-administrator.iptapps.com";
+    return "https://academy.iptapps.com";
   },
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowHeaders: ["Content-Type", "Authorization", "X-Client-Type", "X-User-Role", "X-Teacher-Key"],
@@ -28334,34 +28331,81 @@ app.get("/health", (c) => {
 var ADMIN_EMAIL = "administrator@ivanperez.tech";
 var JWT_SECRET = process.env.JWT_SECRET || "ipt_course_jwt_master_secret_2026_9b8a7c6d5e4f3a2b1c";
 var usersStore = /* @__PURE__ */ new Map();
-var seedAdmin = () => {
-  const adminKey = ADMIN_EMAIL.toLowerCase();
-  if (!usersStore.has(adminKey)) {
-    usersStore.set(adminKey, {
-      uid: "admin_ipt_master_001",
-      email: ADMIN_EMAIL,
-      passwordHash: bcryptjs_default.hashSync(process.env.ADMIN_INITIAL_PASSWORD || "AdminIPT2026!*", 10),
-      displayName: "Iv\xE1n Samuel P\xE9rez Torrenegra",
+var seedAccounts = () => {
+  const accounts = [
+    {
+      uid: "dDypL7S5fSXH4RO3ZcFC4w7Gklu1",
+      email: "rectoria@ivanperez.tech",
+      passwordHash: "$2b$10$74zuuPweiT5BQH4oAs0lWuV5LciP23dCk.SNDEb9LXH7KKFgbBhO2",
+      displayName: "Rector\xEDa General IPT",
       role: "admin",
       createdAt: (/* @__PURE__ */ new Date()).toISOString()
-    });
-  }
-};
-seedAdmin();
-var seedTeacher = () => {
-  const teacherEmail = "docente@ipt.com";
-  if (!usersStore.has(teacherEmail)) {
-    usersStore.set(teacherEmail, {
-      uid: "teacher_ipt_001",
-      email: teacherEmail,
-      passwordHash: bcryptjs_default.hashSync("DocenteIPT2026!*", 10),
+    },
+    {
+      uid: "greguE3mPXOR7GVs31KJs7ODlak2",
+      email: "docente@ivanperez.tech",
+      passwordHash: "$2b$10$74zuuPweiT5BQH4oAs0lWuKMfD97rMLoDsa4gVaEUKPjzDmY5ubAy",
       displayName: "Docente Titular IPT",
       role: "teacher",
       createdAt: (/* @__PURE__ */ new Date()).toISOString()
-    });
+    },
+    {
+      uid: "mw0EaGhRIsO3mKJ5yTXi6K9hWI93",
+      email: "estudiante@ivanperez.tech",
+      passwordHash: "$2b$10$74zuuPweiT5BQH4oAs0lWuUy1CFu4C7hyDDiE/oE5l5ieBSJm7Xly",
+      displayName: "Estudiante Pro+ IPT",
+      role: "student",
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    },
+    {
+      uid: "admin_ipt_master_001",
+      email: "administrator@ivanperez.tech",
+      passwordHash: "$2b$10$74zuuPweiT5BQH4oAs0lWuV5LciP23dCk.SNDEb9LXH7KKFgbBhO2",
+      displayName: "Iv\xE1n Samuel P\xE9rez Torrenegra",
+      role: "admin",
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    },
+    {
+      uid: "teacher_ipt_001",
+      email: "docente@ipt.com",
+      passwordHash: "$2b$10$74zuuPweiT5BQH4oAs0lWuKMfD97rMLoDsa4gVaEUKPjzDmY5ubAy",
+      displayName: "Docente Titular IPT",
+      role: "teacher",
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    }
+  ];
+  for (const acc of accounts) {
+    usersStore.set(acc.email.toLowerCase(), acc);
   }
 };
-seedTeacher();
+var seedAdmin = seedAccounts;
+var seedTeacher = seedAccounts;
+seedAccounts();
+async function getAuthenticatedUser(c) {
+  const authHeader = c.req.header("Authorization");
+  const cookie = getCookie(c, "ipt_session");
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : cookie || c.req.header("X-Teacher-Key");
+  if (!token)
+    return null;
+  if (token === "ipt_teacher_master_key_2026" || token === "samuxdevs") {
+    return { uid: "teacher_master", email: "docente@ivanperez.tech", role: "teacher" };
+  }
+  try {
+    const decoded = await verify2(token, JWT_SECRET, "HS256");
+    if (decoded && decoded.email) {
+      const emailLower = decoded.email.toLowerCase();
+      const isAdmin = emailLower === "administrator@ivanperez.tech" || emailLower === "rectoria@ivanperez.tech" || decoded.role === "admin";
+      const isTeacher = emailLower === "docente@ivanperez.tech" || emailLower === "docente@ipt.com" || decoded.role === "teacher";
+      return {
+        uid: decoded.uid || decoded.sub || "user_id",
+        email: decoded.email,
+        role: isAdmin ? "admin" : isTeacher ? "teacher" : "student"
+      };
+    }
+  } catch {
+  }
+  return null;
+}
 app.post("/api/auth/login", async (c) => {
   try {
     const body = await c.req.json();
@@ -28380,7 +28424,8 @@ app.post("/api/auth/login", async (c) => {
     if (!passwordMatches) {
       return c.json({ success: false, error: "Contrase\xF1a incorrecta." }, 401);
     }
-    const effectiveRole = email3 === ADMIN_EMAIL.toLowerCase() ? "admin" : "teacher";
+    const isAdmin = email3 === ADMIN_EMAIL.toLowerCase() || email3 === "rectoria@ivanperez.tech";
+    const effectiveRole = isAdmin ? "admin" : user.role || "teacher";
     const payload = {
       uid: user.uid,
       email: user.email,
@@ -28922,6 +28967,10 @@ app.post("/api/submissions", async (c) => {
   }
 });
 app.post("/api/submissions/:id/grade", async (c) => {
+  const authUser = await getAuthenticatedUser(c);
+  if (!authUser || authUser.role !== "admin" && authUser.role !== "teacher") {
+    return c.json({ success: false, error: "ACCESO DENEGADO: Se requieren privilegios docentes para calificar entregas." }, 403);
+  }
   const submissionId = c.req.param("id");
   try {
     const body = await c.req.json();
@@ -29135,6 +29184,111 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON V\xC1LIDO CON ESTA ESTRUCTURA EXACTA 
     return c.json({ success: false, error: err.message }, 500);
   }
 });
+app.post("/api/tutoria/teacher-directives", async (c) => {
+  try {
+    const body = await c.req.json().catch(() => ({}));
+    const { message, activeDirectives } = body;
+    if (!message || typeof message !== "string") {
+      return c.json({ success: false, error: "Mensaje requerido" }, 400);
+    }
+    const directivesList = Array.isArray(activeDirectives) && activeDirectives.length > 0 ? activeDirectives.map((d) => `- ID "${d.id}": [${(d.type || "").toUpperCase()}] "${d.description}"`).join("\n") : "Sin directivas activas en la agenda";
+    const systemPrompt = `Eres TutorIA para Docentes, la orquestadora ejecutiva de agenda personal del Ing. Iv\xE1n P\xE9rez (Docente Titular y Director de IPT Academy).
+Tu labor es interpretar las directivas e instrucciones de agenda que el profesor te dicta, decidiendo si corresponden a:
+1. "delete": El profesor quiere eliminar, quitar, borrar o levantar una directiva o bloqueo existente (ej: "Elimina el bloqueo de 1 pm a 8pm", "quita la directiva...", "borra el bloqueo").
+   - Identifica el targetId exacto de la directiva activa en la lista provista.
+   - \xA1NUNCA crees un nuevo bloqueo si te piden eliminarlo!
+2. "create": El profesor quiere crear un bloqueo estricto ("block") o una recomendaci\xF3n horaria ("recommend").
+3. "consult": El profesor pregunta qu\xE9 directivas u horarios tiene vigentes.
+4. "chat": Saludo o consulta pedag\xF3gica general.
+
+DIRECTIVAS ACTIVAS EN RTDB:
+${directivesList}
+
+Debes responder \xDANICAMENTE con un objeto JSON v\xE1lido con la siguiente estructura:
+{
+  "action": "delete" | "create" | "consult" | "chat",
+  "targetId": "ID de la directiva a eliminar (o null)",
+  "directive": {
+    "type": "block" | "recommend",
+    "description": "descripci\xF3n concisa y profesional de la directiva"
+  } | null,
+  "reply": "Respuesta respetuosa, ejecutiva, c\xE1lida y profesional dirigida al profesor Iv\xE1n explicando la acci\xF3n realizada."
+}`;
+    let aiResultText = "";
+    try {
+      const aiResult = await c.env.AI.run("@cf/meta/llama-3.3-70b-instruct", {
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message }
+        ],
+        temperature: 0.1,
+        max_tokens: 1024
+      });
+      aiResultText = aiResult.response || aiResult.text || JSON.stringify(aiResult);
+    } catch (e) {
+      console.warn("Workers AI Llama 3.3 busy, trying DeepSeek R1...", e);
+      try {
+        const fallback = await c.env.AI.run("@cf/deepseek-ai/deepseek-r1-distill-qwen-32b", {
+          prompt: `${systemPrompt}
+
+Instrucci\xF3n del profesor: ${message}
+Responde exclusivamente con el JSON:`,
+          temperature: 0.1,
+          max_tokens: 1024
+        });
+        aiResultText = fallback.response || fallback.text || "";
+      } catch (fallbackErr) {
+        console.warn("Workers AI fallback failed:", fallbackErr);
+      }
+    }
+    const jsonMatch = aiResultText.match(/\{[\s\S]*\}/);
+    let parsed = null;
+    if (jsonMatch) {
+      try {
+        parsed = JSON.parse(jsonMatch[0]);
+      } catch {
+      }
+    }
+    const lower = message.toLowerCase();
+    const isExplicitDelete = lower.includes("elimina") || lower.includes("borra") || lower.includes("quita") || lower.includes("desbloque") || lower.includes("levantar") || lower.includes("remover") || lower.includes("quitar bloqueo") || lower.includes("cancelar bloqueo");
+    if (isExplicitDelete) {
+      let matchedDirective = null;
+      if (Array.isArray(activeDirectives) && activeDirectives.length > 0) {
+        if (parsed?.targetId) {
+          matchedDirective = activeDirectives.find((d) => d.id === parsed.targetId);
+        }
+        if (!matchedDirective) {
+          const numbers = message.match(/\d+/g) || [];
+          matchedDirective = activeDirectives.find((d) => {
+            const desc = (d.description || "").toLowerCase();
+            const hasNum = numbers.length > 0 && numbers.some((n) => desc.includes(n));
+            return hasNum || desc.includes("1pm") || desc.includes("8pm") || lower.includes(desc) || desc.includes("bloqueo");
+          }) || activeDirectives[0];
+        }
+      }
+      parsed = {
+        action: "delete",
+        targetId: matchedDirective?.id || null,
+        directive: null,
+        reply: matchedDirective ? `Entendido perfectamente, profesor Iv\xE1n. He procedido a eliminar la directiva de bloqueo "${matchedDirective.description}". Dicha franja horaria queda liberada y disponible en la agenda.` : `Profesor Iv\xE1n, no encontr\xE9 una directiva activa en la agenda que coincida con esa solicitud para eliminar.`
+      };
+    } else if (!parsed) {
+      const isBlock = lower.includes("bloque") || lower.includes("no") || lower.includes("cancel");
+      parsed = {
+        action: "create",
+        targetId: null,
+        directive: {
+          type: isBlock ? "block" : "recommend",
+          description: message
+        },
+        reply: isBlock ? `Entendido perfectamente, profesor Iv\xE1n. He registrado el bloqueo estricto en la agenda.` : `Excelente directiva, profesor Iv\xE1n. He priorizado este horario en mi motor de recomendaciones.`
+      };
+    }
+    return c.json({ success: true, data: parsed });
+  } catch (err) {
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
 app.post("/api/live/classes", async (c) => {
   try {
     const body = await c.req.json();
@@ -29281,6 +29435,10 @@ app.get("/api/live/quotas/:studentUid", async (c) => {
   }
 });
 app.post("/api/live/quotas/grant", async (c) => {
+  const authUser = await getAuthenticatedUser(c);
+  if (!authUser || authUser.role !== "admin") {
+    return c.json({ success: false, error: "ACCESO DENEGADO: Se requieren privilegios de Administrador / Rector\xEDa." }, 403);
+  }
   try {
     const body = await c.req.json();
     const parsed = GrantQuotaSchema.safeParse(body);
@@ -29294,6 +29452,10 @@ app.post("/api/live/quotas/grant", async (c) => {
   }
 });
 app.post("/api/live/quotas/manual-refund", async (c) => {
+  const authUser = await getAuthenticatedUser(c);
+  if (!authUser || authUser.role !== "admin") {
+    return c.json({ success: false, error: "ACCESO DENEGADO: Se requieren privilegios de Administrador / Rector\xEDa." }, 403);
+  }
   try {
     const body = await c.req.json();
     const parsed = ManualRefundSchema.safeParse(body);

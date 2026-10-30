@@ -18,7 +18,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
-import { AssignmentItem } from '@/app/assignments/page';
+import { AssignmentItem } from '@/types/assignments';
 import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
 
 const STORAGE_KEY_ASSIGNMENTS = 'ipt_student_assignments_v3_clean';

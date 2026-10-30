@@ -79,7 +79,7 @@ export const DEFAULT_RECTORIA_OFFER: RectoriaTrialOffer = {
   discountNote: 'Tarifa de fomento académico aprobada por Rectoría para nuevos estudiantes',
   perks: [
     'Entrega de tareas y corrección docente con rúbricas oficiales',
-    'Kárdex y registro acumulado de rendimiento académico',
+    'Historial oficial y registro acumulado de rendimiento académico',
     'Acceso completo a escenarios interactivos y laboratorios',
     'Cancelación flexible en 1 clic sin llamadas ni penalidades',
   ],

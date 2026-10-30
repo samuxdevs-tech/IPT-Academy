@@ -25,6 +25,7 @@ export const DEFAULT_OWNER_EMAILS = [
   'ivan@ipt.edu.co',
   'ivan.perez@ipt.edu.co',
   'administrator@ivanperez.tech',
+  'rectoria@ivanperez.tech',
 
 
 ];

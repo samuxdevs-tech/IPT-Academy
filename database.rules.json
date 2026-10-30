@@ -2,135 +2,141 @@
   "rules": {
     "courses": {
       ".read": true,
-      ".write": true
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || root.child('roles').child(auth.uid).val() === 'admin' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
     },
     "lms_plan_configs": {
       ".read": true,
-      ".write": true
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "lms_subscriptions": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
+      }
     },
     "lms_organizations": {
       ".read": "auth != null",
-      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')"
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "lms_organization_members": {
       ".read": "auth != null",
-      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')"
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "lms_your_plan_requests": {
       "$id": {
-        ".read": "auth != null && (data.child('uid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
+        ".read": "auth != null && (data.child('uid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
         ".write": "auth != null"
       }
     },
     "lms_live_bookings": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com')",
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')",
       "$bookingId": {
-        ".read": "auth != null && (data.child('uid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
-        ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true)"
+        ".read": "auth != null && (data.child('uid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
+        ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
       }
     },
     "lms_payment_attempts": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
       ".write": "auth != null"
     },
     "lms_invoices": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
-        ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')"
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
+        ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
       }
     },
     "lms_notifications": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
-        ".write": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')"
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
       }
     },
     "teacher_hr_configs": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
-      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')"
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "fraud_card_fingerprints": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
       "$fingerprint": {
         ".write": "!data.exists() || (newData.exists() && newData.child('firstUsedByUid').val() === data.child('firstUsedByUid').val())"
       }
     },
     "lms_assignments": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
     },
     "lms_calendar": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
     },
     "lms_live_sessions": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
     },
     "liveSessions": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
     },
     "active_live_quiz": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
     },
     "student_groups": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "question_bank": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
     },
     "submissions": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      "$subId": {
+        ".write": "auth != null && (!data.exists() || data.child('student_uid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
+      }
     },
     "tutoria_directives": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
     },
     "audit_logs": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
+      ".write": "auth != null"
     },
     "security_roles": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "system_config": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "metrics": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "scenarios": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "missions": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "certificates": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "issued_certificates": {
       ".read": true,
-      ".write": true
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "users": {
-      ".read": true,
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')",
       "$uid": {
-        ".write": true,
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
         "hasUsedTrial": {
           ".validate": "!data.exists() || data.val() !== true || newData.val() === true"
         }
@@ -138,82 +144,87 @@
     },
     "roles": {
       ".read": "auth != null",
-      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')"
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "preassigned_roles": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
-      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')"
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "legal_consents": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
         ".write": "auth != null && auth.uid === $uid"
       },
-      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'admin' || root.child('roles').child(auth.uid).val() === 'owner' || auth.token.email === 'samuxdevs@gmail.com')"
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'admin' || root.child('roles').child(auth.uid).val() === 'owner' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "progress": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
+      }
     },
     "telemetry": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
       ".write": "auth != null"
     },
     "attempts": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com')",
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')",
         ".write": "auth != null && auth.uid === $uid"
       }
     },
     "notes": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
         ".write": "auth != null && auth.uid === $uid"
       }
     },
     "questions": {
       ".read": true,
       "$questionId": {
-        ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor')"
+        ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')"
       }
     },
     "admins": {
       ".read": "auth != null",
-      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')"
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "last_access": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
+        ".read": "auth != null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
         ".write": "auth != null && auth.uid === $uid"
       }
     },
     "operator": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com')",
-      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')"
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('roles').child(auth.uid).val() === 'instructor' || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech' || auth.token.email === 'docente@ivanperez.tech')",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "operator_settings": {
-      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')",
-      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com')"
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "devops_audit_logs": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')",
+      ".write": "auth != null"
     },
     "rectoria_trial_offers": {
       ".read": true,
-      ".write": true
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "rectoria_directives": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     },
     "academic_appeals": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      "$appealId": {
+        ".write": "auth != null && (!data.exists() || data.child('studentUid').val() === auth.uid || root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
+      }
     },
     "grades_override": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || auth.token.email === 'samuxdevs@gmail.com' || auth.token.email === 'rectoria@ivanperez.tech')"
     }
   }
 }
