@@ -24,6 +24,7 @@ import {
   Eraser,
   Download,
   AlertCircle,
+  Sparkles,
 } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useAuth } from '@/context/AuthContext';
@@ -268,6 +269,28 @@ function StudentLiveRoomContent() {
 
   const currentPlanId = subscription?.planId || 'free';
 
+  const daysUntilRenewal = useMemo(() => {
+    if (!subscription) return 30;
+    const targetIso = subscription.creditsResetAt || subscription.currentPeriodEnd;
+    if (!targetIso) return 30;
+    const diffMs = new Date(targetIso).getTime() - Date.now();
+    return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+  }, [subscription]);
+
+  const formattedRenewalDate = useMemo(() => {
+    if (!subscription) return '';
+    const targetIso = subscription.creditsResetAt || subscription.currentPeriodEnd;
+    if (!targetIso) return '';
+    try {
+      return new Date(targetIso).toLocaleDateString('es-CO', {
+        day: 'numeric',
+        month: 'long',
+      });
+    } catch {
+      return '';
+    }
+  }, [subscription]);
+
   // Reserva real de cupos
   const isBooked = useMemo(() => {
     if (!activeSession) return false;
@@ -279,7 +302,15 @@ function StudentLiveRoomContent() {
   const handleReserveSeat = async () => {
     if (!activeSession) return;
     if (entitlements.availableLiveCredits <= 0) {
-      setStatusMessage('No tienes créditos disponibles en este ciclo para reservar clases.');
+      if (currentPlanId === 'free' || currentPlanId === 'pro') {
+        setStatusMessage('No cuentas con créditos disponibles. Aumenta tu membresía a Plan Pro+ para reservar cupo.');
+        openPricingModal('pro_plus');
+      } else if (currentPlanId === 'pro_plus') {
+        setStatusMessage(`Has consumido tus créditos de este ciclo. Se regenerarán en ${daysUntilRenewal} días o puedes aumentar a Your Plan.`);
+        openPricingModal('your_plan');
+      } else {
+        setStatusMessage(`Has consumido tus créditos de este ciclo. Se regenerarán en ${daysUntilRenewal} días.`);
+      }
       return;
     }
     try {
@@ -379,41 +410,88 @@ function StudentLiveRoomContent() {
           </div>
         </div>
 
-        {/* Aviso si el usuario cuenta con créditos especiales autorizados por Rectoría */}
-        {(currentPlanId === 'free' || currentPlanId === 'pro') && entitlements.availableLiveCredits > 0 && (
-          <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
-                Créditos Autorizados por Despacho de Rectoría
-              </span>
-              <p className="text-xs text-[#d1d5db]">
-                Cuentas con {entitlements.availableLiveCredits} crédito(s) activo(s) para reservar cupos y participar en sesiones en vivo.
-              </p>
+        {/* CASO 1: TIENE CRÉDITOS ACTIVOS (credits > 0) */}
+        {entitlements.availableLiveCredits > 0 && (
+          (currentPlanId === 'free' || currentPlanId === 'pro') && (
+            <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+                  Créditos Autorizados por Despacho de Rectoría
+                </span>
+                <p className="text-xs text-[#d1d5db]">
+                  Cuentas con {entitlements.availableLiveCredits} crédito(s) activo(s) para reservar cupos y participar en sesiones en vivo y tutorías.
+                </p>
+              </div>
             </div>
-          </div>
+          )
         )}
 
-        {/* Aviso si el usuario no tiene plan con clases en vivo ni créditos especiales */}
-        {(currentPlanId === 'free' || currentPlanId === 'pro') && entitlements.availableLiveCredits <= 0 && (
-          <div className="rounded-2xl border border-[#ffb829]/40 bg-gradient-to-r from-[#ffb829]/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#ffb829]">
-                Acceso a Clases en Vivo
-              </span>
-              <p className="text-xs text-[#d1d5db]">
-                Las clases en vivo con el docente y las asesorías 1 a 1 están incluidas en el Plan Pro+ y Your Plan.
-              </p>
-            </div>
-            <div className="flex items-center gap-2.5 shrink-0">
-              <button
-                type="button"
-                onClick={() => openPricingModal('pro_plus')}
-                className="px-4 py-2 rounded-full bg-[#ffb829] text-black text-xs font-bold cursor-pointer hover:bg-[#e5a524] transition-colors"
-              >
-                Actualizar a Plan Pro+
-              </button>
-            </div>
-          </div>
+        {/* CASO 2: SIN CRÉDITOS (credits <= 0) - VALIDACIÓN POR PLAN */}
+        {entitlements.availableLiveCredits <= 0 && (
+          <>
+            {/* Si es Free o Pro: Banner para aumentar de membresía a Plan Pro+ */}
+            {(currentPlanId === 'free' || currentPlanId === 'pro') && (
+              <div className="rounded-2xl border border-[#ffb829]/40 bg-gradient-to-r from-[#ffb829]/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#ffb829]">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Aumentar Membresía · Clases en Vivo y Tutorías 1 a 1</span>
+                  </div>
+                  <p className="text-xs text-[#d1d5db]">
+                    No cuentas con créditos disponibles para clases en vivo. Actualiza a Plan Pro+ para recibir tus créditos mensuales de clase con los profesores y resolución de dudas en tiempo real.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => openPricingModal('pro_plus')}
+                    className="px-5 py-2.5 rounded-full bg-[#ffb829] hover:bg-[#e5a524] text-black text-xs font-bold cursor-pointer transition-colors shadow-[0_0_15px_rgba(255,184,41,0.3)]"
+                  >
+                    Aumentar a Plan Pro+
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Si es Pro+: Avisar que espere N días para regenerar créditos o aumentar a Your Plan */}
+            {currentPlanId === 'pro_plus' && (
+              <div className="rounded-2xl border border-[#8052ff]/40 bg-gradient-to-r from-[#8052ff]/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#a78bfa]">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Créditos de Clase Consumidos · Plan Pro+</span>
+                  </div>
+                  <p className="text-xs text-[#d1d5db]">
+                    Has utilizado tus créditos incluidos en este ciclo. Tus créditos se regenerarán automáticamente en <strong className="text-white font-semibold">{daysUntilRenewal} días</strong>{formattedRenewalDate ? ` (el ${formattedRenewalDate})` : ''}, o puedes aumentar a <strong className="text-[#a78bfa]">Your Plan</strong> para recibir 12 créditos mensuales y temario individual 1 a 1 a la medida.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => openPricingModal('your_plan')}
+                    className="px-5 py-2.5 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-white text-xs font-bold cursor-pointer transition-colors shadow-[0_0_20px_rgba(128,82,255,0.4)]"
+                  >
+                    Aumentar a Your Plan
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Si es Your Plan: Aviso de ciclo */}
+            {currentPlanId === 'your_plan' && (
+              <div className="rounded-2xl border border-[#15846e]/40 bg-gradient-to-r from-[#15846e]/15 via-[#09090b] to-[#09090b] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#34d399]">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Créditos del Ciclo Consumidos · Your Plan</span>
+                  </div>
+                  <p className="text-xs text-[#d1d5db]">
+                    Has completado tus sesiones de este ciclo. Tu balance de 12 créditos se regenerará automáticamente en <strong className="text-white font-semibold">{daysUntilRenewal} días</strong>{formattedRenewalDate ? ` (el ${formattedRenewalDate})` : ''}.
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {statusMessage && (

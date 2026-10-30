@@ -190,9 +190,39 @@ export default function StudentCampusPage() {
     }
   }, [currentPlanId]);
 
+  const daysUntilRenewal = useMemo(() => {
+    if (!subscription) return 30;
+    const targetIso = subscription.creditsResetAt || subscription.currentPeriodEnd;
+    if (!targetIso) return 30;
+    const diffMs = new Date(targetIso).getTime() - Date.now();
+    return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+  }, [subscription]);
+
+  const formattedRenewalDate = useMemo(() => {
+    if (!subscription) return '';
+    const targetIso = subscription.creditsResetAt || subscription.currentPeriodEnd;
+    if (!targetIso) return '';
+    try {
+      return new Date(targetIso).toLocaleDateString('es-CO', {
+        day: 'numeric',
+        month: 'long',
+      });
+    } catch {
+      return '';
+    }
+  }, [subscription]);
+
   const handleJoin1on1Queue = (e: React.FormEvent) => {
     e.preventDefault();
-    const ticket = `YP-1A1-${Math.floor(100 + Math.random() * 900)}`;
+    if (entitlements.availableLiveCredits <= 0) {
+      if (currentPlanId === 'free' || currentPlanId === 'pro') {
+        openPricingModal('pro_plus');
+      } else if (currentPlanId === 'pro_plus') {
+        openPricingModal('your_plan');
+      }
+      return;
+    }
+    const ticket = `1A1-${Math.floor(100 + Math.random() * 900)}`;
     setQueueTicketCode(ticket);
     setInQueue1on1(true);
   };
@@ -568,37 +598,40 @@ export default function StudentCampusPage() {
         )}
 
         {/* =========================================================================
-            FILA VIRTUAL DE ASESORÍA 1 A 1 (EXCLUSIVO PARA YOUR PLAN)
+            FILA VIRTUAL DE ASESORÍA Y TUTORÍA 1 A 1
            ========================================================================= */}
-        {currentPlanId === 'your_plan' && (
-          <div className="rounded-3xl border-2 border-[#15846e]/50 bg-gradient-to-br from-[#15846e]/15 via-[#09090b] to-[#09090b] p-6 sm:p-8 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#15846e]/20 border border-[#15846e]/40 text-[#15846e] text-xs font-semibold">
-                  <Radio className="w-3.5 h-3.5 animate-pulse" />
-                  <span>Exclusivo Your Plan · Atención Individual en Tiempo Real</span>
-                </div>
-                <h3 className="text-2xl font-normal text-white pt-1">
-                  Fila Virtual de Asesorías 1 a 1 con el Profesor
-                </h3>
-                <p className="text-xs text-[#bdbdbd] max-w-2xl">
-                  Durante el horario de oficina del instructor puedes tomar turno para conectarte en
-                  una sesión privada individual de 15 minutos y resolver bloqueos específicos de tu
-                  programa a la medida.
-                </p>
+        <div className="rounded-3xl border-2 border-[#15846e]/50 bg-gradient-to-br from-[#15846e]/15 via-[#09090b] to-[#09090b] p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#15846e]/20 border border-[#15846e]/40 text-[#15846e] text-xs font-semibold">
+                <Radio className="w-3.5 h-3.5 animate-pulse" />
+                <span>Atención y Asesoría 1 a 1 en Tiempo Real</span>
               </div>
-
-              <div className="px-4 py-3 rounded-2xl bg-[#000000] border border-[#15846e]/40 text-right shrink-0">
-                <span className="text-[10px] font-mono uppercase text-[#15846e] block">
-                  Estado de Sala 1 a 1
-                </span>
-                <span className="text-sm font-bold text-white">
-                  Docente Disponible · Espera ~3 min
-                </span>
-              </div>
+              <h3 className="text-2xl font-normal text-white pt-1">
+                Fila Virtual de Asesorías 1 a 1 con el Profesor
+              </h3>
+              <p className="text-xs text-[#bdbdbd] max-w-2xl">
+                Durante el horario de oficina del instructor puedes tomar turno para conectarte en
+                una sesión privada individual de 15 minutos y resolver bloqueos específicos de tu
+                programa.
+              </p>
             </div>
 
-            {!inQueue1on1 ? (
+            <div className="px-4 py-3 rounded-2xl bg-[#000000] border border-[#15846e]/40 text-right shrink-0">
+              <span className="text-[10px] font-mono uppercase text-[#15846e] block">
+                Estado de Sala 1 a 1
+              </span>
+              <span className="text-sm font-bold text-white">
+                {entitlements.availableLiveCredits > 0
+                  ? `${entitlements.availableLiveCredits} créditos disponibles`
+                  : 'Sin créditos disponibles'}
+              </span>
+            </div>
+          </div>
+
+          {/* Validar créditos primero: credits > 0 */}
+          {entitlements.availableLiveCredits > 0 ? (
+            !inQueue1on1 ? (
               <form
                 onSubmit={handleJoin1on1Queue}
                 className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2"
@@ -615,7 +648,7 @@ export default function StudentCampusPage() {
                   type="submit"
                   className="px-6 py-3.5 rounded-full bg-[#15846e] hover:bg-[#116b59] text-white text-xs font-semibold shrink-0 cursor-pointer transition-all"
                 >
-                  Tomar Turno 1 a 1 Ahora
+                  Tomar Turno 1 a 1 Ahora (1 Crédito)
                 </button>
               </form>
             ) : (
@@ -646,9 +679,63 @@ export default function StudentCampusPage() {
                   </Link>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            )
+          ) : (
+            /* SI credits <= 0 SE VALIDA EL PLAN */
+            <div className="pt-2">
+              {(currentPlanId === 'free' || currentPlanId === 'pro') && (
+                <div className="rounded-2xl border border-[#ffb829]/40 bg-black/60 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#ffb829] block">
+                      Aumentar Membresía para Tutoría 1 a 1
+                    </span>
+                    <p className="text-xs text-[#d1d5db]">
+                      No dispones de créditos para solicitar asesoría individual. Actualiza a Plan Pro+ para recibir tus créditos mensuales de tutoría y clases en vivo.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openPricingModal('pro_plus')}
+                    className="px-5 py-2.5 rounded-full bg-[#ffb829] hover:bg-[#e5a524] text-black text-xs font-bold shrink-0 transition-colors cursor-pointer shadow-[0_0_15px_rgba(255,184,41,0.3)]"
+                  >
+                    Aumentar a Plan Pro+
+                  </button>
+                </div>
+              )}
+
+              {currentPlanId === 'pro_plus' && (
+                <div className="rounded-2xl border border-[#8052ff]/40 bg-black/60 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#a78bfa] block">
+                      Créditos Agotados en este Ciclo · Plan Pro+
+                    </span>
+                    <p className="text-xs text-[#d1d5db]">
+                      Has utilizado tus créditos de este ciclo. Tus créditos se regenerarán automáticamente en <strong className="text-white font-semibold">{daysUntilRenewal} días</strong>{formattedRenewalDate ? ` (el ${formattedRenewalDate})` : ''}, o puedes aumentar a <strong className="text-[#a78bfa]">Your Plan</strong> para recibir 12 créditos mensuales y temario individual 1 a 1 a la medida.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openPricingModal('your_plan')}
+                    className="px-5 py-2.5 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-white text-xs font-bold shrink-0 transition-colors cursor-pointer shadow-[0_0_20px_rgba(128,82,255,0.4)]"
+                  >
+                    Aumentar a Your Plan
+                  </button>
+                </div>
+              )}
+
+              {currentPlanId === 'your_plan' && (
+                <div className="rounded-2xl border border-[#15846e]/40 bg-black/60 p-5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#34d399] block mb-1">
+                    Créditos de Ciclo Consumidos · Your Plan
+                  </span>
+                  <p className="text-xs text-[#d1d5db]">
+                    Has utilizado tus 12 créditos de este ciclo. Tu balance se regenerará en <strong className="text-white font-semibold">{daysUntilRenewal} días</strong>{formattedRenewalDate ? ` (el ${formattedRenewalDate})` : ''}.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal de Intercambio de Curso Dinámico (Para Plan Pro) */}
