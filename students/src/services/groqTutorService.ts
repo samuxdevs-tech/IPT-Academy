@@ -70,7 +70,10 @@ export const TutorAiCache = {
     // 1. Memoria RAM
     const inMem = memoryCache.get(key);
     if (inMem && Date.now() - inMem.timestamp < CACHE_TTL_MS) {
-      return { ...inMem.response, fromCache: true };
+      const t = inMem.response.text || '';
+      if (!t.includes('¿En qué puedo ayudarte') && !t.includes('intermitencia de conexión')) {
+        return { ...inMem.response, fromCache: true };
+      }
     }
 
     // 2. Persistencia en LocalStorage para recargas de página
@@ -79,6 +82,15 @@ export const TutorAiCache = {
         const stored = localStorage.getItem(`ipt_tutor_cache_${key}`);
         if (stored) {
           const parsed: CachedEntry = JSON.parse(stored);
+          const t = parsed?.response?.text || '';
+          if (
+            t.includes('¿En qué puedo ayudarte') ||
+            t.includes('intermitencia de conexión') ||
+            !t.trim()
+          ) {
+            localStorage.removeItem(`ipt_tutor_cache_${key}`);
+            return null;
+          }
           if (Date.now() - parsed.timestamp < CACHE_TTL_MS) {
             memoryCache.set(key, parsed);
             return { ...parsed.response, fromCache: true };
@@ -92,6 +104,15 @@ export const TutorAiCache = {
   },
 
   set: (key: string, response: GroqTutorResponse): void => {
+    const t = response?.text || '';
+    // Nunca cachear respuestas genéricas de error o fallbacks vacíos
+    if (
+      !t.trim() ||
+      t.includes('¿En qué puedo ayudarte') ||
+      t.includes('intermitencia de conexión')
+    ) {
+      return;
+    }
     const entry: CachedEntry = { response, timestamp: Date.now() };
     memoryCache.set(key, entry);
     if (typeof window !== 'undefined') {
@@ -358,12 +379,57 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
     });
   }
 
+  // Detección de intención para guiar tool_choice en Groq y asegurar Function Calling resolutivo
+  const pLower = prompt.toLowerCase().trim();
+  let toolChoice: any = 'auto';
+
+  const isBookingIntent =
+    pLower.includes('agenda') ||
+    pLower.includes('cita') ||
+    pLower.includes('clase') ||
+    pLower.includes('reserva') ||
+    pLower.includes('programar') ||
+    pLower.includes('dentro de') ||
+    /\b(a las|para las)\b/i.test(pLower) ||
+    /\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b/i.test(pLower);
+
+  const isCancelIntent =
+    pLower.includes('cancela') ||
+    pLower.includes('cancelar') ||
+    pLower.includes('anula') ||
+    pLower.includes('elimina') ||
+    pLower.includes('descartar');
+
+  const isCreditsIntent =
+    pLower.includes('credito') ||
+    pLower.includes('crédito') ||
+    pLower.includes('cupo') ||
+    pLower.includes('saldo');
+
+  const isBookingsListIntent =
+    pLower.includes('mis citas') ||
+    pLower.includes('que citas tengo') ||
+    pLower.includes('qué citas tengo') ||
+    pLower.includes('ver citas') ||
+    pLower.includes('agenda de hoy');
+
+  if (isBookingIntent && !isCancelIntent) {
+    toolChoice = { type: 'function', function: { name: 'agendar_cita' } };
+  } else if (isCancelIntent) {
+    toolChoice = { type: 'function', function: { name: 'cancelar_cita' } };
+  } else if (isCreditsIntent) {
+    toolChoice = { type: 'function', function: { name: 'consultar_creditos' } };
+  } else if (isBookingsListIntent) {
+    toolChoice = { type: 'function', function: { name: 'consultar_citas' } };
+  }
+
   try {
     const res = await postToTutorApi({
       messages: messagesPayload,
       tools: TUTOR_TOOLS,
-      temperature: 0.3,
-      max_tokens: 600
+      tool_choice: toolChoice,
+      temperature: 0.2,
+      max_tokens: 1024
     });
 
     if (!res.ok) {
@@ -454,7 +520,7 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
         const res2 = await postToTutorApi({
           messages: turn2Messages,
           temperature: 0.6,
-          max_tokens: 600
+          max_tokens: 1024
         });
 
         if (res2.ok) {
@@ -485,15 +551,21 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
           arguments: parsedArgs
         }
       };
-      TutorAiCache.set(cacheKey, finalRes1);
+      if (finalRes1.text && finalRes1.text.trim()) {
+        TutorAiCache.set(cacheKey, finalRes1);
+      }
       return finalRes1;
     }
 
     // Respuesta textual autónoma
     const finalResText: GroqTutorResponse = {
-      text: msg.content || '¿En qué puedo ayudarte hoy con tu formación en IPT Academy?'
+      text:
+        msg.content ||
+        'Hola. He recibido tu mensaje. Dime qué tema deseas repasar de tu formación o si prefieres agendar una sesión sincrónica.'
     };
-    TutorAiCache.set(cacheKey, finalResText);
+    if (msg.content && msg.content.trim()) {
+      TutorAiCache.set(cacheKey, finalResText);
+    }
     return finalResText;
   } catch (err: any) {
     console.error('Groq tutor invocation exception:', err);

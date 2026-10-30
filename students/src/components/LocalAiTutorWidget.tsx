@@ -1580,7 +1580,10 @@ Tienes facultades plenas:
 
         if (name === 'agendar_cita') {
           const bookingRes = resolveBookingOptions(args?.horaDeseada || cleanPrompt);
-          replyText = replyText || bookingRes.text;
+          replyText =
+            replyText && replyText.length > 30 && !replyText.includes('ayudarte hoy')
+              ? replyText
+              : bookingRes.text;
           actionPayload = bookingRes.actionPayload;
         } else if (name === 'cancelar_cita') {
           if (userConfirmedBookings.length === 0) {
@@ -1826,11 +1829,27 @@ Tienes facultades plenas:
         }
       }
 
-      // Si no hubo tool call y el replyText está vacío, proporcionar fallback
-      if (!replyText) {
+      // Salvaguarda proactiva: Si no se activó actionPayload pero el estudiante pidió agendar, cancelar o créditos
+      const pLower = cleanPrompt.toLowerCase();
+      const userWantsBooking =
+        pLower.includes('agenda') ||
+        pLower.includes('cita') ||
+        pLower.includes('dentro de') ||
+        /\b(a las|para las)\b/i.test(pLower);
+
+      if (!actionPayload && userWantsBooking) {
+        const bookingRes = resolveBookingOptions(cleanPrompt);
+        if (!replyText || replyText.includes('ayudarte hoy') || replyText.length < 25) {
+          replyText = bookingRes.text;
+        }
+        actionPayload = bookingRes.actionPayload;
+      }
+
+      // Si no hubo tool call y el replyText está vacío o genérico, proporcionar fallback
+      if (!replyText || replyText.includes('¿En qué puedo ayudarte hoy')) {
         const fallback = buildContextualResponse(cleanPrompt);
         replyText = fallback.text;
-        actionPayload = fallback.actionPayload;
+        actionPayload = fallback.actionPayload || actionPayload;
       }
 
       const assistantMsg: ChatMessage = {
