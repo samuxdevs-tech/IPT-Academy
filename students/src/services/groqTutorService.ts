@@ -51,7 +51,56 @@ export interface GroqToolCall {
 export interface GroqTutorResponse {
   text?: string;
   toolCall?: GroqToolCall;
+  fromCache?: boolean;
 }
+
+// ============================================================================
+// CAPA DE CACHÉ DE IA: PETICIONES IDÉNTICAS NO SE VUELVEN A GENERAR
+// ============================================================================
+interface CachedEntry {
+  response: GroqTutorResponse;
+  timestamp: number;
+}
+
+const memoryCache = new Map<string, CachedEntry>();
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hora de persistencia
+
+export const TutorAiCache = {
+  get: (key: string): GroqTutorResponse | null => {
+    // 1. Memoria RAM
+    const inMem = memoryCache.get(key);
+    if (inMem && Date.now() - inMem.timestamp < CACHE_TTL_MS) {
+      return { ...inMem.response, fromCache: true };
+    }
+
+    // 2. Persistencia en LocalStorage para recargas de página
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`ipt_tutor_cache_${key}`);
+        if (stored) {
+          const parsed: CachedEntry = JSON.parse(stored);
+          if (Date.now() - parsed.timestamp < CACHE_TTL_MS) {
+            memoryCache.set(key, parsed);
+            return { ...parsed.response, fromCache: true };
+          } else {
+            localStorage.removeItem(`ipt_tutor_cache_${key}`);
+          }
+        }
+      } catch {}
+    }
+    return null;
+  },
+
+  set: (key: string, response: GroqTutorResponse): void => {
+    const entry: CachedEntry = { response, timestamp: Date.now() };
+    memoryCache.set(key, entry);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`ipt_tutor_cache_${key}`, JSON.stringify(entry));
+      } catch {}
+    }
+  }
+};
 
 const GROQ_MODEL = 'openai/gpt-oss-120b';
 const GROQ_CLIENT_KEY = process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.GROQ_API_KEY || '';
@@ -192,6 +241,20 @@ export async function askTutorIAWithGroq(
   history: GroqChatMessage[],
   ctx: GroqTutorContext
 ): Promise<GroqTutorResponse> {
+  // Generar clave canónica de caché basada en contexto del estudiante y su petición
+  const cacheKey = [
+    ctx.studentName.toLowerCase().trim(),
+    prompt.toLowerCase().trim(),
+    `cred_${ctx.availableCredits}`,
+    `bkg_${ctx.activeBookings.length}`,
+    history.length > 0 ? (history[history.length - 1]?.content || '') : 'init'
+  ].join('__');
+
+  // Si la petición es idéntica en este mismo contexto, devolver de caché inmediatamente
+  const cachedResponse = TutorAiCache.get(cacheKey);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
   const bookingsDescription =
     ctx.activeBookings.length === 0
       ? 'El estudiante NO tiene ninguna cita activa agendada en este momento.'
@@ -392,7 +455,7 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
           const data2 = await res2.json();
           const turn2Text = data2?.choices?.[0]?.message?.content?.trim();
           if (turn2Text) {
-            return {
+            const finalRes: GroqTutorResponse = {
               text: turn2Text,
               toolCall: {
                 id: firstCall.id,
@@ -400,13 +463,15 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
                 arguments: parsedArgs
               }
             };
+            TutorAiCache.set(cacheKey, finalRes);
+            return finalRes;
           }
         }
       } catch (turn2Err) {
         console.warn('Turn 2 tool resolution error:', turn2Err);
       }
 
-      return {
+      const finalRes1: GroqTutorResponse = {
         text: msg.content || undefined,
         toolCall: {
           id: firstCall.id,
@@ -414,12 +479,16 @@ DIRECTRICES INVIOLABLES DE GESTIÓN:
           arguments: parsedArgs
         }
       };
+      TutorAiCache.set(cacheKey, finalRes1);
+      return finalRes1;
     }
 
     // Respuesta textual autónoma
-    return {
+    const finalResText: GroqTutorResponse = {
       text: msg.content || '¿En qué puedo ayudarte hoy con tu formación en IPT Academy?'
     };
+    TutorAiCache.set(cacheKey, finalResText);
+    return finalResText;
   } catch (err: any) {
     console.error('Groq tutor invocation exception:', err);
     throw err;

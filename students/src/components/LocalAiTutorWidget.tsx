@@ -1559,14 +1559,16 @@ Tienes facultades plenas:
         content: m.content
       }));
 
-      // Invocación del Agente Autónomo (Groq openai/gpt-oss-120b)
+      // Invocación del Agente Autónomo (Groq openai/gpt-oss-120b con Caché)
       let agentResponse;
       try {
         agentResponse = await askTutorIAWithGroq(cleanPrompt, historyForAgent, groqCtx);
-      } catch (err) {
-        console.warn('Groq Agent invocation fallback to local:', err);
-        const fallback = buildContextualResponse(cleanPrompt);
-        agentResponse = { text: fallback.text, toolCall: undefined };
+      } catch (err: any) {
+        console.error('Groq LLM invocation error:', err);
+        agentResponse = {
+          text: `Presento una breve intermitencia de conexión con el motor de inteligencia artificial (${err?.message || 'reintentando'}). Por favor vuelve a enviar tu mensaje en un segundo.`,
+          toolCall: undefined
+        };
       }
 
       let replyText = agentResponse.text || '';
