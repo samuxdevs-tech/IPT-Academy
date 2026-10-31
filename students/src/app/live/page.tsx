@@ -1,359 +1,526 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { ref, onValue, set, update, remove, push } from 'firebase/database';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+import { useSubscription } from '@/context/SubscriptionContext';
+import {
+  WEBRTC_ICE_SERVERS,
+  getCanvasAuthorColorHCL,
+} from '@/lib/creditLiveSystem/creditHashCore';
 import {
   Mic,
   MicOff,
-  Video,
-  VideoOff,
   Hand,
   PhoneOff,
-  Users,
   MessageSquare,
+  Users,
   Send,
   Calendar,
   Clock,
   Check,
-  Volume2,
   X,
-} from "lucide-react";
-import { rtdb } from "@/lib/firebase";
-import { ref, onValue, set, get, remove, push } from "firebase/database";
-import { useAuth } from "@/context/AuthContext";
-import { useSubscription } from "@/context/SubscriptionContext";
-import { AcademicFeatureGate } from "@/components/AcademicFeatureGate";
-import { WEBRTC_ICE_SERVERS } from "@/lib/creditLiveSystem/creditHashCore";
+  Volume2,
+  Code2,
+  BarChart3,
+  Pin,
+  ExternalLink,
+  Copy,
+  Sparkles,
+  Lock,
+  Unlock,
+  CornerDownRight,
+  Maximize2,
+  Radio,
+} from 'lucide-react';
 
-interface ActiveRoomMatch {
+interface ActiveMatchedRoom {
   code8: string;
   listKey: string;
+  teacherUid: string;
   teacherName: string;
   title: string;
+  currentTopic?: string;
+  startedAt: number;
   signature: string;
-  matchedStudentKey: string;
+  mediaState?: {
+    hasVideo: boolean;
+    hasScreen?: boolean;
+    hasCam?: boolean;
+    hasAudio: boolean;
+    mode: 'dual' | 'screen' | 'camera' | 'none';
+    updatedAt: number;
+  };
 }
 
 interface ChatMessage {
   id: string;
   senderName: string;
-  senderRole: "teacher" | "student";
+  senderRole: 'teacher' | 'student';
   text: string;
   time: string;
 }
 
-interface UpcomingClassSlot {
+interface PinnedResource {
   id: string;
   title: string;
-  startUtc: string;
-  courseTitle: string;
+  url: string;
+  createdAt: number;
 }
 
+interface ActivePollData {
+  id: string;
+  question: string;
+  options: string[];
+  active: boolean;
+  createdAt: number;
+  votes?: Record<string, { optionIndex: number; voterName: string }>;
+}
+
+interface CanvasLineAuthor {
+  uid: string;
+  name: string;
+  role: 'teacher' | 'student';
+  colorHex: string;
+  studentIndex: number;
+}
+
+interface LiveCanvasData {
+  active: boolean;
+  language: 'typescript' | 'python' | 'sql' | 'html' | 'notes';
+  content: string;
+  allowStudentEdit: boolean;
+  updatedBy: string;
+  updatedAt: number;
+  studentOrder?: string[];
+  lineAuthors?: Record<number, CanvasLineAuthor>;
+}
+
+interface ScheduledSessionItem {
+  id: string;
+  title: string;
+  instructor: string;
+  startUtc: string;
+}
+
+type PipCorner = 'bottom-right' | 'top-right' | 'bottom-left' | 'top-left';
+
 export default function StudentLivePage() {
+  const router = useRouter();
   const { user } = useAuth();
   const {
-    subscription,
     entitlements,
-    liveBookings,
     consumeCreditHashForClass,
+    liveBookings,
+    openPricingModal,
   } = useSubscription();
 
-  const studentUid = user?.uid || "mw0EaGhRIsO3mKJ5yTXi6K9hWI93";
-  const studentEmail = (user?.email || "estudiante@ivanperez.tech").toLowerCase();
+  const bookedLiveSessionIds = useMemo(
+    () => (Array.isArray(liveBookings) ? liveBookings.map((b) => b.sessionId) : []),
+    [liveBookings]
+  );
+
+  const studentUid = user?.uid || 'mw0EaGhRIsO3mKJ5yTXi6K9hWI93';
+  const studentEmail = (user?.email || 'estudiante@ivanperez.tech').toLowerCase();
   const studentName =
-    user?.displayName ||
-    (user?.email ? user.email.split("@")[0] : "Estudiante IPT");
+    user?.displayName || (user?.email ? user.email.split('@')[0] : 'Estudiante');
 
-  // Sala encontrada en allowed_live_students
-  const [matchedRoom, setMatchedRoom] = useState<ActiveRoomMatch | null>(null);
-  const [leftManually, setLeftManually] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [matchedRoom, setMatchedRoom] = useState<ActiveMatchedRoom | null>(null);
+  const [elapsedStr, setElapsedStr] = useState('00:00');
 
-  // Estado multimedia del estudiante y del profesor
-  const [micOn, setMicOn] = useState(false);
-  const [camOn, setCamOn] = useState(false);
+  // Controles de llamada del estudiante
+  const [micMuted, setMicMuted] = useState(true);
   const [handRaised, setHandRaised] = useState(false);
-  const [hasTeacherVideo, setHasTeacherVideo] = useState(false);
-  const [teacherHasVideoFlag, setTeacherHasVideoFlag] = useState(false);
+  const [floorGrantedBanner, setFloorGrantedBanner] = useState(false);
+  const [sidePanel, setSidePanel] = useState<'none' | 'people' | 'chat'>('none');
+  const [connectedViewers, setConnectedViewers] = useState<
+    Record<string, { name: string; joinedAt: number; micMuted?: boolean }>
+  >({});
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [hasRemoteVideoTrack, setHasRemoteVideoTrack] = useState(false);
+  const [hasRemotePipTrack, setHasRemotePipTrack] = useState(false);
   const [audioBlocked, setAudioBlocked] = useState(false);
 
-  // Panel lateral en llamada (Personas / Chat)
-  const [sidePanel, setSidePanel] = useState<"none" | "people" | "chat">("none");
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState("");
-  const [connectedPeers, setConnectedPeers] = useState<Record<string, { name: string }>>({});
-  const [currentTimeStr, setCurrentTimeStr] = useState("");
+  // Escenario y PiP
+  const [stageMode, setStageMode] = useState<'video' | 'canvas'>('video');
+  const [pipCorner, setPipCorner] = useState<PipCorner>('bottom-right');
+  const [swapMainAndPip, setSwapMainAndPip] = useState(false);
 
-  // Agenda de próximas clases para solicitar cupo
-  const [upcomingSlots, setUpcomingSlots] = useState<UpcomingClassSlot[]>([]);
-  const [bookingBusy, setBookingBusy] = useState(false);
-  const [bookingConfirmedMsg, setBookingConfirmedMsg] = useState<string | null>(null);
+  // Lienzo Virtual en Vivo (Fondo blanco #FFFFFF, Docente Negro #000000, Estudiantes HCL Razón Áurea 1° en Azul)
+  const [liveCanvas, setLiveCanvas] = useState<LiveCanvasData>({
+    active: false,
+    language: 'typescript',
+    content: '',
+    allowStudentEdit: false,
+    updatedBy: 'Docente',
+    updatedAt: Date.now(),
+    studentOrder: [],
+    lineAuthors: {},
+  });
+  const [copiedCanvas, setCopiedCanvas] = useState(false);
+  const canvasBackdropRef = useRef<HTMLDivElement | null>(null);
 
-  // Referencias WebRTC y Multimedia (separando video mudo y audio para evitar bloqueo de Autoplay)
+  // Micro-Encuestas y Recursos Fijados
+  const [activePoll, setActivePoll] = useState<ActivePollData | null>(null);
+  const [pinnedResources, setPinnedResources] = useState<PinnedResource[]>([]);
+
+  // Para agendar cuando no hay sala activa en este segundo
+  const [scheduledSessions, setScheduledSessions] = useState<ScheduledSessionItem[]>([]);
+  const [bookingBusyId, setBookingBusyId] = useState<string | null>(null);
+  const [bookingFeedback, setBookingFeedback] = useState<string | null>(null);
+
+  // Referencias WebRTC y reproducción multimedia
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+  const remotePipVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
+  const primaryVideoTrackRef = useRef<MediaStreamTrack | null>(null);
+  const secondaryVideoTrackRef = useRef<MediaStreamTrack | null>(null);
+  const remoteAudioStreamRef = useRef<MediaStream | null>(null);
+  const studentMicTrackRef = useRef<MediaStreamTrack | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const activeOfferIdRef = useRef<string | null>(null);
 
-  const micTrackRef = useRef<MediaStreamTrack | null>(null);
-  const camTrackRef = useRef<MediaStreamTrack | null>(null);
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  const currentOfferIdRef = useRef<string | null>(null);
-
-  // Reloj en barra inferior
+  // Cronómetro en vivo de la sesión
   useEffect(() => {
-    const updateClock = () => {
-      setCurrentTimeStr(
-        new Date().toLocaleTimeString("es-CO", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      );
+    if (!matchedRoom?.startedAt) {
+      setElapsedStr('00:00');
+      return;
+    }
+    const tick = () => {
+      const diffSec = Math.max(0, Math.floor((Date.now() - matchedRoom.startedAt) / 1000));
+      const hrs = Math.floor(diffSec / 3600);
+      const mins = Math.floor((diffSec % 3600) / 60);
+      const secs = diffSec % 60;
+      if (hrs > 0) {
+        setElapsedStr(
+          `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+        );
+      } else {
+        setElapsedStr(
+          `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+        );
+      }
     };
-    updateClock();
-    const timer = setInterval(updateClock, 15000);
-    return () => clearInterval(timer);
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [matchedRoom?.startedAt]);
+
+  // Sincronizar los elementos <video> principal y PiP del estudiante
+  const attachVideoStreams = useCallback(() => {
+    const pTrack =
+      primaryVideoTrackRef.current && primaryVideoTrackRef.current.readyState === 'live'
+        ? primaryVideoTrackRef.current
+        : null;
+    const sTrack =
+      secondaryVideoTrackRef.current && secondaryVideoTrackRef.current.readyState === 'live'
+        ? secondaryVideoTrackRef.current
+        : null;
+
+    let mainTrack: MediaStreamTrack | null = null;
+    let pipTrack: MediaStreamTrack | null = null;
+
+    if (pTrack && sTrack) {
+      mainTrack = swapMainAndPip ? sTrack : pTrack;
+      pipTrack = swapMainAndPip ? pTrack : sTrack;
+    } else {
+      mainTrack = pTrack || sTrack;
+      pipTrack = null;
+    }
+
+    if (remoteVideoRef.current) {
+      if (mainTrack) {
+        remoteVideoRef.current.srcObject = new MediaStream([mainTrack]);
+        remoteVideoRef.current.muted = true;
+        remoteVideoRef.current.play().catch(() => {});
+      } else {
+        remoteVideoRef.current.srcObject = null;
+      }
+    }
+
+    if (remotePipVideoRef.current) {
+      const targetPip = stageMode === 'canvas' ? mainTrack : pipTrack;
+      if (targetPip) {
+        remotePipVideoRef.current.srcObject = new MediaStream([targetPip]);
+        remotePipVideoRef.current.muted = true;
+        remotePipVideoRef.current.play().catch(() => {});
+      } else {
+        remotePipVideoRef.current.srcObject = null;
+      }
+    }
+  }, [stageMode, swapMainAndPip]);
+
+  const attachAudioStream = useCallback(() => {
+    if (remoteAudioRef.current && remoteAudioStreamRef.current) {
+      if (remoteAudioRef.current.srcObject !== remoteAudioStreamRef.current) {
+        remoteAudioRef.current.srcObject = remoteAudioStreamRef.current;
+      }
+      remoteAudioRef.current
+        .play()
+        .then(() => {
+          setAudioBlocked(false);
+        })
+        .catch(() => {
+          setAudioBlocked(true);
+        });
+    }
   }, []);
 
-  // Desbloquear audio automáticamente al primer clic en la página si el navegador lo pausó
+  useEffect(() => {
+    attachVideoStreams();
+  }, [hasRemoteVideoTrack, hasRemotePipTrack, matchedRoom?.mediaState?.mode, stageMode, swapMainAndPip, attachVideoStreams]);
+
+  // Desbloquear audio automáticamente al primer clic
   useEffect(() => {
     const unlockAudio = () => {
-      if (remoteAudioRef.current && remoteAudioRef.current.paused && remoteAudioRef.current.srcObject) {
+      if (remoteAudioRef.current && remoteAudioStreamRef.current) {
         remoteAudioRef.current
           .play()
           .then(() => setAudioBlocked(false))
           .catch(() => {});
       }
     };
-    window.addEventListener("click", unlockAudio);
-    return () => window.removeEventListener("click", unlockAudio);
+    window.addEventListener('click', unlockAudio);
+    return () => window.removeEventListener('click', unlockAudio);
   }, []);
 
-  // Cargar próximas clases programadas
+  // 1. Buscar al estudiante en las listas {allowed_live_students}
   useEffect(() => {
-    const calRef = ref(rtdb, "lms_calendar");
-    const unsub = onValue(calRef, (snap) => {
-      if (snap.exists()) {
-        const val = snap.val();
-        const arr = (Array.isArray(val) ? val.filter(Boolean) : Object.values(val)) as any[];
-        const slots: UpcomingClassSlot[] = arr
-          .filter((e) => e && (e.category === "live_class" || e.category === "tutoring"))
-          .map((e) => ({
-            id: e.id || `slot_${Date.now()}`,
-            title: e.title || "Clase en Vivo",
-            startUtc: e.startUtc || new Date().toISOString(),
-            courseTitle: e.courseTitle || "IPT Academy",
-          }))
-          .sort((a, b) => new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime());
-        setUpcomingSlots(slots);
-      } else {
-        setUpcomingSlots([]);
-      }
-    });
-    return () => unsub();
-  }, []);
+    const allowedRootRef = ref(db, 'allowed_live_students');
+    const calRef = ref(db, 'lms_calendar');
 
-  // Buscar al estudiante en todas las listas activas {allowed_live_students/allowed_list_*}
-  useEffect(() => {
-    const allowedListsRef = ref(rtdb, "allowed_live_students");
-    const unsub = onValue(allowedListsRef, (snap) => {
-      const data = snap.val();
-      if (!data) {
+    const unsubAllowed = onValue(allowedRootRef, (snap) => {
+      if (!snap.exists()) {
         setMatchedRoom(null);
+        setCheckingAccess(false);
         return;
       }
 
-      let found: ActiveRoomMatch | null = null;
+      const allLists = snap.val();
+      let found: ActiveMatchedRoom | null = null;
 
-      for (const [listKey, roomObj] of Object.entries(data) as [string, any][]) {
-        if (!roomObj || roomObj.status !== "live") continue;
-        const studentsMap = roomObj.students || {};
+      for (const [listKey, listData] of Object.entries(allLists) as [string, any][]) {
+        if (!listData || !listData.active) continue;
+        const studentsMap = listData.students || {};
 
-        // 1. Coincidencia directa por UID
-        if (studentsMap[studentUid]) {
+        let studentRecord = studentsMap[studentUid];
+        if (!studentRecord && studentEmail) {
+          studentRecord = Object.values(studentsMap).find(
+            (s: any) => s && s.email && String(s.email).toLowerCase() === studentEmail
+          );
+        }
+
+        if (studentRecord) {
           found = {
-            code8: roomObj.code8 || listKey.replace("allowed_list_", ""),
+            code8: listData.code8 || listKey.replace('allowed_list_', ''),
             listKey,
-            teacherName: roomObj.teacherName || "Docente Titular",
-            title: roomObj.title || "Sesión en Vivo",
-            signature: studentsMap[studentUid].signature || "",
-            matchedStudentKey: studentUid,
+            teacherUid: listData.teacherUid || 'teacher_ipt',
+            teacherName: listData.teacherName || 'Docente Titular',
+            title: listData.title || 'Sesión en Vivo',
+            currentTopic: listData.currentTopic || 'Sesión en Vivo',
+            startedAt: listData.startedAt || Date.now(),
+            signature: studentRecord.signature || `${studentUid}: verified`,
+            mediaState: listData.mediaState || {
+              hasVideo: false,
+              hasAudio: false,
+              mode: 'none',
+              updatedAt: Date.now(),
+            },
           };
           break;
         }
-
-        // 2. Coincidencia por correo electrónico
-        for (const [sKey, sVal] of Object.entries(studentsMap) as [string, any][]) {
-          if (
-            sVal &&
-            sVal.email &&
-            studentEmail &&
-            sVal.email.toLowerCase() === studentEmail
-          ) {
-            found = {
-              code8: roomObj.code8 || listKey.replace("allowed_list_", ""),
-              listKey,
-              teacherName: roomObj.teacherName || "Docente Titular",
-              title: roomObj.title || "Sesión en Vivo",
-              signature: sVal.signature || "",
-              matchedStudentKey: sKey,
-            };
-            break;
-          }
-        }
-        if (found) break;
       }
 
-      if (found) {
-        setMatchedRoom((prev) => {
-          if (prev && prev.listKey === found!.listKey) return prev;
-          setLeftManually(false);
-          return found;
-        });
-      } else {
-        setMatchedRoom(null);
-        setLeftManually(false);
+      setMatchedRoom(found);
+      setCheckingAccess(false);
+    });
+
+    const unsubCal = onValue(calRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        const arr = (Array.isArray(val) ? val.filter(Boolean) : Object.values(val)) as any[];
+        const liveItems: ScheduledSessionItem[] = arr
+          .filter((e) => e && (e.category === 'live_class' || e.category === 'tutoring'))
+          .map((e) => ({
+            id: e.id || `cls_${Date.now()}`,
+            title: e.title || 'Clase en Vivo',
+            instructor: e.instructor || 'Docente IPT',
+            startUtc: e.startUtc || new Date().toISOString(),
+          }))
+          .sort((a, b) => new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime());
+        setScheduledSessions(liveItems);
       }
     });
 
-    return () => unsub();
+    return () => {
+      unsubAllowed();
+      unsubCal();
+    };
   }, [studentUid, studentEmail]);
 
-  // Sincronizar vista previa de cámara propia
-  const syncLocalPreview = useCallback(() => {
-    if (!localVideoRef.current) return;
-    if (camTrackRef.current && camTrackRef.current.readyState === "live") {
-      localVideoRef.current.srcObject = new MediaStream([camTrackRef.current]);
-      localVideoRef.current.play().catch(() => {});
-    } else {
-      localVideoRef.current.srcObject = null;
-    }
-  }, []);
-
+  // 2. Al entrar a la sala autorizada, conectar presencia, WebRTC, chat, lienzo, pulsos y controles de voz
   useEffect(() => {
-    syncLocalPreview();
-  }, [camOn, matchedRoom, leftManually, syncLocalPreview]);
+    if (!matchedRoom) return;
+    const { listKey } = matchedRoom;
 
-  // Conexión WebRTC automática cuando el estudiante es admitido en la lista del profesor
-  useEffect(() => {
-    if (!matchedRoom || leftManually) {
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.close();
-        peerConnectionRef.current = null;
-      }
-      currentOfferIdRef.current = null;
-      setHasTeacherVideo(false);
-      setTeacherHasVideoFlag(false);
-      return;
-    }
-
-    const { listKey, matchedStudentKey } = matchedRoom;
-    let unsubCurrentIce: (() => void) | null = null;
-
-    // Registrar presencia en la sala activa
-    const viewerRef = ref(rtdb, `allowed_live_students/${listKey}/viewers/${matchedStudentKey}`);
-    set(viewerRef, {
+    const myViewerRef = ref(
+      db,
+      `allowed_live_students/${listKey}/connected_viewers/${studentUid}`
+    );
+    set(myViewerRef, {
       name: studentName,
-      email: studentEmail,
       joinedAt: Date.now(),
-    }).catch(() => {});
+      micMuted: true,
+      renegotiateAt: 0,
+    });
 
-    // Escuchar estado de medios del docente (para saber si tiene cámara/pantalla encendida)
-    const mediaStateRef = ref(rtdb, `allowed_live_students/${listKey}/mediaState`);
-    const unsubMediaState = onValue(mediaStateRef, (snap) => {
-      const st = snap.val();
-      if (st) {
-        const activeVid = Boolean(st.hasVideo);
-        setTeacherHasVideoFlag(activeVid);
-        if (!activeVid) {
-          setHasTeacherVideo(false);
+    const viewersRef = ref(db, `allowed_live_students/${listKey}/connected_viewers`);
+    const unsubViewers = onValue(viewersRef, (snap) => {
+      setConnectedViewers(snap.exists() ? snap.val() : {});
+    });
+
+    const chatRef = ref(db, `allowed_live_students/${listKey}/chat`);
+    const unsubChat = onValue(chatRef, (snap) => {
+      if (!snap.exists()) {
+        setChatMessages([]);
+        return;
+      }
+      const raw = snap.val();
+      setChatMessages(
+        Object.keys(raw).map((k) => ({
+          id: k,
+          ...raw[k],
+        }))
+      );
+    });
+
+    const canvasRef = ref(db, `allowed_live_students/${listKey}/liveCanvas`);
+    const unsubCanvas = onValue(canvasRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.val() as LiveCanvasData;
+        setLiveCanvas(data);
+        if (data.active) {
+          setStageMode('canvas');
+        } else {
+          setStageMode('video');
         }
       }
     });
 
-    // Escuchar cada nueva Oferta SDP del docente (identificada por offerId)
-    const offerRef = ref(
-      rtdb,
-      `allowed_live_students/${listKey}/signals/${matchedStudentKey}/offer`
-    );
-    const unsubOffer = onValue(offerRef, async (snap) => {
-      const data = snap.val();
-      if (!data || !data.sdp) return;
-
-      const incomingOfferId = data.offerId || `legacy_${data.timestamp || 0}`;
-      if (incomingOfferId === currentOfferIdRef.current) return;
-      currentOfferIdRef.current = incomingOfferId;
-
-      // Limpiar conexión anterior si existía
-      if (unsubCurrentIce) {
-        unsubCurrentIce();
-        unsubCurrentIce = null;
+    const pollRef = ref(db, `allowed_live_students/${listKey}/activePoll`);
+    const unsubPoll = onValue(pollRef, (snap) => {
+      if (snap.exists()) {
+        setActivePoll(snap.val() as ActivePollData);
+      } else {
+        setActivePoll(null);
       }
-      if (peerConnectionRef.current) {
+    });
+
+    const pinsRef = ref(db, `allowed_live_students/${listKey}/pinnedResources`);
+    const unsubPins = onValue(pinsRef, (snap) => {
+      if (!snap.exists()) {
+        setPinnedResources([]);
+        return;
+      }
+      const raw = snap.val();
+      const arr: PinnedResource[] = Object.keys(raw)
+        .map((k) => ({ id: k, ...raw[k] }))
+        .sort((a, b) => b.createdAt - a.createdAt);
+      setPinnedResources(arr);
+    });
+
+    // Escuchar controles del docente sobre este estudiante ("Dar la palabra" o "Silenciar")
+    const controlRef = ref(
+      db,
+      `allowed_live_students/${listKey}/participantControls/${studentUid}`
+    );
+    const unsubControl = onValue(controlRef, (snap) => {
+      if (!snap.exists()) return;
+      const ctrl = snap.val();
+      if (ctrl.forceMuted) {
+        if (studentMicTrackRef.current) {
+          studentMicTrackRef.current.enabled = false;
+        }
+        setMicMuted(true);
+        setFloorGrantedBanner(false);
+      } else if (ctrl.floorGranted) {
+        setHandRaised(false);
+        setFloorGrantedBanner(true);
+      }
+    });
+
+    // Señalización WebRTC con el Docente
+    let unsubTeacherIce: (() => void) | null = null;
+    const offerRef = ref(
+      db,
+      `allowed_live_students/${listKey}/signals/${studentUid}/offer`
+    );
+
+    const unsubOffer = onValue(offerRef, async (snap) => {
+      const offerData = snap.val();
+      if (!offerData || !offerData.sdp) return;
+
+      const incomingOfferId = offerData.offerId || `legacy_${offerData.timestamp || 0}`;
+      if (activeOfferIdRef.current === incomingOfferId) return;
+      activeOfferIdRef.current = incomingOfferId;
+
+      if (unsubTeacherIce) {
+        unsubTeacherIce();
+        unsubTeacherIce = null;
+      }
+      if (pcRef.current) {
         try {
-          peerConnectionRef.current.close();
+          pcRef.current.close();
         } catch {}
-        peerConnectionRef.current = null;
+        pcRef.current = null;
       }
 
       const pc = new RTCPeerConnection(WEBRTC_ICE_SERVERS);
-      peerConnectionRef.current = pc;
+      pcRef.current = pc;
+
+      primaryVideoTrackRef.current = null;
+      secondaryVideoTrackRef.current = null;
+      const audioStream = new MediaStream();
+      remoteAudioStreamRef.current = audioStream;
+      setHasRemoteVideoTrack(false);
+      setHasRemotePipTrack(false);
 
       let remoteDescReady = false;
       const queuedTeacherIce: RTCIceCandidateInit[] = [];
 
-      // Adjuntar micrófono del alumno si está activo
-      if (micTrackRef.current && micTrackRef.current.readyState === "live") {
-        const localAudioStream = new MediaStream([micTrackRef.current]);
-        pc.addTrack(micTrackRef.current, localAudioStream);
-      }
-
-      // Recibir pistas de video/pantalla y audio del docente
       pc.ontrack = (event) => {
-        if (event.track.kind === "video") {
-          const videoStream = new MediaStream([event.track]);
-          if (remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = videoStream;
-            remoteVideoRef.current.play().catch(() => {});
+        if (event.track.kind === 'video') {
+          if (!primaryVideoTrackRef.current) {
+            primaryVideoTrackRef.current = event.track;
+            setHasRemoteVideoTrack(true);
+            event.track.onended = () => {
+              primaryVideoTrackRef.current = null;
+              setHasRemoteVideoTrack(false);
+            };
+          } else if (primaryVideoTrackRef.current.id !== event.track.id) {
+            secondaryVideoTrackRef.current = event.track;
+            setHasRemotePipTrack(true);
+            event.track.onended = () => {
+              secondaryVideoTrackRef.current = null;
+              setHasRemotePipTrack(false);
+            };
           }
-          setHasTeacherVideo(true);
-
-          event.track.onunmute = () => {
-            setHasTeacherVideo(true);
-            if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = new MediaStream([event.track]);
-              remoteVideoRef.current.play().catch(() => {});
-            }
-          };
-          event.track.onended = () => {
-            setHasTeacherVideo(false);
-          };
-        } else if (event.track.kind === "audio") {
-          const audioStream = new MediaStream([event.track]);
-          if (remoteAudioRef.current) {
-            remoteAudioRef.current.srcObject = audioStream;
-            remoteAudioRef.current
-              .play()
-              .then(() => setAudioBlocked(false))
-              .catch(() => setAudioBlocked(true));
-          }
-          event.track.onunmute = () => {
-            if (remoteAudioRef.current) {
-              remoteAudioRef.current.srcObject = new MediaStream([event.track]);
-              remoteAudioRef.current
-                .play()
-                .then(() => setAudioBlocked(false))
-                .catch(() => setAudioBlocked(true));
-            }
-          };
+          attachVideoStreams();
+        } else if (event.track.kind === 'audio') {
+          audioStream.getAudioTracks().forEach((t) => audioStream.removeTrack(t));
+          audioStream.addTrack(event.track);
+          attachAudioStream();
         }
       };
 
-      // Enviar candidatos ICE del estudiante con el offerId actual
       pc.onicecandidate = (event) => {
-        if (event.candidate && currentOfferIdRef.current === incomingOfferId) {
+        if (event.candidate && activeOfferIdRef.current === incomingOfferId) {
           const iceRef = push(
-            ref(
-              rtdb,
-              `allowed_live_students/${listKey}/signals/${matchedStudentKey}/studentIce`
-            )
+            ref(db, `allowed_live_students/${listKey}/signals/${studentUid}/studentIce`)
           );
           set(iceRef, {
             offerId: incomingOfferId,
@@ -362,15 +529,14 @@ export default function StudentLivePage() {
         }
       };
 
-      // Escuchar candidatos ICE del docente para este offerId
       const teacherIceRef = ref(
-        rtdb,
-        `allowed_live_students/${listKey}/signals/${matchedStudentKey}/teacherIce`
+        db,
+        `allowed_live_students/${listKey}/signals/${studentUid}/teacherIce`
       );
       const processedKeys = new Set<string>();
-      unsubCurrentIce = onValue(teacherIceRef, (iceSnap) => {
+      unsubTeacherIce = onValue(teacherIceRef, (iceSnap) => {
         const val = iceSnap.val();
-        if (!val || currentOfferIdRef.current !== incomingOfferId) return;
+        if (!val || activeOfferIdRef.current !== incomingOfferId) return;
 
         Object.entries(val).forEach(async ([k, item]: [string, any]) => {
           if (processedKeys.has(k)) return;
@@ -379,7 +545,7 @@ export default function StudentLivePage() {
 
           const candInit: RTCIceCandidateInit = item.candidate
             ? item.candidate
-            : typeof item === "string"
+            : typeof item === 'string'
             ? JSON.parse(item)
             : item;
 
@@ -393,17 +559,29 @@ export default function StudentLivePage() {
         });
       });
 
-      // Aplicar oferta remota, vaciar cola de ICE y enviar Answer
       try {
         await pc.setRemoteDescription(
-          new RTCSessionDescription({ type: data.type || "offer", sdp: data.sdp })
+          new RTCSessionDescription({
+            type: offerData.type || 'offer',
+            sdp: offerData.sdp,
+          })
         );
         remoteDescReady = true;
 
-        while (queuedTeacherIce.length > 0) {
-          const c = queuedTeacherIce.shift()!;
+        // Si el estudiante tiene su micrófono activo, adjuntar su pista de audio a la respuesta WebRTC
+        if (
+          studentMicTrackRef.current &&
+          studentMicTrackRef.current.readyState === 'live'
+        ) {
+          const stuAudioStream = new MediaStream([studentMicTrackRef.current]);
+          pc.addTrack(studentMicTrackRef.current, stuAudioStream);
+        }
+
+        const pending = [...queuedTeacherIce];
+        queuedTeacherIce.length = 0;
+        for (const cand of pending) {
           try {
-            await pc.addIceCandidate(new RTCIceCandidate(c));
+            await pc.addIceCandidate(new RTCIceCandidate(cand));
           } catch {}
         }
 
@@ -411,7 +589,7 @@ export default function StudentLivePage() {
         await pc.setLocalDescription(answer);
 
         await set(
-          ref(rtdb, `allowed_live_students/${listKey}/signals/${matchedStudentKey}/answer`),
+          ref(db, `allowed_live_students/${listKey}/signals/${studentUid}/answer`),
           {
             offerId: incomingOfferId,
             type: answer.type,
@@ -420,625 +598,957 @@ export default function StudentLivePage() {
           }
         );
       } catch (err) {
-        console.warn("Error negociando Answer WebRTC:", err);
+        console.warn('Error respondiendo Offer WebRTC:', err);
       }
-    });
-
-    // Escuchar participantes y chat de la sala
-    const viewersListRef = ref(rtdb, `allowed_live_students/${listKey}/viewers`);
-    const unsubViewers = onValue(viewersListRef, (snap) => {
-      setConnectedPeers(snap.val() || {});
-    });
-
-    const chatRef = ref(rtdb, `allowed_live_students/${listKey}/chat`);
-    const unsubChat = onValue(chatRef, (snap) => {
-      const val = snap.val();
-      if (!val) {
-        setChatMessages([]);
-        return;
-      }
-      const list = Object.entries(val).map(([k, v]: [string, any]) => ({
-        id: k,
-        senderName: v.senderName || "Participante",
-        senderRole: v.senderRole || "student",
-        text: v.text || "",
-        time: v.time || "",
-      }));
-      setChatMessages(list);
     });
 
     return () => {
-      unsubMediaState();
-      unsubOffer();
-      if (unsubCurrentIce) unsubCurrentIce();
       unsubViewers();
       unsubChat();
-      remove(viewerRef).catch(() => {});
-      if (peerConnectionRef.current) {
+      unsubCanvas();
+      unsubPoll();
+      unsubPins();
+      unsubControl();
+      unsubOffer();
+      if (unsubTeacherIce) unsubTeacherIce();
+      remove(myViewerRef).catch(() => {});
+      if (pcRef.current) {
         try {
-          peerConnectionRef.current.close();
+          pcRef.current.close();
         } catch {}
-        peerConnectionRef.current = null;
+        pcRef.current = null;
       }
-      currentOfferIdRef.current = null;
-      setHasTeacherVideo(false);
+      activeOfferIdRef.current = null;
     };
-  }, [matchedRoom, leftManually, studentName, studentEmail]);
+  }, [matchedRoom?.listKey, studentUid, studentName, attachVideoStreams, attachAudioStream]);
 
-  // Alternar Micrófono del estudiante
-  const toggleMic = async () => {
+  // Alternar Micrófono Bidireccional del Estudiante
+  const handleToggleStudentMic = async () => {
+    if (!matchedRoom) return;
+    const { listKey } = matchedRoom;
+    const myViewerRef = ref(
+      db,
+      `allowed_live_students/${listKey}/connected_viewers/${studentUid}`
+    );
+
     try {
-      if (micTrackRef.current) {
-        micTrackRef.current.stop();
-        micTrackRef.current = null;
-        setMicOn(false);
+      if (
+        studentMicTrackRef.current &&
+        studentMicTrackRef.current.readyState === 'live'
+      ) {
+        const nextMuted = !micMuted;
+        studentMicTrackRef.current.enabled = !nextMuted;
+        setMicMuted(nextMuted);
+        if (!nextMuted) setFloorGrantedBanner(false);
+        await update(myViewerRef, { micMuted: nextMuted });
       } else {
         const stream = await navigator.mediaDevices.getUserMedia({
-          audio: { echoCancellation: true, noiseSuppression: true },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
           video: false,
         });
         const aTrack = stream.getAudioTracks()[0];
         if (aTrack) {
-          micTrackRef.current = aTrack;
-          setMicOn(true);
+          studentMicTrackRef.current = aTrack;
+          aTrack.enabled = true;
+          setMicMuted(false);
+          setFloorGrantedBanner(false);
+          // Solicitar renegociación rápida con el docente para abrir el canal de audio entrante
+          await update(myViewerRef, {
+            micMuted: false,
+            renegotiateAt: Date.now(),
+          });
         }
       }
-
-      // Si ya está en llamada, actualizar sender o solicitar renegociación actualizando joinedAt
-      if (matchedRoom && !leftManually) {
-        const pc = peerConnectionRef.current;
-        const audioSender = pc?.getSenders().find((s) => s.track?.kind === "audio");
-        if (audioSender && micTrackRef.current) {
-          await audioSender.replaceTrack(micTrackRef.current);
-        } else {
-          await set(
-            ref(
-              rtdb,
-              `allowed_live_students/${matchedRoom.listKey}/viewers/${matchedRoom.matchedStudentKey}`
-            ),
-            {
-              name: studentName,
-              email: studentEmail,
-              joinedAt: Date.now(),
-            }
-          ).catch(() => {});
-        }
-      }
-    } catch {}
+    } catch (err) {
+      console.warn('No se pudo activar el micrófono del estudiante:', err);
+    }
   };
 
-  // Alternar Cámara del estudiante
-  const toggleCamera = async () => {
-    try {
-      if (camTrackRef.current) {
-        camTrackRef.current.stop();
-        camTrackRef.current = null;
-        setCamOn(false);
-        syncLocalPreview();
-      } else {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 640 }, height: { ideal: 360 } },
-          audio: false,
-        });
-        const vTrack = stream.getVideoTracks()[0];
-        if (vTrack) {
-          camTrackRef.current = vTrack;
-          setCamOn(true);
-          syncLocalPreview();
-        }
-      }
-    } catch {}
-  };
-
-  // Levantar / Bajar Mano
-  const toggleHandRaise = async () => {
+  // Levantar o bajar la mano
+  const handleToggleHand = async () => {
     if (!matchedRoom) return;
     const next = !handRaised;
     setHandRaised(next);
     const handRef = ref(
-      rtdb,
-      `allowed_live_students/${matchedRoom.listKey}/raisedHands/${matchedRoom.matchedStudentKey}`
+      db,
+      `allowed_live_students/${matchedRoom.listKey}/raised_hands/${studentUid}`
     );
     if (next) {
-      await set(handRef, {
-        name: studentName,
-        timestamp: Date.now(),
-      }).catch(() => {});
+      await set(handRef, { name: studentName, timestamp: Date.now() });
     } else {
-      await remove(handRef).catch(() => {});
+      await remove(handRef);
     }
   };
 
-  // Enviar mensaje en chat de la llamada
+  // Mi índice de estudiante y mi color en el espacio HCL con Razón Áurea (1° en Azul #0052eb)
+  const myStudentIndex = useMemo(() => {
+    const order = liveCanvas.studentOrder || [];
+    const idx = order.indexOf(studentUid);
+    if (idx >= 0) return idx;
+    return order.length;
+  }, [liveCanvas.studentOrder, studentUid]);
+
+  const myHclColor = useMemo(
+    () => getCanvasAuthorColorHCL('student', myStudentIndex),
+    [myStudentIndex]
+  );
+
+  // Editar el Lienzo Virtual en Vivo (cuando el docente habilita modo colaborativo)
+  const handleStudentEditCanvas = async (newContent: string) => {
+    if (!matchedRoom || !liveCanvas.allowStudentEdit) return;
+
+    const currentOrder = Array.isArray(liveCanvas.studentOrder)
+      ? [...liveCanvas.studentOrder]
+      : [];
+    let sIdx = currentOrder.indexOf(studentUid);
+    if (sIdx === -1) {
+      currentOrder.push(studentUid);
+      sIdx = currentOrder.length - 1;
+    }
+
+    const authorHcl = getCanvasAuthorColorHCL('student', sIdx);
+    const prevLines = (liveCanvas.content || '').split('\n');
+    const nextLines = newContent.split('\n');
+    const nextLineAuthors: Record<number, CanvasLineAuthor> = {
+      ...(liveCanvas.lineAuthors || {}),
+    };
+
+    nextLines.forEach((lineText, idx) => {
+      if (lineText !== prevLines[idx] || !nextLineAuthors[idx]) {
+        nextLineAuthors[idx] = {
+          uid: studentUid,
+          name: studentName,
+          role: 'student',
+          colorHex: authorHcl.hex,
+          studentIndex: sIdx,
+        };
+      }
+    });
+
+    const updated: LiveCanvasData = {
+      ...liveCanvas,
+      content: newContent,
+      studentOrder: currentOrder,
+      lineAuthors: nextLineAuthors,
+      updatedBy: studentName,
+      updatedAt: Date.now(),
+    };
+    setLiveCanvas(updated);
+    await set(
+      ref(db, `allowed_live_students/${matchedRoom.listKey}/liveCanvas`),
+      updated
+    ).catch(() => {});
+  };
+
+  const handleCopyCanvas = () => {
+    navigator.clipboard.writeText(liveCanvas.content || '');
+    setCopiedCanvas(true);
+    setTimeout(() => setCopiedCanvas(false), 2000);
+  };
+
+  // Votar en el Pulso Rápido en Vivo
+  const handleVotePoll = async (optionIndex: number) => {
+    if (!matchedRoom || !activePoll) return;
+    await set(
+      ref(
+        db,
+        `allowed_live_students/${matchedRoom.listKey}/activePoll/votes/${studentUid}`
+      ),
+      {
+        optionIndex,
+        voterName: studentName,
+      }
+    ).catch(() => {});
+  };
+
+  // Enviar mensaje en el chat
   const handleSendChat = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || !matchedRoom) return;
-    const msgRef = push(ref(rtdb, `allowed_live_students/${matchedRoom.listKey}/chat`));
+    const msgRef = push(
+      ref(db, `allowed_live_students/${matchedRoom.listKey}/chat`)
+    );
     await set(msgRef, {
       senderName: studentName,
-      senderRole: "student",
+      senderRole: 'student',
       text: chatInput.trim(),
-      time: new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }),
+      time: new Date().toLocaleTimeString('es-CO', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
     });
-    setChatInput("");
+    setChatInput('');
   };
 
-  // Solicitar / Agendar próxima clase consumiendo 1 crédito criptográfico
-  const handleRequestClassSlot = async (slot?: UpcomingClassSlot) => {
-    if (bookingBusy) return;
-    setBookingBusy(true);
+  // Reservar una clase programada consumiendo 1 crédito
+  const handleBookSession = async (session: ScheduledSessionItem) => {
+    if (entitlements.availableLiveCredits <= 0) {
+      openPricingModal('pro_plus');
+      return;
+    }
+    setBookingBusyId(session.id);
+    setBookingFeedback(null);
     try {
-      const res = await consumeCreditHashForClass({
-        sessionId: slot?.id || "next_scheduled",
-        title: slot?.title || "Sesión en Vivo",
-        startTime: slot?.startUtc || new Date().toISOString(),
+      await consumeCreditHashForClass({
+        sessionId: session.id,
+        title: session.title,
+        startTime: session.startUtc,
       });
-
-      try {
-        const snap = await get(ref(rtdb, "allowed_live_students"));
-        if (snap.exists()) {
-          const allLists = snap.val();
-          for (const [lKey, roomObj] of Object.entries(allLists) as [string, any][]) {
-            if (roomObj && roomObj.status === "live") {
-              await set(ref(rtdb, `allowed_live_students/${lKey}/students/${studentUid}`), {
-                uid: studentUid,
-                name: studentName,
-                email: studentEmail,
-                bookingId: res.bookingId,
-                creditHash: res.creditHash,
-                signature: res.signature,
-                admittedAt: Date.now(),
-              });
-              break;
-            }
-          }
-        }
-      } catch {}
-
-      setBookingConfirmedMsg(
-        slot
-          ? `Tu cupo para "${slot.title}" quedó reservado.`
-          : "Tu cupo para la próxima clase quedó reservado."
-      );
-      setTimeout(() => setBookingConfirmedMsg(null), 5000);
+      setBookingFeedback('Tu lugar quedó reservado.');
     } catch {
-      // Silencioso
+      setBookingFeedback('No se pudo completar la reserva.');
     } finally {
-      setBookingBusy(false);
+      setBookingBusyId(null);
     }
   };
 
-  const hasConfirmedBooking = useMemo(
-    () => liveBookings.some((b) => b.status === "confirmed"),
-    [liveBookings]
-  );
+  const cyclePipCorner = () => {
+    const order: PipCorner[] = ['bottom-right', 'top-right', 'top-left', 'bottom-left'];
+    const idx = order.indexOf(pipCorner);
+    setPipCorner(order[(idx + 1) % order.length]);
+  };
 
-  const availableCreditsCount = Math.max(
-    0,
-    Number(entitlements.availableLiveCredits || subscription?.remainingCredits || 0)
-  );
+  const pipCornerClass = useMemo(() => {
+    switch (pipCorner) {
+      case 'top-right':
+        return 'top-20 right-6';
+      case 'top-left':
+        return 'top-20 left-6';
+      case 'bottom-left':
+        return 'bottom-24 left-6';
+      default:
+        return 'bottom-24 right-6';
+    }
+  }, [pipCorner]);
 
-  const showRemoteVideo = hasTeacherVideo && teacherHasVideoFlag;
+  if (checkingAccess) {
+    return (
+      <div className="min-h-screen bg-[#050507] text-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-[#8052ff] rounded-full animate-spin" />
+      </div>
+    );
+  }
 
-  return (
-    <AcademicFeatureGate feature="live">
-      {matchedRoom && !leftManually ? (
-        /* ======================================================================
-           VISTA EN LLAMADA ACTIVA (GOOGLE MEET LIMPIO)
-           ====================================================================== */
-        <div className="h-[calc(100vh-4rem)] bg-[#202124] text-white flex flex-col justify-between select-none overflow-hidden">
-          {/* Elemento de audio dedicado para la voz/pantalla del docente */}
-          <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
+  // ============================================================================
+  // VISTA A: SALA DE ESPERA CUANDO EL DOCENTE AÚN NO HA INICIADO TRANSMISIÓN
+  // ============================================================================
+  if (!matchedRoom) {
+    return (
+      <div className="min-h-screen bg-[#050507] text-white flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute -top-40 left-1/3 w-[500px] h-[500px] bg-[#8052ff]/[0.07] rounded-full blur-[140px] pointer-events-none" />
 
-          <div className="flex-1 flex overflow-hidden p-4 gap-4">
-            {/* Escenario Principal del Docente */}
-            <div className="flex-1 relative rounded-2xl bg-[#131314] overflow-hidden flex items-center justify-center border border-white/5">
-              {/* Video mudo para garantizar Autoplay instantáneo en cualquier navegador */}
-              <video
-                ref={remoteVideoRef}
-                autoPlay
-                playsInline
-                muted
-                className={`w-full h-full object-contain ${showRemoteVideo ? "block" : "hidden"}`}
-              />
+        <div className="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+          <div className="lg:col-span-7 bg-[#09090b] rounded-[24px] p-10 border border-white/[0.08] flex flex-col items-center justify-center text-center min-h-[340px] shadow-[0_25px_80px_rgba(0,0,0,0.85)]">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#8052ff]/25 to-[#050507] border border-[#8052ff]/40 flex items-center justify-center text-2xl font-semibold text-white mb-5 shadow-[0_0_40px_rgba(128,82,255,0.25)]">
+              {studentName.charAt(0).toUpperCase()}
+            </div>
+            <h1 className="text-2xl font-normal text-white mb-2">
+              Esperando al docente
+            </h1>
+            <p className="text-sm text-zinc-400 max-w-md leading-relaxed mb-6">
+              En cuanto el profesor inicie tu clase programada, entrarás automáticamente al escenario en vivo sin necesidad de ingresar códigos.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push('/home')}
+              className="px-6 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/10 border border-white/10 text-xs font-medium text-white transition-colors cursor-pointer"
+            >
+              Volver al campus
+            </button>
+          </div>
 
-              {!showRemoteVideo && (
-                <div className="flex flex-col items-center justify-center text-center p-6">
-                  <div className="w-24 h-24 rounded-full bg-[#3c4043] flex items-center justify-center text-3xl font-medium text-white mb-3">
-                    {matchedRoom.teacherName.charAt(0).toUpperCase()}
-                  </div>
-                  <p className="text-base font-medium text-white">{matchedRoom.teacherName}</p>
-                </div>
-              )}
-
-              {/* Botón flotante si el navegador pausó el audio por políticas de autoplay */}
-              {audioBlocked && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    remoteAudioRef.current
-                      ?.play()
-                      .then(() => setAudioBlocked(false))
-                      .catch(() => {});
-                  }}
-                  className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 rounded-full bg-[#8ab4f8] text-[#202124] text-xs font-semibold shadow-lg cursor-pointer"
-                >
-                  <Volume2 className="w-4 h-4" />
-                  <span>Activar sonido</span>
-                </button>
-              )}
-
-              {/* Etiqueta de nombre del Docente */}
-              <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md text-xs font-medium text-white">
-                {matchedRoom.teacherName}
-              </div>
-
-              {/* Indicador de mano levantada */}
-              {handRaised && (
-                <div className="absolute top-4 left-4 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fbbc04] text-[#202124] text-xs font-semibold shadow-lg">
-                  <Hand className="w-4 h-4" />
-                  <span>Mano levantada</span>
-                </div>
-              )}
-
-              {/* Vista propia en miniatura (PiP) */}
-              <div className="absolute bottom-4 right-4 w-44 aspect-video rounded-xl bg-[#202124] border border-white/15 overflow-hidden shadow-2xl flex items-center justify-center">
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className={`w-full h-full object-cover ${camOn ? "block" : "hidden"}`}
-                />
-                {!camOn && (
-                  <div className="w-10 h-10 rounded-full bg-[#3c4043] flex items-center justify-center text-sm font-medium text-white">
-                    {studentName.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <span className="absolute bottom-1.5 left-2 text-[10px] font-medium text-white drop-shadow">
-                  Tú
-                </span>
-              </div>
+          <div className="lg:col-span-5 bg-[#09090b]/90 backdrop-blur-xl rounded-[24px] p-6 border border-white/[0.08] space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium text-white flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[#8052ff]" />
+                <span>Próximas sesiones</span>
+              </h2>
+              <span className="text-xs text-zinc-400">
+                Créditos disponibles:{' '}
+                <strong className="text-white">
+                  {entitlements.availableLiveCredits}
+                </strong>
+              </span>
             </div>
 
-            {/* Panel Lateral (Personas o Chat) */}
-            {sidePanel !== "none" && (
-              <div className="w-80 bg-white text-[#202124] rounded-2xl flex flex-col justify-between overflow-hidden shadow-2xl">
-                <div className="px-5 py-4 border-b border-zinc-200 flex items-center justify-between">
-                  <h3 className="text-base font-medium text-[#202124]">
-                    {sidePanel === "people" ? "Personas" : "Mensajes de la llamada"}
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setSidePanel("none")}
-                    className="p-1.5 rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+            {bookingFeedback && (
+              <div className="px-3 py-2 rounded-xl bg-[#10b981]/10 border border-[#10b981]/30 text-xs text-[#10b981]">
+                {bookingFeedback}
+              </div>
+            )}
 
-                {sidePanel === "people" ? (
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    <div className="flex items-center justify-between py-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-semibold">
-                          {matchedRoom.teacherName.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-zinc-900">
-                            {matchedRoom.teacherName}
-                          </p>
-                          <p className="text-[11px] text-zinc-500">Docente</p>
-                        </div>
+            <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+              {scheduledSessions.length === 0 ? (
+                <p className="text-xs text-zinc-500 py-6 text-center">
+                  No hay sesiones adicionales en agenda por ahora.
+                </p>
+              ) : (
+                scheduledSessions.map((sess) => {
+                  const isBooked = bookedLiveSessionIds.includes(sess.id);
+                  return (
+                    <div
+                      key={sess.id}
+                      className="p-3.5 rounded-xl bg-[#050507] border border-white/[0.06] flex items-center justify-between gap-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-white truncate">
+                          {sess.title}
+                        </p>
+                        <p className="text-[11px] text-zinc-400 flex items-center gap-1.5 mt-1">
+                          <Clock className="w-3 h-3 text-[#8052ff]" />
+                          <span>
+                            {new Date(sess.startUtc).toLocaleTimeString('es-CO', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </p>
                       </div>
-                    </div>
 
-                    {Object.entries(connectedPeers).map(([uid, p]) => (
-                      <div key={uid} className="flex items-center justify-between py-2">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-zinc-200 text-zinc-700 flex items-center justify-center text-xs font-semibold">
-                            {(p.name || "E").charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-zinc-900">{p.name}</p>
-                            <p className="text-[11px] text-zinc-500">Estudiante</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col justify-between overflow-hidden">
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                      {chatMessages.length === 0 ? (
-                        <div className="text-center text-xs text-zinc-400 py-10">
-                          Los mensajes enviados durante la llamada aparecerán aquí.
-                        </div>
+                      {isBooked ? (
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#10b981]/15 text-[#10b981] text-[11px] font-medium shrink-0">
+                          <Check className="w-3 h-3" />
+                          Agendada
+                        </span>
                       ) : (
-                        chatMessages.map((m) => (
-                          <div key={m.id} className="space-y-0.5 text-xs">
-                            <div className="flex items-baseline gap-2">
-                              <span className="font-semibold text-zinc-900">{m.senderName}</span>
-                              <span className="text-[10px] text-zinc-400">{m.time}</span>
-                            </div>
-                            <p className="text-zinc-700 leading-relaxed break-words">{m.text}</p>
-                          </div>
-                        ))
+                        <button
+                          type="button"
+                          disabled={bookingBusyId === sess.id}
+                          onClick={() => handleBookSession(sess)}
+                          className="px-3.5 py-1.5 rounded-full bg-[#8052ff] hover:bg-[#6e3ff3] text-white text-[11px] font-semibold transition-colors shrink-0 cursor-pointer"
+                        >
+                          {bookingBusyId === sess.id ? 'Agendando...' : 'Agendar'}
+                        </button>
                       )}
                     </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-                    <form
-                      onSubmit={handleSendChat}
-                      className="p-3 border-t border-zinc-200 flex items-center gap-2 bg-zinc-50"
-                    >
-                      <input
-                        type="text"
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
-                        placeholder="Enviar un mensaje..."
-                        className="flex-1 px-3.5 py-2 rounded-full bg-white border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-[#1a73e8]"
-                      />
-                      <button
-                        type="submit"
-                        className="p-2 rounded-full text-[#1a73e8] hover:bg-blue-50 cursor-pointer"
-                      >
-                        <Send className="w-4 h-4" />
-                      </button>
-                    </form>
-                  </div>
-                )}
+  // ============================================================================
+  // VISTA B: SALA EN VIVO — OBSIDIAN STUDIO & ELECTRIC IRIS
+  // ============================================================================
+  const viewersCount = Object.keys(connectedViewers).length;
+  const showVideoElement =
+    hasRemoteVideoTrack || Boolean(matchedRoom.mediaState?.hasVideo);
+  const showPipWindow =
+    (stageMode === 'canvas' && showVideoElement) ||
+    (stageMode === 'video' &&
+      (hasRemotePipTrack || matchedRoom.mediaState?.mode === 'dual'));
+
+  const pollTotalVotes = activePoll?.votes ? Object.keys(activePoll.votes).length : 0;
+  const myPollVote = activePoll?.votes?.[studentUid]?.optionIndex;
+  const canvasLines = (liveCanvas.content || '').split('\n');
+  const studentOrderList = liveCanvas.studentOrder || [];
+
+  return (
+    <div className="fixed inset-0 z-50 bg-[#050507] text-white flex flex-col select-none overflow-hidden">
+      {/* Canal de audio dedicado para la voz del docente y audio de pantalla */}
+      <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
+
+      {/* Resplandor ambiental */}
+      <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-[#8052ff]/[0.05] rounded-full blur-[150px] pointer-events-none" />
+
+      {/* CABECERA SUPERIOR: Cronómetro + Tema Actual + Participantes */}
+      <header className="h-16 px-6 flex items-center justify-between gap-4 relative z-20 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#10b981]/15 border border-[#10b981]/30">
+            <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#10b981]">
+              EN VIVO
+            </span>
+            <span className="text-xs font-mono text-white pl-1 border-l border-[#10b981]/30">
+              {elapsedStr}
+            </span>
+          </div>
+          <span className="text-sm font-medium text-zinc-200 truncate hidden sm:inline">
+            {matchedRoom.title}
+          </span>
+        </div>
+
+        {/* Centro: Marcador de Tema Actual en Vivo */}
+        <div className="flex items-center justify-center flex-1 max-w-xl">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#09090b]/90 border border-[#8052ff]/35 max-w-full">
+            <Sparkles className="w-3.5 h-3.5 text-[#8052ff] shrink-0" />
+            <span className="text-xs text-zinc-400 hidden md:inline">Tema:</span>
+            <span className="text-xs font-medium text-white truncate">
+              {matchedRoom.currentTopic || matchedRoom.title}
+            </span>
+          </div>
+        </div>
+
+        {/* Derecha: Participantes */}
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setSidePanel((p) => (p === 'people' ? 'none' : 'people'))}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#09090b] border border-white/10 hover:border-white/25 text-xs font-medium text-zinc-200 transition-all cursor-pointer"
+          >
+            <Users className="w-3.5 h-3.5 text-[#8052ff]" />
+            <span>{viewersCount + 1} en sala</span>
+          </button>
+        </div>
+      </header>
+
+      {/* CUERPO PRINCIPAL: ESCENARIO 24PX + PIP + PANEL LATERAL */}
+      <div className="flex-1 flex px-6 pb-24 gap-4 overflow-hidden relative z-10">
+        {/* Escenario Principal (Bordes 24px) */}
+        <div className="flex-1 bg-[#09090b] rounded-[24px] border border-white/[0.08] shadow-[0_24px_80px_rgba(0,0,0,0.9)] overflow-hidden relative flex items-center justify-center">
+          {/* MODO 1: ESCENARIO DE VIDEO / PANTALLA COMPARTIDA */}
+          <div
+            className={`w-full h-full flex items-center justify-center ${
+              stageMode === 'video' ? 'flex' : 'hidden'
+            }`}
+          >
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              muted
+              className={`w-full h-full object-contain ${
+                showVideoElement ? 'block' : 'hidden'
+              }`}
+            />
+
+            {!showVideoElement && (
+              <div className="flex flex-col items-center justify-center text-center p-6">
+                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-[#8052ff]/25 to-[#050507] border border-[#8052ff]/40 flex items-center justify-center text-4xl font-semibold text-white mb-4 shadow-[0_0_50px_rgba(128,82,255,0.2)]">
+                  {matchedRoom.teacherName.charAt(0).toUpperCase()}
+                </div>
+                <p className="text-base font-medium text-white">
+                  {matchedRoom.teacherName}
+                </p>
+                <p className="text-xs text-[#10b981] mt-1">En vivo</p>
               </div>
             )}
           </div>
 
-          {/* Barra Inferior Estilo Google Meet */}
-          <div className="h-20 px-6 bg-[#202124] flex items-center justify-between">
-            <div className="hidden sm:flex items-center gap-3 text-sm font-medium text-white min-w-[200px]">
-              <span>{currentTimeStr}</span>
-              <span className="text-zinc-500">|</span>
-              <span className="truncate max-w-[220px]">{matchedRoom.title}</span>
-            </div>
-
-            <div className="flex items-center gap-3 mx-auto">
-              <button
-                type="button"
-                onClick={toggleMic}
-                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                  micOn
-                    ? "bg-[#3c4043] hover:bg-[#4a4e51] text-white"
-                    : "bg-[#ea4335] hover:bg-[#d93025] text-white"
-                }`}
-                title={micOn ? "Desactivar micrófono" : "Activar micrófono"}
-              >
-                {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-              </button>
-
-              <button
-                type="button"
-                onClick={toggleCamera}
-                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                  camOn
-                    ? "bg-[#3c4043] hover:bg-[#4a4e51] text-white"
-                    : "bg-[#ea4335] hover:bg-[#d93025] text-white"
-                }`}
-                title={camOn ? "Desactivar cámara" : "Activar cámara"}
-              >
-                {camOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-              </button>
-
-              <button
-                type="button"
-                onClick={toggleHandRaise}
-                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                  handRaised
-                    ? "bg-[#fbbc04] text-[#202124]"
-                    : "bg-[#3c4043] hover:bg-[#4a4e51] text-white"
-                }`}
-                title={handRaised ? "Bajar la mano" : "Levantar la mano"}
-              >
-                <Hand className="w-5 h-5" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setLeftManually(true)}
-                className="px-5 h-11 rounded-full bg-[#ea4335] hover:bg-[#d93025] text-white flex items-center justify-center gap-2 font-medium text-xs transition-all cursor-pointer"
-                title="Salir de la llamada"
-              >
-                <PhoneOff className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 min-w-[200px]">
-              <button
-                type="button"
-                onClick={() => setSidePanel((p) => (p === "people" ? "none" : "people"))}
-                className={`p-2.5 rounded-full transition-colors cursor-pointer ${
-                  sidePanel === "people"
-                    ? "bg-[#8ab4f8]/20 text-[#8ab4f8]"
-                    : "text-zinc-300 hover:bg-[#3c4043]"
-                }`}
-                title="Personas"
-              >
-                <Users className="w-5 h-5" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSidePanel((p) => (p === "chat" ? "none" : "chat"))}
-                className={`p-2.5 rounded-full transition-colors cursor-pointer ${
-                  sidePanel === "chat"
-                    ? "bg-[#8ab4f8]/20 text-[#8ab4f8]"
-                    : "text-zinc-300 hover:bg-[#3c4043]"
-                }`}
-                title="Chat"
-              >
-                <MessageSquare className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* ======================================================================
-           VISTA DE ESPERA / PREPARACIÓN ESTILO GOOGLE MEET LIMPIO
-           ====================================================================== */
-        <div className="min-h-[calc(100vh-4rem)] bg-[#131314] text-white flex items-center justify-center p-6 lg:p-12">
-          <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-7">
-              <div className="relative aspect-video w-full rounded-2xl bg-[#202124] overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center">
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className={`w-full h-full object-cover ${camOn ? "block" : "hidden"}`}
-                />
-
-                {!camOn && (
-                  <div className="flex flex-col items-center justify-center text-center p-6">
-                    <div className="w-20 h-20 rounded-full bg-[#3c4043] flex items-center justify-center text-2xl font-medium text-white mb-3">
-                      {studentName.charAt(0).toUpperCase()}
-                    </div>
-                    <p className="text-sm text-zinc-300">La cámara está desactivada</p>
-                  </div>
-                )}
-
-                <div className="absolute bottom-4 left-4 px-3 py-1 rounded-md bg-black/50 backdrop-blur-sm text-xs font-medium text-white">
-                  {studentName}
-                </div>
-
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={toggleMic}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                      micOn
-                        ? "bg-[#3c4043]/90 hover:bg-[#4a4e51] text-white border border-white/20"
-                        : "bg-[#ea4335] hover:bg-[#d93025] text-white"
-                    }`}
-                  >
-                    {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={toggleCamera}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                      camOn
-                        ? "bg-[#3c4043]/90 hover:bg-[#4a4e51] text-white border border-white/20"
-                        : "bg-[#ea4335] hover:bg-[#d93025] text-white"
-                    }`}
-                  >
-                    {camOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left space-y-5">
-              {matchedRoom && leftManually ? (
-                <div className="space-y-4 w-full">
-                  <h1 className="text-2xl font-normal text-white">{matchedRoom.title}</h1>
-                  <p className="text-sm text-zinc-400">
-                    La sesión está en curso con {matchedRoom.teacherName}.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setLeftManually(false)}
-                    className="px-8 py-3 rounded-full bg-[#8ab4f8] hover:bg-[#aecbfa] text-[#202124] font-semibold text-sm transition-all cursor-pointer"
-                  >
-                    Volver a unirse
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-5 w-full">
-                  <div className="space-y-2">
-                    <h1 className="text-2xl font-normal text-white">Sala de Clases en Vivo</h1>
-                    <p className="text-sm text-zinc-400 leading-relaxed">
-                      Cuando el docente inicie tu clase programada, ingresarás automáticamente a la llamada.
-                    </p>
+          {/* MODO 2: LIENZO VIRTUAL EN VIVO — FONDO BLANCO (#FFFFFF), DOCENTE NEGRO FIJO (#000000), ESTUDIANTES HCL RAZÓN ÁUREA (1° EN AZUL) */}
+          {stageMode === 'canvas' && (
+            <div className="w-full h-full flex flex-col bg-[#ffffff] text-[#000000]">
+              {/* Barra Superior del Lienzo Virtual */}
+              <div className="px-5 py-3 border-b border-zinc-200 flex flex-wrap items-center justify-between gap-3 bg-zinc-50">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-900">
+                    <Code2 className="w-4 h-4 text-[#0052eb]" />
+                    <span>Lienzo Virtual</span>
                   </div>
 
-                  {bookingConfirmedMsg && (
-                    <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-                      <Check className="w-4 h-4 shrink-0" />
-                      <span>{bookingConfirmedMsg}</span>
-                    </div>
-                  )}
+                  <span className="px-2.5 py-0.5 rounded-md bg-white border border-zinc-300 text-[11px] font-medium text-zinc-800 uppercase">
+                    {liveCanvas.language}
+                  </span>
 
-                  {upcomingSlots.length > 0 ? (
-                    <div className="space-y-2.5 w-full">
-                      <span className="text-xs font-medium text-zinc-400 block">
-                        Próximos horarios disponibles
-                      </span>
-                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        {upcomingSlots.slice(0, 3).map((slot) => (
-                          <div
-                            key={slot.id}
-                            className="p-3.5 rounded-2xl bg-[#202124] border border-white/10 flex items-center justify-between gap-3"
-                          >
-                            <div className="text-left min-w-0">
-                              <p className="text-xs font-medium text-white truncate">{slot.title}</p>
-                              <div className="flex items-center gap-2 text-[11px] text-zinc-400 mt-0.5">
-                                <Calendar className="w-3 h-3 text-[#8ab4f8]" />
-                                <span>
-                                  {new Date(slot.startUtc).toLocaleDateString("es-CO", {
-                                    day: "numeric",
-                                    month: "short",
-                                  })}
-                                </span>
-                                <Clock className="w-3 h-3 text-[#8ab4f8]" />
-                                <span>
-                                  {new Date(slot.startUtc).toLocaleTimeString("es-CO", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </span>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleRequestClassSlot(slot)}
-                              disabled={bookingBusy}
-                              className="px-4 py-2 rounded-full bg-[#8ab4f8] hover:bg-[#aecbfa] text-[#202124] text-xs font-semibold transition-all shrink-0 cursor-pointer disabled:opacity-50"
-                            >
-                              Solicitar clase
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="pt-1">
-                      <button
-                        type="button"
-                        onClick={() => handleRequestClassSlot()}
-                        disabled={bookingBusy || hasConfirmedBooking}
-                        className={`px-7 py-3 rounded-full text-sm font-semibold transition-all cursor-pointer ${
-                          hasConfirmedBooking
-                            ? "bg-[#202124] text-emerald-400 border border-emerald-500/30"
-                            : "bg-[#8ab4f8] hover:bg-[#aecbfa] text-[#202124]"
-                        }`}
-                      >
-                        {hasConfirmedBooking
-                          ? "Cupo confirmado para la próxima sesión"
-                          : "Solicitar cupo para la próxima clase"}
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-center lg:justify-start gap-2 text-xs text-zinc-400 pt-2">
-                    <span className="w-2 h-2 rounded-full bg-[#8ab4f8] animate-pulse" />
-                    <span>
-                      En espera del inicio de la sesión • {availableCreditsCount} créditos disponibles
+                  {/* Leyenda cromática del Lienzo Blanco */}
+                  <div className="flex items-center gap-2 pl-2 border-l border-zinc-300">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-200/80 text-[11px] font-medium text-black">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: '#000000' }}
+                      />
+                      Docente
+                    </span>
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white border border-zinc-200 text-[11px] font-semibold"
+                      style={{ color: myHclColor.hex }}
+                    >
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: myHclColor.hex }}
+                      />
+                      Tu color ({studentName.split(' ')[0]})
                     </span>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                      liveCanvas.allowStudentEdit
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                        : 'bg-zinc-100 border-zinc-300 text-zinc-600'
+                    }`}
+                  >
+                    {liveCanvas.allowStudentEdit ? (
+                      <>
+                        <Unlock className="w-3.5 h-3.5" />
+                        <span>Puedes escribir en el lienzo</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>Vista en tiempo real</span>
+                      </>
+                    )}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={handleCopyCanvas}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-white transition-all cursor-pointer"
+                  >
+                    {copiedCanvas ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>¡Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copiar código</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Cuerpo del Lienzo Blanco con Coloreado por Autor (Docente = #000000, Estudiantes = HCL Razón Áurea) */}
+              <div className="flex-1 flex overflow-hidden font-mono text-sm bg-[#ffffff] relative">
+                <div className="w-14 py-4 bg-zinc-50 border-r border-zinc-200 text-right pr-3 select-none text-zinc-400 text-xs leading-6 shrink-0">
+                  {canvasLines.map((_, idx) => {
+                    const lineAuth = liveCanvas.lineAuthors?.[idx];
+                    const dotColor = lineAuth?.colorHex || '#000000';
+                    return (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-end gap-1.5 h-6"
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full shrink-0"
+                          style={{ backgroundColor: dotColor }}
+                        />
+                        <span>{idx + 1}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex-1 relative overflow-hidden bg-[#ffffff]">
+                  <div
+                    ref={canvasBackdropRef}
+                    aria-hidden="true"
+                    className="absolute inset-0 p-4 overflow-hidden pointer-events-none font-mono text-sm leading-6 whitespace-pre"
+                  >
+                    {canvasLines.map((lineText, idx) => {
+                      const lineAuth = liveCanvas.lineAuthors?.[idx];
+                      const lineColor = lineAuth?.colorHex || '#000000';
+                      return (
+                        <div
+                          key={idx}
+                          className="h-6 flex items-center justify-between pr-4"
+                          style={{ color: lineColor }}
+                        >
+                          <span>{lineText || ' '}</span>
+                          {lineAuth && lineText.trim().length > 0 && (
+                            <span
+                              className="text-[10px] font-sans font-semibold px-1.5 py-0.2 rounded bg-zinc-100/90 ml-4 shrink-0"
+                              style={{ color: lineColor }}
+                            >
+                              {lineAuth.name.split(' ')[0]}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <textarea
+                    value={liveCanvas.content}
+                    readOnly={!liveCanvas.allowStudentEdit}
+                    onChange={(e) => handleStudentEditCanvas(e.target.value)}
+                    onScroll={(e) => {
+                      if (canvasBackdropRef.current) {
+                        canvasBackdropRef.current.scrollTop = e.currentTarget.scrollTop;
+                        canvasBackdropRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                      }
+                    }}
+                    spellCheck={false}
+                    placeholder={
+                      liveCanvas.allowStudentEdit
+                        ? 'Escribe aquí con tu color asignado...'
+                        : 'El docente está escribiendo en el lienzo...'
+                    }
+                    style={{ caretColor: myHclColor.hex }}
+                    className="absolute inset-0 w-full h-full bg-transparent p-4 text-transparent outline-none resize-none leading-6 font-mono text-sm whitespace-pre overflow-auto selection:bg-blue-500/20"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VENTANA FLOTANTE PiP (Picture-in-Picture Dinámico) */}
+          <div
+            className={`absolute ${pipCornerClass} z-30 w-60 sm:w-72 aspect-video rounded-2xl bg-[#050507] border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden group transition-all ${
+              showPipWindow ? 'block' : 'hidden'
+            }`}
+          >
+            <video
+              ref={remotePipVideoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-x-0 top-0 p-2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-b from-black/80 to-transparent">
+              <button
+                type="button"
+                onClick={cyclePipCorner}
+                title="Cambiar esquina de la miniatura"
+                className="p-1.5 rounded-lg bg-black/60 hover:bg-black text-white border border-white/10 cursor-pointer"
+              >
+                <CornerDownRight className="w-3.5 h-3.5" />
+              </button>
+              {stageMode === 'video' && (
+                <button
+                  type="button"
+                  onClick={() => setSwapMainAndPip((s) => !s)}
+                  title="Intercambiar con el escenario principal"
+                  className="p-1.5 rounded-lg bg-black/60 hover:bg-black text-white border border-white/10 cursor-pointer"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
               )}
             </div>
+            <div className="absolute bottom-2 left-2.5 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-medium text-zinc-200">
+              {matchedRoom.teacherName}
+            </div>
           </div>
+
+          {/* Botón flotante si el navegador pausó el audio inicialmente */}
+          {audioBlocked && (
+            <button
+              type="button"
+              onClick={() => {
+                if (remoteAudioRef.current) {
+                  remoteAudioRef.current
+                    .play()
+                    .then(() => setAudioBlocked(false))
+                    .catch(() => {});
+                }
+              }}
+              className="absolute top-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-[#8052ff] hover:bg-[#6e3ff3] text-white px-4 py-2 rounded-full text-xs font-semibold shadow-2xl cursor-pointer"
+            >
+              <Volume2 className="w-4 h-4" />
+              <span>Activar sonido de la clase</span>
+            </button>
+          )}
+
+          {/* Invitación flotante cuando el docente le da la palabra al estudiante */}
+          {floorGrantedBanner && micMuted && (
+            <div className="absolute top-5 left-5 z-30 flex items-center gap-3 bg-[#09090b]/95 backdrop-blur-xl border border-[#10b981]/50 text-white px-4 py-2.5 rounded-2xl shadow-2xl">
+              <Volume2 className="w-4 h-4 text-[#10b981] animate-pulse shrink-0" />
+              <span className="text-xs font-medium">
+                El docente te dio la palabra
+              </span>
+              <button
+                type="button"
+                onClick={handleToggleStudentMic}
+                className="px-3 py-1 rounded-full bg-[#10b981] text-black text-[11px] font-semibold cursor-pointer"
+              >
+                Activar micrófono
+              </button>
+            </div>
+          )}
+
+          {/* TARJETA FLOTANTE DE PULSO / ENCUESTA EN VIVO PARA EL ESTUDIANTE */}
+          {activePoll && activePoll.active && (
+            <div className="absolute top-5 right-5 z-30 w-80 bg-[#09090b]/95 backdrop-blur-2xl border border-[#8052ff]/40 rounded-2xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.9)]">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#b79aff]">
+                  <BarChart3 className="w-3.5 h-3.5 text-[#8052ff]" />
+                  Pulso en Vivo ({pollTotalVotes} respuestas)
+                </span>
+              </div>
+              <p className="text-xs font-medium text-white mb-3">
+                {activePoll.question}
+              </p>
+              <div className="space-y-2">
+                {activePoll.options.map((opt, idx) => {
+                  const count = Object.values(activePoll.votes || {}).filter(
+                    (v) => v.optionIndex === idx
+                  ).length;
+                  const pct =
+                    pollTotalVotes > 0 ? Math.round((count / pollTotalVotes) * 100) : 0;
+                  const isMyChoice = myPollVote === idx;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleVotePoll(idx)}
+                      className={`w-full text-left p-2.5 rounded-xl border transition-all cursor-pointer ${
+                        isMyChoice
+                          ? 'bg-[#8052ff]/20 border-[#8052ff] text-white'
+                          : 'bg-[#050507] border-white/10 hover:border-white/25 text-zinc-200'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="font-medium">{opt}</span>
+                        <span className="text-[11px] text-zinc-400 font-mono">
+                          {pct}%
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                        <div
+                          className="h-full bg-[#8052ff] transition-all duration-300"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Etiqueta inferior izquierda del docente */}
+          {stageMode === 'video' && (
+            <div className="absolute bottom-4 left-5 bg-black/65 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-medium text-white border border-white/10">
+              {matchedRoom.teacherName}
+            </div>
+          )}
         </div>
-      )}
-    </AcademicFeatureGate>
+
+        {/* PANEL LATERAL (Participantes o Chat con Recursos Fijados) */}
+        {sidePanel !== 'none' && (
+          <div className="w-85 bg-[#09090b] text-white rounded-[24px] border border-white/[0.08] flex flex-col overflow-hidden shadow-2xl shrink-0">
+            <div className="px-5 py-4 border-b border-white/[0.08] flex items-center justify-between">
+              <h3 className="text-sm font-medium text-white">
+                {sidePanel === 'people' ? 'Participantes en la sala' : 'Chat y Recursos'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSidePanel('none')}
+                className="p-1.5 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {sidePanel === 'people' && (
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-black border border-white/20 text-white flex items-center justify-center text-xs font-semibold">
+                      {matchedRoom.teacherName.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-white">
+                        {matchedRoom.teacherName}
+                      </p>
+                      <p className="text-[10px] text-[#b79aff]">Docente Titular</p>
+                    </div>
+                  </div>
+                </div>
+
+                {Object.entries(connectedViewers).map(([uid, v], idx) => {
+                  const sIdx = Math.max(0, studentOrderList.indexOf(uid));
+                  const hcl = getCanvasAuthorColorHCL(
+                    'student',
+                    sIdx >= 0 ? sIdx : idx
+                  );
+                  return (
+                    <div
+                      key={uid}
+                      className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#050507] border border-white/[0.05]"
+                    >
+                      <div className="flex items-center gap-3 truncate">
+                        <div
+                          className="w-7 h-7 rounded-full text-white flex items-center justify-center text-xs font-semibold shrink-0"
+                          style={{ backgroundColor: hcl.hex }}
+                        >
+                          {(v.name || 'E').charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-xs font-medium text-white truncate">
+                          {v.name} {uid === studentUid ? '(Tú)' : ''}
+                        </span>
+                      </div>
+                      {v.micMuted === false ? (
+                        <Mic className="w-3.5 h-3.5 text-[#10b981]" />
+                      ) : (
+                        <MicOff className="w-3.5 h-3.5 text-zinc-600" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {sidePanel === 'chat' && (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Recursos Fijados por el Docente */}
+                {pinnedResources.length > 0 && (
+                  <div className="p-3.5 bg-[#050507] border-b border-white/[0.08] space-y-2">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#b79aff]">
+                      <Pin className="w-3.5 h-3.5 text-[#8052ff]" />
+                      Recursos Fijados por el Docente
+                    </span>
+                    <div className="space-y-1.5 max-h-28 overflow-y-auto">
+                      {pinnedResources.map((pin) => (
+                        <a
+                          key={pin.id}
+                          href={pin.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-[#8052ff]/10 hover:bg-[#8052ff]/20 border border-[#8052ff]/30 text-xs text-white font-medium transition-colors"
+                        >
+                          <span className="truncate">{pin.title}</span>
+                          <ExternalLink className="w-3.5 h-3.5 text-[#8052ff] shrink-0" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {chatMessages.length === 0 ? (
+                    <p className="text-xs text-zinc-500 text-center py-8">
+                      Los mensajes enviados durante la sesión aparecerán aquí.
+                    </p>
+                  ) : (
+                    chatMessages.map((m) => (
+                      <div
+                        key={m.id}
+                        className="text-xs bg-[#050507] border border-white/[0.05] rounded-xl p-3"
+                      >
+                        <div className="flex items-baseline justify-between gap-2 mb-1">
+                          <span className="font-semibold text-white">{m.senderName}</span>
+                          <span className="text-[10px] text-zinc-500">{m.time}</span>
+                        </div>
+                        <p className="text-zinc-300 break-words leading-relaxed">
+                          {m.text}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <form
+                  onSubmit={handleSendChat}
+                  className="p-3 border-t border-white/[0.08] flex items-center gap-2"
+                >
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Enviar un mensaje a la sala..."
+                    className="flex-1 bg-[#050507] border border-white/10 rounded-full px-4 py-2 text-xs text-white outline-none focus:border-[#8052ff]"
+                  />
+                  <button
+                    type="submit"
+                    className="p-2 rounded-full bg-[#8052ff] hover:bg-[#6e3ff3] text-white cursor-pointer"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* DOCK FLOTANTE INFERIOR TIPO CÁPSULA DE CRISTAL OSCURO */}
+      <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-[#09090b]/90 backdrop-blur-2xl border border-white/15 shadow-[0_20px_60px_rgba(0,0,0,0.9)]">
+        {/* Micrófono Bidireccional */}
+        <button
+          type="button"
+          onClick={handleToggleStudentMic}
+          title={micMuted ? 'Activar micrófono para hablar' : 'Silenciar micrófono'}
+          className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+            !micMuted
+              ? 'bg-[#10b981] text-black shadow-[0_0_25px_rgba(16,185,129,0.4)]'
+              : 'bg-rose-500/90 hover:bg-rose-500 text-white'
+          }`}
+        >
+          {!micMuted ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+        </button>
+
+        {/* Levantar la Mano */}
+        <button
+          type="button"
+          onClick={handleToggleHand}
+          title={handRaised ? 'Bajar la mano' : 'Levantar la mano'}
+          className={`h-11 px-4 rounded-full flex items-center gap-2 text-xs font-medium transition-all cursor-pointer ${
+            handRaised
+              ? 'bg-amber-400 text-black font-semibold shadow-[0_0_25px_rgba(251,191,36,0.4)]'
+              : 'bg-white/10 hover:bg-white/15 text-white border border-white/10'
+          }`}
+        >
+          <Hand className="w-4 h-4" />
+          <span className="hidden sm:inline">
+            {handRaised ? 'Mano levantada' : 'Pedir palabra'}
+          </span>
+        </button>
+
+        {/* Alternar Vista: Escenario de Video vs Lienzo Virtual */}
+        <button
+          type="button"
+          onClick={() => setStageMode((m) => (m === 'canvas' ? 'video' : 'canvas'))}
+          title="Alternar entre Escenario de Video y Lienzo Virtual"
+          className={`h-11 px-4 rounded-full flex items-center gap-2 text-xs font-medium transition-all cursor-pointer ${
+            stageMode === 'canvas'
+              ? 'bg-[#8052ff] text-white font-semibold shadow-[0_0_25px_rgba(128,82,255,0.45)]'
+              : 'bg-white/10 hover:bg-white/15 text-white border border-white/10'
+          }`}
+        >
+          <Code2 className="w-4 h-4" />
+          <span className="hidden md:inline">Lienzo en Vivo</span>
+        </button>
+
+        <div className="w-px h-6 bg-white/10 mx-1" />
+
+        {/* Participantes */}
+        <button
+          type="button"
+          onClick={() => setSidePanel((p) => (p === 'people' ? 'none' : 'people'))}
+          title="Participantes"
+          className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+            sidePanel === 'people'
+              ? 'bg-[#8052ff] text-white'
+              : 'bg-white/10 hover:bg-white/15 text-white'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+        </button>
+
+        {/* Chat y Recursos Fijados */}
+        <button
+          type="button"
+          onClick={() => setSidePanel((p) => (p === 'chat' ? 'none' : 'chat'))}
+          title="Chat y recursos fijados"
+          className={`relative w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+            sidePanel === 'chat'
+              ? 'bg-[#8052ff] text-white'
+              : 'bg-white/10 hover:bg-white/15 text-white'
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          {pinnedResources.length > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#8052ff] text-white text-[10px] font-bold flex items-center justify-center">
+              {pinnedResources.length}
+            </span>
+          )}
+        </button>
+
+        {/* Salir de la llamada */}
+        <button
+          type="button"
+          onClick={() => router.push('/home')}
+          title="Salir de la sesión"
+          className="h-11 px-5 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center gap-2 text-xs font-semibold transition-all ml-1 cursor-pointer shadow-[0_0_25px_rgba(225,29,72,0.4)]"
+        >
+          <PhoneOff className="w-4 h-4" />
+          <span className="hidden sm:inline">Salir</span>
+        </button>
+      </div>
+    </div>
   );
 }
