@@ -457,17 +457,40 @@ export default function StudentLivePage() {
       const allLists = snap.val();
       let found: ActiveMatchedRoom | null = null;
 
-      for (const [listKey, listData] of Object.entries(allLists) as [string, any][]) {
-        if (!listData || !listData.active || listData.status === 'ended') continue;
+      // Ordenar SIEMPRE de la clase más reciente a la más antigua por startedAt descendente
+      // (evita que el orden alfabético de llaves conecte a los alumnos a salas viejas)
+      const sortedRooms = (Object.entries(allLists) as [string, any][]).sort(
+        (a, b) => (b[1]?.startedAt || 0) - (a[1]?.startedAt || 0)
+      );
 
-        // Si una sala lleva más de 5 minutos sin conexión del docente, limpiarla y no entrar
+      const seenActiveTeachers = new Set<string>();
+
+      for (const [listKey, listData] of sortedRooms) {
+        if (!listData || !listData.active || listData.status === 'ended') {
+          remove(ref(db, `allowed_live_students/${listKey}`)).catch(() => {});
+          remove(ref(db, `allowed_lists/${listKey}`)).catch(() => {});
+          continue;
+        }
+
+        // Si ya vimos una sala más reciente del mismo docente, eliminar automáticamente la sala vieja residual
+        const tUid = listData.teacherUid || 'teacher_ipt';
+        if (seenActiveTeachers.has(tUid)) {
+          remove(ref(db, `allowed_live_students/${listKey}`)).catch(() => {});
+          remove(ref(db, `allowed_lists/${listKey}`)).catch(() => {});
+          continue;
+        }
+
+        // Si una sala lleva más de 5 minutos desconectada (teacherPresence.online === false), limpiarla y no entrar
         const discAt = listData.teacherPresence?.disconnectedAt || 0;
         const isOffline = listData.teacherPresence?.online === false;
+
         if (isOffline && discAt > 0 && Date.now() - discAt >= 5 * 60 * 1000) {
           remove(ref(db, `allowed_live_students/${listKey}`)).catch(() => {});
           remove(ref(db, `allowed_lists/${listKey}`)).catch(() => {});
           continue;
         }
+
+        seenActiveTeachers.add(tUid);
 
         const studentsMap = listData.students || {};
 
@@ -478,11 +501,11 @@ export default function StudentLivePage() {
           );
         }
 
-        if (studentRecord) {
+        if (studentRecord && !found) {
           found = {
             code8: listData.code8 || listKey.replace('allowed_list_', ''),
             listKey,
-            teacherUid: listData.teacherUid || 'teacher_ipt',
+            teacherUid: tUid,
             teacherName: listData.teacherName || 'Docente Titular',
             title: listData.title || 'Sesión en Vivo',
             currentTopic: listData.currentTopic || 'Sesión en Vivo',
@@ -495,7 +518,6 @@ export default function StudentLivePage() {
               updatedAt: Date.now(),
             },
           };
-          break;
         }
       }
 
@@ -556,6 +578,7 @@ export default function StudentLivePage() {
     remove(mySignalsRef)
       .catch(() => {})
       .finally(() => {
+        if (exitingClassRef.current || activeListKeyRef.current !== listKey) return;
         set(myViewerRef, {
           name: studentName,
           joinedAt: joinTimestamp,
@@ -570,6 +593,7 @@ export default function StudentLivePage() {
     // Escuchar estado de la sala en caso de que el docente dé "Finalizar"
     const roomRootRef = ref(db, `allowed_live_students/${listKey}`);
     const unsubRoomRoot = onValue(roomRootRef, (snap) => {
+      if (activeListKeyRef.current !== listKey) return;
       if (!snap.exists()) {
         forceCutAndExitClass('ended_by_teacher');
         return;
@@ -801,7 +825,12 @@ export default function StudentLivePage() {
       };
 
       pc.onicecandidate = (event) => {
-        if (event.candidate && activeOfferIdRef.current === incomingOfferId) {
+        if (
+          event.candidate &&
+          activeOfferIdRef.current === incomingOfferId &&
+          !exitingClassRef.current &&
+          activeListKeyRef.current === listKey
+        ) {
           const iceRef = push(
             ref(db, `allowed_live_students/${listKey}/signals/${studentUid}/studentIce`)
           );

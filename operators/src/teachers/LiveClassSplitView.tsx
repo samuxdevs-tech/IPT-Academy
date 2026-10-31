@@ -881,25 +881,26 @@ export function LiveClassSplitView() {
         let matchedKey: string | null = null;
         let matchedData: any = null;
 
-        if (savedCode && allRooms[`allowed_list_${savedCode}`]) {
-          const candidate = allRooms[`allowed_list_${savedCode}`];
-          if (candidate && candidate.active && candidate.status !== "ended") {
-            matchedKey = `allowed_list_${savedCode}`;
-            matchedData = candidate;
-          }
-        }
+        // Ordenar SIEMPRE de la más reciente a la más antigua por startedAt descendente
+        const sortedRooms = Object.entries(allRooms).sort(
+          (a, b) => (b[1]?.startedAt || 0) - (a[1]?.startedAt || 0)
+        );
 
-        if (!matchedData) {
-          for (const [k, room] of Object.entries(allRooms)) {
-            if (
-              room &&
-              room.active &&
-              room.status !== "ended" &&
-              room.teacherUid === teacherUid
-            ) {
+        for (const [k, room] of sortedRooms) {
+          if (!room || !room.active || room.status === "ended") {
+            await remove(ref(rtdb, `allowed_live_students/${k}`)).catch(() => {});
+            await remove(ref(rtdb, `allowed_lists/${k}`)).catch(() => {});
+            continue;
+          }
+
+          if (room.teacherUid === teacherUid || (savedCode && k === `allowed_list_${savedCode}`)) {
+            if (!matchedData) {
               matchedKey = k;
               matchedData = room;
-              break;
+            } else {
+              // Sala vieja duplicada del mismo docente -> limpiarla de inmediato
+              await remove(ref(rtdb, `allowed_live_students/${k}`)).catch(() => {});
+              await remove(ref(rtdb, `allowed_lists/${k}`)).catch(() => {});
             }
           }
         }
@@ -1027,8 +1028,18 @@ export function LiveClassSplitView() {
       const existingSnap = await get(ref(rtdb, "allowed_live_students"));
       if (existingSnap.exists()) {
         const allLists = existingSnap.val() as Record<string, any>;
+        const selectedUids = new Set(effectiveAllowedStudents.map((s) => s.uid));
         for (const [oldKey, oldRoom] of Object.entries(allLists)) {
-          if (!oldRoom || oldRoom.teacherUid === teacherUid || !oldRoom.active) {
+          const sharesStudents =
+            oldRoom?.students &&
+            Object.keys(oldRoom.students).some((u) => selectedUids.has(u));
+          if (
+            !oldRoom ||
+            oldRoom.teacherUid === teacherUid ||
+            !oldRoom.active ||
+            !oldRoom.startedAt ||
+            sharesStudents
+          ) {
             await remove(ref(rtdb, `allowed_live_students/${oldKey}`)).catch(() => {});
             await remove(ref(rtdb, `allowed_lists/${oldKey}`)).catch(() => {});
           }
@@ -1365,7 +1376,12 @@ export function LiveClassSplitView() {
       if (allSnap.exists()) {
         const allLists = allSnap.val() as Record<string, any>;
         for (const [k, room] of Object.entries(allLists)) {
-          if (!room || room.teacherUid === teacherUid || !room.active) {
+          if (
+            !room ||
+            room.teacherUid === teacherUid ||
+            !room.active ||
+            !room.startedAt
+          ) {
             await remove(ref(rtdb, `allowed_live_students/${k}`)).catch(() => {});
             await remove(ref(rtdb, `allowed_lists/${k}`)).catch(() => {});
           }
