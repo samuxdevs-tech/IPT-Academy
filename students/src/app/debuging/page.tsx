@@ -13,7 +13,6 @@ import {
   RefreshCw,
   Copy,
   Check,
-  Video,
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
 import { ref, onValue, set, remove, get, push } from "firebase/database";
@@ -36,13 +35,12 @@ export default function StudentLiveDebuggingPage() {
   const [credits, setCredits] = useState<CreditToken[]>([]);
   const [activeSignature, setActiveSignature] = useState<string | null>(null);
 
-  // Active Live Session matched
-  const [matchedSession, setMatchedSession] = useState<{
-    sessionCode8: string;
-    teacherName: string;
-    courseTitle: string;
-    signature?: string;
-  } | null>(null);
+  // Active Live Session matched (Primitives to prevent re-render loops)
+  const [matchedSessionCode, setMatchedSessionCode] = useState<string | null>(null);
+  const [teacherMeta, setTeacherMeta] = useState<{ teacherName: string; courseTitle: string }>({
+    teacherName: "Docente IPT",
+    courseTitle: "Clase Magistral En Vivo",
+  });
   const [isAllowedInSession, setIsAllowedInSession] = useState(false);
   const [hasRemoteVideo, setHasRemoteVideo] = useState(false);
 
@@ -58,18 +56,24 @@ export default function StudentLiveDebuggingPage() {
 
   // Generate initial cryptographic credits for this student
   useEffect(() => {
+    let mounted = true;
     async function initCredits() {
       const cred1Hash = await createCreditHash(studentUid, "CRD_001");
       const cred2Hash = await createCreditHash(studentUid, "CRD_002");
       const cred3Hash = await createCreditHash(studentUid, "CRD_003");
 
-      setCredits([
-        { serial: "CRD_001", hash: cred1Hash, studentUid, createdAt: Date.now(), consumed: false },
-        { serial: "CRD_002", hash: cred2Hash, studentUid, createdAt: Date.now(), consumed: false },
-        { serial: "CRD_003", hash: cred3Hash, studentUid, createdAt: Date.now(), consumed: false },
-      ]);
+      if (mounted) {
+        setCredits([
+          { serial: "CRD_001", hash: cred1Hash, studentUid, createdAt: Date.now(), consumed: false },
+          { serial: "CRD_002", hash: cred2Hash, studentUid, createdAt: Date.now(), consumed: false },
+          { serial: "CRD_003", hash: cred3Hash, studentUid, createdAt: Date.now(), consumed: false },
+        ]);
+      }
     }
     initCredits();
+    return () => {
+      mounted = false;
+    };
   }, [studentUid]);
 
   // Real-time listener: Scan active sessions in RTDB for studentUid inclusion
@@ -78,36 +82,39 @@ export default function StudentLiveDebuggingPage() {
     const unsubscribe = onValue(liveSessionsRef, (snapshot) => {
       const data = snapshot.val();
       if (!data) {
-        setMatchedSession(null);
+        setMatchedSessionCode(null);
         setIsAllowedInSession(false);
         return;
       }
 
       // Buscar si alguna sesión 'live' tiene a este alumno en allowed_live_students
-      let found: any = null;
+      let foundCode: string | null = null;
+      let foundTeacher = "Docente IPT";
+      let foundCourse = "Clase Magistral En Vivo";
+      let foundSignature: string | null = null;
+
       for (const [code8, session] of Object.entries(data) as [string, any][]) {
-        if (session.status === "live") {
+        if (session && session.status === "live") {
           const allowedMap = session.allowed_live_students || {};
           if (allowedMap[studentUid]) {
-            found = {
-              sessionCode8: code8,
-              teacherName: session.teacherName || "Docente IPT",
-              courseTitle: session.courseTitle || "Clase en Vivo",
-              signature: allowedMap[studentUid].signature,
-            };
+            foundCode = code8;
+            foundTeacher = session.teacherName || "Docente IPT";
+            foundCourse = session.courseTitle || "Clase Magistral En Vivo";
+            foundSignature = allowedMap[studentUid].signature;
             break;
           }
         }
       }
 
-      if (found) {
-        setMatchedSession(found);
+      if (foundCode) {
+        setMatchedSessionCode((prev) => (prev !== foundCode ? foundCode : prev));
+        setTeacherMeta({ teacherName: foundTeacher, courseTitle: foundCourse });
         setIsAllowedInSession(true);
-        if (found.signature) {
-          setActiveSignature(found.signature);
+        if (foundSignature) {
+          setActiveSignature(foundSignature);
         }
       } else {
-        setMatchedSession(null);
+        setMatchedSessionCode(null);
         setIsAllowedInSession(false);
       }
     });
@@ -117,7 +124,7 @@ export default function StudentLiveDebuggingPage() {
 
   // WebRTC Client Connection when allowed in session
   useEffect(() => {
-    if (!isAllowedInSession || !matchedSession) {
+    if (!isAllowedInSession || !matchedSessionCode) {
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
@@ -126,7 +133,10 @@ export default function StudentLiveDebuggingPage() {
       return;
     }
 
-    const code8 = matchedSession.sessionCode8;
+    // Protect against duplicate RTCPeerConnection instantiations
+    if (peerConnectionRef.current) return;
+
+    const code8 = matchedSessionCode;
 
     // Register as viewer in RTDB
     const viewerRef = ref(rtdb, `liveSessions/${code8}/viewers/${studentUid}`);
@@ -160,18 +170,20 @@ export default function StudentLiveDebuggingPage() {
     const offerRef = ref(rtdb, `liveSessions/${code8}/signals/${studentUid}/offer`);
     const unsubOffer = onValue(offerRef, async (snapshot) => {
       const data = snapshot.val();
-      if (data && data.sdp && pc.signalingState === "stable") {
+      if (data && data.sdp && pc.signalingState !== "closed") {
         try {
-          await pc.setRemoteDescription(new RTCSessionDescription(data));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
+          if (pc.signalingState === "stable") {
+            await pc.setRemoteDescription(new RTCSessionDescription(data));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
 
-          const answerRef = ref(rtdb, `liveSessions/${code8}/signals/${studentUid}/answer`);
-          await set(answerRef, {
-            type: answer.type,
-            sdp: answer.sdp,
-            timestamp: Date.now(),
-          });
+            const answerRef = ref(rtdb, `liveSessions/${code8}/signals/${studentUid}/answer`);
+            await set(answerRef, {
+              type: answer.type,
+              sdp: answer.sdp,
+              timestamp: Date.now(),
+            });
+          }
         } catch (err) {
           console.warn("Error processing teacher offer:", err);
         }
@@ -182,7 +194,7 @@ export default function StudentLiveDebuggingPage() {
     const teacherIceRef = ref(rtdb, `liveSessions/${code8}/signals/${studentUid}/teacherIce`);
     const unsubIce = onValue(teacherIceRef, (snapshot) => {
       const candidates = snapshot.val();
-      if (candidates) {
+      if (candidates && pc.signalingState !== "closed") {
         Object.values(candidates).forEach(async (candStr: any) => {
           try {
             const candidate = JSON.parse(candStr);
@@ -202,8 +214,9 @@ export default function StudentLiveDebuggingPage() {
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
       }
+      setHasRemoteVideo(false);
     };
-  }, [isAllowedInSession, matchedSession, studentUid, studentName]);
+  }, [isAllowedInSession, matchedSessionCode, studentUid, studentName]);
 
   // Consumir Crédito Criptográfico y Firmar en Base de Datos
   const consumeCreditForClass = async (token: CreditToken) => {
@@ -224,7 +237,7 @@ export default function StudentLiveDebuggingPage() {
     const data = liveSessionsSnapshot.val();
     if (data) {
       for (const [code8, session] of Object.entries(data) as [string, any][]) {
-        if (session.status === "live") {
+        if (session && session.status === "live") {
           await set(ref(rtdb, `liveSessions/${code8}/allowed_live_students/${studentUid}`), {
             studentName,
             signature,
@@ -238,13 +251,13 @@ export default function StudentLiveDebuggingPage() {
 
   // Toggle Hand Raise
   const toggleHandRaise = async () => {
-    if (!matchedSession) return;
+    if (!matchedSessionCode) return;
     const next = !handRaised;
     setHandRaised(next);
 
     const handRef = ref(
       rtdb,
-      `liveSessions/${matchedSession.sessionCode8}/raisedHands/${studentUid}`
+      `liveSessions/${matchedSessionCode}/raisedHands/${studentUid}`
     );
     if (next) {
       await set(handRef, {
@@ -296,7 +309,7 @@ export default function StudentLiveDebuggingPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold tracking-tight text-white">IPT Course — Campus Student</h1>
               <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                academy.iptapps.com /debuging
+                academy.iptapps.com /live
               </span>
             </div>
             <p className="text-xs text-zinc-400">{studentName} ({studentUid})</p>
@@ -318,7 +331,7 @@ export default function StudentLiveDebuggingPage() {
       <main className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         {/* Left Column: Live Screen or Gatekeeper */}
         <section className="lg:col-span-2 space-y-4">
-          {isAllowedInSession && matchedSession ? (
+          {isAllowedInSession && matchedSessionCode ? (
             /* ALLOWED LIVE CLASS SCREEN */
             <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
               <div className="relative aspect-video w-full rounded-3xl bg-zinc-950 border border-emerald-500/30 overflow-hidden flex items-center justify-center shadow-2xl">
@@ -333,10 +346,10 @@ export default function StudentLiveDebuggingPage() {
                 {!hasRemoteVideo && (
                   <div className="w-full h-full bg-gradient-to-br from-zinc-900 via-zinc-950 to-black flex flex-col items-center justify-center text-center p-6">
                     <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-2xl font-bold text-white shadow-xl mb-3">
-                      {matchedSession.teacherName.charAt(0)}
+                      {teacherMeta.teacherName.charAt(0)}
                     </div>
-                    <h3 className="text-base font-semibold text-white">{matchedSession.teacherName}</h3>
-                    <span className="text-xs text-blue-400 font-medium">{matchedSession.courseTitle}</span>
+                    <h3 className="text-base font-semibold text-white">{teacherMeta.teacherName}</h3>
+                    <span className="text-xs text-blue-400 font-medium">{teacherMeta.courseTitle}</span>
 
                     <div className="mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -356,7 +369,7 @@ export default function StudentLiveDebuggingPage() {
                 {/* Session Pill */}
                 <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur border border-white/10 text-[10px] text-zinc-300">
                   <span>Código de aislamiento:</span>
-                  <span className="font-mono text-emerald-400 font-bold">{matchedSession.sessionCode8}</span>
+                  <span className="font-mono text-emerald-400 font-bold">{matchedSessionCode}</span>
                 </div>
               </div>
 
@@ -401,7 +414,7 @@ export default function StudentLiveDebuggingPage() {
               <div className="w-16 h-16 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center mb-4 text-zinc-500">
                 <Lock className="w-7 h-7 text-amber-400" />
               </div>
-              <h3 className="text-base font-semibold text-white">Puerta Ciega de Acceso (/debuging)</h3>
+              <h3 className="text-base font-semibold text-white">Puerta Ciega de Acceso (/live)</h3>
               <p className="text-xs text-zinc-400 max-w-md mt-1.5 leading-relaxed">
                 No existen enlaces públicos de sala. Para ingresar a una clase magistral, el sistema debe encontrar tu
                 firma criptográfica de crédito en la lista <strong className="text-white">allowed_live_students</strong> del docente.
