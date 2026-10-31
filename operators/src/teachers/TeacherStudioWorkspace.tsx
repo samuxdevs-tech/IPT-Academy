@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BookOpen,
   Table,
@@ -98,7 +98,36 @@ export function TeacherStudioWorkspace({
   onGoToAdmin: () => void;
   onOpenPreview: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState<TeacherTab>("builder");
+  const [activeTab, setActiveTabState] = useState<TeacherTab>(() => {
+    if (typeof window !== "undefined") {
+      const liveCode =
+        sessionStorage.getItem("ipt_active_live_code8") ||
+        localStorage.getItem("ipt_active_live_code8");
+      if (liveCode) return "live";
+      const savedTab = sessionStorage.getItem("ipt_teacher_active_tab") as TeacherTab | null;
+      if (savedTab) return savedTab;
+    }
+    return "builder";
+  });
+
+  const setActiveTab = (tab: TeacherTab) => {
+    setActiveTabState(tab);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("ipt_teacher_active_tab", tab);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const liveCode =
+        sessionStorage.getItem("ipt_active_live_code8") ||
+        localStorage.getItem("ipt_active_live_code8");
+      if (liveCode) {
+        setActiveTabState("live");
+        sessionStorage.setItem("ipt_teacher_active_tab", "live");
+      }
+    }
+  }, []);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
 
   const activeItem = NAV_GROUPS.flatMap(g => g.items).find(i => i.id === activeTab) || NAV_GROUPS[0].items[0];

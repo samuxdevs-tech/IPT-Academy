@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ref, onValue, set, update, remove, push } from 'firebase/database';
+import { ref, onValue, set, update, remove, push, onDisconnect } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
@@ -194,6 +194,82 @@ export default function StudentLivePage() {
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const activeOfferIdRef = useRef<string | null>(null);
 
+  // Control de ciclo de vida de sala y reconexión del docente (10s aviso / 5m colgar)
+  const wasInLiveRoomRef = useRef<boolean>(false);
+  const activeListKeyRef = useRef<string | null>(null);
+  const exitingClassRef = useRef<boolean>(false);
+  const teacherOfflineSinceRef = useRef<number | null>(null);
+  const latestTeacherPresenceRef = useRef<{
+    online?: boolean;
+    lastSeenAt?: number;
+    disconnectedAt?: number | null;
+  } | null>(null);
+  const [showTeacherConnectivityWarning, setShowTeacherConnectivityWarning] =
+    useState(false);
+  const [remainingReconnectSecs, setRemainingReconnectSecs] = useState<number>(300);
+
+  // Cortar toda conexión a la clase y sacar al estudiante hacia el campus
+  const forceCutAndExitClass = useCallback(
+    async (reason: 'ended_by_teacher' | 'timeout_5m' | 'manual_leave') => {
+      if (exitingClassRef.current) return;
+      exitingClassRef.current = true;
+
+      const listKeyToClean = activeListKeyRef.current;
+      activeListKeyRef.current = null;
+      wasInLiveRoomRef.current = false;
+      teacherOfflineSinceRef.current = null;
+      setShowTeacherConnectivityWarning(false);
+
+      if (pcRef.current) {
+        try {
+          pcRef.current.ontrack = null;
+          pcRef.current.onicecandidate = null;
+          pcRef.current.onconnectionstatechange = null;
+          pcRef.current.oniceconnectionstatechange = null;
+          pcRef.current.close();
+        } catch {}
+        pcRef.current = null;
+      }
+      activeOfferIdRef.current = null;
+
+      if (studentMicTrackRef.current) {
+        try {
+          studentMicTrackRef.current.stop();
+        } catch {}
+        studentMicTrackRef.current = null;
+      }
+
+      primaryVideoTrackRef.current = null;
+      secondaryVideoTrackRef.current = null;
+      remoteAudioStreamRef.current = null;
+
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+      if (remotePipVideoRef.current) remotePipVideoRef.current.srcObject = null;
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+
+      setHasRemoteVideoTrack(false);
+      setHasRemotePipTrack(false);
+      setMatchedRoom(null);
+
+      if (listKeyToClean) {
+        if (reason === 'timeout_5m') {
+          await remove(ref(db, `allowed_live_students/${listKeyToClean}`)).catch(() => {});
+          await remove(ref(db, `allowed_lists/${listKeyToClean}`)).catch(() => {});
+        } else if (reason === 'manual_leave') {
+          await remove(
+            ref(db, `allowed_live_students/${listKeyToClean}/connected_viewers/${studentUid}`)
+          ).catch(() => {});
+          await remove(
+            ref(db, `allowed_live_students/${listKeyToClean}/signals/${studentUid}`)
+          ).catch(() => {});
+        }
+      }
+
+      router.replace('/home');
+    },
+    [router, studentUid]
+  );
+
   // Cronómetro en vivo de la sesión
   useEffect(() => {
     if (!matchedRoom?.startedAt) {
@@ -369,6 +445,10 @@ export default function StudentLivePage() {
 
     const unsubAllowed = onValue(allowedRootRef, (snap) => {
       if (!snap.exists()) {
+        if (wasInLiveRoomRef.current) {
+          forceCutAndExitClass('ended_by_teacher');
+          return;
+        }
         setMatchedRoom(null);
         setCheckingAccess(false);
         return;
@@ -378,7 +458,17 @@ export default function StudentLivePage() {
       let found: ActiveMatchedRoom | null = null;
 
       for (const [listKey, listData] of Object.entries(allLists) as [string, any][]) {
-        if (!listData || !listData.active) continue;
+        if (!listData || !listData.active || listData.status === 'ended') continue;
+
+        // Si una sala lleva más de 5 minutos sin conexión del docente, limpiarla y no entrar
+        const discAt = listData.teacherPresence?.disconnectedAt || 0;
+        const isOffline = listData.teacherPresence?.online === false;
+        if (isOffline && discAt > 0 && Date.now() - discAt >= 5 * 60 * 1000) {
+          remove(ref(db, `allowed_live_students/${listKey}`)).catch(() => {});
+          remove(ref(db, `allowed_lists/${listKey}`)).catch(() => {});
+          continue;
+        }
+
         const studentsMap = listData.students || {};
 
         let studentRecord = studentsMap[studentUid];
@@ -409,6 +499,17 @@ export default function StudentLivePage() {
         }
       }
 
+      if (!found && wasInLiveRoomRef.current) {
+        forceCutAndExitClass('ended_by_teacher');
+        return;
+      }
+
+      if (found) {
+        wasInLiveRoomRef.current = true;
+        activeListKeyRef.current = found.listKey;
+        exitingClassRef.current = false;
+      }
+
       setMatchedRoom(found);
       setCheckingAccess(false);
     });
@@ -434,23 +535,112 @@ export default function StudentLivePage() {
       unsubAllowed();
       unsubCal();
     };
-  }, [studentUid, studentEmail]);
+  }, [studentUid, studentEmail, forceCutAndExitClass]);
 
   // 2. Al entrar a la sala autorizada, conectar presencia, WebRTC, chat, lienzo, pulsos y controles de voz
   useEffect(() => {
     if (!matchedRoom) return;
     const { listKey } = matchedRoom;
+    const joinTimestamp = Date.now();
 
     const myViewerRef = ref(
       db,
       `allowed_live_students/${listKey}/connected_viewers/${studentUid}`
     );
-    set(myViewerRef, {
-      name: studentName,
-      joinedAt: Date.now(),
-      micMuted: true,
-      renegotiateAt: 0,
+    const mySignalsRef = ref(
+      db,
+      `allowed_live_students/${listKey}/signals/${studentUid}`
+    );
+
+    // Limpiar señales anteriores antes de pedir renegociación (garantiza que F5 del alumno reconecte siempre)
+    remove(mySignalsRef)
+      .catch(() => {})
+      .finally(() => {
+        set(myViewerRef, {
+          name: studentName,
+          joinedAt: joinTimestamp,
+          micMuted: true,
+          renegotiateAt: Date.now(),
+        }).catch(() => {});
+        try {
+          onDisconnect(myViewerRef).remove();
+        } catch {}
+      });
+
+    // Escuchar estado de la sala en caso de que el docente dé "Finalizar"
+    const roomRootRef = ref(db, `allowed_live_students/${listKey}`);
+    const unsubRoomRoot = onValue(roomRootRef, (snap) => {
+      if (!snap.exists()) {
+        forceCutAndExitClass('ended_by_teacher');
+        return;
+      }
+      const rVal = snap.val();
+      if (!rVal || rVal.active === false || rVal.status === 'ended') {
+        forceCutAndExitClass('ended_by_teacher');
+      }
     });
+
+    // Escuchar presencia / conectividad del docente (10s para aviso, 5m para colgar)
+    const presenceRef = ref(db, `allowed_live_students/${listKey}/teacherPresence`);
+    const unsubPresence = onValue(presenceRef, (snap) => {
+      if (!snap.exists()) return;
+      const pVal = snap.val();
+      latestTeacherPresenceRef.current = pVal;
+
+      if (pVal && pVal.online === false) {
+        const discAt = pVal.disconnectedAt || Date.now();
+        if (!teacherOfflineSinceRef.current) {
+          teacherOfflineSinceRef.current = discAt;
+        }
+      } else if (pVal && pVal.online === true) {
+        const wasOffline = teacherOfflineSinceRef.current !== null;
+        teacherOfflineSinceRef.current = null;
+        setShowTeacherConnectivityWarning(false);
+        setRemainingReconnectSecs(300);
+
+        // Si el docente acaba de volver tras un F5 o corte breve, solicitar nueva oferta WebRTC
+        if (wasOffline) {
+          update(myViewerRef, { renegotiateAt: Date.now() }).catch(() => {});
+        }
+      }
+    });
+
+    // Evaluador cada segundo para mostrar aviso a los 10s y colgar a los 5m (300s)
+    const connectivityInterval = setInterval(() => {
+      const pVal = latestTeacherPresenceRef.current;
+      const now = Date.now();
+
+      if (pVal) {
+        const heartbeatStale =
+          typeof pVal.lastSeenAt === 'number' && now - pVal.lastSeenAt > 8000;
+        if (pVal.online === false || heartbeatStale) {
+          if (!teacherOfflineSinceRef.current) {
+            teacherOfflineSinceRef.current =
+              pVal.disconnectedAt || pVal.lastSeenAt || now;
+          }
+        } else {
+          teacherOfflineSinceRef.current = null;
+          setShowTeacherConnectivityWarning(false);
+        }
+      }
+
+      if (teacherOfflineSinceRef.current !== null) {
+        const elapsedMs = Math.max(0, now - teacherOfflineSinceRef.current);
+        if (elapsedMs >= 5 * 60 * 1000) {
+          // Pasaron 5 minutos sin recuperar conexión con el docente -> colgar y salir
+          forceCutAndExitClass('timeout_5m');
+          return;
+        } else if (elapsedMs >= 10 * 1000) {
+          // Pasaron 10 segundos -> mostrar mensaje de espera
+          setShowTeacherConnectivityWarning(true);
+          setRemainingReconnectSecs(
+            Math.max(0, Math.ceil((5 * 60 * 1000 - elapsedMs) / 1000))
+          );
+        } else {
+          setShowTeacherConnectivityWarning(false);
+        }
+      }
+    }, 1000);
 
     const viewersRef = ref(db, `allowed_live_students/${listKey}/connected_viewers`);
     const unsubViewers = onValue(viewersRef, (snap) => {
@@ -558,6 +748,22 @@ export default function StudentLivePage() {
 
       const pc = new RTCPeerConnection(WEBRTC_ICE_SERVERS);
       pcRef.current = pc;
+
+      pc.onconnectionstatechange = () => {
+        if (
+          pc.connectionState === 'disconnected' ||
+          pc.connectionState === 'failed'
+        ) {
+          if (!teacherOfflineSinceRef.current) {
+            teacherOfflineSinceRef.current = Date.now();
+          }
+        } else if (pc.connectionState === 'connected') {
+          if (latestTeacherPresenceRef.current?.online !== false) {
+            teacherOfflineSinceRef.current = null;
+            setShowTeacherConnectivityWarning(false);
+          }
+        }
+      };
 
       primaryVideoTrackRef.current = null;
       secondaryVideoTrackRef.current = null;
@@ -679,6 +885,9 @@ export default function StudentLivePage() {
     });
 
     return () => {
+      clearInterval(connectivityInterval);
+      unsubRoomRoot();
+      unsubPresence();
       unsubViewers();
       unsubChat();
       unsubCanvas();
@@ -696,7 +905,14 @@ export default function StudentLivePage() {
       }
       activeOfferIdRef.current = null;
     };
-  }, [matchedRoom?.listKey, studentUid, studentName, attachVideoStreams, attachAudioStream]);
+  }, [
+    matchedRoom?.listKey,
+    studentUid,
+    studentName,
+    attachVideoStreams,
+    attachAudioStream,
+    forceCutAndExitClass,
+  ]);
 
   // Alternar Micrófono Bidireccional del Estudiante
   const handleToggleStudentMic = async () => {
@@ -1442,6 +1658,24 @@ export default function StudentLivePage() {
             </div>
           </div>
 
+          {/* Aviso de reconexión del docente si pasan 10s sin recuperar conexión (cuelga a los 5m) */}
+          {showTeacherConnectivityWarning && (
+            <div className="absolute inset-x-0 top-16 z-40 flex justify-center px-4 pointer-events-none">
+              <div className="pointer-events-auto flex items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-[#09090b]/95 backdrop-blur-2xl border border-amber-500/45 text-white shadow-[0_20px_60px_rgba(0,0,0,0.9)] max-w-xl">
+                <div className="w-3 h-3 rounded-full bg-amber-400 animate-ping shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs sm:text-sm font-medium text-white">
+                    Hubo un problema de conectividad con el docente, espera un momento...
+                  </span>
+                  <span className="text-[11px] text-zinc-400 mt-0.5">
+                    Esperando reconexión automática ({Math.floor(remainingReconnectSecs / 60)}:
+                    {String(remainingReconnectSecs % 60).padStart(2, '0')})
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Botón flotante si el navegador pausó el audio inicialmente */}
           {audioBlocked && (
             <button
@@ -1753,7 +1987,7 @@ export default function StudentLivePage() {
 
         <button
           type="button"
-          onClick={() => router.push('/home')}
+          onClick={() => forceCutAndExitClass('manual_leave')}
           title="Salir de la sesión"
           className="h-11 px-5 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center gap-2 text-xs font-semibold transition-all ml-1 cursor-pointer shadow-[0_0_25px_rgba(225,29,72,0.4)]"
         >

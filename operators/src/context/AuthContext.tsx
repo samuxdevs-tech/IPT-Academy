@@ -53,8 +53,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
 
     async function checkSession() {
-      const token = typeof window !== "undefined" ? sessionStorage.getItem("ipt_auth_token") : null;
-      const savedViewMode = typeof window !== "undefined" ? (sessionStorage.getItem("ipt_view_mode") as "teacher" | "admin" | "rectoria" | null) : null;
+      const token =
+        typeof window !== "undefined"
+          ? sessionStorage.getItem("ipt_auth_token") || localStorage.getItem("ipt_auth_token")
+          : null;
+      const hasActiveLive =
+        typeof window !== "undefined"
+          ? Boolean(
+              sessionStorage.getItem("ipt_active_live_code8") ||
+                localStorage.getItem("ipt_active_live_code8")
+            )
+          : false;
+      const savedViewMode =
+        typeof window !== "undefined"
+          ? ((sessionStorage.getItem("ipt_view_mode") ||
+              localStorage.getItem("ipt_view_mode") ||
+              (hasActiveLive ? "teacher" : null)) as "teacher" | "admin" | "rectoria" | null)
+          : null;
 
       if (!token) {
         if (mounted) setLoading(false);
@@ -137,8 +152,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       if (mode) {
         sessionStorage.setItem("ipt_view_mode", mode);
+        localStorage.setItem("ipt_view_mode", mode);
       } else {
         sessionStorage.removeItem("ipt_view_mode");
+        localStorage.removeItem("ipt_view_mode");
       }
     }
   };
@@ -175,6 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (typeof window !== "undefined") {
         sessionStorage.setItem("ipt_auth_token", data.token);
+        localStorage.setItem("ipt_auth_token", data.token);
       }
 
       setUser(profile);
@@ -204,6 +222,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("ipt_auth_token");
       sessionStorage.removeItem("ipt_view_mode");
+      localStorage.removeItem("ipt_auth_token");
+      localStorage.removeItem("ipt_view_mode");
     }
 
     setUser(null);

@@ -46,6 +46,8 @@ import {
   onValue,
   remove,
   push,
+  get,
+  onDisconnect,
 } from "firebase/database";
 import {
   generateSessionCode8,
@@ -726,6 +728,9 @@ export function LiveClassSplitView() {
         camTrackRef.current.stop();
         camTrackRef.current = null;
         setCamOn(false);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("ipt_live_cam_on", "0");
+        }
         syncLocalVideoPreview();
       } else {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -738,10 +743,16 @@ export function LiveClassSplitView() {
           vTrack.onended = () => {
             camTrackRef.current = null;
             setCamOn(false);
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("ipt_live_cam_on", "0");
+            }
             syncLocalVideoPreview();
             broadcastMediaUpdateToAllStudents();
           };
           setCamOn(true);
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("ipt_live_cam_on", "1");
+          }
           syncLocalVideoPreview();
         }
       }
@@ -758,6 +769,9 @@ export function LiveClassSplitView() {
         micTrackRef.current.stop();
         micTrackRef.current = null;
         setMicOn(false);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("ipt_live_mic_on", "0");
+        }
       } else {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
@@ -769,9 +783,15 @@ export function LiveClassSplitView() {
           aTrack.onended = () => {
             micTrackRef.current = null;
             setMicOn(false);
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("ipt_live_mic_on", "0");
+            }
             broadcastMediaUpdateToAllStudents();
           };
           setMicOn(true);
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("ipt_live_mic_on", "1");
+          }
         }
       }
       await broadcastMediaUpdateToAllStudents();
@@ -841,15 +861,189 @@ export function LiveClassSplitView() {
     }
   }, [listMode, selectedScheduledId, bookedStudents, allStudents, manualSelectedUids]);
 
+  // Restaurar automáticamente la clase en vivo si el docente presiona F5 (recargar página)
+  useEffect(() => {
+    let cancelled = false;
+
+    const tryRestoreActiveTeacherSession = async () => {
+      if (isLiveRef.current) return;
+      try {
+        const savedCode =
+          typeof window !== "undefined"
+            ? sessionStorage.getItem("ipt_active_live_code8") ||
+              localStorage.getItem("ipt_active_live_code8")
+            : null;
+
+        const snap = await get(ref(rtdb, "allowed_live_students"));
+        if (cancelled || !snap.exists()) return;
+
+        const allRooms = snap.val() as Record<string, any>;
+        let matchedKey: string | null = null;
+        let matchedData: any = null;
+
+        if (savedCode && allRooms[`allowed_list_${savedCode}`]) {
+          const candidate = allRooms[`allowed_list_${savedCode}`];
+          if (candidate && candidate.active && candidate.status !== "ended") {
+            matchedKey = `allowed_list_${savedCode}`;
+            matchedData = candidate;
+          }
+        }
+
+        if (!matchedData) {
+          for (const [k, room] of Object.entries(allRooms)) {
+            if (
+              room &&
+              room.active &&
+              room.status !== "ended" &&
+              room.teacherUid === teacherUid
+            ) {
+              matchedKey = k;
+              matchedData = room;
+              break;
+            }
+          }
+        }
+
+        if (!matchedKey || !matchedData) {
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("ipt_active_live_code8");
+            localStorage.removeItem("ipt_active_live_code8");
+          }
+          return;
+        }
+
+        // Si estuvo desconectado más de 5 minutos, cerrar la sesión huérfana y no reanudar
+        const discAt = matchedData.teacherPresence?.disconnectedAt || 0;
+        const isOffline = matchedData.teacherPresence?.online === false;
+        if (isOffline && discAt > 0 && Date.now() - discAt >= 5 * 60 * 1000) {
+          await remove(ref(rtdb, `allowed_live_students/${matchedKey}`)).catch(() => {});
+          await remove(ref(rtdb, `allowed_lists/${matchedKey}`)).catch(() => {});
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("ipt_active_live_code8");
+            localStorage.removeItem("ipt_active_live_code8");
+          }
+          return;
+        }
+
+        const restoredCode =
+          matchedData.code8 || matchedKey.replace("allowed_list_", "");
+
+        code8Ref.current = restoredCode;
+        isLiveRef.current = true;
+        setCode8(restoredCode);
+        setIsLive(true);
+        setStartedAtMs(matchedData.startedAt || Date.now());
+        if (matchedData.title) setClassTitle(matchedData.title);
+        if (matchedData.currentTopic) {
+          setCurrentTopic(matchedData.currentTopic);
+          setTopicDraft(matchedData.currentTopic);
+        }
+        if (matchedData.liveCanvas) {
+          setLiveCanvas({
+            ...matchedData.liveCanvas,
+            canvasMode: matchedData.liveCanvas.canvasMode === "board" ? "board" : "text",
+            strokes: Array.isArray(matchedData.liveCanvas.strokes)
+              ? matchedData.liveCanvas.strokes
+              : [],
+          });
+          if (matchedData.liveCanvas.active) {
+            setStageMode("canvas");
+          }
+        }
+
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("ipt_active_live_code8", restoredCode);
+          localStorage.setItem("ipt_active_live_code8", restoredCode);
+        }
+
+        // Marcar presencia inmediatamente como online tras el F5
+        await set(ref(rtdb, `allowed_live_students/${matchedKey}/teacherPresence`), {
+          online: true,
+          lastSeenAt: Date.now(),
+          disconnectedAt: null,
+        }).catch(() => {});
+
+        // Si el docente tenía cámara o micrófono encendidos antes de recargar (F5), reactivarlos automáticamente
+        const wantCam =
+          typeof window !== "undefined" &&
+          sessionStorage.getItem("ipt_live_cam_on") === "1";
+        const wantMic =
+          typeof window !== "undefined" &&
+          sessionStorage.getItem("ipt_live_mic_on") === "1";
+
+        if (wantCam && !camTrackRef.current) {
+          try {
+            const camStream = await navigator.mediaDevices.getUserMedia({
+              video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+              audio: false,
+            });
+            const vTrack = camStream.getVideoTracks()[0];
+            if (vTrack) {
+              camTrackRef.current = vTrack;
+              setCamOn(true);
+            }
+          } catch {}
+        }
+
+        if (wantMic && !micTrackRef.current) {
+          try {
+            const micStream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+              },
+              video: false,
+            });
+            const aTrack = micStream.getAudioTracks()[0];
+            if (aTrack) {
+              micTrackRef.current = aTrack;
+              setMicOn(true);
+            }
+          } catch {}
+        }
+
+        syncLocalVideoPreview();
+        await broadcastMediaUpdateToAllStudents();
+      } catch (err) {
+        console.warn("Error restaurando sesión tras F5:", err);
+      }
+    };
+
+    tryRestoreActiveTeacherSession();
+    return () => {
+      cancelled = true;
+    };
+  }, [teacherUid, syncLocalVideoPreview, broadcastMediaUpdateToAllStudents]);
+
   // Iniciar Clase
   const handleStartLiveClass = async () => {
     const generatedCode = generateSessionCode8();
     const listKey = `allowed_list_${generatedCode}`;
     const nowMs = Date.now();
 
+    // Limpiar cualquier sala anterior huérfana de este docente antes de abrir la nueva
+    try {
+      const existingSnap = await get(ref(rtdb, "allowed_live_students"));
+      if (existingSnap.exists()) {
+        const allLists = existingSnap.val() as Record<string, any>;
+        for (const [oldKey, oldRoom] of Object.entries(allLists)) {
+          if (!oldRoom || oldRoom.teacherUid === teacherUid || !oldRoom.active) {
+            await remove(ref(rtdb, `allowed_live_students/${oldKey}`)).catch(() => {});
+            await remove(ref(rtdb, `allowed_lists/${oldKey}`)).catch(() => {});
+          }
+        }
+      }
+    } catch {}
+
     code8Ref.current = generatedCode;
     isLiveRef.current = true;
     setStartedAtMs(nowMs);
+
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("ipt_active_live_code8", generatedCode);
+      localStorage.setItem("ipt_active_live_code8", generatedCode);
+    }
 
     const studentsMap: Record<
       string,
@@ -935,6 +1129,11 @@ export function LiveClassSplitView() {
         updatedAt: nowMs,
       },
       liveCanvas: initialCanvas,
+      teacherPresence: {
+        online: true,
+        lastSeenAt: nowMs,
+        disconnectedAt: null,
+      },
       students: studentsMap,
     };
 
@@ -1082,7 +1281,53 @@ export function LiveClassSplitView() {
     };
   }, [isLive, code8, negotiateWithStudent, closePeerSession]);
 
-  // Finalizar clase y limpiar listas efímeras
+  // Heartbeat de presencia del docente + detección inmediata de F5 / caída de red
+  useEffect(() => {
+    if (!isLive || !code8) return;
+    const listKey = `allowed_list_${code8}`;
+    const presenceRef = ref(rtdb, `allowed_live_students/${listKey}/teacherPresence`);
+
+    const pushHeartbeat = () => {
+      if (!isLiveRef.current || code8Ref.current !== code8) return;
+      const now = Date.now();
+      update(presenceRef, {
+        online: true,
+        lastSeenAt: now,
+        disconnectedAt: null,
+      }).catch(() => {});
+
+      try {
+        onDisconnect(presenceRef).update({
+          online: false,
+          disconnectedAt: now,
+        });
+      } catch {}
+    };
+
+    pushHeartbeat();
+    const hbInterval = setInterval(pushHeartbeat, 3000);
+
+    const handlePageUnload = () => {
+      if (!isLiveRef.current || code8Ref.current !== code8) return;
+      // Al recargar con F5 o cerrar pestaña sin dar "Finalizar", no se borra la sala:
+      // se marca offline con timestamp exacto para que a los 10s avise al alumno y a los 5m cuelgue.
+      update(presenceRef, {
+        online: false,
+        disconnectedAt: Date.now(),
+      }).catch(() => {});
+    };
+
+    window.addEventListener("beforeunload", handlePageUnload);
+    window.addEventListener("pagehide", handlePageUnload);
+
+    return () => {
+      clearInterval(hbInterval);
+      window.removeEventListener("beforeunload", handlePageUnload);
+      window.removeEventListener("pagehide", handlePageUnload);
+    };
+  }, [isLive, code8]);
+
+  // Finalizar clase y limpiar listas efímeras (expulsa y desconecta a todos los estudiantes)
   const handleEndLiveClass = async () => {
     const activeCode = code8Ref.current || code8;
     isLiveRef.current = false;
@@ -1090,11 +1335,45 @@ export function LiveClassSplitView() {
     connectedUidsRef.current.clear();
     peerRenegotiateStampRef.current.clear();
 
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("ipt_active_live_code8");
+      localStorage.removeItem("ipt_active_live_code8");
+      sessionStorage.removeItem("ipt_live_cam_on");
+      sessionStorage.removeItem("ipt_live_mic_on");
+    }
+
     if (activeCode) {
       const listKey = `allowed_list_${activeCode}`;
+      const presenceRef = ref(rtdb, `allowed_live_students/${listKey}/teacherPresence`);
+      try {
+        await onDisconnect(presenceRef).cancel();
+      } catch {}
+
+      // Notificar estado "ended" inmediato y luego eliminar la sala y cualquier otra sala residual del docente
+      await update(ref(rtdb, `allowed_live_students/${listKey}`), {
+        active: false,
+        status: "ended",
+        endedAt: Date.now(),
+      }).catch(() => {});
+
       await remove(ref(rtdb, `allowed_live_students/${listKey}`)).catch(() => {});
       await remove(ref(rtdb, `allowed_lists/${listKey}`)).catch(() => {});
+    }
 
+    try {
+      const allSnap = await get(ref(rtdb, "allowed_live_students"));
+      if (allSnap.exists()) {
+        const allLists = allSnap.val() as Record<string, any>;
+        for (const [k, room] of Object.entries(allLists)) {
+          if (!room || room.teacherUid === teacherUid || !room.active) {
+            await remove(ref(rtdb, `allowed_live_students/${k}`)).catch(() => {});
+            await remove(ref(rtdb, `allowed_lists/${k}`)).catch(() => {});
+          }
+        }
+      }
+    } catch {}
+
+    if (activeCode) {
       const railwayHttpUrl = process.env.NEXT_PUBLIC_RAILWAY_WEBRTC_HTTP_URL || "";
       if (railwayHttpUrl) {
         fetch(`${railwayHttpUrl.replace(/\/$/, "")}/api/rooms/end`, {
@@ -1114,6 +1393,14 @@ export function LiveClassSplitView() {
       closePeerSession(sUid);
     }
 
+    if (camTrackRef.current) {
+      camTrackRef.current.stop();
+      camTrackRef.current = null;
+    }
+    if (micTrackRef.current) {
+      micTrackRef.current.stop();
+      micTrackRef.current = null;
+    }
     if (screenVideoTrackRef.current) {
       screenVideoTrackRef.current.stop();
       screenVideoTrackRef.current = null;
@@ -1122,6 +1409,8 @@ export function LiveClassSplitView() {
       screenAudioTrackRef.current.stop();
       screenAudioTrackRef.current = null;
     }
+    setCamOn(false);
+    setMicOn(false);
     setScreenOn(false);
     setIsLive(false);
     setCode8(null);
