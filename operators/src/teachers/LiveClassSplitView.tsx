@@ -22,7 +22,6 @@ import { rtdb } from "@/lib/firebase";
 import {
   ref,
   set,
-  update,
   onValue,
   remove,
   push,
@@ -58,6 +57,15 @@ interface ChatMessage {
   time: string;
 }
 
+interface PeerSession {
+  pc: RTCPeerConnection;
+  offerId: string;
+  remoteDescSet: boolean;
+  queuedIce: RTCIceCandidateInit[];
+  unsubAnswer: () => void;
+  unsubIce: () => void;
+}
+
 export function LiveClassSplitView() {
   const { user, operatorProfile } = useAuth();
   const teacherUid = user?.uid || operatorProfile?.uid || "teacher_ipt_001";
@@ -77,24 +85,35 @@ export function LiveClassSplitView() {
   const [manualSelectedUids, setManualSelectedUids] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Dispositivos de audio y video
+  // Estado visual de dispositivos
   const [micOn, setMicOn] = useState(false);
   const [camOn, setCamOn] = useState(false);
   const [screenOn, setScreenOn] = useState(false);
 
   // Paneles laterales durante la llamada (Meet style)
   const [sidePanel, setSidePanel] = useState<"none" | "people" | "chat">("none");
-  const [connectedViewers, setConnectedViewers] = useState<Record<string, { name: string; joinedAt: number }>>({});
-  const [raisedHands, setRaisedHands] = useState<Record<string, { name: string; timestamp: number }>>({});
+  const [connectedViewers, setConnectedViewers] = useState<
+    Record<string, { name: string; joinedAt: number }>
+  >({});
+  const [raisedHands, setRaisedHands] = useState<
+    Record<string, { name: string; timestamp: number }>
+  >({});
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [currentTimeStr, setCurrentTimeStr] = useState("");
 
-  // Referencias WebRTC y Multimedia
+  // Referencias mutables libres de closures obsoletos
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const cameraStreamRef = useRef<MediaStream | null>(null);
-  const screenStreamRef = useRef<MediaStream | null>(null);
-  const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const studentAudioContainerRef = useRef<HTMLDivElement | null>(null);
+  const camTrackRef = useRef<MediaStreamTrack | null>(null);
+  const micTrackRef = useRef<MediaStreamTrack | null>(null);
+  const screenVideoTrackRef = useRef<MediaStreamTrack | null>(null);
+  const screenAudioTrackRef = useRef<MediaStreamTrack | null>(null);
+
+  const isLiveRef = useRef<boolean>(false);
+  const code8Ref = useRef<string | null>(null);
+  const connectedUidsRef = useRef<Set<string>>(new Set());
+  const peerSessionsRef = useRef<Map<string, PeerSession>>(new Map());
   const railwayWsRef = useRef<WebSocket | null>(null);
 
   // Reloj estilo Google Meet
@@ -112,7 +131,7 @@ export function LiveClassSplitView() {
     return () => clearInterval(interval);
   }, []);
 
-  // Cargar próximas clases agendadas (lms_calendar / lms_live_sessions) y lista de estudiantes + reservas
+  // Cargar próximas clases agendadas y estudiantes
   useEffect(() => {
     const calRef = ref(rtdb, "lms_calendar");
     const usersRef = ref(rtdb, "users");
@@ -125,10 +144,9 @@ export function LiveClassSplitView() {
     let rawBookings: Record<string, any> = {};
     let rawSigs: Record<string, string> = {};
 
-    const rebuildLists = async () => {
+    const rebuildLists = () => {
       const candidatesMap = new Map<string, StudentCandidate>();
 
-      // 1. Estudiantes registrados en users y lms_subscriptions
       const allUids = new Set([...Object.keys(rawUsers), ...Object.keys(rawSubs)]);
       for (const uid of allUids) {
         const u = rawUsers[uid] || {};
@@ -157,7 +175,6 @@ export function LiveClassSplitView() {
         });
       }
 
-      // Asegurar que la cuenta estudiantil principal esté disponible
       if (!candidatesMap.has("mw0EaGhRIsO3mKJ5yTXi6K9hWI93")) {
         candidatesMap.set("mw0EaGhRIsO3mKJ5yTXi6K9hWI93", {
           uid: "mw0EaGhRIsO3mKJ5yTXi6K9hWI93",
@@ -166,7 +183,6 @@ export function LiveClassSplitView() {
         });
       }
 
-      // 2. Cruzar con reservas confirmadas y firmas {id}: {Hash}
       const bookedList: StudentCandidate[] = [];
       for (const [bId, bVal] of Object.entries(rawBookings)) {
         if (!bVal || bVal.status === "cancelled_by_user") continue;
@@ -179,7 +195,9 @@ export function LiveClassSplitView() {
           name: bVal.studentName || existing?.name || `Estudiante ${sUid.slice(0, 5)}`,
           email: bVal.studentEmail || existing?.email || "",
           bookingId: bId,
-          signature: hashFromSig ? `${bId}: ${hashFromSig}` : bVal.signature || `${bId}: verified`,
+          signature: hashFromSig
+            ? `${bId}: ${hashFromSig}`
+            : bVal.signature || `${bId}: verified`,
           bookedSessionId: bVal.sessionId,
         };
         candidatesMap.set(sUid, entry);
@@ -243,287 +261,343 @@ export function LiveClassSplitView() {
     };
   }, []);
 
-  // Vincular stream activo al elemento <video> cuando cambia el modo o el estado isLive
-  const attachActiveStreamToVideo = useCallback(() => {
+  // Actualizar el visor local <video> con la pista activa (pantalla o cámara)
+  const syncLocalVideoPreview = useCallback(() => {
     if (!videoRef.current) return;
-    if (screenOn && screenStreamRef.current) {
-      videoRef.current.srcObject = screenStreamRef.current;
-    } else if (camOn && cameraStreamRef.current) {
-      videoRef.current.srcObject = cameraStreamRef.current;
+    const activeVideoTrack = screenVideoTrackRef.current || camTrackRef.current;
+    if (activeVideoTrack && activeVideoTrack.readyState === "live") {
+      const previewStream = new MediaStream([activeVideoTrack]);
+      videoRef.current.srcObject = previewStream;
+      videoRef.current.play().catch(() => {});
     } else {
       videoRef.current.srcObject = null;
     }
-  }, [camOn, screenOn]);
+  }, []);
 
   useEffect(() => {
-    attachActiveStreamToVideo();
-  }, [isLive, camOn, screenOn, attachActiveStreamToVideo]);
+    syncLocalVideoPreview();
+  }, [isLive, camOn, screenOn, syncLocalVideoPreview]);
 
-  // Obtener todos los tracks activos (video de pantalla o cámara + audio de micrófono)
-  const getCombinedLocalStream = useCallback((): MediaStream => {
-    const combined = new MediaStream();
-    if (screenOn && screenStreamRef.current) {
-      screenStreamRef.current.getVideoTracks().forEach((t) => combined.addTrack(t));
-    } else if (camOn && cameraStreamRef.current) {
-      cameraStreamRef.current.getVideoTracks().forEach((t) => combined.addTrack(t));
+  // Publicar estado de medios en RTDB para que el estudiante sepa al instante si hay video/pantalla/audio
+  const publishMediaStateToRtdb = useCallback(async () => {
+    const activeCode = code8Ref.current;
+    if (!isLiveRef.current || !activeCode) return;
+    const listKey = `allowed_list_${activeCode}`;
+    const hasScreen = Boolean(
+      screenVideoTrackRef.current && screenVideoTrackRef.current.readyState === "live"
+    );
+    const hasCam = Boolean(
+      camTrackRef.current && camTrackRef.current.readyState === "live"
+    );
+    const hasMic = Boolean(
+      micTrackRef.current &&
+        micTrackRef.current.readyState === "live" &&
+        micTrackRef.current.enabled
+    );
+
+    await set(ref(rtdb, `allowed_live_students/${listKey}/mediaState`), {
+      hasVideo: hasScreen || hasCam,
+      hasAudio: hasMic || Boolean(screenAudioTrackRef.current),
+      mode: hasScreen ? "screen" : hasCam ? "camera" : "none",
+      updatedAt: Date.now(),
+    }).catch(() => {});
+  }, []);
+
+  // Cerrar sesión WebRTC de un alumno específico
+  const closePeerSession = useCallback((studentUid: string) => {
+    const existing = peerSessionsRef.current.get(studentUid);
+    if (existing) {
+      try {
+        existing.unsubAnswer();
+        existing.unsubIce();
+        existing.pc.close();
+      } catch {}
+      peerSessionsRef.current.delete(studentUid);
     }
-    if (micOn && cameraStreamRef.current) {
-      cameraStreamRef.current.getAudioTracks().forEach((t) => combined.addTrack(t));
-    }
-    return combined;
-  }, [camOn, micOn, screenOn]);
+  }, []);
 
-  // Renegociar y enviar nueva oferta SDP a todos los alumnos conectados cuando cambian pistas de audio/video
-  const renegotiateAllPeers = useCallback(
-    async (activeCode8: string) => {
-      const listKey = `allowed_list_${activeCode8}`;
-      const stream = getCombinedLocalStream();
+  // Crear y negociar una conexión WebRTC limpia con un estudiante (con cola de ICE y offerId único)
+  const negotiateWithStudent = useCallback(
+    async (studentUid: string) => {
+      const activeCode = code8Ref.current;
+      if (!isLiveRef.current || !activeCode) return;
+      const listKey = `allowed_list_${activeCode}`;
 
-      for (const [studentUid, pc] of peerConnectionsRef.current.entries()) {
-        try {
-          const senders = pc.getSenders();
-          const currentTracks = stream.getTracks();
+      // Cerrar cualquier negociación anterior con este alumno
+      closePeerSession(studentUid);
 
-          for (const track of currentTracks) {
-            const existingSender = senders.find((s) => s.track?.kind === track.kind);
-            if (existingSender) {
-              await existingSender.replaceTrack(track);
-            } else {
-              pc.addTrack(track, stream);
-            }
-          }
+      const offerId = `off_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
-          // Si se apagó video o audio, limpiar el sender correspondiente
-          for (const sender of senders) {
-            if (sender.track && !currentTracks.some((t) => t.kind === sender.track?.kind)) {
-              await sender.replaceTrack(null);
-            }
-          }
-
-          const offer = await pc.createOffer({
-            offerToReceiveAudio: true,
-            offerToReceiveVideo: true,
-          });
-          await pc.setLocalDescription(offer);
-
-          await set(ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}/offer`), {
-            type: offer.type,
-            sdp: offer.sdp,
-            timestamp: Date.now(),
-          });
-
-          if (railwayWsRef.current && railwayWsRef.current.readyState === WebSocket.OPEN) {
-            railwayWsRef.current.send(
-              JSON.stringify({
-                type: "webrtc-offer",
-                code8: activeCode8,
-                targetUid: studentUid,
-                payload: { type: offer.type, sdp: offer.sdp },
-              })
-            );
-          }
-        } catch (err) {
-          console.warn("Error renegociando peer:", studentUid, err);
-        }
-      }
-    },
-    [getCombinedLocalStream]
-  );
-
-  // Conectar WebRTC con un estudiante admitido
-  const connectToAdmittedStudent = useCallback(
-    async (studentUid: string, activeCode8: string) => {
-      const listKey = `allowed_list_${activeCode8}`;
-      const existingPc = peerConnectionsRef.current.get(studentUid);
-      if (existingPc) {
-        existingPc.close();
-        peerConnectionsRef.current.delete(studentUid);
-      }
+      // Limpiar señales previas en RTDB antes de emitir la nueva oferta
+      await remove(ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}`)).catch(
+        () => {}
+      );
 
       const pc = new RTCPeerConnection(WEBRTC_ICE_SERVERS);
-      peerConnectionsRef.current.set(studentUid, pc);
+      const sessionObj: PeerSession = {
+        pc,
+        offerId,
+        remoteDescSet: false,
+        queuedIce: [],
+        unsubAnswer: () => {},
+        unsubIce: () => {},
+      };
+      peerSessionsRef.current.set(studentUid, sessionObj);
 
-      const stream = getCombinedLocalStream();
-      stream.getTracks().forEach((track) => {
-        pc.addTrack(track, stream);
-      });
+      // Construir MediaStream con las pistas activas en este instante (leídas directamente de Refs)
+      const outboundStream = new MediaStream();
+      const activeVideoTrack = screenVideoTrackRef.current || camTrackRef.current;
+      const activeAudioTrack = micTrackRef.current || screenAudioTrackRef.current;
 
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          const iceRef = push(
-            ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}/teacherIce`)
-          );
-          set(iceRef, JSON.stringify(event.candidate)).catch(() => {});
+      if (activeVideoTrack && activeVideoTrack.readyState === "live") {
+        outboundStream.addTrack(activeVideoTrack);
+        pc.addTrack(activeVideoTrack, outboundStream);
+      } else {
+        pc.addTransceiver("video", { direction: "sendrecv" });
+      }
 
-          if (railwayWsRef.current && railwayWsRef.current.readyState === WebSocket.OPEN) {
-            railwayWsRef.current.send(
-              JSON.stringify({
-                type: "webrtc-ice",
-                code8: activeCode8,
-                targetUid: studentUid,
-                payload: event.candidate,
-              })
-            );
+      if (activeAudioTrack && activeAudioTrack.readyState === "live") {
+        outboundStream.addTrack(activeAudioTrack);
+        pc.addTrack(activeAudioTrack, outboundStream);
+      } else {
+        pc.addTransceiver("audio", { direction: "sendrecv" });
+      }
+
+      // Si el estudiante activa su micrófono, reproducir su audio en el estudio del profesor
+      pc.ontrack = (event) => {
+        if (event.track.kind === "audio" && studentAudioContainerRef.current) {
+          const audioElId = `stu_audio_${studentUid}`;
+          let audioEl = document.getElementById(audioElId) as HTMLAudioElement | null;
+          if (!audioEl) {
+            audioEl = document.createElement("audio");
+            audioEl.id = audioElId;
+            audioEl.autoplay = true;
+            studentAudioContainerRef.current.appendChild(audioEl);
           }
+          const incomingStream =
+            event.streams && event.streams[0]
+              ? event.streams[0]
+              : new MediaStream([event.track]);
+          audioEl.srcObject = incomingStream;
+          audioEl.play().catch(() => {});
         }
       };
 
-      try {
-        const offer = await pc.createOffer({
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: true,
-        });
-        await pc.setLocalDescription(offer);
+      // Enviar candidatos ICE del profesor a RTDB
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          const currentSession = peerSessionsRef.current.get(studentUid);
+          if (!currentSession || currentSession.offerId !== offerId) return;
 
-        await set(ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}/offer`), {
-          type: offer.type,
-          sdp: offer.sdp,
-          timestamp: Date.now(),
-        });
-
-        if (railwayWsRef.current && railwayWsRef.current.readyState === WebSocket.OPEN) {
-          railwayWsRef.current.send(
-            JSON.stringify({
-              type: "webrtc-offer",
-              code8: activeCode8,
-              targetUid: studentUid,
-              payload: { type: offer.type, sdp: offer.sdp },
-            })
+          const iceRef = push(
+            ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}/teacherIce`)
           );
+          set(iceRef, {
+            offerId,
+            candidate: event.candidate.toJSON(),
+          }).catch(() => {});
         }
-      } catch (err) {
-        console.warn("Error creando oferta WebRTC:", err);
-      }
+      };
 
-      // Escuchar Answer del estudiante
-      const answerRef = ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}/answer`);
-      onValue(answerRef, async (snap) => {
+      // Escuchar Answer del estudiante verificando que corresponda a este offerId
+      const answerRef = ref(
+        rtdb,
+        `allowed_live_students/${listKey}/signals/${studentUid}/answer`
+      );
+      const unsubAnswer = onValue(answerRef, async (snap) => {
         const data = snap.val();
-        if (data && data.sdp && pc.signalingState === "have-local-offer") {
-          try {
-            await pc.setRemoteDescription(new RTCSessionDescription({ type: data.type, sdp: data.sdp }));
-          } catch {}
+        if (!data || !data.sdp || data.offerId !== offerId) return;
+        const currentSession = peerSessionsRef.current.get(studentUid);
+        if (!currentSession || currentSession.offerId !== offerId) return;
+        if (pc.signalingState !== "have-local-offer") return;
+
+        try {
+          await pc.setRemoteDescription(
+            new RTCSessionDescription({ type: data.type || "answer", sdp: data.sdp })
+          );
+          currentSession.remoteDescSet = true;
+
+          // Vaciar cola de candidatos ICE del estudiante que hayan llegado antes del Answer
+          const pending = [...currentSession.queuedIce];
+          currentSession.queuedIce = [];
+          for (const cand of pending) {
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(cand));
+            } catch {}
+          }
+        } catch (err) {
+          console.warn("Error aplicando Answer del estudiante:", err);
         }
       });
 
-      // Escuchar candidatos ICE del estudiante
+      // Escuchar candidatos ICE del estudiante (encolando si remoteDescription aún no está listo)
       const studentIceRef = ref(
         rtdb,
         `allowed_live_students/${listKey}/signals/${studentUid}/studentIce`
       );
-      onValue(studentIceRef, (snap) => {
-        const candidates = snap.val();
-        if (candidates && pc.signalingState !== "closed") {
-          Object.values(candidates).forEach(async (candStr: any) => {
+      const processedIceKeys = new Set<string>();
+      const unsubIce = onValue(studentIceRef, (snap) => {
+        const val = snap.val();
+        if (!val) return;
+        const currentSession = peerSessionsRef.current.get(studentUid);
+        if (!currentSession || currentSession.offerId !== offerId) return;
+
+        Object.entries(val).forEach(async ([k, item]: [string, any]) => {
+          if (processedIceKeys.has(k)) return;
+          if (!item || (item.offerId && item.offerId !== offerId)) return;
+          processedIceKeys.add(k);
+
+          const candInit: RTCIceCandidateInit = item.candidate
+            ? item.candidate
+            : typeof item === "string"
+            ? JSON.parse(item)
+            : item;
+
+          if (currentSession.remoteDescSet && pc.remoteDescription) {
             try {
-              const cand = typeof candStr === "string" ? JSON.parse(candStr) : candStr;
-              await pc.addIceCandidate(new RTCIceCandidate(cand));
+              await pc.addIceCandidate(new RTCIceCandidate(candInit));
             } catch {}
-          });
-        }
+          } else {
+            currentSession.queuedIce.push(candInit);
+          }
+        });
       });
+
+      sessionObj.unsubAnswer = unsubAnswer;
+      sessionObj.unsubIce = unsubIce;
+
+      // Crear y publicar la oferta SDP
+      try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        await set(ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}/offer`), {
+          offerId,
+          type: offer.type,
+          sdp: offer.sdp,
+          timestamp: Date.now(),
+        });
+      } catch (err) {
+        console.warn("Error creando Offer WebRTC:", err);
+      }
     },
-    [getCombinedLocalStream]
+    [closePeerSession]
   );
 
-  // Alternar Cámara
+  // Sincronizar cambios de Cámara, Micrófono o Pantalla con todos los estudiantes conectados
+  const broadcastMediaUpdateToAllStudents = useCallback(async () => {
+    await publishMediaStateToRtdb();
+    if (!isLiveRef.current || !code8Ref.current) return;
+
+    const uids = Array.from(connectedUidsRef.current);
+    for (const sUid of uids) {
+      await negotiateWithStudent(sUid);
+    }
+  }, [publishMediaStateToRtdb, negotiateWithStudent]);
+
+  // 1. Alternar Cámara
   const toggleCamera = async () => {
     try {
-      if (camOn) {
-        cameraStreamRef.current?.getVideoTracks().forEach((t) => t.stop());
+      if (camTrackRef.current) {
+        camTrackRef.current.stop();
+        camTrackRef.current = null;
         setCamOn(false);
-        if (videoRef.current && !screenOn) {
-          videoRef.current.srcObject = null;
-        }
+        syncLocalVideoPreview();
       } else {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: micOn,
+          audio: false,
         });
-        if (cameraStreamRef.current && micOn) {
-          const existingAudio = cameraStreamRef.current.getAudioTracks();
-          existingAudio.forEach((t) => stream.addTrack(t));
-        }
-        cameraStreamRef.current = stream;
-        setCamOn(true);
-        if (videoRef.current && !screenOn) {
-          videoRef.current.srcObject = stream;
+        const vTrack = stream.getVideoTracks()[0];
+        if (vTrack) {
+          camTrackRef.current = vTrack;
+          vTrack.onended = () => {
+            camTrackRef.current = null;
+            setCamOn(false);
+            syncLocalVideoPreview();
+            broadcastMediaUpdateToAllStudents();
+          };
+          setCamOn(true);
+          syncLocalVideoPreview();
         }
       }
-      if (isLive && code8) {
-        setTimeout(() => renegotiateAllPeers(code8), 150);
-      }
-    } catch {
-      // Silencioso si no hay cámara física conectada
+      await broadcastMediaUpdateToAllStudents();
+    } catch (err) {
+      console.warn("No se pudo acceder a la cámara:", err);
     }
   };
 
-  // Alternar Micrófono
+  // 2. Alternar Micrófono
   const toggleMic = async () => {
     try {
-      if (micOn) {
-        cameraStreamRef.current?.getAudioTracks().forEach((t) => {
-          t.enabled = false;
-          t.stop();
-        });
+      if (micTrackRef.current) {
+        micTrackRef.current.stop();
+        micTrackRef.current = null;
         setMicOn(false);
       } else {
-        const audioStream = await navigator.mediaDevices.getUserMedia({
-          audio: { echoCancellation: true, noiseSuppression: true },
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+          video: false,
         });
-        if (!cameraStreamRef.current) {
-          cameraStreamRef.current = audioStream;
-        } else {
-          cameraStreamRef.current.getAudioTracks().forEach((t) => {
-            cameraStreamRef.current?.removeTrack(t);
-          });
-          audioStream.getAudioTracks().forEach((t) => {
-            cameraStreamRef.current?.addTrack(t);
-          });
+        const aTrack = stream.getAudioTracks()[0];
+        if (aTrack) {
+          micTrackRef.current = aTrack;
+          aTrack.onended = () => {
+            micTrackRef.current = null;
+            setMicOn(false);
+            broadcastMediaUpdateToAllStudents();
+          };
+          setMicOn(true);
         }
-        setMicOn(true);
       }
-      if (isLive && code8) {
-        setTimeout(() => renegotiateAllPeers(code8), 150);
-      }
-    } catch {}
+      await broadcastMediaUpdateToAllStudents();
+    } catch (err) {
+      console.warn("No se pudo acceder al micrófono:", err);
+    }
   };
 
-  // Alternar Compartir Pantalla
+  // 3. Alternar Compartir Pantalla
   const toggleScreenShare = async () => {
     try {
-      if (screenOn) {
-        screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-        screenStreamRef.current = null;
-        setScreenOn(false);
-        if (videoRef.current) {
-          videoRef.current.srcObject = camOn ? cameraStreamRef.current : null;
+      if (screenVideoTrackRef.current) {
+        screenVideoTrackRef.current.stop();
+        screenVideoTrackRef.current = null;
+        if (screenAudioTrackRef.current) {
+          screenAudioTrackRef.current.stop();
+          screenAudioTrackRef.current = null;
         }
+        setScreenOn(false);
+        syncLocalVideoPreview();
       } else {
         const displayStream = await navigator.mediaDevices.getDisplayMedia({
           video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
           audio: true,
         });
-        screenStreamRef.current = displayStream;
-        setScreenOn(true);
-        if (videoRef.current) {
-          videoRef.current.srcObject = displayStream;
+        const sVideoTrack = displayStream.getVideoTracks()[0];
+        const sAudioTrack = displayStream.getAudioTracks()[0] || null;
+
+        if (sVideoTrack) {
+          screenVideoTrackRef.current = sVideoTrack;
+          screenAudioTrackRef.current = sAudioTrack;
+          setScreenOn(true);
+          syncLocalVideoPreview();
+
+          sVideoTrack.onended = () => {
+            screenVideoTrackRef.current = null;
+            if (screenAudioTrackRef.current) {
+              screenAudioTrackRef.current.stop();
+              screenAudioTrackRef.current = null;
+            }
+            setScreenOn(false);
+            syncLocalVideoPreview();
+            broadcastMediaUpdateToAllStudents();
+          };
         }
-        displayStream.getVideoTracks()[0].onended = () => {
-          screenStreamRef.current = null;
-          setScreenOn(false);
-          if (videoRef.current) {
-            videoRef.current.srcObject = camOn ? cameraStreamRef.current : null;
-          }
-          if (isLive && code8) {
-            setTimeout(() => renegotiateAllPeers(code8), 150);
-          }
-        };
       }
-      if (isLive && code8) {
-        setTimeout(() => renegotiateAllPeers(code8), 150);
-      }
-    } catch {}
+      await broadcastMediaUpdateToAllStudents();
+    } catch (err) {
+      console.warn("Compartir pantalla cancelado:", err);
+    }
   };
 
   // Estudiantes que conformarán la allowed_live_students
@@ -534,7 +608,7 @@ export function LiveClassSplitView() {
     return allStudents.filter((s) => manualSelectedUids.has(s.uid));
   }, [listMode, bookedStudents, allStudents, manualSelectedUids]);
 
-  // Iniciar Clase: Crea {allowed_list_codigode8digitos} en base de datos temporal y conecta Railway WebRTC
+  // Iniciar Clase: Crea {allowed_list_codigode8digitos} en base de datos temporal
   const handleStartClass = async () => {
     const newCode8 = generateSessionCode8();
     const listKey = `allowed_list_${newCode8}`;
@@ -557,9 +631,12 @@ export function LiveClassSplitView() {
         admittedAt: Date.now(),
       };
 
-      // Registrar firma simplificada {id}: {Hash} si aún no existía
       await set(ref(rtdb, `consumed_credit_signatures/${bId}`), hash).catch(() => {});
     }
+
+    const hasScreen = Boolean(screenVideoTrackRef.current);
+    const hasCam = Boolean(camTrackRef.current);
+    const hasMic = Boolean(micTrackRef.current);
 
     const payload = {
       code8: newCode8,
@@ -571,54 +648,53 @@ export function LiveClassSplitView() {
       status: "live",
       startedAt: Date.now(),
       students: studentsMap,
+      mediaState: {
+        hasVideo: hasScreen || hasCam,
+        hasAudio: hasMic,
+        mode: hasScreen ? "screen" : hasCam ? "camera" : "none",
+        updatedAt: Date.now(),
+      },
     };
 
-    // Escribir únicamente bajo {allowed_list_codigode8digitos} en la base de datos temporal
     await set(ref(rtdb, `allowed_live_students/${listKey}`), payload);
 
-    // Conectar al servidor Railway WebRTC si está configurado
-    const wsUrl = process.env.NEXT_PUBLIC_WEBRTC_WS_URL;
-    if (wsUrl) {
-      try {
-        const ws = new WebSocket(wsUrl);
-        ws.onopen = () => {
-          ws.send(
-            JSON.stringify({
-              type: "join-room",
-              code8: newCode8,
-              uid: teacherUid,
-              name: teacherName,
-              role: "teacher",
-              payload: {
-                title: payload.title,
-                mode: listMode,
-                allowedStudents: Object.values(studentsMap),
-              },
-            })
-          );
-        };
-        railwayWsRef.current = ws;
-      } catch {}
-    }
-
+    code8Ref.current = newCode8;
+    isLiveRef.current = true;
     setCode8(newCode8);
     setIsLive(true);
   };
 
-  // Escuchar alumnos que entran a la sala, manos alzadas y chat en vivo
+  // Escuchar alumnos que entran a la sala (o reconectan), manos alzadas y chat en vivo
   useEffect(() => {
     if (!isLive || !code8) return;
     const listKey = `allowed_list_${code8}`;
+    const lastSeenJoinedAt = new Map<string, number>();
 
     const viewersRef = ref(rtdb, `allowed_live_students/${listKey}/viewers`);
     const unsubViewers = onValue(viewersRef, (snap) => {
       const val = snap.val() || {};
       setConnectedViewers(val);
-      Object.keys(val).forEach((sUid) => {
-        if (!peerConnectionsRef.current.has(sUid)) {
-          connectToAdmittedStudent(sUid, code8);
+
+      const currentUids = new Set(Object.keys(val));
+      connectedUidsRef.current = currentUids;
+
+      // Iniciar o renegociar WebRTC para cada alumno que entra o recarga la página (joinedAt nuevo)
+      Object.entries(val).forEach(([sUid, info]: [string, any]) => {
+        const joinedAt = Number(info?.joinedAt || 0);
+        const prevJoinedAt = lastSeenJoinedAt.get(sUid);
+        if (prevJoinedAt !== joinedAt || !peerSessionsRef.current.has(sUid)) {
+          lastSeenJoinedAt.set(sUid, joinedAt);
+          negotiateWithStudent(sUid);
         }
       });
+
+      // Limpiar sesiones de alumnos que salieron
+      for (const existingUid of Array.from(peerSessionsRef.current.keys())) {
+        if (!currentUids.has(existingUid)) {
+          closePeerSession(existingUid);
+          lastSeenJoinedAt.delete(existingUid);
+        }
+      }
     });
 
     const handsRef = ref(rtdb, `allowed_live_students/${listKey}/raisedHands`);
@@ -648,12 +724,16 @@ export function LiveClassSplitView() {
       unsubHands();
       unsubChat();
     };
-  }, [isLive, code8, connectToAdmittedStudent]);
+  }, [isLive, code8, negotiateWithStudent, closePeerSession]);
 
-  // Finalizar Clase: Destruye {allowed_list_codigode8digitos} de la base de datos temporal
+  // Finalizar Clase
   const handleEndClass = async () => {
-    if (code8) {
-      const listKey = `allowed_list_${code8}`;
+    const activeCode = code8Ref.current;
+    isLiveRef.current = false;
+    code8Ref.current = null;
+
+    if (activeCode) {
+      const listKey = `allowed_list_${activeCode}`;
       await remove(ref(rtdb, `allowed_live_students/${listKey}`)).catch(() => {});
     }
 
@@ -662,13 +742,19 @@ export function LiveClassSplitView() {
       railwayWsRef.current = null;
     }
 
-    peerConnectionsRef.current.forEach((pc) => pc.close());
-    peerConnectionsRef.current.clear();
+    for (const sUid of Array.from(peerSessionsRef.current.keys())) {
+      closePeerSession(sUid);
+    }
+    connectedUidsRef.current.clear();
 
-    cameraStreamRef.current?.getTracks().forEach((t) => t.stop());
-    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-    cameraStreamRef.current = null;
-    screenStreamRef.current = null;
+    camTrackRef.current?.stop();
+    micTrackRef.current?.stop();
+    screenVideoTrackRef.current?.stop();
+    screenAudioTrackRef.current?.stop();
+    camTrackRef.current = null;
+    micTrackRef.current = null;
+    screenVideoTrackRef.current = null;
+    screenAudioTrackRef.current = null;
 
     setMicOn(false);
     setCamOn(false);
@@ -725,7 +811,7 @@ export function LiveClassSplitView() {
     return (
       <div className="min-h-[calc(100vh-7rem)] bg-[#131314] text-white rounded-3xl border border-white/10 p-6 lg:p-10 flex items-center justify-center">
         <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Previsualización de Cámara y Audio (Izquierda) */}
+          {/* Previsualización de Cámara y Audio */}
           <div className="lg:col-span-7 space-y-4">
             <div className="relative aspect-video w-full rounded-2xl bg-[#202124] overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center">
               <video
@@ -745,12 +831,10 @@ export function LiveClassSplitView() {
                 </div>
               )}
 
-              {/* Nombre en esquina inferior izquierda */}
               <div className="absolute bottom-4 left-4 px-3 py-1 rounded-md bg-black/50 backdrop-blur-sm text-xs font-medium text-white">
                 {teacherName}
               </div>
 
-              {/* Botones flotantes de Micrófono y Cámara */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3">
                 <button
                   type="button"
@@ -781,7 +865,7 @@ export function LiveClassSplitView() {
             </div>
           </div>
 
-          {/* Panel de Inicio y Selección de Lista (Derecha) */}
+          {/* Panel de Inicio y Selección de Lista */}
           <div className="lg:col-span-5 bg-[#202124] rounded-2xl border border-white/10 p-6 space-y-5 shadow-xl">
             <div className="space-y-1.5">
               <label className="text-xs text-zinc-400 font-medium">Título de la clase</label>
@@ -794,7 +878,6 @@ export function LiveClassSplitView() {
               />
             </div>
 
-            {/* Selector de modalidad: Próxima clase agendada (Fija) vs Escoger estudiantes (Manual) */}
             <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#131314] border border-white/10">
               <button
                 type="button"
@@ -938,9 +1021,10 @@ export function LiveClassSplitView() {
 
   return (
     <div className="h-[calc(100vh-5.5rem)] bg-[#202124] text-white rounded-3xl overflow-hidden flex flex-col justify-between select-none relative border border-white/10">
-      {/* Área Principal de Video + Panel Lateral Desplegable */}
+      {/* Contenedor oculto para audio entrante de los alumnos */}
+      <div ref={studentAudioContainerRef} className="hidden" />
+
       <div className="flex-1 flex overflow-hidden p-4 gap-4">
-        {/* Escenario Principal */}
         <div className="flex-1 relative rounded-2xl bg-[#131314] overflow-hidden flex items-center justify-center border border-white/5">
           <video
             ref={videoRef}
@@ -958,13 +1042,11 @@ export function LiveClassSplitView() {
             </div>
           )}
 
-          {/* Nombre del Docente en esquina inferior izquierda */}
           <div className="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md text-xs font-medium text-white">
             {!micOn && <MicOff className="w-3.5 h-3.5 text-[#ea4335]" />}
             <span>{teacherName} (Tú)</span>
           </div>
 
-          {/* Aviso de manos levantadas si hay alguna */}
           {raisedHandsCount > 0 && (
             <div className="absolute top-4 left-4 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fbbc04] text-[#202124] text-xs font-semibold shadow-lg">
               <Hand className="w-4 h-4" />
@@ -972,7 +1054,6 @@ export function LiveClassSplitView() {
             </div>
           )}
 
-          {/* Miniaturas de estudiantes conectados en esquina */}
           {connectedList.length > 0 && (
             <div className="absolute top-4 right-4 flex flex-col gap-2 max-w-[180px]">
               {connectedList.slice(0, 4).map(([uid, info]) => {
@@ -996,7 +1077,6 @@ export function LiveClassSplitView() {
           )}
         </div>
 
-        {/* Panel Lateral (Personas o Chat) estilo Google Meet */}
         {sidePanel !== "none" && (
           <div className="w-80 bg-white text-[#202124] rounded-2xl flex flex-col justify-between overflow-hidden shadow-2xl">
             <div className="px-5 py-4 border-b border-zinc-200 flex items-center justify-between">
@@ -1117,16 +1197,14 @@ export function LiveClassSplitView() {
         )}
       </div>
 
-      {/* Barra de Controles Inferior Estilo Google Meet */}
+      {/* Barra Inferior Estilo Google Meet */}
       <div className="h-20 px-6 bg-[#202124] flex items-center justify-between">
-        {/* Izquierda: Hora y Título */}
         <div className="hidden sm:flex items-center gap-3 text-sm font-medium text-white min-w-[200px]">
           <span>{currentTimeStr}</span>
           <span className="text-zinc-500">|</span>
           <span className="truncate max-w-[220px]">{classTitle}</span>
         </div>
 
-        {/* Centro: Controles principales */}
         <div className="flex items-center gap-3 mx-auto">
           <button
             type="button"
@@ -1177,7 +1255,6 @@ export function LiveClassSplitView() {
           </button>
         </div>
 
-        {/* Derecha: Personas y Chat */}
         <div className="flex items-center justify-end gap-2 min-w-[200px]">
           <button
             type="button"

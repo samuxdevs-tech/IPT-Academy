@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Mic,
   MicOff,
@@ -14,6 +14,7 @@ import {
   Calendar,
   Clock,
   Check,
+  Volume2,
   X,
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
@@ -62,15 +63,17 @@ export default function StudentLivePage() {
     user?.displayName ||
     (user?.email ? user.email.split("@")[0] : "Estudiante IPT");
 
-  // Estado de sala encontrada en allowed_live_students
+  // Sala encontrada en allowed_live_students
   const [matchedRoom, setMatchedRoom] = useState<ActiveRoomMatch | null>(null);
   const [leftManually, setLeftManually] = useState(false);
 
-  // Estado multimedia del estudiante
+  // Estado multimedia del estudiante y del profesor
   const [micOn, setMicOn] = useState(false);
   const [camOn, setCamOn] = useState(false);
   const [handRaised, setHandRaised] = useState(false);
   const [hasTeacherVideo, setHasTeacherVideo] = useState(false);
+  const [teacherHasVideoFlag, setTeacherHasVideoFlag] = useState(false);
+  const [audioBlocked, setAudioBlocked] = useState(false);
 
   // Panel lateral en llamada (Personas / Chat)
   const [sidePanel, setSidePanel] = useState<"none" | "people" | "chat">("none");
@@ -84,13 +87,15 @@ export default function StudentLivePage() {
   const [bookingBusy, setBookingBusy] = useState(false);
   const [bookingConfirmedMsg, setBookingConfirmedMsg] = useState<string | null>(null);
 
-  // Referencias WebRTC y Video
+  // Referencias WebRTC y Multimedia (separando video mudo y audio para evitar bloqueo de Autoplay)
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  const micTrackRef = useRef<MediaStreamTrack | null>(null);
+  const camTrackRef = useRef<MediaStreamTrack | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  const localStreamRef = useRef<MediaStream | null>(null);
-  const lastProcessedOfferTs = useRef<number>(0);
-  const railwayWsRef = useRef<WebSocket | null>(null);
+  const currentOfferIdRef = useRef<string | null>(null);
 
   // Reloj en barra inferior
   useEffect(() => {
@@ -105,6 +110,20 @@ export default function StudentLivePage() {
     updateClock();
     const timer = setInterval(updateClock, 15000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Desbloquear audio automáticamente al primer clic en la página si el navegador lo pausó
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (remoteAudioRef.current && remoteAudioRef.current.paused && remoteAudioRef.current.srcObject) {
+        remoteAudioRef.current
+          .play()
+          .then(() => setAudioBlocked(false))
+          .catch(() => {});
+      }
+    };
+    window.addEventListener("click", unlockAudio);
+    return () => window.removeEventListener("click", unlockAudio);
   }, []);
 
   // Cargar próximas clases programadas
@@ -197,12 +216,20 @@ export default function StudentLivePage() {
     return () => unsub();
   }, [studentUid, studentEmail]);
 
-  // Vincular stream local al elemento de video propio
-  useEffect(() => {
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = camOn ? localStreamRef.current : null;
+  // Sincronizar vista previa de cámara propia
+  const syncLocalPreview = useCallback(() => {
+    if (!localVideoRef.current) return;
+    if (camTrackRef.current && camTrackRef.current.readyState === "live") {
+      localVideoRef.current.srcObject = new MediaStream([camTrackRef.current]);
+      localVideoRef.current.play().catch(() => {});
+    } else {
+      localVideoRef.current.srcObject = null;
     }
-  }, [camOn, matchedRoom, leftManually]);
+  }, []);
+
+  useEffect(() => {
+    syncLocalPreview();
+  }, [camOn, matchedRoom, leftManually, syncLocalPreview]);
 
   // Conexión WebRTC automática cuando el estudiante es admitido en la lista del profesor
   useEffect(() => {
@@ -211,12 +238,14 @@ export default function StudentLivePage() {
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
       }
+      currentOfferIdRef.current = null;
       setHasTeacherVideo(false);
+      setTeacherHasVideoFlag(false);
       return;
     }
 
-    const { listKey, code8, matchedStudentKey } = matchedRoom;
-    lastProcessedOfferTs.current = 0;
+    const { listKey, matchedStudentKey } = matchedRoom;
+    let unsubCurrentIce: (() => void) | null = null;
 
     // Registrar presencia en la sala activa
     const viewerRef = ref(rtdb, `allowed_live_students/${listKey}/viewers/${matchedStudentKey}`);
@@ -226,113 +255,172 @@ export default function StudentLivePage() {
       joinedAt: Date.now(),
     }).catch(() => {});
 
-    const pc = new RTCPeerConnection(WEBRTC_ICE_SERVERS);
-    peerConnectionRef.current = pc;
-
-    // Añadir pistas locales si el alumno tiene micrófono o cámara encendidos
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((track) => {
-        if (localStreamRef.current) {
-          pc.addTrack(track, localStreamRef.current);
-        }
-      });
-    }
-
-    // Recibir video/pantalla/audio del docente
-    pc.ontrack = (event) => {
-      const remoteStream =
-        event.streams && event.streams[0]
-          ? event.streams[0]
-          : new MediaStream([event.track]);
-
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = remoteStream;
-        remoteVideoRef.current.play().catch(() => {});
-      }
-      if (event.track.kind === "video") {
-        setHasTeacherVideo(true);
-        event.track.onended = () => setHasTeacherVideo(false);
-      }
-    };
-
-    // Enviar candidatos ICE del estudiante
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        const iceRef = push(
-          ref(rtdb, `allowed_live_students/${listKey}/signals/${matchedStudentKey}/studentIce`)
-        );
-        set(iceRef, JSON.stringify(event.candidate)).catch(() => {});
-
-        if (railwayWsRef.current && railwayWsRef.current.readyState === WebSocket.OPEN) {
-          railwayWsRef.current.send(
-            JSON.stringify({
-              type: "webrtc-ice",
-              code8,
-              targetUid: "teacher",
-              payload: event.candidate,
-            })
-          );
+    // Escuchar estado de medios del docente (para saber si tiene cámara/pantalla encendida)
+    const mediaStateRef = ref(rtdb, `allowed_live_students/${listKey}/mediaState`);
+    const unsubMediaState = onValue(mediaStateRef, (snap) => {
+      const st = snap.val();
+      if (st) {
+        const activeVid = Boolean(st.hasVideo);
+        setTeacherHasVideoFlag(activeVid);
+        if (!activeVid) {
+          setHasTeacherVideo(false);
         }
       }
-    };
+    });
 
-    // Escuchar ofertas SDP del docente (incluyendo renegociaciones cuando prende cámara o pantalla)
+    // Escuchar cada nueva Oferta SDP del docente (identificada por offerId)
     const offerRef = ref(
       rtdb,
       `allowed_live_students/${listKey}/signals/${matchedStudentKey}/offer`
     );
     const unsubOffer = onValue(offerRef, async (snap) => {
       const data = snap.val();
-      if (!data || !data.sdp || pc.signalingState === "closed") return;
-      const offerTs = Number(data.timestamp || 0);
-      if (offerTs && offerTs === lastProcessedOfferTs.current) return;
-      lastProcessedOfferTs.current = offerTs;
+      if (!data || !data.sdp) return;
 
+      const incomingOfferId = data.offerId || `legacy_${data.timestamp || 0}`;
+      if (incomingOfferId === currentOfferIdRef.current) return;
+      currentOfferIdRef.current = incomingOfferId;
+
+      // Limpiar conexión anterior si existía
+      if (unsubCurrentIce) {
+        unsubCurrentIce();
+        unsubCurrentIce = null;
+      }
+      if (peerConnectionRef.current) {
+        try {
+          peerConnectionRef.current.close();
+        } catch {}
+        peerConnectionRef.current = null;
+      }
+
+      const pc = new RTCPeerConnection(WEBRTC_ICE_SERVERS);
+      peerConnectionRef.current = pc;
+
+      let remoteDescReady = false;
+      const queuedTeacherIce: RTCIceCandidateInit[] = [];
+
+      // Adjuntar micrófono del alumno si está activo
+      if (micTrackRef.current && micTrackRef.current.readyState === "live") {
+        const localAudioStream = new MediaStream([micTrackRef.current]);
+        pc.addTrack(micTrackRef.current, localAudioStream);
+      }
+
+      // Recibir pistas de video/pantalla y audio del docente
+      pc.ontrack = (event) => {
+        if (event.track.kind === "video") {
+          const videoStream = new MediaStream([event.track]);
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = videoStream;
+            remoteVideoRef.current.play().catch(() => {});
+          }
+          setHasTeacherVideo(true);
+
+          event.track.onunmute = () => {
+            setHasTeacherVideo(true);
+            if (remoteVideoRef.current) {
+              remoteVideoRef.current.srcObject = new MediaStream([event.track]);
+              remoteVideoRef.current.play().catch(() => {});
+            }
+          };
+          event.track.onended = () => {
+            setHasTeacherVideo(false);
+          };
+        } else if (event.track.kind === "audio") {
+          const audioStream = new MediaStream([event.track]);
+          if (remoteAudioRef.current) {
+            remoteAudioRef.current.srcObject = audioStream;
+            remoteAudioRef.current
+              .play()
+              .then(() => setAudioBlocked(false))
+              .catch(() => setAudioBlocked(true));
+          }
+          event.track.onunmute = () => {
+            if (remoteAudioRef.current) {
+              remoteAudioRef.current.srcObject = new MediaStream([event.track]);
+              remoteAudioRef.current
+                .play()
+                .then(() => setAudioBlocked(false))
+                .catch(() => setAudioBlocked(true));
+            }
+          };
+        }
+      };
+
+      // Enviar candidatos ICE del estudiante con el offerId actual
+      pc.onicecandidate = (event) => {
+        if (event.candidate && currentOfferIdRef.current === incomingOfferId) {
+          const iceRef = push(
+            ref(
+              rtdb,
+              `allowed_live_students/${listKey}/signals/${matchedStudentKey}/studentIce`
+            )
+          );
+          set(iceRef, {
+            offerId: incomingOfferId,
+            candidate: event.candidate.toJSON(),
+          }).catch(() => {});
+        }
+      };
+
+      // Escuchar candidatos ICE del docente para este offerId
+      const teacherIceRef = ref(
+        rtdb,
+        `allowed_live_students/${listKey}/signals/${matchedStudentKey}/teacherIce`
+      );
+      const processedKeys = new Set<string>();
+      unsubCurrentIce = onValue(teacherIceRef, (iceSnap) => {
+        const val = iceSnap.val();
+        if (!val || currentOfferIdRef.current !== incomingOfferId) return;
+
+        Object.entries(val).forEach(async ([k, item]: [string, any]) => {
+          if (processedKeys.has(k)) return;
+          if (!item || (item.offerId && item.offerId !== incomingOfferId)) return;
+          processedKeys.add(k);
+
+          const candInit: RTCIceCandidateInit = item.candidate
+            ? item.candidate
+            : typeof item === "string"
+            ? JSON.parse(item)
+            : item;
+
+          if (remoteDescReady && pc.remoteDescription) {
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(candInit));
+            } catch {}
+          } else {
+            queuedTeacherIce.push(candInit);
+          }
+        });
+      });
+
+      // Aplicar oferta remota, vaciar cola de ICE y enviar Answer
       try {
         await pc.setRemoteDescription(
           new RTCSessionDescription({ type: data.type || "offer", sdp: data.sdp })
         );
+        remoteDescReady = true;
+
+        while (queuedTeacherIce.length > 0) {
+          const c = queuedTeacherIce.shift()!;
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(c));
+          } catch {}
+        }
+
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
 
         await set(
           ref(rtdb, `allowed_live_students/${listKey}/signals/${matchedStudentKey}/answer`),
           {
+            offerId: incomingOfferId,
             type: answer.type,
             sdp: answer.sdp,
             timestamp: Date.now(),
           }
         );
-
-        if (railwayWsRef.current && railwayWsRef.current.readyState === WebSocket.OPEN) {
-          railwayWsRef.current.send(
-            JSON.stringify({
-              type: "webrtc-answer",
-              code8,
-              targetUid: "teacher",
-              payload: { type: answer.type, sdp: answer.sdp },
-            })
-          );
-        }
       } catch (err) {
-        console.warn("Error procesando oferta WebRTC:", err);
-      }
-    });
-
-    // Escuchar candidatos ICE del docente
-    const teacherIceRef = ref(
-      rtdb,
-      `allowed_live_students/${listKey}/signals/${matchedStudentKey}/teacherIce`
-    );
-    const unsubIce = onValue(teacherIceRef, (snap) => {
-      const candidates = snap.val();
-      if (candidates && pc.signalingState !== "closed") {
-        Object.values(candidates).forEach(async (candStr: any) => {
-          try {
-            const cand = typeof candStr === "string" ? JSON.parse(candStr) : candStr;
-            await pc.addIceCandidate(new RTCIceCandidate(cand));
-          } catch {}
-        });
+        console.warn("Error negociando Answer WebRTC:", err);
       }
     });
 
@@ -359,95 +447,84 @@ export default function StudentLivePage() {
       setChatMessages(list);
     });
 
-    // Conectar al servidor Railway WebRTC si está configurado
-    const wsUrl = process.env.NEXT_PUBLIC_WEBRTC_WS_URL;
-    if (wsUrl) {
-      try {
-        const ws = new WebSocket(wsUrl);
-        ws.onopen = () => {
-          ws.send(
-            JSON.stringify({
-              type: "join-room",
-              code8,
-              uid: matchedStudentKey,
-              name: studentName,
-              role: "student",
-            })
-          );
-        };
-        railwayWsRef.current = ws;
-      } catch {}
-    }
-
     return () => {
+      unsubMediaState();
       unsubOffer();
-      unsubIce();
+      if (unsubCurrentIce) unsubCurrentIce();
       unsubViewers();
       unsubChat();
       remove(viewerRef).catch(() => {});
-      if (railwayWsRef.current) {
-        railwayWsRef.current.close();
-        railwayWsRef.current = null;
-      }
       if (peerConnectionRef.current) {
-        peerConnectionRef.current.close();
+        try {
+          peerConnectionRef.current.close();
+        } catch {}
         peerConnectionRef.current = null;
       }
+      currentOfferIdRef.current = null;
       setHasTeacherVideo(false);
     };
   }, [matchedRoom, leftManually, studentName, studentEmail]);
 
-  // Alternar Micrófono
+  // Alternar Micrófono del estudiante
   const toggleMic = async () => {
     try {
-      if (micOn) {
-        localStreamRef.current?.getAudioTracks().forEach((t) => {
-          t.enabled = false;
-          t.stop();
-        });
+      if (micTrackRef.current) {
+        micTrackRef.current.stop();
+        micTrackRef.current = null;
         setMicOn(false);
       } else {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: { echoCancellation: true, noiseSuppression: true },
+          video: false,
         });
-        if (!localStreamRef.current) {
-          localStreamRef.current = stream;
+        const aTrack = stream.getAudioTracks()[0];
+        if (aTrack) {
+          micTrackRef.current = aTrack;
+          setMicOn(true);
+        }
+      }
+
+      // Si ya está en llamada, actualizar sender o solicitar renegociación actualizando joinedAt
+      if (matchedRoom && !leftManually) {
+        const pc = peerConnectionRef.current;
+        const audioSender = pc?.getSenders().find((s) => s.track?.kind === "audio");
+        if (audioSender && micTrackRef.current) {
+          await audioSender.replaceTrack(micTrackRef.current);
         } else {
-          localStreamRef.current.getAudioTracks().forEach((t) => {
-            localStreamRef.current?.removeTrack(t);
-          });
-          stream.getAudioTracks().forEach((t) => {
-            localStreamRef.current?.addTrack(t);
-          });
+          await set(
+            ref(
+              rtdb,
+              `allowed_live_students/${matchedRoom.listKey}/viewers/${matchedRoom.matchedStudentKey}`
+            ),
+            {
+              name: studentName,
+              email: studentEmail,
+              joinedAt: Date.now(),
+            }
+          ).catch(() => {});
         }
-        if (peerConnectionRef.current) {
-          stream.getAudioTracks().forEach((track) => {
-            peerConnectionRef.current?.addTrack(track, stream);
-          });
-        }
-        setMicOn(true);
       }
     } catch {}
   };
 
-  // Alternar Cámara
+  // Alternar Cámara del estudiante
   const toggleCamera = async () => {
     try {
-      if (camOn) {
-        localStreamRef.current?.getVideoTracks().forEach((t) => t.stop());
+      if (camTrackRef.current) {
+        camTrackRef.current.stop();
+        camTrackRef.current = null;
         setCamOn(false);
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = null;
-        }
+        syncLocalPreview();
       } else {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: { ideal: 640 }, height: { ideal: 360 } },
-          audio: micOn,
+          audio: false,
         });
-        localStreamRef.current = stream;
-        setCamOn(true);
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
+        const vTrack = stream.getVideoTracks()[0];
+        if (vTrack) {
+          camTrackRef.current = vTrack;
+          setCamOn(true);
+          syncLocalPreview();
         }
       }
     } catch {}
@@ -497,7 +574,6 @@ export default function StudentLivePage() {
         startTime: slot?.startUtc || new Date().toISOString(),
       });
 
-      // Si ya hay una sesión en vivo en modo agenda fija, admitir la firma recién validada
       try {
         const snap = await get(ref(rtdb, "allowed_live_students"));
         if (snap.exists()) {
@@ -520,11 +596,13 @@ export default function StudentLivePage() {
       } catch {}
 
       setBookingConfirmedMsg(
-        slot ? `Tu cupo para "${slot.title}" quedó reservado.` : "Tu cupo para la próxima clase quedó reservado."
+        slot
+          ? `Tu cupo para "${slot.title}" quedó reservado.`
+          : "Tu cupo para la próxima clase quedó reservado."
       );
       setTimeout(() => setBookingConfirmedMsg(null), 5000);
     } catch {
-      // Manejo silencioso
+      // Silencioso
     } finally {
       setBookingBusy(false);
     }
@@ -540,6 +618,8 @@ export default function StudentLivePage() {
     Number(entitlements.availableLiveCredits || subscription?.remainingCredits || 0)
   );
 
+  const showRemoteVideo = hasTeacherVideo && teacherHasVideoFlag;
+
   return (
     <AcademicFeatureGate feature="live">
       {matchedRoom && !leftManually ? (
@@ -547,23 +627,45 @@ export default function StudentLivePage() {
            VISTA EN LLAMADA ACTIVA (GOOGLE MEET LIMPIO)
            ====================================================================== */
         <div className="h-[calc(100vh-4rem)] bg-[#202124] text-white flex flex-col justify-between select-none overflow-hidden">
+          {/* Elemento de audio dedicado para la voz/pantalla del docente */}
+          <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
+
           <div className="flex-1 flex overflow-hidden p-4 gap-4">
             {/* Escenario Principal del Docente */}
             <div className="flex-1 relative rounded-2xl bg-[#131314] overflow-hidden flex items-center justify-center border border-white/5">
+              {/* Video mudo para garantizar Autoplay instantáneo en cualquier navegador */}
               <video
                 ref={remoteVideoRef}
                 autoPlay
                 playsInline
-                className={`w-full h-full object-contain ${hasTeacherVideo ? "block" : "hidden"}`}
+                muted
+                className={`w-full h-full object-contain ${showRemoteVideo ? "block" : "hidden"}`}
               />
 
-              {!hasTeacherVideo && (
+              {!showRemoteVideo && (
                 <div className="flex flex-col items-center justify-center text-center p-6">
                   <div className="w-24 h-24 rounded-full bg-[#3c4043] flex items-center justify-center text-3xl font-medium text-white mb-3">
                     {matchedRoom.teacherName.charAt(0).toUpperCase()}
                   </div>
                   <p className="text-base font-medium text-white">{matchedRoom.teacherName}</p>
                 </div>
+              )}
+
+              {/* Botón flotante si el navegador pausó el audio por políticas de autoplay */}
+              {audioBlocked && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    remoteAudioRef.current
+                      ?.play()
+                      .then(() => setAudioBlocked(false))
+                      .catch(() => {});
+                  }}
+                  className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 rounded-full bg-[#8ab4f8] text-[#202124] text-xs font-semibold shadow-lg cursor-pointer"
+                >
+                  <Volume2 className="w-4 h-4" />
+                  <span>Activar sonido</span>
+                </button>
               )}
 
               {/* Etiqueta de nombre del Docente */}
@@ -782,7 +884,6 @@ export default function StudentLivePage() {
            ====================================================================== */
         <div className="min-h-[calc(100vh-4rem)] bg-[#131314] text-white flex items-center justify-center p-6 lg:p-12">
           <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Izquierda: Previsualización de cámara y micrófono del estudiante */}
             <div className="lg:col-span-7">
               <div className="relative aspect-video w-full rounded-2xl bg-[#202124] overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center">
                 <video
@@ -834,12 +935,13 @@ export default function StudentLivePage() {
               </div>
             </div>
 
-            {/* Derecha: Estado de ingreso automático y reserva de clase */}
             <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left space-y-5">
               {matchedRoom && leftManually ? (
                 <div className="space-y-4 w-full">
                   <h1 className="text-2xl font-normal text-white">{matchedRoom.title}</h1>
-                  <p className="text-sm text-zinc-400">La sesión está en curso con {matchedRoom.teacherName}.</p>
+                  <p className="text-sm text-zinc-400">
+                    La sesión está en curso con {matchedRoom.teacherName}.
+                  </p>
                   <button
                     type="button"
                     onClick={() => setLeftManually(false)}
