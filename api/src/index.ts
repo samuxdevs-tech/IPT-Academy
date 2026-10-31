@@ -135,7 +135,11 @@ app.use('*', async (c, next) => {
 
   const isStudentRole = clientType === 'student' || userRole === 'student';
 
-  const isSubRoute = c.req.path.startsWith('/api/subscriptions') || c.req.path.startsWith('/api/live-sessions');
+  const isSubRoute =
+    c.req.path.startsWith('/api/subscriptions') ||
+    c.req.path.startsWith('/api/live-sessions') ||
+    c.req.path.startsWith('/api/live/credits') ||
+    c.req.path.startsWith('/api/live/bookings/request');
   if ((isStudentOrigin || isStudentRole) && !isSubRoute) {
     return c.json({
       success: false,
@@ -1372,6 +1376,39 @@ app.post('/api/live/classes', async (c) => {
 
     const created = await LiveClassService.createLiveClass(c.env.DB, parsed.data);
     return c.json({ success: true, data: created }, 201);
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 400);
+  }
+});
+
+// 4.1.B. Validar Hash de Crédito de Estudiante y Generar Firma {id}: {Hash}
+app.post('/api/live/credits/validate', async (c) => {
+  try {
+    const body = await c.req.json();
+    const result = LiveClassService.validateAndConsumeCreditHash({
+      bookingId: body.bookingId || `bkg_${Date.now()}`,
+      studentUid: body.studentUid,
+      creditHash: body.creditHash,
+    });
+    return c.json({ success: true, data: result });
+  } catch (err: any) {
+    return c.json({ success: false, error: err.message }, 400);
+  }
+});
+
+// 4.1.C. Iniciar Sala Docente Aislada con Código de 8 Dígitos {allowed_list_codigode8digitos}
+app.post('/api/live/rooms/start', async (c) => {
+  try {
+    const body = await c.req.json();
+    const result = LiveClassService.startTeacherIsolatedRoom({
+      teacherUid: body.teacherUid || 'teacher_ipt_001',
+      teacherName: body.teacherName || 'Docente IPT',
+      title: body.title || 'Clase en Vivo',
+      mode: body.mode === 'manual' ? 'manual' : 'fixed',
+      code8: body.code8,
+      students: Array.isArray(body.students) ? body.students : [],
+    });
+    return c.json({ success: true, data: result });
   } catch (err: any) {
     return c.json({ success: false, error: err.message }, 400);
   }

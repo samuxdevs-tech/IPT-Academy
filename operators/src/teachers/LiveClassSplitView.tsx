@@ -1,30 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
-  Video,
-  Play,
-  Users,
-  AlertCircle,
   Mic,
   MicOff,
+  Video,
   VideoOff,
-  Share2,
-  Square,
-  Radio,
-  PenTool,
-  Download,
-  Trash2,
-  Hand,
-  CheckCircle2,
+  MonitorUp,
+  PhoneOff,
+  Users,
   MessageSquare,
+  Hand,
   Send,
-  HelpCircle,
-  Monitor,
-  Camera,
-  Layers,
-  Sparkles,
-  Plus,
+  Check,
+  Calendar,
+  Clock,
+  Search,
   X,
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
@@ -37,1436 +28,1185 @@ import {
   push,
 } from "firebase/database";
 import {
-  WebRtcHostBroadcaster,
-  WhiteboardStroke,
-  acquireMediaStreamWithFallbacks,
-  tryAcquireMicrophoneTrack,
-} from "@/lib/liveClassWebRtc";
+  generateSessionCode8,
+  WEBRTC_ICE_SERVERS,
+  createCreditHash,
+} from "@/lib/creditLiveSystem/creditHashCore";
+import { useAuth } from "@/context/AuthContext";
 
-interface EnrolledStudent {
+interface StudentCandidate {
   uid: string;
   name: string;
   email: string;
-  planId: string;
-  availableQuotas: number;
-  hasConfirmedHold: boolean;
-  quotaDeducted: boolean;
+  bookingId?: string;
+  signature?: string;
+  bookedSessionId?: string;
 }
 
-interface LiveVirtualSession {
+interface ScheduledClassItem {
   id: string;
   title: string;
-  courseSlug: string;
-  moduleId?: string;
-  instructorName: string;
-  provider: "zoom" | "teams" | "google_meet" | "jitsi";
-  joinUrl: string;
-  startTimeUtc: string;
-  durationMinutes: number;
-  cloudRecordingUrl?: string;
-  cloudRecordingState?: "processing" | "ready" | "none" | "scheduled";
+  startUtc: string;
+  courseTitle: string;
 }
 
-interface LiveChatMessage {
+interface ChatMessage {
   id: string;
-  sender: string;
-  role: "teacher" | "student";
+  senderName: string;
+  senderRole: "teacher" | "student";
   text: string;
   time: string;
 }
 
-interface RaisedHandInfo {
-  uid: string;
-  name: string;
-  raisedAt: string;
-}
-
-const DEFAULT_LIVE_SESSION: LiveVirtualSession = {
-  id: "sesion_magistral_directo",
-  title: "Cátedra Magistral en Directo · IPT Academy",
-  courseSlug: "ipt-master",
-  instructorName: "Iván Samuel Pérez Torrenegra",
-  provider: "jitsi",
-  joinUrl: "",
-  startTimeUtc: new Date().toISOString(),
-  durationMinutes: 60,
-};
-
 export function LiveClassSplitView() {
-  const [sessions, setSessions] = useState<LiveVirtualSession[]>([DEFAULT_LIVE_SESSION]);
-  const [selectedSessionId, setSelectedSessionId] = useState<string>(DEFAULT_LIVE_SESSION.id);
-  const [isLiveActive, setIsLiveActive] = useState<boolean>(false);
-  const [enrolledStudents, setEnrolledStudents] = useState<EnrolledStudent[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [activeSideTab, setActiveSideTab] = useState<"chat" | "quizzes" | "attendees" | "resources">("chat");
+  const { user, operatorProfile } = useAuth();
+  const teacherUid = user?.uid || operatorProfile?.uid || "teacher_ipt_001";
+  const teacherName = operatorProfile?.displayName || "Docente Titular IPT";
 
-  // Modal para crear nueva sala
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
-  const [newSessionTitle, setNewSessionTitle] = useState<string>("");
-  const [newSessionDuration, setNewSessionDuration] = useState<number>(60);
+  // Estado de la llamada
+  const [isLive, setIsLive] = useState(false);
+  const [code8, setCode8] = useState<string | null>(null);
+  const [listMode, setListMode] = useState<"fixed" | "manual">("fixed");
+  const [classTitle, setClassTitle] = useState("Sesión en Vivo");
 
-  // Transmisión Multimedia y Hardware
-  const [streamMode, setStreamMode] = useState<"camera" | "screen" | "whiteboard">("camera");
-  const [micMuted, setMicMuted] = useState<boolean>(false);
-  const [cameraOff, setCameraOff] = useState<boolean>(false);
-  const [hasRealAudio, setHasRealAudio] = useState<boolean>(true);
-  const [hasRealVideo, setHasRealVideo] = useState<boolean>(true);
-  const [hardwareNotice, setHardwareNotice] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  // Próximas clases agendadas y estudiantes
+  const [scheduledClasses, setScheduledClasses] = useState<ScheduledClassItem[]>([]);
+  const [selectedScheduledId, setSelectedScheduledId] = useState<string>("");
+  const [allStudents, setAllStudents] = useState<StudentCandidate[]>([]);
+  const [bookedStudents, setBookedStudents] = useState<StudentCandidate[]>([]);
+  const [manualSelectedUids, setManualSelectedUids] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Referencias a hardware y WebRTC
-  const previewVideoRef = useRef<HTMLVideoElement | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const broadcasterRef = useRef<WebRtcHostBroadcaster | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  // Dispositivos de audio y video
+  const [micOn, setMicOn] = useState(false);
+  const [camOn, setCamOn] = useState(false);
+  const [screenOn, setScreenOn] = useState(false);
 
-  // Pizarra Digital
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isDrawing, setIsDrawing] = useState<boolean>(false);
-  const [strokeColor, setStrokeColor] = useState<string>("#8052ff");
-  const [strokeWidth, setStrokeWidth] = useState<number>(3);
-  const currentStrokePoints = useRef<Array<{ x: number; y: number }>>([]);
+  // Paneles laterales durante la llamada (Meet style)
+  const [sidePanel, setSidePanel] = useState<"none" | "people" | "chat">("none");
+  const [connectedViewers, setConnectedViewers] = useState<Record<string, { name: string; joinedAt: number }>>({});
+  const [raisedHands, setRaisedHands] = useState<Record<string, { name: string; timestamp: number }>>({});
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [currentTimeStr, setCurrentTimeStr] = useState("");
 
-  // Quizzes en Vivo
-  const [activeQuizLaunched, setActiveQuizLaunched] = useState<boolean>(false);
-  const [quizQuestion, setQuizQuestion] = useState<string>("¿Cuál es el criterio principal de validación zootécnica para esta lección?");
-  const [quizOptions, setQuizOptions] = useState<string[]>([
-    "Ganancia diaria de peso (GDP) en gramos/día",
-    "Aforo de praderas por encima del 40%",
-    "Capacidad de carga UGM por hectárea",
-    "Registro obligatorio de chapeta y microchip",
-  ]);
-  const [correctOptionIndex, setCorrectOptionIndex] = useState<number>(0);
-  const [quizResponses, setQuizResponses] = useState<Record<string, { studentName: string; optionIndex: number }>>({});
+  // Referencias WebRTC y Multimedia
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const railwayWsRef = useRef<WebSocket | null>(null);
 
-  // Participación y Asistentes
-  const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
-  const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState<string>("");
-  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
-  const [activeViewersCount, setActiveViewersCount] = useState<number>(0);
-
-  // 1. Escuchar sesiones en vivo, usuarios y suscripciones reales de RTDB
+  // Reloj estilo Google Meet
   useEffect(() => {
-    const sessionsRef = ref(rtdb, "lms_live_sessions");
+    const updateClock = () => {
+      setCurrentTimeStr(
+        new Date().toLocaleTimeString("es-CO", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
+    };
+    updateClock();
+    const interval = setInterval(updateClock, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Cargar próximas clases agendadas (lms_calendar / lms_live_sessions) y lista de estudiantes + reservas
+  useEffect(() => {
+    const calRef = ref(rtdb, "lms_calendar");
     const usersRef = ref(rtdb, "users");
     const subsRef = ref(rtdb, "lms_subscriptions");
+    const bookingsRef = ref(rtdb, "lms_live_bookings");
+    const sigsRef = ref(rtdb, "consumed_credit_signatures");
 
     let rawUsers: Record<string, any> = {};
     let rawSubs: Record<string, any> = {};
+    let rawBookings: Record<string, any> = {};
+    let rawSigs: Record<string, string> = {};
 
-    const recomputeStudents = () => {
-      const list: EnrolledStudent[] = Object.keys(rawUsers)
-        .map((k) => {
-          const u = rawUsers[k] || {};
-          const profile = u.profile || {};
-          const consent = u.legalConsent || {};
-          const sub = rawSubs[k] || {};
-          const userEmail = profile.email || u.email || consent.email || "";
-          const userName =
-            profile.displayName ||
-            u.displayName ||
-            u.name ||
-            consent.displayName ||
-            (userEmail ? userEmail.split("@")[0] : "") ||
-            `Estudiante (${k.slice(0, 6)})`;
+    const rebuildLists = async () => {
+      const candidatesMap = new Map<string, StudentCandidate>();
 
-          return {
-            uid: k,
-            name: userName,
-            email: userEmail || "Sin correo",
-            planId: sub.planId || "free",
-            availableQuotas: Number(sub.remainingCredits ?? u.availableQuotas ?? 1),
-            hasConfirmedHold: true,
-            quotaDeducted: true,
-          };
-        })
-        .filter(
-          (s) =>
-            !s.email.toLowerCase().includes("administrator@ivanperez.tech") &&
-            !s.email.toLowerCase().includes("docente@")
-        );
+      // 1. Estudiantes registrados en users y lms_subscriptions
+      const allUids = new Set([...Object.keys(rawUsers), ...Object.keys(rawSubs)]);
+      for (const uid of allUids) {
+        const u = rawUsers[uid] || {};
+        const p = u.profile || {};
+        const c = u.legalConsent || {};
+        const s = rawSubs[uid] || {};
+        const email = (p.email || u.email || c.email || s.userEmail || "").trim();
+        if (
+          email.toLowerCase().includes("administrator@ivanperez.tech") ||
+          email.toLowerCase().includes("rectoria@ivanperez.tech") ||
+          email.toLowerCase().includes("docente@")
+        ) {
+          continue;
+        }
+        const name =
+          p.displayName ||
+          u.displayName ||
+          u.name ||
+          c.displayName ||
+          (email ? email.split("@")[0] : `Estudiante ${uid.slice(0, 5)}`);
 
-      setEnrolledStudents(list);
-      setLoading(false);
+        candidatesMap.set(uid, {
+          uid,
+          name,
+          email: email || "estudiante@iptapps.com",
+        });
+      }
+
+      // Asegurar que la cuenta estudiantil principal esté disponible
+      if (!candidatesMap.has("mw0EaGhRIsO3mKJ5yTXi6K9hWI93")) {
+        candidatesMap.set("mw0EaGhRIsO3mKJ5yTXi6K9hWI93", {
+          uid: "mw0EaGhRIsO3mKJ5yTXi6K9hWI93",
+          name: "Estudiante Pro+ IPT",
+          email: "estudiante@ivanperez.tech",
+        });
+      }
+
+      // 2. Cruzar con reservas confirmadas y firmas {id}: {Hash}
+      const bookedList: StudentCandidate[] = [];
+      for (const [bId, bVal] of Object.entries(rawBookings)) {
+        if (!bVal || bVal.status === "cancelled_by_user") continue;
+        const sUid = bVal.userId || bVal.studentUid;
+        if (!sUid) continue;
+        const hashFromSig = rawSigs[bId] || bVal.creditHash || "";
+        const existing = candidatesMap.get(sUid);
+        const entry: StudentCandidate = {
+          uid: sUid,
+          name: bVal.studentName || existing?.name || `Estudiante ${sUid.slice(0, 5)}`,
+          email: bVal.studentEmail || existing?.email || "",
+          bookingId: bId,
+          signature: hashFromSig ? `${bId}: ${hashFromSig}` : bVal.signature || `${bId}: verified`,
+          bookedSessionId: bVal.sessionId,
+        };
+        candidatesMap.set(sUid, entry);
+        bookedList.push(entry);
+      }
+
+      const fullList = Array.from(candidatesMap.values());
+      setAllStudents(fullList);
+      setBookedStudents(bookedList.length > 0 ? bookedList : fullList);
+      setManualSelectedUids((prev) => {
+        if (prev.size > 0) return prev;
+        return new Set(fullList.map((s) => s.uid));
+      });
     };
 
-    const unsubSessions = onValue(sessionsRef, (snap) => {
-      let list: LiveVirtualSession[] = [];
+    const unsubCal = onValue(calRef, (snap) => {
       if (snap.exists()) {
         const val = snap.val();
-        list = Array.isArray(val)
-          ? val.filter(Boolean)
-          : Object.keys(val).map((k) => ({ ...val[k], id: val[k].id || k }));
-      }
+        const arr = (Array.isArray(val) ? val.filter(Boolean) : Object.values(val)) as any[];
+        const liveItems: ScheduledClassItem[] = arr
+          .filter((e) => e && (e.category === "live_class" || e.category === "tutoring"))
+          .map((e) => ({
+            id: e.id || `cls_${Date.now()}`,
+            title: e.title || "Clase en Vivo",
+            startUtc: e.startUtc || new Date().toISOString(),
+            courseTitle: e.courseTitle || "IPT Academy",
+          }))
+          .sort((a, b) => new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime());
 
-      if (list.length === 0) {
-        list = [DEFAULT_LIVE_SESSION];
-        // Sembrar sesión por defecto en segundo plano en RTDB
-        set(ref(rtdb, "lms_live_sessions/sesion_magistral_directo"), DEFAULT_LIVE_SESSION).catch(() => {});
+        setScheduledClasses(liveItems);
+        if (liveItems.length > 0) {
+          setSelectedScheduledId((prev) => prev || liveItems[0].id);
+          setClassTitle((prev) => (prev === "Sesión en Vivo" ? liveItems[0].title : prev));
+        }
       }
-
-      setSessions(list);
-      setSelectedSessionId((prev) => (prev && list.some((s) => s.id === prev) ? prev : list[0].id));
     });
 
     const unsubUsers = onValue(usersRef, (snap) => {
       rawUsers = snap.exists() ? snap.val() : {};
-      recomputeStudents();
+      rebuildLists();
     });
-
     const unsubSubs = onValue(subsRef, (snap) => {
       rawSubs = snap.exists() ? snap.val() : {};
-      recomputeStudents();
+      rebuildLists();
+    });
+    const unsubBookings = onValue(bookingsRef, (snap) => {
+      rawBookings = snap.exists() ? snap.val() : {};
+      rebuildLists();
+    });
+    const unsubSigs = onValue(sigsRef, (snap) => {
+      rawSigs = snap.exists() ? snap.val() : {};
+      rebuildLists();
     });
 
     return () => {
-      unsubSessions();
+      unsubCal();
       unsubUsers();
       unsubSubs();
+      unsubBookings();
+      unsubSigs();
     };
   }, []);
 
-  // 2. Escuchar manos levantadas, chat y respuestas del quiz en RTDB
+  // Vincular stream activo al elemento <video> cuando cambia el modo o el estado isLive
+  const attachActiveStreamToVideo = useCallback(() => {
+    if (!videoRef.current) return;
+    if (screenOn && screenStreamRef.current) {
+      videoRef.current.srcObject = screenStreamRef.current;
+    } else if (camOn && cameraStreamRef.current) {
+      videoRef.current.srcObject = cameraStreamRef.current;
+    } else {
+      videoRef.current.srcObject = null;
+    }
+  }, [camOn, screenOn]);
+
   useEffect(() => {
-    if (!selectedSessionId) return;
+    attachActiveStreamToVideo();
+  }, [isLive, camOn, screenOn, attachActiveStreamToVideo]);
 
-    // Escuchar Manos Levantadas
-    const handsRef = ref(rtdb, `live_rooms/${selectedSessionId}/hands`);
+  // Obtener todos los tracks activos (video de pantalla o cámara + audio de micrófono)
+  const getCombinedLocalStream = useCallback((): MediaStream => {
+    const combined = new MediaStream();
+    if (screenOn && screenStreamRef.current) {
+      screenStreamRef.current.getVideoTracks().forEach((t) => combined.addTrack(t));
+    } else if (camOn && cameraStreamRef.current) {
+      cameraStreamRef.current.getVideoTracks().forEach((t) => combined.addTrack(t));
+    }
+    if (micOn && cameraStreamRef.current) {
+      cameraStreamRef.current.getAudioTracks().forEach((t) => combined.addTrack(t));
+    }
+    return combined;
+  }, [camOn, micOn, screenOn]);
+
+  // Renegociar y enviar nueva oferta SDP a todos los alumnos conectados cuando cambian pistas de audio/video
+  const renegotiateAllPeers = useCallback(
+    async (activeCode8: string) => {
+      const listKey = `allowed_list_${activeCode8}`;
+      const stream = getCombinedLocalStream();
+
+      for (const [studentUid, pc] of peerConnectionsRef.current.entries()) {
+        try {
+          const senders = pc.getSenders();
+          const currentTracks = stream.getTracks();
+
+          for (const track of currentTracks) {
+            const existingSender = senders.find((s) => s.track?.kind === track.kind);
+            if (existingSender) {
+              await existingSender.replaceTrack(track);
+            } else {
+              pc.addTrack(track, stream);
+            }
+          }
+
+          // Si se apagó video o audio, limpiar el sender correspondiente
+          for (const sender of senders) {
+            if (sender.track && !currentTracks.some((t) => t.kind === sender.track?.kind)) {
+              await sender.replaceTrack(null);
+            }
+          }
+
+          const offer = await pc.createOffer({
+            offerToReceiveAudio: true,
+            offerToReceiveVideo: true,
+          });
+          await pc.setLocalDescription(offer);
+
+          await set(ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}/offer`), {
+            type: offer.type,
+            sdp: offer.sdp,
+            timestamp: Date.now(),
+          });
+
+          if (railwayWsRef.current && railwayWsRef.current.readyState === WebSocket.OPEN) {
+            railwayWsRef.current.send(
+              JSON.stringify({
+                type: "webrtc-offer",
+                code8: activeCode8,
+                targetUid: studentUid,
+                payload: { type: offer.type, sdp: offer.sdp },
+              })
+            );
+          }
+        } catch (err) {
+          console.warn("Error renegociando peer:", studentUid, err);
+        }
+      }
+    },
+    [getCombinedLocalStream]
+  );
+
+  // Conectar WebRTC con un estudiante admitido
+  const connectToAdmittedStudent = useCallback(
+    async (studentUid: string, activeCode8: string) => {
+      const listKey = `allowed_list_${activeCode8}`;
+      const existingPc = peerConnectionsRef.current.get(studentUid);
+      if (existingPc) {
+        existingPc.close();
+        peerConnectionsRef.current.delete(studentUid);
+      }
+
+      const pc = new RTCPeerConnection(WEBRTC_ICE_SERVERS);
+      peerConnectionsRef.current.set(studentUid, pc);
+
+      const stream = getCombinedLocalStream();
+      stream.getTracks().forEach((track) => {
+        pc.addTrack(track, stream);
+      });
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          const iceRef = push(
+            ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}/teacherIce`)
+          );
+          set(iceRef, JSON.stringify(event.candidate)).catch(() => {});
+
+          if (railwayWsRef.current && railwayWsRef.current.readyState === WebSocket.OPEN) {
+            railwayWsRef.current.send(
+              JSON.stringify({
+                type: "webrtc-ice",
+                code8: activeCode8,
+                targetUid: studentUid,
+                payload: event.candidate,
+              })
+            );
+          }
+        }
+      };
+
+      try {
+        const offer = await pc.createOffer({
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: true,
+        });
+        await pc.setLocalDescription(offer);
+
+        await set(ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}/offer`), {
+          type: offer.type,
+          sdp: offer.sdp,
+          timestamp: Date.now(),
+        });
+
+        if (railwayWsRef.current && railwayWsRef.current.readyState === WebSocket.OPEN) {
+          railwayWsRef.current.send(
+            JSON.stringify({
+              type: "webrtc-offer",
+              code8: activeCode8,
+              targetUid: studentUid,
+              payload: { type: offer.type, sdp: offer.sdp },
+            })
+          );
+        }
+      } catch (err) {
+        console.warn("Error creando oferta WebRTC:", err);
+      }
+
+      // Escuchar Answer del estudiante
+      const answerRef = ref(rtdb, `allowed_live_students/${listKey}/signals/${studentUid}/answer`);
+      onValue(answerRef, async (snap) => {
+        const data = snap.val();
+        if (data && data.sdp && pc.signalingState === "have-local-offer") {
+          try {
+            await pc.setRemoteDescription(new RTCSessionDescription({ type: data.type, sdp: data.sdp }));
+          } catch {}
+        }
+      });
+
+      // Escuchar candidatos ICE del estudiante
+      const studentIceRef = ref(
+        rtdb,
+        `allowed_live_students/${listKey}/signals/${studentUid}/studentIce`
+      );
+      onValue(studentIceRef, (snap) => {
+        const candidates = snap.val();
+        if (candidates && pc.signalingState !== "closed") {
+          Object.values(candidates).forEach(async (candStr: any) => {
+            try {
+              const cand = typeof candStr === "string" ? JSON.parse(candStr) : candStr;
+              await pc.addIceCandidate(new RTCIceCandidate(cand));
+            } catch {}
+          });
+        }
+      });
+    },
+    [getCombinedLocalStream]
+  );
+
+  // Alternar Cámara
+  const toggleCamera = async () => {
+    try {
+      if (camOn) {
+        cameraStreamRef.current?.getVideoTracks().forEach((t) => t.stop());
+        setCamOn(false);
+        if (videoRef.current && !screenOn) {
+          videoRef.current.srcObject = null;
+        }
+      } else {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: micOn,
+        });
+        if (cameraStreamRef.current && micOn) {
+          const existingAudio = cameraStreamRef.current.getAudioTracks();
+          existingAudio.forEach((t) => stream.addTrack(t));
+        }
+        cameraStreamRef.current = stream;
+        setCamOn(true);
+        if (videoRef.current && !screenOn) {
+          videoRef.current.srcObject = stream;
+        }
+      }
+      if (isLive && code8) {
+        setTimeout(() => renegotiateAllPeers(code8), 150);
+      }
+    } catch {
+      // Silencioso si no hay cámara física conectada
+    }
+  };
+
+  // Alternar Micrófono
+  const toggleMic = async () => {
+    try {
+      if (micOn) {
+        cameraStreamRef.current?.getAudioTracks().forEach((t) => {
+          t.enabled = false;
+          t.stop();
+        });
+        setMicOn(false);
+      } else {
+        const audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true },
+        });
+        if (!cameraStreamRef.current) {
+          cameraStreamRef.current = audioStream;
+        } else {
+          cameraStreamRef.current.getAudioTracks().forEach((t) => {
+            cameraStreamRef.current?.removeTrack(t);
+          });
+          audioStream.getAudioTracks().forEach((t) => {
+            cameraStreamRef.current?.addTrack(t);
+          });
+        }
+        setMicOn(true);
+      }
+      if (isLive && code8) {
+        setTimeout(() => renegotiateAllPeers(code8), 150);
+      }
+    } catch {}
+  };
+
+  // Alternar Compartir Pantalla
+  const toggleScreenShare = async () => {
+    try {
+      if (screenOn) {
+        screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+        screenStreamRef.current = null;
+        setScreenOn(false);
+        if (videoRef.current) {
+          videoRef.current.srcObject = camOn ? cameraStreamRef.current : null;
+        }
+      } else {
+        const displayStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: true,
+        });
+        screenStreamRef.current = displayStream;
+        setScreenOn(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = displayStream;
+        }
+        displayStream.getVideoTracks()[0].onended = () => {
+          screenStreamRef.current = null;
+          setScreenOn(false);
+          if (videoRef.current) {
+            videoRef.current.srcObject = camOn ? cameraStreamRef.current : null;
+          }
+          if (isLive && code8) {
+            setTimeout(() => renegotiateAllPeers(code8), 150);
+          }
+        };
+      }
+      if (isLive && code8) {
+        setTimeout(() => renegotiateAllPeers(code8), 150);
+      }
+    } catch {}
+  };
+
+  // Estudiantes que conformarán la allowed_live_students
+  const effectiveAllowedStudents = useMemo(() => {
+    if (listMode === "fixed") {
+      return bookedStudents.length > 0 ? bookedStudents : allStudents;
+    }
+    return allStudents.filter((s) => manualSelectedUids.has(s.uid));
+  }, [listMode, bookedStudents, allStudents, manualSelectedUids]);
+
+  // Iniciar Clase: Crea {allowed_list_codigode8digitos} en base de datos temporal y conecta Railway WebRTC
+  const handleStartClass = async () => {
+    const newCode8 = generateSessionCode8();
+    const listKey = `allowed_list_${newCode8}`;
+
+    const studentsMap: Record<string, any> = {};
+    for (const s of effectiveAllowedStudents) {
+      const bId = s.bookingId || `cls_${newCode8.toLowerCase()}_${s.uid.slice(0, 5)}`;
+      const hash = s.signature
+        ? s.signature.split(": ")[1] || s.signature
+        : await createCreditHash(s.uid, bId);
+      const signature = `${bId}: ${hash}`;
+
+      studentsMap[s.uid] = {
+        uid: s.uid,
+        name: s.name,
+        email: s.email,
+        bookingId: bId,
+        creditHash: hash,
+        signature,
+        admittedAt: Date.now(),
+      };
+
+      // Registrar firma simplificada {id}: {Hash} si aún no existía
+      await set(ref(rtdb, `consumed_credit_signatures/${bId}`), hash).catch(() => {});
+    }
+
+    const payload = {
+      code8: newCode8,
+      listKey,
+      teacherUid,
+      teacherName,
+      title: classTitle.trim() || "Sesión en Vivo",
+      mode: listMode,
+      status: "live",
+      startedAt: Date.now(),
+      students: studentsMap,
+    };
+
+    // Escribir únicamente bajo {allowed_list_codigode8digitos} en la base de datos temporal
+    await set(ref(rtdb, `allowed_live_students/${listKey}`), payload);
+
+    // Conectar al servidor Railway WebRTC si está configurado
+    const wsUrl = process.env.NEXT_PUBLIC_WEBRTC_WS_URL;
+    if (wsUrl) {
+      try {
+        const ws = new WebSocket(wsUrl);
+        ws.onopen = () => {
+          ws.send(
+            JSON.stringify({
+              type: "join-room",
+              code8: newCode8,
+              uid: teacherUid,
+              name: teacherName,
+              role: "teacher",
+              payload: {
+                title: payload.title,
+                mode: listMode,
+                allowedStudents: Object.values(studentsMap),
+              },
+            })
+          );
+        };
+        railwayWsRef.current = ws;
+      } catch {}
+    }
+
+    setCode8(newCode8);
+    setIsLive(true);
+  };
+
+  // Escuchar alumnos que entran a la sala, manos alzadas y chat en vivo
+  useEffect(() => {
+    if (!isLive || !code8) return;
+    const listKey = `allowed_list_${code8}`;
+
+    const viewersRef = ref(rtdb, `allowed_live_students/${listKey}/viewers`);
+    const unsubViewers = onValue(viewersRef, (snap) => {
+      const val = snap.val() || {};
+      setConnectedViewers(val);
+      Object.keys(val).forEach((sUid) => {
+        if (!peerConnectionsRef.current.has(sUid)) {
+          connectToAdmittedStudent(sUid, code8);
+        }
+      });
+    });
+
+    const handsRef = ref(rtdb, `allowed_live_students/${listKey}/raisedHands`);
     const unsubHands = onValue(handsRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.val();
-        const list: RaisedHandInfo[] = Object.keys(data).map((k) => ({
-          uid: k,
-          name: data[k].name || "Estudiante",
-          raisedAt: data[k].raisedAt,
-        }));
-        setRaisedHands(list);
-      } else {
-        setRaisedHands([]);
-      }
+      setRaisedHands(snap.val() || {});
     });
 
-    // Escuchar Chat en Vivo
-    const chatRef = ref(rtdb, `live_rooms/${selectedSessionId}/chat`);
+    const chatRef = ref(rtdb, `allowed_live_students/${listKey}/chat`);
     const unsubChat = onValue(chatRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.val();
-        const list: LiveChatMessage[] = Array.isArray(data)
-          ? data.filter(Boolean)
-          : Object.keys(data).map((k) => ({ id: k, ...data[k] }));
-        setChatMessages(list);
-      } else {
+      const val = snap.val();
+      if (!val) {
         setChatMessages([]);
+        return;
       }
-    });
-
-    // Escuchar Respuestas del Quiz en Vivo
-    const quizRespRef = ref(rtdb, `active_live_quiz/responses`);
-    const unsubQuizResp = onValue(quizRespRef, (snap) => {
-      if (snap.exists()) {
-        setQuizResponses(snap.val() || {});
-      } else {
-        setQuizResponses({});
-      }
+      const list = Object.entries(val).map(([k, v]: [string, any]) => ({
+        id: k,
+        senderName: v.senderName || "Participante",
+        senderRole: v.senderRole || "student",
+        text: v.text || "",
+        time: v.time || "",
+      }));
+      setChatMessages(list);
     });
 
     return () => {
+      unsubViewers();
       unsubHands();
       unsubChat();
-      unsubQuizResp();
     };
-  }, [selectedSessionId]);
+  }, [isLive, code8, connectToAdmittedStudent]);
 
-  // 3. Timer de transmisión activa
-  useEffect(() => {
-    let timer: any;
-    if (isLiveActive) {
-      timer = setInterval(() => {
-        setElapsedSeconds((prev) => prev + 1);
-      }, 1000);
-    } else {
-      setElapsedSeconds(0);
+  // Finalizar Clase: Destruye {allowed_list_codigode8digitos} de la base de datos temporal
+  const handleEndClass = async () => {
+    if (code8) {
+      const listKey = `allowed_list_${code8}`;
+      await remove(ref(rtdb, `allowed_live_students/${listKey}`)).catch(() => {});
     }
-    return () => clearInterval(timer);
-  }, [isLiveActive]);
 
-  const selectedSession = sessions.find((s) => s.id === selectedSessionId) || sessions[0] || DEFAULT_LIVE_SESSION;
-  const verifiedCount = enrolledStudents.filter((s) => s.quotaDeducted).length;
+    if (railwayWsRef.current) {
+      railwayWsRef.current.close();
+      railwayWsRef.current = null;
+    }
 
-  // 4. Crear Nueva Sesión / Sala Rápida
-  const handleCreateQuickSession = async (e: React.FormEvent) => {
+    peerConnectionsRef.current.forEach((pc) => pc.close());
+    peerConnectionsRef.current.clear();
+
+    cameraStreamRef.current?.getTracks().forEach((t) => t.stop());
+    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+    cameraStreamRef.current = null;
+    screenStreamRef.current = null;
+
+    setMicOn(false);
+    setCamOn(false);
+    setScreenOn(false);
+    setIsLive(false);
+    setCode8(null);
+    setConnectedViewers({});
+    setRaisedHands({});
+    setChatMessages([]);
+    setSidePanel("none");
+  };
+
+  const handleSendChat = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSessionTitle.trim()) return;
-
-    const newId = `live_${Date.now()}`;
-    const newSession: LiveVirtualSession = {
-      id: newId,
-      title: newSessionTitle.trim(),
-      courseSlug: "ipt-master",
-      instructorName: "Iván Samuel Pérez Torrenegra",
-      provider: "jitsi",
-      joinUrl: "",
-      startTimeUtc: new Date().toISOString(),
-      durationMinutes: newSessionDuration || 60,
-    };
-
-    try {
-      await set(ref(rtdb, `lms_live_sessions/${newId}`), newSession);
-      setSelectedSessionId(newId);
-      setIsCreateModalOpen(false);
-      setNewSessionTitle("");
-    } catch (err) {
-      console.warn("Error creando nueva sesión:", err);
-    }
-  };
-
-  // 4b. Reintentar activación de micrófono en caliente
-  const handleRetryAudio = async () => {
-    try {
-      const track = await tryAcquireMicrophoneTrack();
-      if (track) {
-        if (mediaStreamRef.current) {
-          mediaStreamRef.current.getAudioTracks().forEach((t) => {
-            t.stop();
-            mediaStreamRef.current?.removeTrack(t);
-          });
-          mediaStreamRef.current.addTrack(track);
-          if (broadcasterRef.current) {
-            broadcasterRef.current.setStream(mediaStreamRef.current);
-          }
-        }
-        setHasRealAudio(true);
-        setMicMuted(false);
-        setHardwareNotice(null);
-        if (broadcasterRef.current) {
-          broadcasterRef.current.publishHostState({ micMuted: false });
-        }
-      } else {
-        setHardwareNotice(
-          "El micrófono sigue bloqueado o en uso por otra app (Zoom, Teams, Discord o pestañas anteriores). Ciérralas y presiona 'Reintentar Micrófono'."
-        );
-      }
-    } catch (e) {
-      console.warn("Fallo reintentando micrófono:", e);
-    }
-  };
-
-  // 5. Iniciar Transmisión Magistral WebRTC (Hardware Adaptativo - Cero Bloqueos)
-  const handleStartLive = async () => {
-    const targetSessionId = selectedSessionId || selectedSession?.id || DEFAULT_LIVE_SESSION.id;
-    if (!selectedSessionId) {
-      setSelectedSessionId(targetSessionId);
-    }
-
-    try {
-      // 1. Obtener captura con degradación progresiva (evita errores bloqueantes)
-      const mediaResult = await acquireMediaStreamWithFallbacks();
-      const stream = mediaResult.stream;
-
-      setHasRealAudio(mediaResult.hasRealAudio);
-      setHasRealVideo(mediaResult.hasRealVideo);
-      if (mediaResult.warningNotice) {
-        setHardwareNotice(mediaResult.warningNotice);
-      } else {
-        setHardwareNotice(null);
-      }
-
-      mediaStreamRef.current = stream;
-      if (previewVideoRef.current) {
-        previewVideoRef.current.srcObject = stream;
-      }
-
-      // 2. Inicializar Broadcaster WebRTC
-      const broadcaster = new WebRtcHostBroadcaster(targetSessionId);
-      broadcaster.setStream(stream);
-      broadcaster.listenForViewers((viewers) => {
-        const count = Object.values(viewers).filter((v: any) => v?.status === "active").length;
-        setActiveViewersCount(count);
-      });
-
-      await broadcaster.publishHostState({
-        isLive: true,
-        sessionId: targetSessionId,
-        sessionTitle: selectedSession?.title || "Clase Magistral IPT",
-        instructorName: selectedSession?.instructorName || "Iván Samuel Pérez Torrenegra",
-        streamMode: mediaResult.hasRealVideo ? "camera" : "whiteboard",
-        micMuted: !mediaResult.hasRealAudio,
-        cameraOff: !mediaResult.hasRealVideo,
-        viewerCount: 0,
-        startedAt: new Date().toISOString(),
-      });
-
-      broadcasterRef.current = broadcaster;
-
-      // 3. Inicializar MediaRecorder para grabación local si el navegador lo soporta
-      try {
-        if (typeof MediaRecorder !== "undefined") {
-          let mimeType = "";
-          if (MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")) {
-            mimeType = "video/webm;codecs=vp8,opus";
-          } else if (MediaRecorder.isTypeSupported("video/webm")) {
-            mimeType = "video/webm";
-          }
-          const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-          const chunks: Blob[] = [];
-          recorder.ondataavailable = (e) => {
-            if (e.data && e.data.size > 0) chunks.push(e.data);
-          };
-          recorder.onstop = () => {
-            setRecordedChunks(chunks);
-          };
-          recorder.start(1000);
-          mediaRecorderRef.current = recorder;
-          setIsRecording(true);
-        }
-      } catch (recErr) {
-        console.warn("MediaRecorder no soportado en este dispositivo:", recErr);
-      }
-
-      // 4. Actualizar estado de la sesión en RTDB
-      await update(ref(rtdb, `lms_live_sessions/${targetSessionId}`), {
-        cloudRecordingState: "processing",
-        isLiveNow: true,
-      });
-
-      setIsLiveActive(true);
-      setStreamMode(mediaResult.hasRealVideo ? "camera" : "whiteboard");
-    } catch (err: any) {
-      console.error("Error al iniciar transmisión WebRTC:", err);
-      setHardwareNotice("Ocurrió un imprevisto inicializando dispositivos. Puedes continuar en modo pizarra o compartir pantalla.");
-      setIsLiveActive(true);
-    }
-  };
-
-  // 6. Finalizar Transmisión y Limpieza
-  const handleStopLive = async () => {
-    if (!confirm("¿Deseas finalizar la sesión magistral y cerrar la sala en vivo?")) {
-      return;
-    }
-
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-
-    if (broadcasterRef.current) {
-      await broadcasterRef.current.cleanup();
-      broadcasterRef.current = null;
-    }
-
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
-    }
-
-    const targetSessionId = selectedSessionId || DEFAULT_LIVE_SESSION.id;
-    try {
-      await update(ref(rtdb, `lms_live_sessions/${targetSessionId}`), {
-        cloudRecordingState: "ready",
-        isLiveNow: false,
-      });
-      await update(ref(rtdb, `live_rooms/${targetSessionId}/host`), {
-        isLive: false,
-      });
-      await set(ref(rtdb, "active_live_quiz"), { active: false });
-    } catch (err) {
-      console.warn("Error al actualizar fin de sesión en RTDB:", err);
-    }
-
-    setIsLiveActive(false);
-    setActiveQuizLaunched(false);
-  };
-
-  // 7. Conmutar a Compartir Pantalla
-  const handleSwitchToScreenShare = async () => {
-    try {
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: 1920, height: 1080 },
-        audio: true,
-      });
-
-      // Conservar el audio del micrófono si existe
-      if (mediaStreamRef.current) {
-        const audioTracks = mediaStreamRef.current.getAudioTracks();
-        if (audioTracks.length > 0 && screenStream.getAudioTracks().length === 0) {
-          screenStream.addTrack(audioTracks[0]);
-        }
-      }
-
-      mediaStreamRef.current = screenStream;
-      if (previewVideoRef.current) {
-        previewVideoRef.current.srcObject = screenStream;
-      }
-
-      if (broadcasterRef.current) {
-        broadcasterRef.current.setStream(screenStream);
-        await broadcasterRef.current.publishHostState({ streamMode: "screen" });
-      }
-
-      setStreamMode("screen");
-
-      screenStream.getVideoTracks()[0].onended = () => {
-        handleSwitchToCamera();
-      };
-    } catch (err) {
-      console.warn("Pantalla compartida cancelada:", err);
-    }
-  };
-
-  // 8. Conmutar a Cámara
-  const handleSwitchToCamera = async () => {
-    try {
-      const mediaResult = await acquireMediaStreamWithFallbacks();
-      const camStream = mediaResult.stream;
-
-      mediaStreamRef.current = camStream;
-      if (previewVideoRef.current) {
-        previewVideoRef.current.srcObject = camStream;
-      }
-
-      if (broadcasterRef.current) {
-        broadcasterRef.current.setStream(camStream);
-        await broadcasterRef.current.publishHostState({ streamMode: "camera" });
-      }
-
-      setStreamMode("camera");
-      setHasRealVideo(mediaResult.hasRealVideo);
-      if (mediaResult.warningNotice) {
-        setHardwareNotice(mediaResult.warningNotice);
-      }
-    } catch (err) {
-      console.warn("Error al conmutar a cámara:", err);
-    }
-  };
-
-  // 9. Conmutar a Modo Pizarra Digital
-  const handleSwitchToWhiteboard = async () => {
-    setStreamMode("whiteboard");
-    if (broadcasterRef.current) {
-      await broadcasterRef.current.publishHostState({ streamMode: "whiteboard" });
-    }
-  };
-
-  // 10. Alternar Micrófono con Reintento Dinámico
-  const toggleMic = async () => {
-    if (!mediaStreamRef.current) return;
-
-    if (!hasRealAudio) {
-      const track = await tryAcquireMicrophoneTrack();
-      if (track) {
-        mediaStreamRef.current.getAudioTracks().forEach((t) => {
-          t.stop();
-          mediaStreamRef.current?.removeTrack(t);
-        });
-        mediaStreamRef.current.addTrack(track);
-        if (broadcasterRef.current) {
-          broadcasterRef.current.setStream(mediaStreamRef.current);
-          broadcasterRef.current.publishHostState({ micMuted: false });
-        }
-        setHasRealAudio(true);
-        setMicMuted(false);
-        setHardwareNotice(null);
-        return;
-      }
-    }
-
-    const nextState = !micMuted;
-    mediaStreamRef.current.getAudioTracks().forEach((track) => {
-      track.enabled = !nextState;
+    if (!chatInput.trim() || !code8) return;
+    const listKey = `allowed_list_${code8}`;
+    const msgRef = push(ref(rtdb, `allowed_live_students/${listKey}/chat`));
+    await set(msgRef, {
+      senderName: teacherName,
+      senderRole: "teacher",
+      text: chatInput.trim(),
+      time: new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }),
     });
-    setMicMuted(nextState);
-    if (broadcasterRef.current) {
-      broadcasterRef.current.publishHostState({ micMuted: nextState });
-    }
+    setChatInput("");
   };
 
-  // 11. Alternar Video Cámara
-  const toggleCamera = () => {
-    if (!mediaStreamRef.current) return;
-    const nextState = !cameraOff;
-    mediaStreamRef.current.getVideoTracks().forEach((track) => {
-      track.enabled = !nextState;
-    });
-    setCameraOff(nextState);
-    if (broadcasterRef.current) {
-      broadcasterRef.current.publishHostState({ cameraOff: nextState });
-    }
-  };
-
-  // 12. Descargar Grabación de la Sesión
-  const handleDownloadRecording = () => {
-    if (recordedChunks.length === 0) {
-      alert("No hay fragmentos grabados disponibles aún.");
-      return;
-    }
-    const blob = new Blob(recordedChunks, { type: "video/webm" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `clase-en-vivo-ipt-${new Date().toISOString().slice(0, 10)}.webm`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  // 13. Pizarra: Dibujo y Sincronización en Tiempo Real
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
-    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
-
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    setIsDrawing(true);
-    currentStrokePoints.current = [{ x, y }];
-  };
-
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
-    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
-
-    ctx.lineTo(x, y);
-    ctx.strokeStyle = strokeColor === "eraser" ? "#0a0a0f" : strokeColor;
-    ctx.lineWidth = strokeColor === "eraser" ? 24 : strokeWidth;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.stroke();
-
-    currentStrokePoints.current.push({ x, y });
-  };
-
-  const stopDrawing = () => {
-    if (isDrawing && currentStrokePoints.current.length > 1 && broadcasterRef.current) {
-      broadcasterRef.current.broadcastWhiteboardStroke({
-        color: strokeColor === "eraser" ? "#0a0a0f" : strokeColor,
-        width: strokeColor === "eraser" ? 24 : strokeWidth,
-        points: currentStrokePoints.current,
-      });
-    }
-    setIsDrawing(false);
-    currentStrokePoints.current = [];
-  };
-
-  const handleClearWhiteboard = async () => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-    if (broadcasterRef.current) {
-      await broadcasterRef.current.clearWhiteboard();
-    }
-  };
-
-  // 14. Lanzador y Gestión de Quizzes en Vivo
-  const handleToggleQuiz = async () => {
-    const nextState = !activeQuizLaunched;
-    setActiveQuizLaunched(nextState);
-
-    try {
-      if (nextState) {
-        await set(ref(rtdb, "active_live_quiz"), {
-          active: true,
-          sessionId: selectedSessionId,
-          question: quizQuestion,
-          options: quizOptions,
-          correctOptionIndex,
-          launchedAt: new Date().toISOString(),
-        });
-        await remove(ref(rtdb, "active_live_quiz/responses"));
+  const toggleManualStudent = (uid: string) => {
+    setManualSelectedUids((prev) => {
+      const next = new Set(prev);
+      if (next.has(uid)) {
+        next.delete(uid);
       } else {
-        await set(ref(rtdb, "active_live_quiz"), {
-          active: false,
-        });
+        next.add(uid);
       }
-    } catch (err) {
-      console.warn("No se pudo sincronizar el quiz en vivo:", err);
-    }
-  };
-
-  // 15. Bajar Manos Levantadas
-  const handleClearHands = async () => {
-    if (!selectedSessionId) return;
-    try {
-      await remove(ref(rtdb, `live_rooms/${selectedSessionId}/hands`));
-    } catch (err) {
-      console.warn("Error clearing hands:", err);
-    }
-  };
-
-  // 16. Enviar Mensaje de Chat Docente
-  const handleSendTeacherChat = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim() || !selectedSessionId) return;
-
-    try {
-      const chatRef = push(ref(rtdb, `live_rooms/${selectedSessionId}/chat`));
-      await set(chatRef, {
-        sender: selectedSession?.instructorName || "Docente IPT",
-        role: "teacher",
-        text: chatInput.trim(),
-        time: new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }),
-        timestamp: Date.now(),
-      });
-      setChatInput("");
-    } catch (err) {
-      console.warn("Error enviando mensaje docente:", err);
-    }
-  };
-
-  const formatTimer = (totalSec: number) => {
-    const mins = Math.floor(totalSec / 60).toString().padStart(2, "0");
-    const secs = (totalSec % 60).toString().padStart(2, "0");
-    return `${mins}:${secs}`;
-  };
-
-  // Cálculo de votos del quiz en vivo
-  const totalQuizVotes = Object.keys(quizResponses).length;
-  const quizVoteCounts = useMemo(() => {
-    const counts = [0, 0, 0, 0];
-    Object.values(quizResponses).forEach((r) => {
-      if (typeof r.optionIndex === "number" && r.optionIndex >= 0 && r.optionIndex < 4) {
-        counts[r.optionIndex]++;
-      }
+      return next;
     });
-    return counts;
-  }, [quizResponses]);
+  };
 
-  return (
-    <div className="space-y-6">
-      {/* Session Header Card Pro */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#121217] border border-white/10 shadow-lg">
-        <div className="flex items-center gap-3.5">
-          <div
-            className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
-              isLiveActive
-                ? "bg-rose-500/15 text-rose-400 border border-rose-500/30 animate-pulse shadow-[0_0_20px_rgba(244,63,94,0.3)]"
-                : "bg-violet-500/10 text-violet-400 border border-violet-500/20"
-            }`}
-          >
-            <Video className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-white tracking-tight">
-                Estudio Dividido · Sala Magistral WebRTC
-              </h2>
-              {isLiveActive ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white animate-pulse">
-                  <Radio className="w-3 h-3 animate-ping" />
-                  EN VIVO ({activeViewersCount} Alumnos Conectados)
-                </span>
-              ) : (
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#181820] text-zinc-400 border border-white/10">
-                  SALA EN ESPERA
-                </span>
+  const filteredManualStudents = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return allStudents;
+    return allStudents.filter(
+      (s) => s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)
+    );
+  }, [allStudents, searchQuery]);
+
+  // ============================================================================
+  // VISTA 1: ANTES DE INICIAR CLASE (LOBBY LIMPIO ESTILO GOOGLE MEET)
+  // ============================================================================
+  if (!isLive) {
+    const nextScheduled =
+      scheduledClasses.find((c) => c.id === selectedScheduledId) || scheduledClasses[0];
+
+    return (
+      <div className="min-h-[calc(100vh-7rem)] bg-[#131314] text-white rounded-3xl border border-white/10 p-6 lg:p-10 flex items-center justify-center">
+        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Previsualización de Cámara y Audio (Izquierda) */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="relative aspect-video w-full rounded-2xl bg-[#202124] overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className={`w-full h-full object-cover ${camOn || screenOn ? "block" : "hidden"}`}
+              />
+
+              {!camOn && !screenOn && (
+                <div className="flex flex-col items-center justify-center text-center p-6">
+                  <div className="w-20 h-20 rounded-full bg-[#3c4043] flex items-center justify-center text-2xl font-medium text-white mb-3">
+                    {teacherName.charAt(0).toUpperCase()}
+                  </div>
+                  <p className="text-sm text-zinc-300">La cámara está desactivada</p>
+                </div>
               )}
-            </div>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Transmisión P2P en alta definición desde tu navegador con pizarra digital, quizzes en vivo y control de cupos.
-            </p>
-          </div>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          {!isLiveActive && (
-            <div className="flex items-center gap-2">
-              <select
-                value={selectedSessionId || DEFAULT_LIVE_SESSION.id}
-                onChange={(e) => setSelectedSessionId(e.target.value)}
-                className="px-3 py-2 bg-[#181820] border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500 cursor-pointer max-w-[240px] truncate"
-              >
-                {sessions.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.title}
-                  </option>
-                ))}
-              </select>
-
-              <button
-                type="button"
-                onClick={() => setIsCreateModalOpen(true)}
-                className="px-3 py-2 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-                title="Crear nueva sala de clase"
-              >
-                <Plus className="w-3.5 h-3.5 text-violet-400" />
-                <span>Nueva Sala</span>
-              </button>
-            </div>
-          )}
-
-          {!isLiveActive ? (
-            <button
-              onClick={handleStartLive}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all active:scale-[0.97] shadow-md shadow-emerald-600/20 cursor-pointer"
-            >
-              <Play className="w-3.5 h-3.5 fill-white" />
-              <span>INICIAR TRANSMISIÓN EN VIVO</span>
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              {recordedChunks.length > 0 && (
-                <button
-                  onClick={handleDownloadRecording}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-all"
-                  title="Descargar grabación de la clase en video"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Descargar Video</span>
-                </button>
-              )}
-              <button
-                onClick={handleStopLive}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-all active:scale-[0.97] shadow-md shadow-rose-600/30 cursor-pointer"
-              >
-                <Square className="w-3.5 h-3.5 fill-white" />
-                <span>FINALIZAR CLASE</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Modal para Crear Nueva Sala de Clase */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#121217] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Video className="w-4 h-4 text-violet-400" />
-                Crear Nueva Sala Magistral
-              </h3>
-              <button
-                onClick={() => setIsCreateModalOpen(false)}
-                className="text-zinc-400 hover:text-white p-1 rounded-lg"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateQuickSession} className="space-y-4">
-              <div>
-                <label className="text-xs text-zinc-300 font-semibold block mb-1.5">
-                  Título de la Clase o Tema:
-                </label>
-                <input
-                  type="text"
-                  value={newSessionTitle}
-                  onChange={(e) => setNewSessionTitle(e.target.value)}
-                  placeholder="Ej: Taller Zootécnico: Pesajes y Ganancia de Peso"
-                  required
-                  autoFocus
-                  className="w-full px-3.5 py-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500"
-                />
+              {/* Nombre en esquina inferior izquierda */}
+              <div className="absolute bottom-4 left-4 px-3 py-1 rounded-md bg-black/50 backdrop-blur-sm text-xs font-medium text-white">
+                {teacherName}
               </div>
 
-              <div>
-                <label className="text-xs text-zinc-300 font-semibold block mb-1.5">
-                  Duración estimada (minutos):
-                </label>
-                <input
-                  type="number"
-                  min="15"
-                  max="180"
-                  value={newSessionDuration}
-                  onChange={(e) => setNewSessionDuration(Number(e.target.value))}
-                  className="w-full px-3.5 py-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2.5 pt-2">
+              {/* Botones flotantes de Micrófono y Cámara */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs text-zinc-400 hover:text-white font-medium cursor-pointer"
+                  onClick={toggleMic}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                    micOn
+                      ? "bg-[#3c4043]/90 hover:bg-[#4a4e51] text-white border border-white/20"
+                      : "bg-[#ea4335] hover:bg-[#d93025] text-white"
+                  }`}
+                  title={micOn ? "Desactivar micrófono" : "Activar micrófono"}
                 >
-                  Cancelar
+                  {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
                 </button>
+
                 <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/30 cursor-pointer"
+                  type="button"
+                  onClick={toggleCamera}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                    camOn
+                      ? "bg-[#3c4043]/90 hover:bg-[#4a4e51] text-white border border-white/20"
+                      : "bg-[#ea4335] hover:bg-[#d93025] text-white"
+                  }`}
+                  title={camOn ? "Desactivar cámara" : "Activar cámara"}
                 >
-                  Guardar y Activar Sala
+                  {camOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Split View */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px]">
-        {/* Left Column: Live Video Canvas & Transmission Controls */}
-        <div className="lg:col-span-8 bg-[#0a0a0f] rounded-2xl overflow-hidden border border-white/10 flex flex-col justify-between text-white relative shadow-xl">
-          {!isLiveActive ? (
-            <div className="p-6 h-full flex flex-col justify-between space-y-6">
-              {hardwareNotice && (
-                <div className="bg-amber-950/40 border border-amber-500/40 p-3.5 rounded-xl flex items-start justify-between gap-3 text-amber-200 text-xs shadow-lg animate-in fade-in duration-200">
-                  <div className="flex items-start gap-2.5">
-                    <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-bold text-amber-300">Aviso de Dispositivo de Audio</p>
-                      <p className="mt-0.5 text-amber-200/90 leading-relaxed">{hardwareNotice}</p>
+          {/* Panel de Inicio y Selección de Lista (Derecha) */}
+          <div className="lg:col-span-5 bg-[#202124] rounded-2xl border border-white/10 p-6 space-y-5 shadow-xl">
+            <div className="space-y-1.5">
+              <label className="text-xs text-zinc-400 font-medium">Título de la clase</label>
+              <input
+                type="text"
+                value={classTitle}
+                onChange={(e) => setClassTitle(e.target.value)}
+                placeholder="Título de la sesión"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#131314] border border-white/10 text-sm text-white focus:outline-none focus:border-[#8ab4f8]"
+              />
+            </div>
+
+            {/* Selector de modalidad: Próxima clase agendada (Fija) vs Escoger estudiantes (Manual) */}
+            <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#131314] border border-white/10">
+              <button
+                type="button"
+                onClick={() => setListMode("fixed")}
+                className={`py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  listMode === "fixed"
+                    ? "bg-[#8ab4f8] text-[#202124] font-semibold"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Próxima agendada
+              </button>
+              <button
+                type="button"
+                onClick={() => setListMode("manual")}
+                className={`py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  listMode === "manual"
+                    ? "bg-[#8ab4f8] text-[#202124] font-semibold"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Seleccionar alumnos
+              </button>
+            </div>
+
+            {listMode === "fixed" ? (
+              <div className="space-y-3">
+                {nextScheduled ? (
+                  <div className="p-3.5 rounded-xl bg-[#131314] border border-white/10 space-y-1">
+                    <div className="flex items-center gap-2 text-xs text-[#8ab4f8] font-medium">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>
+                        {new Date(nextScheduled.startUtc).toLocaleDateString("es-CO", {
+                          weekday: "short",
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </span>
+                      <span>•</span>
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>
+                        {new Date(nextScheduled.startUtc).toLocaleTimeString("es-CO", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={handleRetryAudio}
-                      className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-semibold transition cursor-pointer"
-                    >
-                      Reintentar Micrófono
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setHardwareNotice(null)}
-                      className="p-1 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-              <div>
-                <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                  <div>
-                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                      <Users className="w-4 h-4 text-violet-400" />
-                      Validación de Estudiantes Matriculados y Reserva de Cupos
-                    </h3>
-                    <p className="text-xs text-zinc-400 mt-0.5">
-                      Verifica los alumnos habilitados para ingresar a la sala. Los créditos se descuentan de forma transparente.
-                    </p>
-                  </div>
-                  <span className="text-xs font-mono font-bold bg-[#181820] text-violet-300 px-3 py-1 rounded-full border border-violet-500/30">
-                    {verifiedCount} / {enrolledStudents.length} Alumnos Listos
-                  </span>
-                </div>
-
-                {loading ? (
-                  <div className="p-16 text-center text-zinc-500 text-xs">
-                    Cargando nómina de estudiantes en vivo...
-                  </div>
-                ) : enrolledStudents.length === 0 ? (
-                  <div className="p-16 text-center text-zinc-500 text-xs">
-                    No hay estudiantes registrados en la plataforma en este momento.
+                    <p className="text-sm font-medium text-white">{nextScheduled.title}</p>
                   </div>
                 ) : (
-                  <div className="mt-5 space-y-2 max-h-[380px] overflow-y-auto pr-1">
-                    {enrolledStudents.map((stu) => (
-                      <div
-                        key={stu.uid}
-                        className="p-4 rounded-xl border border-white/5 bg-[#14141c] flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                          <div>
-                            <p className="text-xs font-bold text-white">{stu.name}</p>
-                            <p className="text-[11px] text-zinc-400 font-mono">{stu.email}</p>
-                          </div>
-                        </div>
+                  <div className="p-3.5 rounded-xl bg-[#131314] border border-white/10 text-xs text-zinc-400 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-[#8ab4f8]" />
+                    <span>Horario directo disponible para iniciar ahora</span>
+                  </div>
+                )}
 
-                        <div className="text-right font-mono">
-                          <span className="text-xs font-bold text-emerald-400 uppercase">
-                            Plan {stu.planId} · {stu.availableQuotas} créditos
-                          </span>
-                          <div className="text-[10px] text-zinc-500">Acceso Autorizado</div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-zinc-400">
+                    <span>Estudiantes en lista ({effectiveAllowedStudents.length})</span>
+                  </div>
+                  <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1">
+                    {effectiveAllowedStudents.map((s) => (
+                      <div
+                        key={s.uid}
+                        className="px-3 py-2 rounded-xl bg-[#131314] border border-white/5 flex items-center justify-between text-xs"
+                      >
+                        <div className="truncate pr-2">
+                          <p className="font-medium text-white truncate">{s.name}</p>
+                          <p className="text-[11px] text-zinc-400 truncate">{s.email}</p>
                         </div>
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-
-              <div className="bg-[#14141c] p-4 rounded-xl border border-white/10 text-xs text-zinc-300 flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
-                <span>
-                  <strong>Transmisión Directa:</strong> Al hacer clic en <em>Iniciar Transmisión</em>, tu cámara y micrófono comenzarán a emitirse en tiempo real. Los estudiantes verán el indicador de transmisión en su portal sin requerir enlaces externos.
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="h-full flex flex-col justify-between p-5 space-y-4">
-              {hardwareNotice && (
-                <div className="bg-amber-950/40 border border-amber-500/40 p-3.5 rounded-xl flex items-start justify-between gap-3 text-amber-200 text-xs shadow-lg animate-in fade-in duration-200">
-                  <div className="flex items-start gap-2.5">
-                    <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-bold text-amber-300">Aviso de Dispositivo de Audio</p>
-                      <p className="mt-0.5 text-amber-200/90 leading-relaxed">{hardwareNotice}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={handleRetryAudio}
-                      className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-semibold transition cursor-pointer"
-                    >
-                      Reintentar Micrófono
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setHardwareNotice(null)}
-                      className="p-1 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Barra de Modos de Transmisión */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-[#14141c] p-2 rounded-xl border border-white/10">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleSwitchToCamera}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                      streamMode === "camera"
-                        ? "bg-violet-600 text-white shadow-sm"
-                        : "bg-white/5 text-zinc-400 hover:text-white"
-                    }`}
-                  >
-                    <Camera className="w-3.5 h-3.5" />
-                    <span>Cámara Web</span>
-                  </button>
-
-                  <button
-                    onClick={handleSwitchToScreenShare}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                      streamMode === "screen"
-                        ? "bg-violet-600 text-white shadow-sm"
-                        : "bg-white/5 text-zinc-400 hover:text-white"
-                    }`}
-                  >
-                    <Monitor className="w-3.5 h-3.5" />
-                    <span>Compartir Pantalla</span>
-                  </button>
-
-                  <button
-                    onClick={handleSwitchToWhiteboard}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                      streamMode === "whiteboard"
-                        ? "bg-violet-600 text-white shadow-sm"
-                        : "bg-white/5 text-zinc-400 hover:text-white"
-                    }`}
-                  >
-                    <PenTool className="w-3.5 h-3.5" />
-                    <span>Pizarra Digital</span>
-                  </button>
-                </div>
-
-                {raisedHands.length > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-amber-500/15 border border-amber-500/30 rounded-lg text-amber-300 text-xs font-bold animate-pulse">
-                    <Hand className="w-4 h-4" />
-                    <span>{raisedHands.length} Alumno(s) con la mano levantada</span>
-                    <button
-                      onClick={handleClearHands}
-                      className="ml-2 text-[10px] underline text-amber-200 hover:text-white cursor-pointer"
-                    >
-                      Bajar
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Visor Central: Video Stream o Pizarra */}
-              <div className="flex-1 bg-black rounded-xl border border-white/10 relative overflow-hidden min-h-[440px] flex items-center justify-center">
-                {streamMode !== "whiteboard" ? (
-                  <video
-                    ref={previewVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col justify-between p-3 bg-[#09090e]">
-                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                      <div className="flex items-center gap-2 text-xs text-zinc-300">
-                        <PenTool className="w-4 h-4 text-violet-400" />
-                        <span>Pizarra Sincronizada en Tiempo Real (Tus trazos se replican en los alumnos)</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {["#ffffff", "#8052ff", "#ffb829", "#10b981"].map((color) => (
-                          <button
-                            key={color}
-                            onClick={() => setStrokeColor(color)}
-                            className={`w-5 h-5 rounded-full border-2 transition-transform cursor-pointer ${
-                              strokeColor === color ? "scale-125 border-white" : "border-transparent opacity-80"
-                            }`}
-                            style={{ backgroundColor: color }}
-                          />
-                        ))}
-                        <button
-                          onClick={() => setStrokeColor("eraser")}
-                          className={`px-2.5 py-1 rounded text-[11px] font-bold border transition-colors cursor-pointer ${
-                            strokeColor === "eraser"
-                              ? "bg-rose-600 text-white border-rose-500"
-                              : "bg-white/10 text-zinc-400 border-white/10"
-                          }`}
-                        >
-                          Borrador
-                        </button>
-                        <button
-                          onClick={handleClearWhiteboard}
-                          className="px-2.5 py-1 rounded text-[11px] font-bold bg-white/10 hover:bg-rose-600/30 text-rose-300 border border-white/10 cursor-pointer"
-                        >
-                          Limpiar
-                        </button>
-                      </div>
-                    </div>
-
-                    <canvas
-                      ref={canvasRef}
-                      width={1280}
-                      height={720}
-                      onMouseDown={startDrawing}
-                      onMouseMove={draw}
-                      onMouseUp={stopDrawing}
-                      onMouseLeave={stopDrawing}
-                      className="w-full h-full bg-[#0d0d14] rounded-lg border border-white/5 cursor-crosshair touch-none"
-                    />
-                  </div>
-                )}
-
-                {/* Badge Flotante del Quiz Activo */}
-                {activeQuizLaunched && (
-                  <div className="absolute top-4 right-4 bg-violet-950/95 border border-violet-400/50 p-4 rounded-2xl max-w-sm shadow-2xl backdrop-blur-md">
-                    <div className="flex items-center justify-between gap-3 mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-violet-300 flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-violet-400" />
-                        Quiz Activo en Pantallas
-                      </span>
-                      <span className="text-[10px] font-mono bg-violet-900/60 px-2 py-0.5 rounded text-violet-200">
-                        {totalQuizVotes} Votos
-                      </span>
-                    </div>
-                    <p className="text-xs font-bold text-white mb-3">{quizQuestion}</p>
-
-                    <div className="space-y-1.5">
-                      {quizOptions.map((opt, idx) => {
-                        const count = quizVoteCounts[idx] || 0;
-                        const pct = totalQuizVotes > 0 ? Math.round((count / totalQuizVotes) * 100) : 0;
-                        const isCorrect = idx === correctOptionIndex;
-                        return (
-                          <div key={idx} className="space-y-0.5">
-                            <div className="flex justify-between text-[10px]">
-                              <span className={isCorrect ? "font-bold text-emerald-300" : "text-zinc-300"}>
-                                {String.fromCharCode(65 + idx)}. {opt}
-                              </span>
-                              <span className="font-mono text-zinc-400">{count} ({pct}%)</span>
-                            </div>
-                            <div className="h-1.5 bg-black/40 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full transition-all duration-300 ${
-                                  isCorrect ? "bg-emerald-500" : "bg-violet-500"
-                                }`}
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Tira Inferior de Controles Multimedia */}
-              <div className="p-3.5 bg-[#14141c] rounded-xl border border-white/10 flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-2.5">
-                  <button
-                    onClick={toggleMic}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
-                      !hasRealAudio
-                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30"
-                        : micMuted
-                        ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-                        : "bg-white/10 text-white hover:bg-white/15"
-                    }`}
-                  >
-                    {!hasRealAudio ? (
-                      <AlertCircle className="w-4 h-4 text-amber-400 animate-pulse" />
-                    ) : micMuted ? (
-                      <MicOff className="w-4 h-4" />
-                    ) : (
-                      <Mic className="w-4 h-4" />
-                    )}
-                    <span>
-                      {!hasRealAudio
-                        ? "Micrófono Bloqueado (Clic para Reintentar)"
-                        : micMuted
-                        ? "Micrófono Silenciado"
-                        : "Micrófono Activo"}
-                    </span>
-                  </button>
-
-                  <button
-                    onClick={toggleCamera}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
-                      cameraOff ? "bg-rose-500/20 text-rose-400 border border-rose-500/30" : "bg-white/10 text-white hover:bg-white/15"
-                    }`}
-                  >
-                    {cameraOff ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
-                    <span>{cameraOff ? "Cámara Pausada" : "Cámara Transmitiendo"}</span>
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-4 text-xs font-mono">
-                  {isRecording && (
-                    <div className="flex items-center gap-2 bg-rose-600/20 border border-rose-500/30 px-3 py-1 rounded-lg text-rose-300">
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-                      <span>GRABANDO: {formatTimer(elapsedSeconds)}</span>
-                    </div>
-                  )}
-                  <span className="text-zinc-400">Espectadores: {activeViewersCount}</span>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Chat en Vivo, Quizzes, Asistentes y Recursos */}
-        <div className="lg:col-span-4 bg-[#121217] rounded-2xl border border-white/10 p-5 flex flex-col justify-between shadow-xl">
-          <div className="space-y-4 flex-1 flex flex-col">
-            {/* Pestañas Laterales */}
-            <div className="grid grid-cols-4 bg-[#181820] p-1 rounded-xl border border-white/10 text-xs">
-              <button
-                onClick={() => setActiveSideTab("chat")}
-                className={`py-2 rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  activeSideTab === "chat"
-                    ? "bg-violet-600 text-white shadow-sm"
-                    : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Chat</span>
-              </button>
-              <button
-                onClick={() => setActiveSideTab("quizzes")}
-                className={`py-2 rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  activeSideTab === "quizzes"
-                    ? "bg-violet-600 text-white shadow-sm"
-                    : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                <HelpCircle className="w-3.5 h-3.5" />
-                <span>Quiz</span>
-              </button>
-              <button
-                onClick={() => setActiveSideTab("attendees")}
-                className={`py-2 rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  activeSideTab === "attendees"
-                    ? "bg-violet-600 text-white shadow-sm"
-                    : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                <Users className="w-3.5 h-3.5" />
-                <span>Alumnos</span>
-              </button>
-              <button
-                onClick={() => setActiveSideTab("resources")}
-                className={`py-2 rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  activeSideTab === "resources"
-                    ? "bg-violet-600 text-white shadow-sm"
-                    : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5" />
-                <span>Guías</span>
-              </button>
-            </div>
-
-            {/* PESTAÑA 1: CHAT EN VIVO MAGISTRAL */}
-            {activeSideTab === "chat" && (
-              <div className="flex-1 flex flex-col justify-between space-y-3 min-h-[360px]">
-                <div className="flex-1 max-h-[420px] overflow-y-auto space-y-2 pr-1">
-                  {chatMessages.length === 0 ? (
-                    <div className="p-8 text-center text-zinc-500 text-xs">
-                      El chat de la clase está listo. Los mensajes y preguntas de los alumnos aparecerán aquí en vivo.
-                    </div>
-                  ) : (
-                    chatMessages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className={`p-3 rounded-xl border text-xs ${
-                          msg.role === "teacher"
-                            ? "bg-violet-600/15 border-violet-500/30 text-white"
-                            : "bg-[#181820] border-white/5 text-zinc-300"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between text-[10px] text-zinc-400 mb-1">
-                          <span className={`font-bold ${msg.role === "teacher" ? "text-violet-300" : "text-white"}`}>
-                            {msg.sender} {msg.role === "teacher" && "(Docente)"}
-                          </span>
-                          <span className="font-mono">{msg.time}</span>
-                        </div>
-                        <p>{msg.text}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <form onSubmit={handleSendTeacherChat} className="flex gap-2 pt-2 border-t border-white/10">
+            ) : (
+              <div className="space-y-3">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Escribe una indicación a los alumnos..."
-                    className="flex-1 px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar estudiante..."
+                    className="w-full pl-8 pr-3 py-2 rounded-xl bg-[#131314] border border-white/10 text-xs text-white focus:outline-none focus:border-[#8ab4f8]"
                   />
-                  <button
-                    type="submit"
-                    className="p-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl cursor-pointer"
-                  >
-                    <Send className="w-4 h-4" />
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* PESTAÑA 2: QUIZZES EN VIVO */}
-            {activeSideTab === "quizzes" && (
-              <div className="space-y-4">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
-                  Configurador de Quiz Interactivo
-                </span>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-[11px] text-zinc-400 block mb-1">Pregunta:</label>
-                    <input
-                      type="text"
-                      value={quizQuestion}
-                      onChange={(e) => setQuizQuestion(e.target.value)}
-                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[11px] text-zinc-400 block">Opciones (Marca la correcta):</label>
-                    {quizOptions.map((opt, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="correctOption"
-                          checked={correctOptionIndex === idx}
-                          onChange={() => setCorrectOptionIndex(idx)}
-                          className="text-violet-600 focus:ring-0 cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={opt}
-                          onChange={(e) => {
-                            const updated = [...quizOptions];
-                            updated[idx] = e.target.value;
-                            setQuizOptions(updated);
-                          }}
-                          className="flex-1 px-2.5 py-1.5 bg-black/40 border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:border-violet-500"
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={handleToggleQuiz}
-                    disabled={!isLiveActive}
-                    className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      !isLiveActive
-                        ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-                        : activeQuizLaunched
-                        ? "bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-600/30"
-                        : "bg-violet-600 hover:bg-violet-500 text-white shadow-md shadow-violet-600/30"
-                    }`}
-                  >
-                    {!isLiveActive
-                      ? "Inicia la clase para lanzar el quiz"
-                      : activeQuizLaunched
-                      ? "Retirar Quiz de las Pantallas"
-                      : "Lanzar Quiz a Estudiantes Ahora"}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* PESTAÑA 3: ASISTENTES REALES */}
-            {activeSideTab === "attendees" && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-zinc-400">
-                  <span className="text-[10px] font-bold uppercase tracking-wider">
-                    Conectados ({activeViewersCount})
-                  </span>
-                  {raisedHands.length > 0 && (
-                    <span className="text-[10px] text-amber-400 font-bold">
-                      {raisedHands.length} Manos Levantadas
-                    </span>
-                  )}
                 </div>
 
-                <div className="max-h-[380px] overflow-y-auto space-y-1.5 pr-1">
-                  {enrolledStudents.map((stu) => {
-                    const isHandRaised = raisedHands.some((h) => h.uid === stu.uid);
+                <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1">
+                  {filteredManualStudents.map((s) => {
+                    const checked = manualSelectedUids.has(s.uid);
                     return (
-                      <div
-                        key={stu.uid}
-                        className={`p-3 rounded-xl border flex items-center justify-between text-xs transition-colors ${
-                          isHandRaised
-                            ? "bg-amber-500/15 border-amber-500/40 text-amber-200"
-                            : "bg-[#181820] border-white/5 text-zinc-300"
+                      <button
+                        key={s.uid}
+                        type="button"
+                        onClick={() => toggleManualStudent(s.uid)}
+                        className={`w-full px-3 py-2 rounded-xl border flex items-center justify-between text-left text-xs transition-all cursor-pointer ${
+                          checked
+                            ? "bg-[#8ab4f8]/15 border-[#8ab4f8]/40 text-white"
+                            : "bg-[#131314] border-white/5 text-zinc-400 hover:text-white"
                         }`}
                       >
-                        <div>
-                          <p className="font-bold text-white flex items-center gap-1.5">
-                            {stu.name}
-                            {isHandRaised && <Hand className="w-3.5 h-3.5 text-amber-400" />}
-                          </p>
-                          <p className="text-[10px] text-zinc-500 font-mono">{stu.email}</p>
+                        <div className="truncate pr-2">
+                          <p className="font-medium text-white truncate">{s.name}</p>
+                          <p className="text-[11px] text-zinc-400 truncate">{s.email}</p>
                         </div>
-                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      </div>
+                        <div
+                          className={`w-4 h-4 rounded flex items-center justify-center shrink-0 ${
+                            checked ? "bg-[#8ab4f8] text-[#202124]" : "border border-zinc-600"
+                          }`}
+                        >
+                          {checked && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
+                      </button>
                     );
                   })}
                 </div>
               </div>
             )}
 
-            {/* PESTAÑA 4: GUÍAS Y RECURSOS */}
-            {activeSideTab === "resources" && (
-              <div className="space-y-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
-                  Material y Referencias Docente
-                </span>
-                <div className="p-4 rounded-xl bg-[#181820] border border-white/5 space-y-3 text-xs">
-                  <p className="text-zinc-400">
-                    Recursos oficiales sincronizados para acompañar la cátedra magistral en vivo:
-                  </p>
-                  <div className="space-y-2">
-                    <div className="p-3 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between">
-                      <span className="font-medium text-white truncate">Guía Zootécnica DataGan 360</span>
-                      <span className="text-[10px] text-zinc-400 font-mono">DOCX</span>
+            <button
+              type="button"
+              onClick={handleStartClass}
+              disabled={effectiveAllowedStudents.length === 0}
+              className="w-full py-3 px-6 rounded-full bg-[#8ab4f8] hover:bg-[#aecbfa] text-[#202124] font-semibold text-sm transition-all shadow-lg cursor-pointer disabled:opacity-40"
+            >
+              Iniciar clase
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // VISTA 2: EN LLAMADA ACTIVA (100% ESTILO GOOGLE MEET LIMPIO)
+  // ============================================================================
+  const connectedList = Object.entries(connectedViewers);
+  const raisedHandsCount = Object.keys(raisedHands).length;
+
+  return (
+    <div className="h-[calc(100vh-5.5rem)] bg-[#202124] text-white rounded-3xl overflow-hidden flex flex-col justify-between select-none relative border border-white/10">
+      {/* Área Principal de Video + Panel Lateral Desplegable */}
+      <div className="flex-1 flex overflow-hidden p-4 gap-4">
+        {/* Escenario Principal */}
+        <div className="flex-1 relative rounded-2xl bg-[#131314] overflow-hidden flex items-center justify-center border border-white/5">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`w-full h-full object-contain ${camOn || screenOn ? "block" : "hidden"}`}
+          />
+
+          {!camOn && !screenOn && (
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-24 h-24 rounded-full bg-[#3c4043] flex items-center justify-center text-3xl font-medium text-white shadow-inner">
+                {teacherName.charAt(0).toUpperCase()}
+              </div>
+            </div>
+          )}
+
+          {/* Nombre del Docente en esquina inferior izquierda */}
+          <div className="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md text-xs font-medium text-white">
+            {!micOn && <MicOff className="w-3.5 h-3.5 text-[#ea4335]" />}
+            <span>{teacherName} (Tú)</span>
+          </div>
+
+          {/* Aviso de manos levantadas si hay alguna */}
+          {raisedHandsCount > 0 && (
+            <div className="absolute top-4 left-4 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fbbc04] text-[#202124] text-xs font-semibold shadow-lg">
+              <Hand className="w-4 h-4" />
+              <span>{raisedHandsCount} mano(s) levantada(s)</span>
+            </div>
+          )}
+
+          {/* Miniaturas de estudiantes conectados en esquina */}
+          {connectedList.length > 0 && (
+            <div className="absolute top-4 right-4 flex flex-col gap-2 max-w-[180px]">
+              {connectedList.slice(0, 4).map(([uid, info]) => {
+                const hasHand = Boolean(raisedHands[uid]);
+                return (
+                  <div
+                    key={uid}
+                    className="px-3 py-2 rounded-xl bg-[#202124]/90 backdrop-blur-md border border-white/10 flex items-center gap-2.5 shadow-lg"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-[#8ab4f8] text-[#202124] flex items-center justify-center text-xs font-bold shrink-0">
+                      {(info.name || "E").charAt(0).toUpperCase()}
                     </div>
-                    <div className="p-3 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between">
-                      <span className="font-medium text-white truncate">Calculadora de Aforo y UGM</span>
-                      <span className="text-[10px] text-zinc-400 font-mono">XLSX</span>
+                    <span className="text-xs font-medium text-white truncate flex-1">
+                      {info.name}
+                    </span>
+                    {hasHand && <Hand className="w-3.5 h-3.5 text-[#fbbc04] shrink-0" />}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Panel Lateral (Personas o Chat) estilo Google Meet */}
+        {sidePanel !== "none" && (
+          <div className="w-80 bg-white text-[#202124] rounded-2xl flex flex-col justify-between overflow-hidden shadow-2xl">
+            <div className="px-5 py-4 border-b border-zinc-200 flex items-center justify-between">
+              <h3 className="text-base font-medium text-[#202124]">
+                {sidePanel === "people" ? "Personas" : "Mensajes de la llamada"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSidePanel("none")}
+                className="p-1.5 rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {sidePanel === "people" ? (
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {raisedHandsCount > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-700 block">
+                      Manos levantadas
+                    </span>
+                    {Object.entries(raisedHands).map(([uid, h]) => (
+                      <div
+                        key={uid}
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs"
+                      >
+                        <span className="font-medium text-zinc-900">{h.name}</span>
+                        <Hand className="w-4 h-4 text-amber-600" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 block">
+                    En la clase ({connectedList.length + 1})
+                  </span>
+
+                  <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-semibold">
+                        {teacherName.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-zinc-900">{teacherName} (Tú)</p>
+                        <p className="text-[11px] text-zinc-500">Anfitrión</p>
+                      </div>
                     </div>
                   </div>
+
+                  {effectiveAllowedStudents.map((s) => {
+                    const isOnline = Boolean(connectedViewers[s.uid]);
+                    return (
+                      <div key={s.uid} className="flex items-center justify-between py-2">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-zinc-200 text-zinc-700 flex items-center justify-center text-xs font-semibold shrink-0">
+                            {s.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="truncate">
+                            <p className="text-xs font-medium text-zinc-900 truncate">{s.name}</p>
+                            <p className="text-[11px] text-zinc-500">
+                              {isOnline ? "Conectado" : "Autorizado"}
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            isOnline ? "bg-emerald-500" : "bg-zinc-300"
+                          }`}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col justify-between overflow-hidden">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {chatMessages.length === 0 ? (
+                    <div className="text-center text-xs text-zinc-400 py-10">
+                      Los mensajes enviados durante la llamada aparecerán aquí.
+                    </div>
+                  ) : (
+                    chatMessages.map((m) => (
+                      <div key={m.id} className="space-y-0.5 text-xs">
+                        <div className="flex items-baseline gap-2">
+                          <span className="font-semibold text-zinc-900">{m.senderName}</span>
+                          <span className="text-[10px] text-zinc-400">{m.time}</span>
+                        </div>
+                        <p className="text-zinc-700 leading-relaxed break-words">{m.text}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <form
+                  onSubmit={handleSendChat}
+                  className="p-3 border-t border-zinc-200 flex items-center gap-2 bg-zinc-50"
+                >
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Enviar un mensaje..."
+                    className="flex-1 px-3.5 py-2 rounded-full bg-white border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-[#1a73e8]"
+                  />
+                  <button
+                    type="submit"
+                    className="p-2 rounded-full text-[#1a73e8] hover:bg-blue-50 cursor-pointer"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </form>
               </div>
             )}
           </div>
+        )}
+      </div>
+
+      {/* Barra de Controles Inferior Estilo Google Meet */}
+      <div className="h-20 px-6 bg-[#202124] flex items-center justify-between">
+        {/* Izquierda: Hora y Título */}
+        <div className="hidden sm:flex items-center gap-3 text-sm font-medium text-white min-w-[200px]">
+          <span>{currentTimeStr}</span>
+          <span className="text-zinc-500">|</span>
+          <span className="truncate max-w-[220px]">{classTitle}</span>
+        </div>
+
+        {/* Centro: Controles principales */}
+        <div className="flex items-center gap-3 mx-auto">
+          <button
+            type="button"
+            onClick={toggleMic}
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+              micOn
+                ? "bg-[#3c4043] hover:bg-[#4a4e51] text-white"
+                : "bg-[#ea4335] hover:bg-[#d93025] text-white"
+            }`}
+            title={micOn ? "Desactivar micrófono" : "Activar micrófono"}
+          >
+            {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleCamera}
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+              camOn
+                ? "bg-[#3c4043] hover:bg-[#4a4e51] text-white"
+                : "bg-[#ea4335] hover:bg-[#d93025] text-white"
+            }`}
+            title={camOn ? "Desactivar cámara" : "Activar cámara"}
+          >
+            {camOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleScreenShare}
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+              screenOn
+                ? "bg-[#8ab4f8] text-[#202124]"
+                : "bg-[#3c4043] hover:bg-[#4a4e51] text-white"
+            }`}
+            title={screenOn ? "Dejar de presentar" : "Presentar ahora"}
+          >
+            <MonitorUp className="w-5 h-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleEndClass}
+            className="px-5 h-11 rounded-full bg-[#ea4335] hover:bg-[#d93025] text-white flex items-center justify-center gap-2 font-medium text-xs transition-all cursor-pointer"
+            title="Finalizar clase"
+          >
+            <PhoneOff className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Derecha: Personas y Chat */}
+        <div className="flex items-center justify-end gap-2 min-w-[200px]">
+          <button
+            type="button"
+            onClick={() => setSidePanel((p) => (p === "people" ? "none" : "people"))}
+            className={`relative p-2.5 rounded-full transition-colors cursor-pointer ${
+              sidePanel === "people"
+                ? "bg-[#8ab4f8]/20 text-[#8ab4f8]"
+                : "text-zinc-300 hover:bg-[#3c4043]"
+            }`}
+            title="Personas"
+          >
+            <Users className="w-5 h-5" />
+            <span className="absolute -top-0.5 -right-0.5 px-1.5 py-0.2 rounded-full bg-[#3c4043] text-[10px] font-semibold text-white">
+              {connectedList.length + 1}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSidePanel((p) => (p === "chat" ? "none" : "chat"))}
+            className={`p-2.5 rounded-full transition-colors cursor-pointer ${
+              sidePanel === "chat"
+                ? "bg-[#8ab4f8]/20 text-[#8ab4f8]"
+                : "text-zinc-300 hover:bg-[#3c4043]"
+            }`}
+            title="Chat"
+          >
+            <MessageSquare className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </div>

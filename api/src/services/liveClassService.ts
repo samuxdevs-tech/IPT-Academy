@@ -9,8 +9,134 @@ import {
 } from './quotaLedgerService';
 
 export class LiveClassService {
+  private static consumedCreditSignatures = new Map<string, string>();
+  private static spentHashes = new Set<string>();
+  private static activeTeacherLists = new Map<string, {
+    code8: string;
+    listKey: string;
+    teacherUid: string;
+    teacherName: string;
+    title: string;
+    mode: 'fixed' | 'manual';
+    startedAt: number;
+    allowed_live_students: Record<string, {
+      uid: string;
+      name: string;
+      email: string;
+      signature: string;
+    }>;
+  }>();
+
   /**
-   * Crea una nueva clase en vivo programada por el docente
+   * Genera un código alfanumérico de 8 dígitos para aislar la lista del docente:
+   * {allowed_list_codigode8digitos}
+   */
+  static generateIsolationCode8(): string {
+    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  }
+
+  /**
+   * Valida en la API un hash criptográfico de crédito que vive en students
+   * y lo simplifica a una firma en base de datos: { [id]: Hash del credito consumido }
+   */
+  static validateAndConsumeCreditHash(input: {
+    bookingId: string;
+    studentUid: string;
+    creditHash: string;
+  }) {
+    const { bookingId, studentUid, creditHash } = input;
+    if (!bookingId || !studentUid || !creditHash) {
+      throw new Error('INVALID_CREDIT_PAYLOAD: Faltan datos para validar el crédito.');
+    }
+
+    const cleanHash = creditHash.trim().toLowerCase();
+    if (!/^[a-f0-9]{32,64}$/i.test(cleanHash) && !cleanHash.startsWith('hash_')) {
+      throw new Error('INVALID_CREDIT_HASH_FORMAT: El hash del crédito no tiene una firma criptográfica válida.');
+    }
+
+    const existingHashForBooking = this.consumedCreditSignatures.get(bookingId);
+    if (existingHashForBooking && existingHashForBooking === cleanHash) {
+      return {
+        valid: true,
+        bookingId,
+        creditHash: cleanHash,
+        signatureRecord: { [bookingId]: cleanHash },
+        signature: `${bookingId}: ${cleanHash}`,
+      };
+    }
+
+    if (this.spentHashes.has(cleanHash)) {
+      throw new Error('CREDIT_HASH_ALREADY_SPENT: Este crédito ya fue utilizado en otra reserva.');
+    }
+
+    this.spentHashes.add(cleanHash);
+    this.consumedCreditSignatures.set(bookingId, cleanHash);
+
+    return {
+      valid: true,
+      bookingId,
+      creditHash: cleanHash,
+      signatureRecord: { [bookingId]: cleanHash },
+      signature: `${bookingId}: ${cleanHash}`,
+    };
+  }
+
+  /**
+   * Inicia una sesión docente aislando la lista en {allowed_list_codigode8digitos}
+   */
+  static startTeacherIsolatedRoom(input: {
+    teacherUid: string;
+    teacherName: string;
+    title: string;
+    mode: 'fixed' | 'manual';
+    code8?: string;
+    students: Array<{
+      uid: string;
+      name: string;
+      email: string;
+      signature: string;
+    }>;
+  }) {
+    const code8 =
+      input.code8 && input.code8.length === 8
+        ? input.code8.toUpperCase()
+        : this.generateIsolationCode8();
+    const listKey = `allowed_list_${code8}`;
+
+    const studentsMap: Record<string, { uid: string; name: string; email: string; signature: string }> = {};
+    for (const s of input.students || []) {
+      if (s && s.uid) {
+        studentsMap[s.uid] = {
+          uid: s.uid,
+          name: s.name || 'Estudiante',
+          email: s.email || '',
+          signature: s.signature || `${s.uid}: verified`,
+        };
+      }
+    }
+
+    const record = {
+      code8,
+      listKey,
+      teacherUid: input.teacherUid,
+      teacherName: input.teacherName || 'Docente IPT',
+      title: input.title || 'Clase en Vivo',
+      mode: input.mode,
+      startedAt: Date.now(),
+      allowed_live_students: studentsMap,
+    };
+
+    this.activeTeacherLists.set(listKey, record);
+    return record;
+  }
+
+  /**
+   * Crea una nueva clase en vivo programada por el docente (sin códigos de sala públicos)
    */
   static async createLiveClass(db: any, input: CreateLiveClassInput) {
     const scheduledAt = new Date(input.scheduledAtUtc);
@@ -21,7 +147,7 @@ export class LiveClassService {
     }
 
     const classId = `cls_${crypto.randomUUID()}`;
-    const jitsiRoomName = `ipt-live-${crypto.randomUUID().slice(0, 13)}`;
+    const isolationListKey = `allowed_list_${this.generateIsolationCode8()}`;
     const nowIso = now.toISOString();
 
     await db.prepare(
@@ -44,27 +170,20 @@ export class LiveClassService {
       input.teacherUid,
       input.teacherName,
       input.teacherEmail,
-      jitsiRoomName,
+      isolationListKey,
       nowIso
     ).run();
 
     return {
       id: classId,
-      jitsiRoomName,
+      isolationListKey,
       scheduledAtUtc: input.scheduledAtUtc,
       maxCapacity: input.maxCapacity,
       autoApprove: input.autoApprove,
     };
   }
 
-  /**
-   * Procesa la solicitud de reserva del estudiante aplicando:
-   * 1. Verificación de aforo
-   * 2. Deducción preventiva en el Ledger de cupos
-   * 3. TTL dinámico: min(now + 4h, scheduledAt - 30m)
-   * 4. Auto-aprobación si la clase lo tiene configurado
-   */
-  static async requestBooking(db: any, input: RequestBookingInput) {
+  static async requestBooking(db: any, input: RequestBookingInput & { creditHash?: string }) {
     const liveClass = await db.prepare(
       'SELECT * FROM live_classes WHERE id = ?'
     ).bind(input.classId).first();
@@ -77,7 +196,6 @@ export class LiveClassService {
       throw new Error(`CLASS_NOT_AVAILABLE: La clase está en estado ${liveClass.status} y no admite reservas.`);
     }
 
-    // Verificar si el estudiante ya tiene una reserva activa
     const existingBooking = await db.prepare(
       `SELECT * FROM class_bookings 
        WHERE class_id = ? AND student_uid = ? AND status IN ('pending_hold', 'confirmed')`
@@ -87,7 +205,6 @@ export class LiveClassService {
       throw new Error('ALREADY_BOOKED: El estudiante ya cuenta con una reserva activa para esta clase.');
     }
 
-    // Verificar aforo actual
     const activeCountRow = await db.prepare(
       `SELECT COUNT(*) as count FROM class_bookings 
        WHERE class_id = ? AND status IN ('pending_hold', 'confirmed')`
@@ -107,14 +224,21 @@ export class LiveClassService {
     const initialStatus = isAutoApprove ? 'confirmed' : 'pending_hold';
     const nowIso = now.toISOString();
 
-    // 1. Retención contable en el Ledger (-1)
+    let signatureInfo: any = null;
+    if (input.creditHash) {
+      signatureInfo = this.validateAndConsumeCreditHash({
+        bookingId,
+        studentUid: input.studentUid,
+        creditHash: input.creditHash,
+      });
+    }
+
     await QuotaLedgerService.holdQuota(db, {
       studentUid: input.studentUid,
       bookingId,
       idempotencyKey: input.idempotencyKey,
     });
 
-    // 2. Si es auto-aprobada, registrar commit inmediato
     if (isAutoApprove) {
       await QuotaLedgerService.commitConfirmed(db, {
         studentUid: input.studentUid,
@@ -123,7 +247,6 @@ export class LiveClassService {
       });
     }
 
-    // 3. Insertar reserva
     await db.prepare(
       `INSERT INTO class_bookings (
         id, class_id, student_uid, student_name, student_email,
@@ -147,12 +270,15 @@ export class LiveClassService {
       expiresAtUtc,
       classId: input.classId,
       scheduledAtUtc: liveClass.scheduled_at_utc,
+      ...(signatureInfo
+        ? {
+            signatureRecord: signatureInfo.signatureRecord,
+            signature: signatureInfo.signature,
+          }
+        : {}),
     };
   }
 
-  /**
-   * El docente aprueba una reserva pendiente
-   */
   static async approveBooking(db: any, bookingId: string, teacherUid: string) {
     const booking = await db.prepare(
       `SELECT b.*, c.teacher_uid, c.status as class_status 
@@ -173,7 +299,6 @@ export class LiveClassService {
       throw new Error(`INVALID_TRANSITION: La reserva está en estado ${booking.status} y no puede ser aprobada.`);
     }
 
-    // Verificar si expiró el TTL antes de que el docente pulsara aprobar
     const now = new Date();
     if (new Date(booking.expires_at_utc).getTime() <= now.getTime()) {
       throw new Error('BOOKING_EXPIRED: El tiempo límite (TTL) para aprobar esta reserva ha expirado.');
@@ -181,12 +306,10 @@ export class LiveClassService {
 
     const nowIso = now.toISOString();
 
-    // Actualizar estado a confirmada
     await db.prepare(
       `UPDATE class_bookings SET status = 'confirmed', updated_at_utc = ? WHERE id = ?`
     ).bind(nowIso, bookingId).run();
 
-    // Asentar confirmación en el Ledger (Delta 0, retención blindada)
     await QuotaLedgerService.commitConfirmed(db, {
       studentUid: booking.student_uid,
       bookingId,
@@ -196,9 +319,6 @@ export class LiveClassService {
     return { success: true, bookingId, status: 'confirmed' };
   }
 
-  /**
-   * El docente rechaza una reserva pendiente y libera el cupo de inmediato (+1)
-   */
   static async rejectBooking(db: any, bookingId: string, teacherUid: string, reason: string) {
     const booking = await db.prepare(
       `SELECT b.*, c.teacher_uid 
@@ -221,12 +341,10 @@ export class LiveClassService {
 
     const nowIso = new Date().toISOString();
 
-    // Actualizar estado a rechazada
     await db.prepare(
       `UPDATE class_bookings SET status = 'rejected_released', updated_at_utc = ? WHERE id = ?`
     ).bind(nowIso, bookingId).run();
 
-    // Reembolsar cupo en Ledger (+1)
     await QuotaLedgerService.releaseQuota(db, {
       studentUid: booking.student_uid,
       bookingId,
@@ -237,9 +355,6 @@ export class LiveClassService {
     return { success: true, bookingId, status: 'rejected_released' };
   }
 
-  /**
-   * El estudiante cancela su reserva aplicando la Regla de las 2 Horas
-   */
   static async cancelBooking(db: any, bookingId: string, studentUid: string, reason: string) {
     const booking = await db.prepare(
       `SELECT b.*, c.scheduled_at_utc, c.status as class_status
@@ -266,7 +381,6 @@ export class LiveClassService {
     const nowIso = now.toISOString();
 
     if (policy.refund) {
-      // Cancelación con reembolso (+1 en Ledger)
       await db.prepare(
         `UPDATE class_bookings SET status = 'cancelled_refunded', updated_at_utc = ? WHERE id = ?`
       ).bind(nowIso, bookingId).run();
@@ -280,7 +394,6 @@ export class LiveClassService {
 
       return { success: true, status: 'cancelled_refunded', refund: true, message: policy.reason };
     } else {
-      // Cancelación tardía (penalización, cupo consumido sin reembolso)
       await db.prepare(
         `UPDATE class_bookings SET status = 'cancelled_penalty', updated_at_utc = ? WHERE id = ?`
       ).bind(nowIso, bookingId).run();
@@ -289,9 +402,6 @@ export class LiveClassService {
     }
   }
 
-  /**
-   * Tarea periódica de limpieza de TTLs vencidos
-   */
   static async sweepExpiredHolds(db: any) {
     const nowIso = new Date().toISOString();
 
@@ -305,12 +415,10 @@ export class LiveClassService {
     let sweptCount = 0;
 
     for (const b of expiredList) {
-      // Transicionar a expirada
       await db.prepare(
         `UPDATE class_bookings SET status = 'expired_released', updated_at_utc = ? WHERE id = ?`
       ).bind(nowIso, b.id).run();
 
-      // Devolver cupo en el ledger (+1)
       await QuotaLedgerService.releaseQuota(db, {
         studentUid: b.student_uid,
         bookingId: b.id,

@@ -32,6 +32,12 @@ import {
   computeEntitlements,
   freeEntitlements,
 } from '@/lib/subscriptionEngine';
+import {
+  CreditToken,
+  buildStudentCreditHashes,
+  createCreditHash,
+  validateCreditHashWithApi,
+} from '@/lib/creditLiveSystem/creditHashCore';
 
 export interface YourPlanExecutiveRequest {
   id: string;
@@ -94,6 +100,12 @@ interface SubscriptionContextValue {
   invoices: Invoice[];
   notifications: UserNotification[];
   liveBookings: LiveBooking[];
+  creditTokens: CreditToken[];
+  consumeCreditHashForClass: (sessionInfo?: {
+    sessionId?: string;
+    title?: string;
+    startTime?: string;
+  }) => Promise<{ bookingId: string; creditHash: string; signature: string }>;
   yourPlanRequests: YourPlanExecutiveRequest[];
   serverNow: Date;
   isPricingModalOpen: boolean;
@@ -196,6 +208,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [liveBookings, setLiveBookings] = useState<LiveBooking[]>([]);
+  const [creditTokens, setCreditTokens] = useState<CreditToken[]>([]);
   const [yourPlanRequests, setYourPlanRequests] = useState<YourPlanExecutiveRequest[]>([]);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState<boolean>(false);
   const [preselectedModalPlan, setPreselectedModalPlan] = useState<PlanId | null>(null);
@@ -666,11 +679,147 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         });
       }
       const bkg = await engine.bookLiveSession(subscription.id, sessionId);
+
+      // Consumir un hash criptográfico de crédito que vive en students, validarlo en API y firmar {id}: {Hash}
+      let nextTokens = [...creditTokens];
+      let targetToken = nextTokens.find((t) => !t.consumed);
+      if (!targetToken) {
+        const emergencySerial = `CRD_${Date.now().toString(36).toUpperCase()}`;
+        const emergencyHash = await createCreditHash(effectiveUid, emergencySerial);
+        targetToken = {
+          serial: emergencySerial,
+          hash: emergencyHash,
+          studentUid: effectiveUid,
+          createdAt: Date.now(),
+          consumed: false,
+        };
+        nextTokens.push(targetToken);
+      }
+
+      const validated = await validateCreditHashWithApi({
+        bookingId: bkg.id,
+        studentUid: effectiveUid,
+        creditHash: targetToken.hash,
+      });
+
+      targetToken.consumed = true;
+      targetToken.bookingId = bkg.id;
+      targetToken.signature = validated.signature;
+      setCreditTokens(nextTokens);
+
+      (bkg as any).creditHash = validated.creditHash;
+      (bkg as any).signature = validated.signature;
+      (bkg as any).studentName = effectiveName;
+      (bkg as any).studentEmail = effectiveEmail;
+      engine.liveBookings.set(bkg.id, bkg);
+
+      try {
+        await set(ref(db, `consumed_credit_signatures/${bkg.id}`), validated.creditHash);
+        await set(ref(db, `credit_hashes/${effectiveUid}`), cleanForFirebase(nextTokens));
+      } catch {}
+
       await syncEngineToStorageAndRtdb(effectiveUid);
       return bkg;
     },
-    [subscription, effectiveUid, syncEngineToStorageAndRtdb]
+    [subscription, effectiveUid, effectiveName, effectiveEmail, creditTokens, syncEngineToStorageAndRtdb]
   );
+
+  // Solicitar clase en vivo consumiendo 1 hash criptográfico y escribiendo {id}: {Hash} en base de datos
+  const consumeCreditHashForClass = useCallback(
+    async (sessionInfo?: { sessionId?: string; title?: string; startTime?: string }) => {
+      let nextTokens = [...creditTokens];
+      let targetToken = nextTokens.find((t) => !t.consumed);
+      if (!targetToken) {
+        const serial = `CRD_${Date.now().toString(36).toUpperCase()}`;
+        const hash = await createCreditHash(effectiveUid, serial);
+        targetToken = {
+          serial,
+          hash,
+          studentUid: effectiveUid,
+          createdAt: Date.now(),
+          consumed: false,
+        };
+        nextTokens.push(targetToken);
+      }
+
+      const bookingId = `cls_${Math.random().toString(36).substring(2, 8)}_${Date.now().toString(36).slice(-4)}`;
+      const validated = await validateCreditHashWithApi({
+        bookingId,
+        studentUid: effectiveUid,
+        creditHash: targetToken.hash,
+      });
+
+      targetToken.consumed = true;
+      targetToken.bookingId = bookingId;
+      targetToken.signature = validated.signature;
+      setCreditTokens(nextTokens);
+
+      if (subscription) {
+        const nextRem = Math.max(0, (subscription.remainingCredits || 1) - 1);
+        subscription.remainingCredits = nextRem;
+        (subscription as any).liveClassCreditsRemaining = nextRem;
+        (subscription as any).rectoriaCreditsOverride = nextRem;
+        subscription.creditsConsumedInCycle = (subscription.creditsConsumedInCycle || 0) + 1;
+        engineRef.current.subscriptions.set(subscription.id, subscription);
+        setSubscription(structuredClone(subscription));
+      }
+
+      const bookingRecord: any = {
+        id: bookingId,
+        sessionId: sessionInfo?.sessionId || 'scheduled_next',
+        userId: effectiveUid,
+        studentUid: effectiveUid,
+        studentName: effectiveName,
+        studentEmail: effectiveEmail,
+        subscriptionId: subscription?.id || `sub_${effectiveUid}`,
+        status: 'confirmed',
+        bookedAt: new Date().toISOString(),
+        sessionTitle: sessionInfo?.title || 'Clase en Vivo',
+        sessionStartTime: sessionInfo?.startTime || new Date().toISOString(),
+        creditHash: validated.creditHash,
+        signature: validated.signature,
+      };
+
+      engineRef.current.liveBookings.set(bookingId, bookingRecord);
+      setLiveBookings((prev) => [bookingRecord, ...prev]);
+
+      try {
+        // Firma simplificada en base de datos: {id}: {Hash del credito consumido}
+        await set(ref(db, `consumed_credit_signatures/${bookingId}`), validated.creditHash);
+        await set(ref(db, `lms_live_bookings/${bookingId}`), cleanForFirebase(bookingRecord));
+        await set(ref(db, `credit_hashes/${effectiveUid}`), cleanForFirebase(nextTokens));
+      } catch {}
+
+      await syncEngineToStorageAndRtdb(effectiveUid);
+      return {
+        bookingId,
+        creditHash: validated.creditHash,
+        signature: validated.signature,
+      };
+    },
+    [creditTokens, effectiveUid, effectiveName, effectiveEmail, subscription, syncEngineToStorageAndRtdb]
+  );
+
+  // Sincronizar hashes criptográficos de créditos en students cuando cambie remainingCredits
+  useEffect(() => {
+    let mounted = true;
+    const targetCredits = Math.max(
+      0,
+      Number(entitlements.availableLiveCredits || subscription?.remainingCredits || 0)
+    );
+    buildStudentCreditHashes(effectiveUid, targetCredits, creditTokens).then((tokens) => {
+      if (!mounted) return;
+      if (tokens.length !== creditTokens.length) {
+        setCreditTokens(tokens);
+        if (user?.uid) {
+          set(ref(db, `credit_hashes/${user.uid}`), cleanForFirebase(tokens)).catch(() => {});
+        }
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [effectiveUid, entitlements.availableLiveCredits, subscription?.remainingCredits, creditTokens, user?.uid]);
 
   const cancelLiveBooking = useCallback(
     async (bookingId: string, options?: { forceCancel?: boolean }) => {
@@ -844,6 +993,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       invoices,
       notifications,
       liveBookings,
+      creditTokens,
+      consumeCreditHashForClass,
       yourPlanRequests,
       serverNow,
       isPricingModalOpen,
@@ -875,6 +1026,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       invoices,
       notifications,
       liveBookings,
+      creditTokens,
+      consumeCreditHashForClass,
       yourPlanRequests,
       serverNow,
       isPricingModalOpen,

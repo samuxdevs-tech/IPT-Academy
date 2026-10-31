@@ -18,7 +18,8 @@ import {
   ChevronRight,
   PanelLeftClose,
   PanelLeftOpen,
-  FolderTree
+  FolderTree,
+  Video
 } from "lucide-react";
 import { CourseBuilder } from "./CourseBuilder";
 import { RubricGradeMatrix } from "./RubricGradeMatrix";
@@ -29,6 +30,7 @@ import { StudentsAnalyticsView } from "./StudentsAnalyticsView";
 import { TeacherCalendarView } from "./TeacherCalendarView";
 import { TutoriaDirectivesChat } from "./TutoriaDirectivesChat";
 import { StudentGroupsManager } from "./StudentGroupsManager";
+import { LiveClassSplitView } from "./LiveClassSplitView";
 import { OperatorUserProfile } from "@/lib/firebase";
 
 export type TeacherTab =
@@ -38,6 +40,7 @@ export type TeacherTab =
   | "groups"
   | "grading"
   | "rubrics"
+  | "live"
   | "calendar"
   | "tutoria"
   | "students";
@@ -73,6 +76,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     groupTitle: "Sesiones & Agenda",
     items: [
+      { id: "live", label: "Clases en Vivo", sublabel: "Iniciar sesión sincrónica", icon: Video, badge: "En Vivo" },
       { id: "calendar", label: "Calendario Sincrónico", sublabel: "Agenda TutorIA y manual", icon: Calendar },
       { id: "tutoria", label: "Directivas a TutorIA", sublabel: "Restricción horaria docente", icon: Sparkles },
     ]
@@ -215,6 +219,7 @@ export function TeacherStudioWorkspace({
         {activeTab === "groups" && <StudentGroupsManager />}
         {activeTab === "grading" && <QuickGradingView />}
         {activeTab === "rubrics" && <RubricGradeMatrix />}
+        {activeTab === "live" && <LiveClassSplitView />}
         {activeTab === "calendar" && (
           <TeacherCalendarView onOpenTutoriaDirectives={() => setActiveTab("tutoria")} />
         )}

@@ -1,7 +1,12 @@
 "use client";
 
-import OperatorLiveDebuggingPage from "../debuging/page";
+import React from "react";
+import { LiveClassSplitView } from "@/teachers/LiveClassSplitView";
 
 export default function OperatorLivePage() {
-  return <OperatorLiveDebuggingPage />;
+  return (
+    <div className="min-h-screen bg-[#131314] p-4">
+      <LiveClassSplitView />
+    </div>
+  );
 }

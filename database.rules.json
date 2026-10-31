@@ -214,6 +214,26 @@
     "grades_override": {
       ".read": true,
       ".write": true
+    },
+    "credit_hashes": {
+      ".read": true,
+      ".write": true
+    },
+    "consumed_credit_signatures": {
+      ".read": true,
+      ".write": true
+    },
+    "allowed_live_students": {
+      ".read": true,
+      ".write": true
+    },
+    "allowed_lists": {
+      ".read": true,
+      ".write": true
+    },
+    "live_rooms": {
+      ".read": true,
+      ".write": true
     }
   }
 }
