@@ -1,0 +1,173 @@
+{
+  "$schema_version": "1.0.0",
+  "id": "A1-M01-L001",
+  "version": 2,
+  "estado": "publicado",
+  "nivel": "A1",
+  "subnivel": "A1.1",
+  "modulo": {
+    "codigo": "A1-M01",
+    "nombre": "Greetings and introductions",
+    "orden_en_modulo": 1
+  },
+  "orden_global": 1,
+  "titulo": "Hello! Nice to meet you",
+  "duracion_objetivo_seg": 119,
+  "idioma_instruccion": "es",
+  "idioma_meta": "en",
+  "tipo_leccion": "vocabulario_interaccion",
+  "plantilla_visual": "chalkboard_skia_fk_v2",
+
+  "alineacion": {
+    "cefr_cv2020": {
+      "nivel": "A1",
+      "actividad": "interaccion",
+      "escala": "Overall oral interaction",
+      "descriptor_propio": "El estudiante puede saludar y presentarse diciendo su nombre con frases breves y comprensibles.",
+      "referencia": "Council of Europe (2020) Companion Volume, https://rm.coe.int/16809ea0d4"
+    },
+    "gse": {
+      "rango": [22, 29],
+      "objetivo_codigo": "GSE-A1-GEN-0024",
+      "descriptor_propio": "Puede usar saludos básicos y responder a presentaciones sencillas.",
+      "licencia": "Pearson: solo código y rango, sin copiar texto"
+    },
+    "core_inventory": {
+      "categoria": "functions",
+      "item_propio": "Greeting people and introducing oneself",
+      "referencia": "British Council / Eaquals (2011) Core Inventory for General English"
+    },
+    "men": {
+      "documento": "Guía No. 22 Estándares Básicos de Competencias en Lenguas Extranjeras: Inglés",
+      "grupo_grados": "Grados 1 a 3 / Básica Primaria",
+      "competencia": "conversación",
+      "estandar_propio": "Respondo a saludos y a preguntas sobre mi nombre y el de mis compañeros."
+    },
+    "evp_egp": {
+      "vocab_nivel_declarado": "A1",
+      "gramatica_nivel_declarado": "A1",
+      "licencia": "Uso comercial requiere permiso de Cambridge; guardar solo nivel"
+    }
+  },
+
+  "objetivos": [
+    {
+      "id": "O1",
+      "verbo_accion": "saludar",
+      "enunciado": "Al final de la clase, el estudiante saluda y dice su nombre en inglés con pronunciación glotal suave /h/ y responde con la fórmula de cortesía.",
+      "evidencia": "Responde el quiz formativo y produce la frase modelo 'Hello, I'm [Nombre]. Nice to meet you!' en el ejercicio de voz."
+    }
+  ],
+
+  "contenido": {
+    "vocabulario": [
+      {
+        "id": "V1",
+        "lema": "hello",
+        "categoria_gramatical": "interjection",
+        "ipa_us": "/hɛˈloʊ/",
+        "fonetica_figurada_es": "[ he - LÓU ] (con h suave, como un suspiro)",
+        "traduccion_es": "hola",
+        "ejemplo_en": "Hello! I'm David.",
+        "ejemplo_es": "¡Hola! Soy David."
+      },
+      {
+        "id": "V2",
+        "lema": "nice to meet you",
+        "categoria_gramatical": "phrase",
+        "ipa_us": "/naɪs tu miːt ju/",
+        "fonetica_figurada_es": "[ nais tu mit yu ]",
+        "traduccion_es": "mucho gusto en conocerte / encantado",
+        "ejemplo_en": "Hello David! Nice to meet you.",
+        "ejemplo_es": "¡Hola David! Mucho gusto en conocerte."
+      }
+    ],
+    "gramatica": [
+      {
+        "id": "G1",
+        "regla_en": "I am + name / I'm + name",
+        "explicacion_es": "En inglés no decimos 'yo me llamo' ni 'yo tengo'. Decimos simplemente: Yo soy (I am / I'm).",
+        "formula": ["subject", "verb:be", "name"],
+        "colores": {
+          "subject": "#2F6FED",
+          "verb": "#E5484D",
+          "complement": "#30A46C"
+        },
+        "ejemplos": [
+          { "en": "I'm Carlos.", "es": "Soy Carlos." },
+          { "en": "I'm Ana.", "es": "Soy Ana." }
+        ],
+        "errores_comunes_es": [
+          "Decir 'I have Carlos' en vez de 'I am Carlos'",
+          "Pronunciar 'I' como /i/ en vez del diptongo /aɪ/"
+        ]
+      }
+    ],
+    "pronunciacion": [
+      {
+        "id": "P1",
+        "foco": "Aspiración suave /h/ en 'hello'",
+        "tip_es": "Suelta aire tibio y relajado como un suspiro, sin raspar la garganta como la J española."
+      }
+    ]
+  },
+
+  "tts": {
+    "voces": {
+      "instruccion": { "id": "es-CO-SalomeNeural", "rol": "Profesora hispanohablante cálida" },
+      "modelo_femenino": { "id": "en-US-JennyNeural", "rol": "Voz nativa US (Ana)" },
+      "modelo_masculino": { "id": "en-US-GuyNeural", "rol": "Voz nativa US (David)" }
+    },
+    "separacion_idiomas_estricta": true
+  },
+
+  "ejercicios": [
+    {
+      "id": "E1",
+      "tipo": "opcion_multiple",
+      "enunciado_es": "¿Cómo te presentas correctamente en inglés si te llamas Carlos?",
+      "opciones": [
+        { "id": "a", "texto": "I'm Carlos.", "correcta": true },
+        { "id": "b", "texto": "I have Carlos.", "correcta": false },
+        { "id": "c", "texto": "Nice Carlos.", "correcta": false }
+      ],
+      "retroalimentacion": {
+        "correcta": "¡Exacto! Usamos 'I am' o 'I'm' (Yo soy) seguido de tu nombre.",
+        "incorrecta": "Recuerda: en inglés usamos 'I'm' (Yo soy), nunca decimos 'I have'."
+      }
+    },
+    {
+      "id": "E2",
+      "tipo": "opcion_multiple",
+      "enunciado_es": "¿Qué respondes cuando alguien te dice 'Nice to meet you'?",
+      "opciones": [
+        { "id": "a", "texto": "Nice to meet you too!", "correcta": true },
+        { "id": "b", "texto": "I have Ana.", "correcta": false },
+        { "id": "c", "texto": "Goodbye yesterday.", "correcta": false }
+      ],
+      "retroalimentacion": {
+        "correcta": "¡Perfecto! 'Nice to meet you too' significa 'Mucho gusto en conocerte a ti también'.",
+        "incorrecta": "Recuerda que agregamos 'too' (también) al final de la frase."
+      }
+    },
+    {
+      "id": "E3",
+      "tipo": "repetir_en_voz_alta",
+      "texto_modelo": "Hello, I'm Carlos. Nice to meet you!",
+      "evaluacion_pronunciacion": {
+        "habilitada": true,
+        "motor": "browser_speech_recognition_stt",
+        "umbral_aceptable_similitud": 0.75
+      }
+    }
+  ],
+
+  "render": {
+    "resolucion": "1920x1080",
+    "fps": 30,
+    "codec": "libx264",
+    "crf": 18,
+    "audio_lufs": -16,
+    "salida": "videos/A1-M01-L001.mp4"
+  }
+}

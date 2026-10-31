@@ -1,0 +1,239 @@
+{
+  "total_duration": 124.81599999999996,
+  "lines": [
+    {
+      "line_index": 0,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "¡Hola! Te doy la bienvenida a tu curso de inglés en Aipi-tí Cors.",
+      "start": 0.0,
+      "end": 5.184,
+      "duration": 5.184
+    },
+    {
+      "line_index": 1,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "Sé que empezar desde cero puede dar un poquito de nervios, pero aquí vamos paso a paso.",
+      "start": 5.434,
+      "end": 10.978,
+      "duration": 5.544
+    },
+    {
+      "line_index": 2,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "Hoy aprenderás lo más importante: saludar y presentarte con total seguridad.",
+      "start": 11.228,
+      "end": 16.868,
+      "duration": 5.64
+    },
+    {
+      "line_index": 3,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "Para saludar a cualquier persona en cualquier momento, la palabra universal es:",
+      "start": 17.368,
+      "end": 22.72,
+      "duration": 5.352
+    },
+    {
+      "line_index": 4,
+      "speaker": "en_f",
+      "voice": "en-US-JennyNeural",
+      "text": "Hello!",
+      "start": 22.97,
+      "end": 24.721999999999998,
+      "duration": 1.752
+    },
+    {
+      "line_index": 5,
+      "speaker": "en_f",
+      "voice": "en-US-JennyNeural",
+      "text": "Hello.",
+      "start": 24.921999999999997,
+      "end": 26.793999999999997,
+      "duration": 1.872
+    },
+    {
+      "line_index": 6,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "En inglés, la letra H suena como un suspiro suave de aire tibio, no como la J fuerte del español. Escucha la diferencia:",
+      "start": 27.193999999999996,
+      "end": 36.67399999999999,
+      "duration": 9.48
+    },
+    {
+      "line_index": 7,
+      "speaker": "en_f",
+      "voice": "en-US-JennyNeural",
+      "text": "Hello.",
+      "start": 36.92399999999999,
+      "end": 38.79599999999999,
+      "duration": 1.872
+    },
+    {
+      "line_index": 8,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "Ahora, para decir quién eres, en inglés no decimos yo me llamo ni yo tengo. Simplemente decimos yo soy:",
+      "start": 39.29599999999999,
+      "end": 47.57599999999999,
+      "duration": 8.28
+    },
+    {
+      "line_index": 9,
+      "speaker": "en_f",
+      "voice": "en-US-JennyNeural",
+      "text": "I am.",
+      "start": 47.82599999999999,
+      "end": 49.602,
+      "duration": 1.776
+    },
+    {
+      "line_index": 10,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "O en su forma más común y natural:",
+      "start": 49.802,
+      "end": 52.754,
+      "duration": 2.952
+    },
+    {
+      "line_index": 11,
+      "speaker": "en_f",
+      "voice": "en-US-JennyNeural",
+      "text": "I'm.",
+      "start": 52.954,
+      "end": 54.826,
+      "duration": 1.872
+    },
+    {
+      "line_index": 12,
+      "speaker": "en_m",
+      "voice": "en-US-GuyNeural",
+      "text": "I'm Carlos.",
+      "start": 55.226,
+      "end": 57.41,
+      "duration": 2.184
+    },
+    {
+      "line_index": 13,
+      "speaker": "en_f",
+      "voice": "en-US-JennyNeural",
+      "text": "I'm Ana.",
+      "start": 57.709999999999994,
+      "end": 59.486,
+      "duration": 1.776
+    },
+    {
+      "line_index": 14,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "Sujeto en azul, verbo en rojo y tu nombre en verde.",
+      "start": 59.885999999999996,
+      "end": 64.014,
+      "duration": 4.128
+    },
+    {
+      "line_index": 15,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "Y para responder con cortesía cuando conoces a alguien por primera vez, decimos:",
+      "start": 64.514,
+      "end": 70.36999999999999,
+      "duration": 5.856
+    },
+    {
+      "line_index": 16,
+      "speaker": "en_f",
+      "voice": "en-US-JennyNeural",
+      "text": "Nice to meet you!",
+      "start": 70.61999999999999,
+      "end": 72.80399999999999,
+      "duration": 2.184
+    },
+    {
+      "line_index": 17,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "Significa: mucho gusto en conocerte. Escuchemos este saludo entre David y Ana:",
+      "start": 73.10399999999998,
+      "end": 79.84799999999998,
+      "duration": 6.744
+    },
+    {
+      "line_index": 18,
+      "speaker": "en_m",
+      "voice": "en-US-GuyNeural",
+      "text": "Hello! I'm David.",
+      "start": 80.19799999999998,
+      "end": 83.62999999999998,
+      "duration": 3.432
+    },
+    {
+      "line_index": 19,
+      "speaker": "en_f",
+      "voice": "en-US-JennyNeural",
+      "text": "Hello David! Nice to meet you.",
+      "start": 83.92999999999998,
+      "end": 87.81799999999998,
+      "duration": 3.888
+    },
+    {
+      "line_index": 20,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "¡Ahora es tu turno! Escucha el modelo y repite la frase completa con tu propio nombre:",
+      "start": 88.31799999999998,
+      "end": 94.91799999999998,
+      "duration": 6.6
+    },
+    {
+      "line_index": 21,
+      "speaker": "en_f",
+      "voice": "en-US-JennyNeural",
+      "text": "Hello, I'm Carlos. Nice to meet you!",
+      "start": 95.16799999999998,
+      "end": 99.99199999999998,
+      "duration": 4.824
+    },
+    {
+      "line_index": 22,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "Dilo tú en voz alta. Tienes tres segundos a partir de ahora.",
+      "start": 100.34199999999997,
+      "end": 105.57399999999997,
+      "duration": 5.232
+    },
+    {
+      "line_index": 23,
+      "speaker": "silence",
+      "voice": null,
+      "text": "[Turno de habla del estudiante]",
+      "start": 105.82399999999997,
+      "end": 109.32399999999997,
+      "duration": 3.5
+    },
+    {
+      "line_index": 24,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "¡Excelente trabajo! Acabas de completar tu primera conversación en inglés.",
+      "start": 109.32399999999997,
+      "end": 115.32399999999997,
+      "duration": 6.0
+    },
+    {
+      "line_index": 25,
+      "speaker": "es",
+      "voice": "es-CO-SalomeNeural",
+      "text": "Justo aquí abajo tienes tu quiz interactivo y la práctica con micrófono para evaluar tu voz. ¡Nos vemos en la siguiente lección!",
+      "start": 115.62399999999997,
+      "end": 124.21599999999997,
+      "duration": 8.592
+    }
+  ]
+}

@@ -2331,14 +2331,7 @@ Tienes facultades plenas:
                                   </div>
 
                                   {/* Barra de Herramientas Interactivas */}
-                                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
-                                    <a
-                                      href="/live"
-                                      className="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[10px] transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
-                                    >
-                                      <Video className="w-3 h-3" />
-                                      <span>Entrar a /live</span>
-                                    </a>
+                                  <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
 
                                     <div className="flex items-center gap-1.5">
                                       {bkg.canCancel ? (

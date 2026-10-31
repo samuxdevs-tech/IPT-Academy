@@ -5,7 +5,6 @@ import {
   BookOpen,
   Table,
   CheckSquare,
-  Video,
   HelpCircle,
   Lock,
   Users,
@@ -24,7 +23,6 @@ import {
 import { CourseBuilder } from "./CourseBuilder";
 import { RubricGradeMatrix } from "./RubricGradeMatrix";
 import { QuickGradingView } from "./QuickGradingView";
-import { LiveClassSplitView } from "./LiveClassSplitView";
 import { QuestionBankView } from "./QuestionBankView";
 import { CourseConditionalsView } from "./CourseConditionalsView";
 import { StudentsAnalyticsView } from "./StudentsAnalyticsView";
@@ -40,7 +38,6 @@ export type TeacherTab =
   | "groups"
   | "grading"
   | "rubrics"
-  | "live"
   | "calendar"
   | "tutoria"
   | "students";
@@ -76,7 +73,6 @@ const NAV_GROUPS: NavGroup[] = [
   {
     groupTitle: "Sesiones & Agenda",
     items: [
-      { id: "live", label: "Split View Videollamada", sublabel: "Cupos per-class & recursos", icon: Video, badge: "En Vivo" },
       { id: "calendar", label: "Calendario Sincrónico", sublabel: "Agenda TutorIA y manual", icon: Calendar },
       { id: "tutoria", label: "Directivas a TutorIA", sublabel: "Restricción horaria docente", icon: Sparkles },
     ]
@@ -219,7 +215,6 @@ export function TeacherStudioWorkspace({
         {activeTab === "groups" && <StudentGroupsManager />}
         {activeTab === "grading" && <QuickGradingView />}
         {activeTab === "rubrics" && <RubricGradeMatrix />}
-        {activeTab === "live" && <LiveClassSplitView />}
         {activeTab === "calendar" && (
           <TeacherCalendarView onOpenTutoriaDirectives={() => setActiveTab("tutoria")} />
         )}
