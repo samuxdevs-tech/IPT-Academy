@@ -24,6 +24,8 @@ import {
   Camera,
   Layers,
   Sparkles,
+  Plus,
+  X,
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
 import {
@@ -77,13 +79,29 @@ interface RaisedHandInfo {
   raisedAt: string;
 }
 
+const DEFAULT_LIVE_SESSION: LiveVirtualSession = {
+  id: "sesion_magistral_directo",
+  title: "Cátedra Magistral en Directo · IPT Academy",
+  courseSlug: "ipt-master",
+  instructorName: "Iván Samuel Pérez Torrenegra",
+  provider: "jitsi",
+  joinUrl: "",
+  startTimeUtc: new Date().toISOString(),
+  durationMinutes: 60,
+};
+
 export function LiveClassSplitView() {
-  const [sessions, setSessions] = useState<LiveVirtualSession[]>([]);
-  const [selectedSessionId, setSelectedSessionId] = useState<string>("");
+  const [sessions, setSessions] = useState<LiveVirtualSession[]>([DEFAULT_LIVE_SESSION]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string>(DEFAULT_LIVE_SESSION.id);
   const [isLiveActive, setIsLiveActive] = useState<boolean>(false);
   const [enrolledStudents, setEnrolledStudents] = useState<EnrolledStudent[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeSideTab, setActiveSideTab] = useState<"chat" | "quizzes" | "attendees" | "resources">("chat");
+
+  // Modal para crear nueva sala
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [newSessionTitle, setNewSessionTitle] = useState<string>("");
+  const [newSessionDuration, setNewSessionDuration] = useState<number>(60);
 
   // Transmisión Multimedia y Hardware
   const [streamMode, setStreamMode] = useState<"camera" | "screen" | "whiteboard">("camera");
@@ -170,18 +188,22 @@ export function LiveClassSplitView() {
     };
 
     const unsubSessions = onValue(sessionsRef, (snap) => {
+      let list: LiveVirtualSession[] = [];
       if (snap.exists()) {
         const val = snap.val();
-        const list: LiveVirtualSession[] = Array.isArray(val)
+        list = Array.isArray(val)
           ? val.filter(Boolean)
           : Object.keys(val).map((k) => ({ ...val[k], id: val[k].id || k }));
-        setSessions(list);
-        if (list.length > 0 && !selectedSessionId) {
-          setSelectedSessionId(list[0].id);
-        }
-      } else {
-        setSessions([]);
       }
+
+      if (list.length === 0) {
+        list = [DEFAULT_LIVE_SESSION];
+        // Sembrar sesión por defecto en segundo plano en RTDB
+        set(ref(rtdb, "lms_live_sessions/sesion_magistral_directo"), DEFAULT_LIVE_SESSION).catch(() => {});
+      }
+
+      setSessions(list);
+      setSelectedSessionId((prev) => (prev && list.some((s) => s.id === prev) ? prev : list[0].id));
     });
 
     const unsubUsers = onValue(usersRef, (snap) => {
@@ -265,14 +287,41 @@ export function LiveClassSplitView() {
     return () => clearInterval(timer);
   }, [isLiveActive]);
 
-  const selectedSession = sessions.find((s) => s.id === selectedSessionId);
+  const selectedSession = sessions.find((s) => s.id === selectedSessionId) || sessions[0] || DEFAULT_LIVE_SESSION;
   const verifiedCount = enrolledStudents.filter((s) => s.quotaDeducted).length;
 
-  // 4. Iniciar Transmisión Magistral WebRTC
+  // 4. Crear Nueva Sesión / Sala Rápida
+  const handleCreateQuickSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSessionTitle.trim()) return;
+
+    const newId = `live_${Date.now()}`;
+    const newSession: LiveVirtualSession = {
+      id: newId,
+      title: newSessionTitle.trim(),
+      courseSlug: "ipt-master",
+      instructorName: "Iván Samuel Pérez Torrenegra",
+      provider: "jitsi",
+      joinUrl: "",
+      startTimeUtc: new Date().toISOString(),
+      durationMinutes: newSessionDuration || 60,
+    };
+
+    try {
+      await set(ref(rtdb, `lms_live_sessions/${newId}`), newSession);
+      setSelectedSessionId(newId);
+      setIsCreateModalOpen(false);
+      setNewSessionTitle("");
+    } catch (err) {
+      console.warn("Error creando nueva sesión:", err);
+    }
+  };
+
+  // 5. Iniciar Transmisión Magistral WebRTC (Cero alertas de bloqueo)
   const handleStartLive = async () => {
+    const targetSessionId = selectedSessionId || selectedSession?.id || DEFAULT_LIVE_SESSION.id;
     if (!selectedSessionId) {
-      alert("Por favor selecciona una sesión válida.");
-      return;
+      setSelectedSessionId(targetSessionId);
     }
 
     try {
@@ -288,7 +337,7 @@ export function LiveClassSplitView() {
       }
 
       // 2. Inicializar Broadcaster WebRTC
-      const broadcaster = new WebRtcHostBroadcaster(selectedSessionId);
+      const broadcaster = new WebRtcHostBroadcaster(targetSessionId);
       broadcaster.setStream(stream);
       broadcaster.listenForViewers((viewers) => {
         const count = Object.values(viewers).filter((v: any) => v?.status === "active").length;
@@ -297,9 +346,9 @@ export function LiveClassSplitView() {
 
       await broadcaster.publishHostState({
         isLive: true,
-        sessionId: selectedSessionId,
+        sessionId: targetSessionId,
         sessionTitle: selectedSession?.title || "Clase Magistral IPT",
-        instructorName: selectedSession?.instructorName || "Docente IPT",
+        instructorName: selectedSession?.instructorName || "Iván Samuel Pérez Torrenegra",
         streamMode: "camera",
         micMuted: false,
         cameraOff: false,
@@ -323,11 +372,11 @@ export function LiveClassSplitView() {
         mediaRecorderRef.current = recorder;
         setIsRecording(true);
       } catch (recErr) {
-        console.warn("MediaRecorder no soportado en esta resolución o navegador:", recErr);
+        console.warn("MediaRecorder no soportado en este dispositivo:", recErr);
       }
 
       // 4. Actualizar estado de la sesión en RTDB
-      await update(ref(rtdb, `lms_live_sessions/${selectedSessionId}`), {
+      await update(ref(rtdb, `lms_live_sessions/${targetSessionId}`), {
         cloudRecordingState: "processing",
         isLiveNow: true,
       });
@@ -340,7 +389,7 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 5. Finalizar Transmisión y Limpieza
+  // 6. Finalizar Transmisión y Limpieza
   const handleStopLive = async () => {
     if (!confirm("¿Deseas finalizar la sesión magistral y cerrar la sala en vivo?")) {
       return;
@@ -361,26 +410,25 @@ export function LiveClassSplitView() {
       mediaStreamRef.current = null;
     }
 
-    if (selectedSessionId) {
-      try {
-        await update(ref(rtdb, `lms_live_sessions/${selectedSessionId}`), {
-          cloudRecordingState: "ready",
-          isLiveNow: false,
-        });
-        await update(ref(rtdb, `live_rooms/${selectedSessionId}/host`), {
-          isLive: false,
-        });
-        await set(ref(rtdb, "active_live_quiz"), { active: false });
-      } catch (err) {
-        console.warn("Error al actualizar fin de sesión en RTDB:", err);
-      }
+    const targetSessionId = selectedSessionId || DEFAULT_LIVE_SESSION.id;
+    try {
+      await update(ref(rtdb, `lms_live_sessions/${targetSessionId}`), {
+        cloudRecordingState: "ready",
+        isLiveNow: false,
+      });
+      await update(ref(rtdb, `live_rooms/${targetSessionId}/host`), {
+        isLive: false,
+      });
+      await set(ref(rtdb, "active_live_quiz"), { active: false });
+    } catch (err) {
+      console.warn("Error al actualizar fin de sesión en RTDB:", err);
     }
 
     setIsLiveActive(false);
     setActiveQuizLaunched(false);
   };
 
-  // 6. Conmutar a Compartir Pantalla
+  // 7. Conmutar a Compartir Pantalla
   const handleSwitchToScreenShare = async () => {
     try {
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
@@ -408,7 +456,6 @@ export function LiveClassSplitView() {
 
       setStreamMode("screen");
 
-      // Si el docente detiene el screen share desde la barra del navegador
       screenStream.getVideoTracks()[0].onended = () => {
         handleSwitchToCamera();
       };
@@ -417,7 +464,7 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 7. Conmutar a Cámara
+  // 8. Conmutar a Cámara
   const handleSwitchToCamera = async () => {
     try {
       const camStream = await navigator.mediaDevices.getUserMedia({
@@ -441,7 +488,7 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 8. Conmutar a Modo Pizarra Digital
+  // 9. Conmutar a Modo Pizarra Digital
   const handleSwitchToWhiteboard = async () => {
     setStreamMode("whiteboard");
     if (broadcasterRef.current) {
@@ -449,7 +496,7 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 9. Alternar Micrófono
+  // 10. Alternar Micrófono
   const toggleMic = () => {
     if (!mediaStreamRef.current) return;
     const nextState = !micMuted;
@@ -462,7 +509,7 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 10. Alternar Video Cámara
+  // 11. Alternar Video Cámara
   const toggleCamera = () => {
     if (!mediaStreamRef.current) return;
     const nextState = !cameraOff;
@@ -475,7 +522,7 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 11. Descargar Grabación de la Sesión
+  // 12. Descargar Grabación de la Sesión
   const handleDownloadRecording = () => {
     if (recordedChunks.length === 0) {
       alert("No hay fragmentos grabados disponibles aún.");
@@ -490,7 +537,7 @@ export function LiveClassSplitView() {
     URL.revokeObjectURL(url);
   };
 
-  // 12. Pizarra: Dibujo y Sincronización en Tiempo Real
+  // 13. Pizarra: Dibujo y Sincronización en Tiempo Real
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -551,7 +598,7 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 13. Lanzador y Gestión de Quizzes en Vivo
+  // 14. Lanzador y Gestión de Quizzes en Vivo
   const handleToggleQuiz = async () => {
     const nextState = !activeQuizLaunched;
     setActiveQuizLaunched(nextState);
@@ -577,7 +624,7 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 14. Bajar Manos Levantadas
+  // 15. Bajar Manos Levantadas
   const handleClearHands = async () => {
     if (!selectedSessionId) return;
     try {
@@ -587,7 +634,7 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 15. Enviar Mensaje de Chat Docente
+  // 16. Enviar Mensaje de Chat Docente
   const handleSendTeacherChat = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || !selectedSessionId) return;
@@ -661,19 +708,31 @@ export function LiveClassSplitView() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {sessions.length > 0 && !isLiveActive && (
-            <select
-              value={selectedSessionId}
-              onChange={(e) => setSelectedSessionId(e.target.value)}
-              className="px-3 py-2 bg-[#181820] border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500 cursor-pointer"
-            >
-              {sessions.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.title}
-                </option>
-              ))}
-            </select>
+        <div className="flex flex-wrap items-center gap-2.5">
+          {!isLiveActive && (
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedSessionId || DEFAULT_LIVE_SESSION.id}
+                onChange={(e) => setSelectedSessionId(e.target.value)}
+                className="px-3 py-2 bg-[#181820] border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500 cursor-pointer max-w-[240px] truncate"
+              >
+                {sessions.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.title}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-3 py-2 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                title="Crear nueva sala de clase"
+              >
+                <Plus className="w-3.5 h-3.5 text-violet-400" />
+                <span>Nueva Sala</span>
+              </button>
+            </div>
           )}
 
           {!isLiveActive ? (
@@ -707,6 +766,73 @@ export function LiveClassSplitView() {
           )}
         </div>
       </div>
+
+      {/* Modal para Crear Nueva Sala de Clase */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#121217] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Video className="w-4 h-4 text-violet-400" />
+                Crear Nueva Sala Magistral
+              </h3>
+              <button
+                onClick={() => setIsCreateModalOpen(false)}
+                className="text-zinc-400 hover:text-white p-1 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateQuickSession} className="space-y-4">
+              <div>
+                <label className="text-xs text-zinc-300 font-semibold block mb-1.5">
+                  Título de la Clase o Tema:
+                </label>
+                <input
+                  type="text"
+                  value={newSessionTitle}
+                  onChange={(e) => setNewSessionTitle(e.target.value)}
+                  placeholder="Ej: Taller Zootécnico: Pesajes y Ganancia de Peso"
+                  required
+                  autoFocus
+                  className="w-full px-3.5 py-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-zinc-300 font-semibold block mb-1.5">
+                  Duración estimada (minutos):
+                </label>
+                <input
+                  type="number"
+                  min="15"
+                  max="180"
+                  value={newSessionDuration}
+                  onChange={(e) => setNewSessionDuration(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs text-zinc-400 hover:text-white font-medium cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/30 cursor-pointer"
+                >
+                  Guardar y Activar Sala
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Split View */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px]">

@@ -66,6 +66,21 @@ interface ActiveLiveQuizData {
   launchedAt?: string;
 }
 
+const DEFAULT_LIVE_SESSION: LiveVirtualSession = {
+  id: "sesion_magistral_directo",
+  courseSlug: "ipt-master",
+  moduleId: "mod_01",
+  title: "Cátedra Magistral en Directo · IPT Academy",
+  instructorName: "Iván Samuel Pérez Torrenegra",
+  provider: "google_meet",
+  meetingCode: "ipt-live-master",
+  joinUrl: "",
+  startTimeUtc: new Date().toISOString(),
+  durationMinutes: 60,
+  cloudRecordingState: "scheduled",
+  autoTranscribed: false,
+};
+
 function StudentLiveRoomContent() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -80,10 +95,14 @@ function StudentLiveRoomContent() {
 
   const { liveSessions: rawLiveSessions } = useLms();
   const availableLiveSessions = useMemo<LiveVirtualSession[]>(() => {
-    return Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
+    const list = Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
+    if (list.length === 0) {
+      return [DEFAULT_LIVE_SESSION];
+    }
+    return list;
   }, [rawLiveSessions]);
 
-  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
+  const [selectedSessionId, setSelectedSessionId] = useState<string>(DEFAULT_LIVE_SESSION.id);
 
   // Seleccionar la primera sesión real disponible si existe
   useEffect(() => {
@@ -93,7 +112,7 @@ function StudentLiveRoomContent() {
   }, [availableLiveSessions, selectedSessionId]);
 
   const activeSession = useMemo<LiveVirtualSession | null>(() => {
-    if (!availableLiveSessions.length) return null;
+    if (!availableLiveSessions.length) return DEFAULT_LIVE_SESSION;
     return availableLiveSessions.find((s) => s.id === selectedSessionId) || availableLiveSessions[0];
   }, [availableLiveSessions, selectedSessionId]);
 
