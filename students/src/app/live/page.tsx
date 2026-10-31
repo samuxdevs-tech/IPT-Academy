@@ -36,6 +36,9 @@ import {
   Maximize2,
   PenTool,
   Undo2,
+  Video,
+  VideoOff,
+  ArrowRight,
 } from 'lucide-react';
 
 interface ActiveMatchedRoom {
@@ -47,6 +50,7 @@ interface ActiveMatchedRoom {
   currentTopic?: string;
   startedAt: number;
   signature: string;
+  teacherOnline?: boolean;
   mediaState?: {
     hasVideo: boolean;
     hasScreen?: boolean;
@@ -134,15 +138,17 @@ export default function StudentLivePage() {
 
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [matchedRoom, setMatchedRoom] = useState<ActiveMatchedRoom | null>(null);
+  const [hasJoinedRoom, setHasJoinedRoom] = useState(false);
   const [elapsedStr, setElapsedStr] = useState('00:00');
 
-  // Controles de llamada del estudiante
+  // Controles de llamada del estudiante (Micrófono y Cámara desde la pantalla previa)
   const [micMuted, setMicMuted] = useState(true);
+  const [studentCamOn, setStudentCamOn] = useState(false);
   const [handRaised, setHandRaised] = useState(false);
   const [floorGrantedBanner, setFloorGrantedBanner] = useState(false);
   const [sidePanel, setSidePanel] = useState<'none' | 'people' | 'chat'>('none');
   const [connectedViewers, setConnectedViewers] = useState<
-    Record<string, { name: string; joinedAt: number; micMuted?: boolean }>
+    Record<string, { name: string; joinedAt: number; micMuted?: boolean; camOn?: boolean }>
   >({});
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
@@ -187,12 +193,35 @@ export default function StudentLivePage() {
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const remotePipVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
+  const studentLobbyVideoRef = useRef<HTMLVideoElement | null>(null);
   const primaryVideoTrackRef = useRef<MediaStreamTrack | null>(null);
   const secondaryVideoTrackRef = useRef<MediaStreamTrack | null>(null);
   const remoteAudioStreamRef = useRef<MediaStream | null>(null);
   const studentMicTrackRef = useRef<MediaStreamTrack | null>(null);
+  const studentCamTrackRef = useRef<MediaStreamTrack | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const activeOfferIdRef = useRef<string | null>(null);
+
+  // Sincronizar la previsualización de cámara del estudiante en la pantalla previa
+  const syncStudentLocalPreview = useCallback(() => {
+    const camTrack =
+      studentCamTrackRef.current && studentCamTrackRef.current.readyState === 'live'
+        ? studentCamTrackRef.current
+        : null;
+    if (studentLobbyVideoRef.current) {
+      if (camTrack) {
+        studentLobbyVideoRef.current.srcObject = new MediaStream([camTrack]);
+        studentLobbyVideoRef.current.muted = true;
+        studentLobbyVideoRef.current.play().catch(() => {});
+      } else {
+        studentLobbyVideoRef.current.srcObject = null;
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    syncStudentLocalPreview();
+  }, [studentCamOn, hasJoinedRoom, matchedRoom?.listKey, syncStudentLocalPreview]);
 
   // Control de ciclo de vida de sala y reconexión del docente (10s aviso / 5m colgar)
   const wasInLiveRoomRef = useRef<boolean>(false);
@@ -220,6 +249,10 @@ export default function StudentLivePage() {
       teacherOfflineSinceRef.current = null;
       setShowTeacherConnectivityWarning(false);
 
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('ipt_student_joined_list_key');
+      }
+
       if (pcRef.current) {
         try {
           pcRef.current.ontrack = null;
@@ -238,6 +271,15 @@ export default function StudentLivePage() {
         } catch {}
         studentMicTrackRef.current = null;
       }
+      setMicMuted(true);
+
+      if (studentCamTrackRef.current) {
+        try {
+          studentCamTrackRef.current.stop();
+        } catch {}
+        studentCamTrackRef.current = null;
+      }
+      setStudentCamOn(false);
 
       primaryVideoTrackRef.current = null;
       secondaryVideoTrackRef.current = null;
@@ -246,9 +288,11 @@ export default function StudentLivePage() {
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       if (remotePipVideoRef.current) remotePipVideoRef.current.srcObject = null;
       if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+      if (studentLobbyVideoRef.current) studentLobbyVideoRef.current.srcObject = null;
 
       setHasRemoteVideoTrack(false);
       setHasRemotePipTrack(false);
+      setHasJoinedRoom(false);
       setMatchedRoom(null);
 
       if (listKeyToClean) {
@@ -511,6 +555,7 @@ export default function StudentLivePage() {
             currentTopic: listData.currentTopic || 'Sesión en Vivo',
             startedAt: listData.startedAt || Date.now(),
             signature: studentRecord.signature || `${studentUid}: verified`,
+            teacherOnline: listData.teacherPresence?.online !== false,
             mediaState: listData.mediaState || {
               hasVideo: false,
               hasAudio: false,
@@ -527,9 +572,20 @@ export default function StudentLivePage() {
       }
 
       if (found) {
-        wasInLiveRoomRef.current = true;
         activeListKeyRef.current = found.listKey;
         exitingClassRef.current = false;
+
+        // Si el estudiante ya había pulsado "Entrar a la clase" en esta misma sala (ej. F5), mantenerlo dentro
+        const savedJoinedKey =
+          typeof window !== 'undefined'
+            ? sessionStorage.getItem('ipt_student_joined_list_key')
+            : null;
+        if (savedJoinedKey === found.listKey) {
+          wasInLiveRoomRef.current = true;
+          setHasJoinedRoom(true);
+        }
+      } else {
+        setHasJoinedRoom(false);
       }
 
       setMatchedRoom(found);
@@ -559,10 +615,13 @@ export default function StudentLivePage() {
     };
   }, [studentUid, studentEmail, forceCutAndExitClass]);
 
-  // 2. Al entrar a la sala autorizada, conectar presencia, WebRTC, chat, lienzo, pulsos y controles de voz
+  // 2. Al entrar a la sala autorizada (después de la pantalla previa), conectar presencia, WebRTC, chat, lienzo, pulsos y controles de voz
   useEffect(() => {
-    if (!matchedRoom) return;
+    if (!matchedRoom || !hasJoinedRoom) return;
     const { listKey } = matchedRoom;
+    wasInLiveRoomRef.current = true;
+    activeListKeyRef.current = listKey;
+    exitingClassRef.current = false;
     const joinTimestamp = Date.now();
 
     const myViewerRef = ref(
@@ -574,6 +633,15 @@ export default function StudentLivePage() {
       `allowed_live_students/${listKey}/signals/${studentUid}`
     );
 
+    const initialMicMuted =
+      !studentMicTrackRef.current ||
+      studentMicTrackRef.current.readyState !== 'live' ||
+      !studentMicTrackRef.current.enabled;
+
+    const initialCamOn = Boolean(
+      studentCamTrackRef.current && studentCamTrackRef.current.readyState === 'live'
+    );
+
     // Limpiar señales anteriores antes de pedir renegociación (garantiza que F5 del alumno reconecte siempre)
     remove(mySignalsRef)
       .catch(() => {})
@@ -582,7 +650,8 @@ export default function StudentLivePage() {
         set(myViewerRef, {
           name: studentName,
           joinedAt: joinTimestamp,
-          micMuted: true,
+          micMuted: initialMicMuted,
+          camOn: initialCamOn,
           renegotiateAt: Date.now(),
         }).catch(() => {});
         try {
@@ -936,6 +1005,7 @@ export default function StudentLivePage() {
     };
   }, [
     matchedRoom?.listKey,
+    hasJoinedRoom,
     studentUid,
     studentName,
     attachVideoStreams,
@@ -943,15 +1013,8 @@ export default function StudentLivePage() {
     forceCutAndExitClass,
   ]);
 
-  // Alternar Micrófono Bidireccional del Estudiante
+  // Alternar Micrófono del Estudiante (en pantalla previa o dentro de la sala)
   const handleToggleStudentMic = async () => {
-    if (!matchedRoom) return;
-    const { listKey } = matchedRoom;
-    const myViewerRef = ref(
-      db,
-      `allowed_live_students/${listKey}/connected_viewers/${studentUid}`
-    );
-
     try {
       if (
         studentMicTrackRef.current &&
@@ -961,7 +1024,13 @@ export default function StudentLivePage() {
         studentMicTrackRef.current.enabled = !nextMuted;
         setMicMuted(nextMuted);
         if (!nextMuted) setFloorGrantedBanner(false);
-        await update(myViewerRef, { micMuted: nextMuted });
+        if (matchedRoom && hasJoinedRoom) {
+          const myViewerRef = ref(
+            db,
+            `allowed_live_students/${matchedRoom.listKey}/connected_viewers/${studentUid}`
+          );
+          await update(myViewerRef, { micMuted: nextMuted });
+        }
       } else {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: {
@@ -974,18 +1043,87 @@ export default function StudentLivePage() {
         const aTrack = stream.getAudioTracks()[0];
         if (aTrack) {
           studentMicTrackRef.current = aTrack;
+          aTrack.onended = () => {
+            studentMicTrackRef.current = null;
+            setMicMuted(true);
+          };
           aTrack.enabled = true;
           setMicMuted(false);
           setFloorGrantedBanner(false);
-          await update(myViewerRef, {
-            micMuted: false,
-            renegotiateAt: Date.now(),
-          });
+          if (matchedRoom && hasJoinedRoom) {
+            const myViewerRef = ref(
+              db,
+              `allowed_live_students/${matchedRoom.listKey}/connected_viewers/${studentUid}`
+            );
+            await update(myViewerRef, {
+              micMuted: false,
+              renegotiateAt: Date.now(),
+            });
+          }
         }
       }
     } catch (err) {
       console.warn('No se pudo activar el micrófono del estudiante:', err);
     }
+  };
+
+  // Alternar Cámara del Estudiante (en pantalla previa o dentro de la sala)
+  const handleToggleStudentCam = async () => {
+    try {
+      if (
+        studentCamTrackRef.current &&
+        studentCamTrackRef.current.readyState === 'live'
+      ) {
+        studentCamTrackRef.current.stop();
+        studentCamTrackRef.current = null;
+        setStudentCamOn(false);
+        syncStudentLocalPreview();
+        if (matchedRoom && hasJoinedRoom) {
+          const myViewerRef = ref(
+            db,
+            `allowed_live_students/${matchedRoom.listKey}/connected_viewers/${studentUid}`
+          );
+          await update(myViewerRef, { camOn: false });
+        }
+      } else {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        });
+        const vTrack = stream.getVideoTracks()[0];
+        if (vTrack) {
+          studentCamTrackRef.current = vTrack;
+          vTrack.onended = () => {
+            studentCamTrackRef.current = null;
+            setStudentCamOn(false);
+            syncStudentLocalPreview();
+          };
+          setStudentCamOn(true);
+          syncStudentLocalPreview();
+          if (matchedRoom && hasJoinedRoom) {
+            const myViewerRef = ref(
+              db,
+              `allowed_live_students/${matchedRoom.listKey}/connected_viewers/${studentUid}`
+            );
+            await update(myViewerRef, { camOn: true });
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('No se pudo activar la cámara del estudiante:', err);
+    }
+  };
+
+  // Entrar a la clase en vivo desde la pantalla previa
+  const handleEnterLiveRoom = () => {
+    if (!matchedRoom) return;
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('ipt_student_joined_list_key', matchedRoom.listKey);
+    }
+    wasInLiveRoomRef.current = true;
+    activeListKeyRef.current = matchedRoom.listKey;
+    exitingClassRef.current = false;
+    setHasJoinedRoom(true);
   };
 
   // Levantar o bajar la mano
@@ -1358,7 +1496,214 @@ export default function StudentLivePage() {
   }
 
   // ============================================================================
-  // VISTA B: SALA EN VIVO — OBSIDIAN STUDIO & ELECTRIC IRIS
+  // VISTA B: PANTALLA PREVIA A ENTRAR (ANTESALA DEL ESTUDIANTE)
+  // ============================================================================
+  if (!hasJoinedRoom) {
+    const isTeacherConnected = matchedRoom.teacherOnline !== false;
+
+    return (
+      <div className="min-h-screen bg-[#050507] text-white flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute -top-40 left-1/3 w-[520px] h-[520px] bg-[#8052ff]/[0.07] rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute -bottom-40 right-1/4 w-[420px] h-[420px] bg-[#10b981]/[0.04] rounded-full blur-[130px] pointer-events-none" />
+
+        <div className="max-w-3xl w-full bg-[#09090b] rounded-[28px] border border-white/[0.08] shadow-[0_30px_90px_rgba(0,0,0,0.9)] overflow-hidden relative z-10">
+          {/* Fila 1: Estado de conexión del docente */}
+          <div className="px-6 py-4 border-b border-white/[0.08] bg-white/[0.02] flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span
+                className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                  isTeacherConnected
+                    ? 'bg-[#10b981] animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.8)]'
+                    : 'bg-amber-400 animate-ping'
+                }`}
+              />
+              <span className="text-sm font-medium text-white">
+                {isTeacherConnected
+                  ? 'El docente se encuentra actualmente conectado'
+                  : 'El docente está reconectando su señal...'}
+              </span>
+            </div>
+            <span className="text-xs text-zinc-400">
+              {matchedRoom.teacherName} · <strong className="text-zinc-200">{matchedRoom.title}</strong>
+            </span>
+          </div>
+
+          {/* Fila 2: Tiempo transcurrido desde que empezó la clase */}
+          <div className="px-6 py-3.5 border-b border-white/[0.08] bg-[#050507]/60 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 text-sm text-zinc-300">
+              <Clock className="w-4 h-4 text-[#8052ff] shrink-0" />
+              <span>La clase empezó hace:</span>
+              <span className="font-mono font-semibold text-white px-2.5 py-0.5 rounded-lg bg-[#8052ff]/15 border border-[#8052ff]/30">
+                {elapsedStr}
+              </span>
+            </div>
+            {matchedRoom.currentTopic && (
+              <span className="text-xs text-zinc-400 truncate max-w-xs hidden sm:inline">
+                Tema: <span className="text-zinc-200">{matchedRoom.currentTopic}</span>
+              </span>
+            )}
+          </div>
+
+          {/* Cuerpo Principal: Previsualización + Controles de Micrófono y Cámara */}
+          <div className="p-6 sm:p-8 space-y-6">
+            {/* Escenario de previsualización de cámara del estudiante */}
+            <div className="relative w-full aspect-video max-h-[340px] bg-[#050507] rounded-[22px] border border-white/[0.08] overflow-hidden flex items-center justify-center shadow-inner">
+              <video
+                ref={studentLobbyVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className={`w-full h-full object-cover scale-x-[-1] ${
+                  studentCamOn ? 'block' : 'hidden'
+                }`}
+              />
+
+              {!studentCamOn && (
+                <div className="flex flex-col items-center justify-center text-center p-6">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#8052ff]/25 to-[#09090b] border border-[#8052ff]/40 flex items-center justify-center text-2xl font-semibold text-white mb-3 shadow-[0_0_40px_rgba(128,82,255,0.2)]">
+                    {studentName.charAt(0).toUpperCase()}
+                  </div>
+                  <p className="text-sm font-medium text-white">{studentName}</p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Configura tu micrófono y cámara antes de entrar
+                  </p>
+                </div>
+              )}
+
+              {/* Indicadores de estado sobre la vista previa */}
+              <div className="absolute bottom-3.5 left-4 flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium backdrop-blur-md border ${
+                    !micMuted
+                      ? 'bg-[#10b981]/20 border-[#10b981]/40 text-[#10b981]'
+                      : 'bg-black/70 border-white/10 text-zinc-400'
+                  }`}
+                >
+                  {!micMuted ? <Mic className="w-3 h-3" /> : <MicOff className="w-3 h-3" />}
+                  <span>{!micMuted ? 'Micrófono activo' : 'Micrófono silenciado'}</span>
+                </span>
+
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium backdrop-blur-md border ${
+                    studentCamOn
+                      ? 'bg-[#8052ff]/20 border-[#8052ff]/40 text-[#b79aff]'
+                      : 'bg-black/70 border-white/10 text-zinc-400'
+                  }`}
+                >
+                  {studentCamOn ? <Video className="w-3 h-3" /> : <VideoOff className="w-3 h-3" />}
+                  <span>{studentCamOn ? 'Cámara encendida' : 'Cámara apagada'}</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Fila de Controles: | Micrófono                       Cámara | */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={handleToggleStudentMic}
+                className={`p-4 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
+                  !micMuted
+                    ? 'bg-[#10b981]/15 border-[#10b981]/45 text-white shadow-[0_0_30px_rgba(16,185,129,0.15)]'
+                    : 'bg-[#050507] hover:bg-white/[0.04] border-white/10 text-zinc-300'
+                }`}
+              >
+                <div className="flex items-center gap-3.5">
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center ${
+                      !micMuted
+                        ? 'bg-[#10b981] text-black'
+                        : 'bg-white/[0.06] text-zinc-300'
+                    }`}
+                  >
+                    {!micMuted ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-white">Micrófono</p>
+                    <p className="text-xs text-zinc-400">
+                      {!micMuted ? 'Activado para hablar' : 'Entrar en silencio'}
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                    !micMuted
+                      ? 'bg-[#10b981]/20 text-[#10b981]'
+                      : 'bg-white/[0.06] text-zinc-400'
+                  }`}
+                >
+                  {!micMuted ? 'Activo' : 'Apagado'}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleToggleStudentCam}
+                className={`p-4 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
+                  studentCamOn
+                    ? 'bg-[#8052ff]/15 border-[#8052ff]/50 text-white shadow-[0_0_30px_rgba(128,82,255,0.2)]'
+                    : 'bg-[#050507] hover:bg-white/[0.04] border-white/10 text-zinc-300'
+                }`}
+              >
+                <div className="flex items-center gap-3.5">
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center ${
+                      studentCamOn
+                        ? 'bg-[#8052ff] text-white'
+                        : 'bg-white/[0.06] text-zinc-300'
+                    }`}
+                  >
+                    {studentCamOn ? (
+                      <Video className="w-5 h-5" />
+                    ) : (
+                      <VideoOff className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-white">Cámara</p>
+                    <p className="text-xs text-zinc-400">
+                      {studentCamOn ? 'Video activo' : 'Cámara desactivada'}
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                    studentCamOn
+                      ? 'bg-[#8052ff]/25 text-[#b79aff]'
+                      : 'bg-white/[0.06] text-zinc-400'
+                  }`}
+                >
+                  {studentCamOn ? 'Activa' : 'Apagada'}
+                </span>
+              </button>
+            </div>
+
+            {/* Acciones inferiores: Volver al campus / Entrar a la clase */}
+            <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => forceCutAndExitClass('manual_leave')}
+                className="w-full sm:w-auto px-6 py-3 rounded-full bg-white/[0.05] hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-300 transition-colors cursor-pointer"
+              >
+                Volver al campus
+              </button>
+
+              <button
+                type="button"
+                onClick={handleEnterLiveRoom}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#8052ff] hover:bg-[#6e3ff3] text-white text-sm font-semibold flex items-center justify-center gap-2.5 shadow-[0_0_35px_rgba(128,82,255,0.45)] transition-all cursor-pointer"
+              >
+                <span>Entrar a la clase</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // VISTA C: SALA EN VIVO — OBSIDIAN STUDIO & ELECTRIC IRIS
   // ============================================================================
   const viewersCount = Object.keys(connectedViewers).length;
   const showVideoElement =
@@ -1964,6 +2309,19 @@ export default function StudentLivePage() {
           }`}
         >
           {!micMuted ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+        </button>
+
+        <button
+          type="button"
+          onClick={handleToggleStudentCam}
+          title={studentCamOn ? 'Apagar cámara' : 'Encender cámara'}
+          className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+            studentCamOn
+              ? 'bg-[#8052ff] text-white shadow-[0_0_25px_rgba(128,82,255,0.45)]'
+              : 'bg-white/10 hover:bg-white/15 text-white border border-white/10'
+          }`}
+        >
+          {studentCamOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
         </button>
 
         <button
