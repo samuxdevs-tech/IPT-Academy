@@ -1714,6 +1714,19 @@ export function LiveClassSplitView() {
     });
   }, [liveCanvas.content, liveCanvas.charColors]);
 
+  // Orden estrictamente validado por presencia en vivo (connectedViewers):
+  // El 1° estudiante conectado siempre recibe índice 0 (Azul #0052eb) y los siguientes avanzan por Razón Áurea
+  const studentOrderList = useMemo(() => {
+    const fromOrder = (liveCanvas.studentOrder || []).filter((u) =>
+      Boolean(connectedViewers[u])
+    );
+    const remainingConnected = Object.entries(connectedViewers)
+      .sort((a, b) => (a[1]?.joinedAt || 0) - (b[1]?.joinedAt || 0))
+      .map(([u]) => u)
+      .filter((u) => !fromOrder.includes(u));
+    return [...fromOrder, ...remainingConnected];
+  }, [liveCanvas.studentOrder, connectedViewers]);
+
   // ============================================================================
   // VISTA 1: ANTESALA DE PREPARACIÓN (Obsidian Studio & Electric Iris)
   // ============================================================================
@@ -1978,19 +1991,6 @@ export function LiveClassSplitView() {
     (stageMode === "video" && camOn && screenOn);
 
   const pollTotalVotes = activePoll?.votes ? Object.keys(activePoll.votes).length : 0;
-
-  // Orden estrictamente validado por presencia en vivo (connectedViewers):
-  // El 1° estudiante conectado siempre recibe índice 0 (Azul #0052eb) y los siguientes avanzan por Razón Áurea
-  const studentOrderList = useMemo(() => {
-    const fromOrder = (liveCanvas.studentOrder || []).filter((u) =>
-      Boolean(connectedViewers[u])
-    );
-    const remainingConnected = Object.entries(connectedViewers)
-      .sort((a, b) => (a[1]?.joinedAt || 0) - (b[1]?.joinedAt || 0))
-      .map(([u]) => u)
-      .filter((u) => !fromOrder.includes(u));
-    return [...fromOrder, ...remainingConnected];
-  }, [liveCanvas.studentOrder, connectedViewers]);
 
   return (
     <div className="fixed inset-0 z-50 bg-[#050507] text-white flex flex-col select-none overflow-hidden">
