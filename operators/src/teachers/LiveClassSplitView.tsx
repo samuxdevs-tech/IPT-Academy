@@ -1118,7 +1118,7 @@ export function LiveClassSplitView() {
       strokes: [],
       updatedBy: teacherName,
       updatedAt: nowMs,
-      studentOrder: effectiveAllowedStudents.map((s) => s.uid),
+      studentOrder: [],
     };
 
     const payload = {
@@ -1893,28 +1893,22 @@ export function LiveClassSplitView() {
                     </span>
                   </div>
                   <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
-                    {effectiveAllowedStudents.map((stu, idx) => {
-                      const hclColor = getCanvasAuthorColorHCL("student", idx);
-                      return (
-                        <div
-                          key={stu.uid}
-                          className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#050507] border border-white/[0.05] text-xs"
-                        >
-                          <div className="flex items-center gap-2.5 truncate">
-                            <div
-                              className="w-6 h-6 rounded-full text-white flex items-center justify-center text-[10px] font-semibold shrink-0"
-                              style={{ backgroundColor: hclColor.hex }}
-                            >
-                              {stu.name.charAt(0).toUpperCase()}
-                            </div>
-                            <span className="text-zinc-200 truncate">{stu.name}</span>
+                    {effectiveAllowedStudents.map((stu) => (
+                      <div
+                        key={stu.uid}
+                        className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#050507] border border-white/[0.05] text-xs"
+                      >
+                        <div className="flex items-center gap-2.5 truncate">
+                          <div className="w-6 h-6 rounded-full bg-white/10 text-zinc-200 flex items-center justify-center text-[10px] font-semibold shrink-0">
+                            {stu.name.charAt(0).toUpperCase()}
                           </div>
-                          <span className="text-[10px] text-[#10b981] font-medium">
-                            Acceso listo
-                          </span>
+                          <span className="text-zinc-200 truncate">{stu.name}</span>
                         </div>
-                      );
-                    })}
+                        <span className="text-[10px] text-[#10b981] font-medium">
+                          Acceso listo
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1984,10 +1978,19 @@ export function LiveClassSplitView() {
     (stageMode === "video" && camOn && screenOn);
 
   const pollTotalVotes = activePoll?.votes ? Object.keys(activePoll.votes).length : 0;
-  const studentOrderList =
-    liveCanvas.studentOrder && liveCanvas.studentOrder.length > 0
-      ? liveCanvas.studentOrder
-      : effectiveAllowedStudents.map((s) => s.uid);
+
+  // Orden estrictamente validado por presencia en vivo (connectedViewers):
+  // El 1° estudiante conectado siempre recibe índice 0 (Azul #0052eb) y los siguientes avanzan por Razón Áurea
+  const studentOrderList = useMemo(() => {
+    const fromOrder = (liveCanvas.studentOrder || []).filter((u) =>
+      Boolean(connectedViewers[u])
+    );
+    const remainingConnected = Object.entries(connectedViewers)
+      .sort((a, b) => (a[1]?.joinedAt || 0) - (b[1]?.joinedAt || 0))
+      .map(([u]) => u)
+      .filter((u) => !fromOrder.includes(u));
+    return [...fromOrder, ...remainingConnected];
+  }, [liveCanvas.studentOrder, connectedViewers]);
 
   return (
     <div className="fixed inset-0 z-50 bg-[#050507] text-white flex flex-col select-none overflow-hidden">
@@ -2168,7 +2171,7 @@ export function LiveClassSplitView() {
                     </div>
                   )}
 
-                  {/* Leyenda cromática activa: Docente Negro fijo (#000000) + Estudiantes HCL Razón Áurea empezando en Azul */}
+                  {/* Leyenda cromática activa: Docente Negro fijo (#000000) + SOLO Estudiantes conectados en vivo */}
                   <div className="hidden xl:flex items-center gap-2 pl-2 border-l border-zinc-300">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-200/80 text-[11px] font-medium text-black">
                       <span
@@ -2177,15 +2180,13 @@ export function LiveClassSplitView() {
                       />
                       Docente
                     </span>
-                    {effectiveAllowedStudents.slice(0, 4).map((stu, idx) => {
-                      const sIdx = Math.max(0, studentOrderList.indexOf(stu.uid));
-                      const hcl = getCanvasAuthorColorHCL(
-                        "student",
-                        sIdx >= 0 ? sIdx : idx
-                      );
+                    {studentOrderList.map((uid, idx) => {
+                      const viewer = connectedViewers[uid];
+                      if (!viewer) return null;
+                      const hcl = getCanvasAuthorColorHCL("student", idx);
                       return (
                         <span
-                          key={stu.uid}
+                          key={uid}
                           className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white border border-zinc-200 text-[11px] font-medium"
                           style={{ color: hcl.hex }}
                         >
@@ -2193,7 +2194,7 @@ export function LiveClassSplitView() {
                             className="w-2.5 h-2.5 rounded-full shrink-0"
                             style={{ backgroundColor: hcl.hex }}
                           />
-                          {stu.name.split(" ")[0]}
+                          {(viewer.name || "Estudiante").split(" ")[0]}
                         </span>
                       );
                     })}
@@ -2545,41 +2546,6 @@ export function LiveClassSplitView() {
                     </div>
                   );
                 })}
-
-                <div className="pt-3 border-t border-white/[0.08]">
-                  <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                    Autorizados en esta lista ({effectiveAllowedStudents.length})
-                  </div>
-                  <div className="space-y-1.5">
-                    {effectiveAllowedStudents.map((stu, idx) => {
-                      const isOnline = Boolean(connectedViewers[stu.uid]);
-                      const hcl = getCanvasAuthorColorHCL("student", idx);
-                      return (
-                        <div
-                          key={stu.uid}
-                          className="flex items-center justify-between py-1.5 px-2.5 rounded-lg text-xs"
-                        >
-                          <div className="flex items-center gap-2 truncate">
-                            <span
-                              className="w-2.5 h-2.5 rounded-full shrink-0"
-                              style={{ backgroundColor: hcl.hex }}
-                            />
-                            <span className="text-zinc-300 truncate">{stu.name}</span>
-                          </div>
-                          <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full ${
-                              isOnline
-                                ? "bg-[#10b981]/15 text-[#10b981]"
-                                : "bg-white/[0.05] text-zinc-500"
-                            }`}
-                          >
-                            {isOnline ? "Conectado" : "Pendiente"}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
             )}
 

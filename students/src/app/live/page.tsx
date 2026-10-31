@@ -1004,13 +1004,23 @@ export default function StudentLivePage() {
     }
   };
 
-  // Mi índice de estudiante y mi color en el espacio HCL con Razón Áurea (1° en Azul #0052eb)
+  // Orden estrictamente validado por presencia en vivo (connectedViewers):
+  // El 1° estudiante conectado siempre recibe índice 0 (Azul #0052eb) y los siguientes avanzan por Razón Áurea
+  const studentOrderList = useMemo(() => {
+    const fromOrder = (liveCanvas.studentOrder || []).filter((u) =>
+      Boolean(connectedViewers[u])
+    );
+    const remainingConnected = Object.entries(connectedViewers)
+      .sort((a, b) => (a[1]?.joinedAt || 0) - (b[1]?.joinedAt || 0))
+      .map(([u]) => u)
+      .filter((u) => !fromOrder.includes(u));
+    return [...fromOrder, ...remainingConnected];
+  }, [liveCanvas.studentOrder, connectedViewers]);
+
   const myStudentIndex = useMemo(() => {
-    const order = liveCanvas.studentOrder || [];
-    const idx = order.indexOf(studentUid);
-    if (idx >= 0) return idx;
-    return order.length;
-  }, [liveCanvas.studentOrder, studentUid]);
+    const idx = studentOrderList.indexOf(studentUid);
+    return idx >= 0 ? idx : 0;
+  }, [studentOrderList, studentUid]);
 
   const myHclColor = useMemo(
     () => getCanvasAuthorColorHCL('student', myStudentIndex),
@@ -1021,9 +1031,7 @@ export default function StudentLivePage() {
   const handleStudentEditCanvas = async (newContent: string) => {
     if (!matchedRoom || !liveCanvas.allowStudentEdit) return;
 
-    const currentOrder = Array.isArray(liveCanvas.studentOrder)
-      ? [...liveCanvas.studentOrder]
-      : [];
+    const currentOrder = [...studentOrderList];
     let sIdx = currentOrder.indexOf(studentUid);
     if (sIdx === -1) {
       currentOrder.push(studentUid);
@@ -1094,9 +1102,7 @@ export default function StudentLivePage() {
     const finishedStroke = currentStrokeRef.current;
     currentStrokeRef.current = null;
 
-    const currentOrder = Array.isArray(liveCanvas.studentOrder)
-      ? [...liveCanvas.studentOrder]
-      : [];
+    const currentOrder = [...studentOrderList];
     if (!currentOrder.includes(studentUid)) {
       currentOrder.push(studentUid);
     }
@@ -1364,7 +1370,6 @@ export default function StudentLivePage() {
 
   const pollTotalVotes = activePoll?.votes ? Object.keys(activePoll.votes).length : 0;
   const myPollVote = activePoll?.votes?.[studentUid]?.optionIndex;
-  const studentOrderList = liveCanvas.studentOrder || [];
 
   return (
     <div className="fixed inset-0 z-50 bg-[#050507] text-white flex flex-col select-none overflow-hidden">
@@ -1497,7 +1502,7 @@ export default function StudentLivePage() {
                     </div>
                   )}
 
-                  {/* Leyenda cromática del Lienzo Blanco */}
+                  {/* Leyenda cromática del Lienzo Blanco (SOLO participantes conectados en vivo) */}
                   <div className="flex items-center gap-2 pl-2 border-l border-zinc-300">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-200/80 text-[11px] font-medium text-black">
                       <span
@@ -1506,16 +1511,26 @@ export default function StudentLivePage() {
                       />
                       Docente
                     </span>
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white border border-zinc-200 text-[11px] font-semibold"
-                      style={{ color: myHclColor.hex }}
-                    >
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: myHclColor.hex }}
-                      />
-                      Tu color ({studentName.split(' ')[0]})
-                    </span>
+                    {studentOrderList.map((uid, idx) => {
+                      const viewer = connectedViewers[uid];
+                      if (!viewer) return null;
+                      const hcl = getCanvasAuthorColorHCL('student', idx);
+                      const isMe = uid === studentUid;
+                      return (
+                        <span
+                          key={uid}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white border border-zinc-200 text-[11px] font-semibold"
+                          style={{ color: hcl.hex }}
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{ backgroundColor: hcl.hex }}
+                          />
+                          {(viewer.name || 'Estudiante').split(' ')[0]}
+                          {isMe ? ' (Tú)' : ''}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
 
