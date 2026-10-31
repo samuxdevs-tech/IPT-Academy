@@ -1,7 +1,7 @@
 /**
  * creditHashCore.ts
  * Motor de hashes criptográficos de créditos, firmas {id}: {Hash}, aislamiento {allowed_list_codigode8digitos}
- * y muestreo estratificado por bisección del espacio de color HCL usando la Razón Áurea.
+ * y muestreo estratificado por bisección del espacio de color HCL usando la Razón Áurea por carácter y trazo.
  */
 
 export interface CreditToken {
@@ -289,4 +289,79 @@ export function getCanvasAuthorColorHCL(
     c: chroma,
     l: luminance,
   };
+}
+
+/**
+ * Calcula el arreglo de colores por carácter (`charColors`) preservando el color original
+ * de cada carácter existente y asignando `authorHex` únicamente a los caracteres recién insertados.
+ */
+export function computeNextCharColors(
+  prevText: string,
+  prevColors: string[] | undefined,
+  nextText: string,
+  authorHex: string
+): string[] {
+  const M = prevText.length;
+  const N = nextText.length;
+  const safePrevColors =
+    Array.isArray(prevColors) && prevColors.length === M
+      ? prevColors
+      : Array.from({ length: M }, (_, i) => (prevColors && prevColors[i]) || '#000000');
+
+  let prefixLen = 0;
+  const minLen = Math.min(M, N);
+  while (prefixLen < minLen && prevText[prefixLen] === nextText[prefixLen]) {
+    prefixLen++;
+  }
+
+  let suffixLen = 0;
+  while (
+    suffixLen < M - prefixLen &&
+    suffixLen < N - prefixLen &&
+    prevText[M - 1 - suffixLen] === nextText[N - 1 - suffixLen]
+  ) {
+    suffixLen++;
+  }
+
+  const insertedCount = Math.max(0, N - prefixLen - suffixLen);
+  const prefixColors = safePrevColors.slice(0, prefixLen);
+  const insertedColors = Array(insertedCount).fill(authorHex);
+  const suffixColors = suffixLen > 0 ? safePrevColors.slice(M - suffixLen) : [];
+
+  return [...prefixColors, ...insertedColors, ...suffixColors];
+}
+
+export interface ColoredTextRun {
+  text: string;
+  color: string;
+}
+
+/**
+ * Agrupa los caracteres de una línea en segmentos contiguos del mismo color
+ * para renderizar color por carácter sin que un autor sobrescriba el color del otro en la misma línea.
+ */
+export function groupLineIntoColorRuns(
+  lineText: string,
+  charColors: string[] | undefined,
+  lineStartOffset: number
+): ColoredTextRun[] {
+  if (!lineText) return [];
+  const runs: ColoredTextRun[] = [];
+  let currentColor = (charColors && charColors[lineStartOffset]) || '#000000';
+  let currentText = '';
+
+  for (let i = 0; i < lineText.length; i++) {
+    const c = (charColors && charColors[lineStartOffset + i]) || '#000000';
+    if (c === currentColor) {
+      currentText += lineText[i];
+    } else {
+      runs.push({ text: currentText, color: currentColor });
+      currentColor = c;
+      currentText = lineText[i];
+    }
+  }
+  if (currentText.length > 0) {
+    runs.push({ text: currentText, color: currentColor });
+  }
+  return runs;
 }

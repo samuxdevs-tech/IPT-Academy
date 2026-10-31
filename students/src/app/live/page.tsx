@@ -9,6 +9,8 @@ import { useSubscription } from '@/context/SubscriptionContext';
 import {
   WEBRTC_ICE_SERVERS,
   getCanvasAuthorColorHCL,
+  computeNextCharColors,
+  groupLineIntoColorRuns,
 } from '@/lib/creditLiveSystem/creditHashCore';
 import {
   Mic,
@@ -23,7 +25,6 @@ import {
   Check,
   X,
   Volume2,
-  Code2,
   BarChart3,
   Pin,
   ExternalLink,
@@ -33,7 +34,8 @@ import {
   Unlock,
   CornerDownRight,
   Maximize2,
-  Radio,
+  PenTool,
+  Undo2,
 } from 'lucide-react';
 
 interface ActiveMatchedRoom {
@@ -79,23 +81,26 @@ interface ActivePollData {
   votes?: Record<string, { optionIndex: number; voterName: string }>;
 }
 
-interface CanvasLineAuthor {
+interface WhiteboardStroke {
+  id: string;
   uid: string;
   name: string;
   role: 'teacher' | 'student';
   colorHex: string;
-  studentIndex: number;
+  width: number;
+  points: { x: number; y: number }[];
 }
 
 interface LiveCanvasData {
   active: boolean;
-  language: 'typescript' | 'python' | 'sql' | 'html' | 'notes';
+  canvasMode: 'text' | 'board';
   content: string;
+  charColors?: string[];
+  strokes?: WhiteboardStroke[];
   allowStudentEdit: boolean;
   updatedBy: string;
   updatedAt: number;
   studentOrder?: string[];
-  lineAuthors?: Record<number, CanvasLineAuthor>;
 }
 
 interface ScheduledSessionItem {
@@ -150,19 +155,24 @@ export default function StudentLivePage() {
   const [pipCorner, setPipCorner] = useState<PipCorner>('bottom-right');
   const [swapMainAndPip, setSwapMainAndPip] = useState(false);
 
-  // Lienzo Virtual en Vivo (Fondo blanco #FFFFFF, Docente Negro #000000, Estudiantes HCL Razón Áurea 1° en Azul)
+  // Lienzo Virtual en Vivo: Solo 2 modos ("text" = Texto manual por carácter, "board" = Pizarrón / Dibujo libre)
   const [liveCanvas, setLiveCanvas] = useState<LiveCanvasData>({
     active: false,
-    language: 'typescript',
+    canvasMode: 'text',
     content: '',
+    charColors: [],
+    strokes: [],
     allowStudentEdit: false,
     updatedBy: 'Docente',
     updatedAt: Date.now(),
     studentOrder: [],
-    lineAuthors: {},
   });
   const [copiedCanvas, setCopiedCanvas] = useState(false);
+  const [strokeWidth, setStrokeWidth] = useState<number>(3);
   const canvasBackdropRef = useRef<HTMLDivElement | null>(null);
+  const boardCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isDrawingRef = useRef<boolean>(false);
+  const currentStrokeRef = useRef<WhiteboardStroke | null>(null);
 
   // Micro-Encuestas y Recursos Fijados
   const [activePoll, setActivePoll] = useState<ActivePollData | null>(null);
@@ -272,7 +282,71 @@ export default function StudentLivePage() {
 
   useEffect(() => {
     attachVideoStreams();
-  }, [hasRemoteVideoTrack, hasRemotePipTrack, matchedRoom?.mediaState?.mode, stageMode, swapMainAndPip, attachVideoStreams]);
+  }, [
+    hasRemoteVideoTrack,
+    hasRemotePipTrack,
+    matchedRoom?.mediaState?.mode,
+    stageMode,
+    swapMainAndPip,
+    attachVideoStreams,
+  ]);
+
+  // Renderizar los trazos del Pizarrón en el elemento <canvas>
+  const renderWhiteboardCanvas = useCallback(() => {
+    const canvas = boardCanvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
+        canvas.width = Math.floor(rect.width);
+        canvas.height = Math.floor(rect.height);
+      }
+    }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const allStrokes = [...(liveCanvas.strokes || [])];
+    if (currentStrokeRef.current) {
+      allStrokes.push(currentStrokeRef.current);
+    }
+
+    for (const stroke of allStrokes) {
+      if (!stroke.points || stroke.points.length === 0) continue;
+      ctx.save();
+      ctx.strokeStyle = stroke.colorHex || '#000000';
+      ctx.fillStyle = stroke.colorHex || '#000000';
+      ctx.lineWidth = stroke.width || 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (stroke.points.length === 1) {
+        const pt = stroke.points[0];
+        ctx.beginPath();
+        ctx.arc(pt.x * canvas.width, pt.y * canvas.height, (stroke.width || 3) / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(stroke.points[0].x * canvas.width, stroke.points[0].y * canvas.height);
+        for (let i = 1; i < stroke.points.length; i++) {
+          ctx.lineTo(stroke.points[i].x * canvas.width, stroke.points[i].y * canvas.height);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }, [liveCanvas.strokes]);
+
+  useEffect(() => {
+    if (stageMode === 'canvas' && liveCanvas.canvasMode === 'board') {
+      renderWhiteboardCanvas();
+      const handleResize = () => renderWhiteboardCanvas();
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [stageMode, liveCanvas.canvasMode, liveCanvas.strokes, renderWhiteboardCanvas]);
 
   // Desbloquear audio automáticamente al primer clic
   useEffect(() => {
@@ -402,7 +476,11 @@ export default function StudentLivePage() {
     const unsubCanvas = onValue(canvasRef, (snap) => {
       if (snap.exists()) {
         const data = snap.val() as LiveCanvasData;
-        setLiveCanvas(data);
+        setLiveCanvas({
+          ...data,
+          canvasMode: data.canvasMode === 'board' ? 'board' : 'text',
+          strokes: Array.isArray(data.strokes) ? data.strokes : [],
+        });
         if (data.active) {
           setStageMode('canvas');
         } else {
@@ -433,7 +511,6 @@ export default function StudentLivePage() {
       setPinnedResources(arr);
     });
 
-    // Escuchar controles del docente sobre este estudiante ("Dar la palabra" o "Silenciar")
     const controlRef = ref(
       db,
       `allowed_live_students/${listKey}/participantControls/${studentUid}`
@@ -568,7 +645,6 @@ export default function StudentLivePage() {
         );
         remoteDescReady = true;
 
-        // Si el estudiante tiene su micrófono activo, adjuntar su pista de audio a la respuesta WebRTC
         if (
           studentMicTrackRef.current &&
           studentMicTrackRef.current.readyState === 'live'
@@ -656,7 +732,6 @@ export default function StudentLivePage() {
           aTrack.enabled = true;
           setMicMuted(false);
           setFloorGrantedBanner(false);
-          // Solicitar renegociación rápida con el docente para abrir el canal de audio entrante
           await update(myViewerRef, {
             micMuted: false,
             renegotiateAt: Date.now(),
@@ -697,7 +772,7 @@ export default function StudentLivePage() {
     [myStudentIndex]
   );
 
-  // Editar el Lienzo Virtual en Vivo (cuando el docente habilita modo colaborativo)
+  // Editar el Lienzo Virtual en Vivo con color por carácter (cada carácter conserva su autor original)
   const handleStudentEditCanvas = async (newContent: string) => {
     if (!matchedRoom || !liveCanvas.allowStudentEdit) return;
 
@@ -711,29 +786,106 @@ export default function StudentLivePage() {
     }
 
     const authorHcl = getCanvasAuthorColorHCL('student', sIdx);
-    const prevLines = (liveCanvas.content || '').split('\n');
-    const nextLines = newContent.split('\n');
-    const nextLineAuthors: Record<number, CanvasLineAuthor> = {
-      ...(liveCanvas.lineAuthors || {}),
-    };
-
-    nextLines.forEach((lineText, idx) => {
-      if (lineText !== prevLines[idx] || !nextLineAuthors[idx]) {
-        nextLineAuthors[idx] = {
-          uid: studentUid,
-          name: studentName,
-          role: 'student',
-          colorHex: authorHcl.hex,
-          studentIndex: sIdx,
-        };
-      }
-    });
+    const nextCharColors = computeNextCharColors(
+      liveCanvas.content || '',
+      liveCanvas.charColors,
+      newContent,
+      authorHcl.hex
+    );
 
     const updated: LiveCanvasData = {
       ...liveCanvas,
       content: newContent,
+      charColors: nextCharColors,
       studentOrder: currentOrder,
-      lineAuthors: nextLineAuthors,
+      updatedBy: studentName,
+      updatedAt: Date.now(),
+    };
+    setLiveCanvas(updated);
+    await set(
+      ref(db, `allowed_live_students/${matchedRoom.listKey}/liveCanvas`),
+      updated
+    ).catch(() => {});
+  };
+
+  // Dibujo libre del estudiante en el Pizarrón (usando su color HCL Razón Áurea)
+  const handleBoardPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!matchedRoom || !liveCanvas.allowStudentEdit) return;
+    const canvas = boardCanvasRef.current;
+    if (!canvas) return;
+    canvas.setPointerCapture(e.pointerId);
+    const rect = canvas.getBoundingClientRect();
+    const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const ny = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+
+    isDrawingRef.current = true;
+    currentStrokeRef.current = {
+      id: `stk_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      uid: studentUid,
+      name: studentName,
+      role: 'student',
+      colorHex: myHclColor.hex,
+      width: strokeWidth,
+      points: [{ x: nx, y: ny }],
+    };
+    renderWhiteboardCanvas();
+  };
+
+  const handleBoardPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDrawingRef.current || !currentStrokeRef.current) return;
+    const canvas = boardCanvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const ny = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+
+    currentStrokeRef.current.points.push({ x: nx, y: ny });
+    renderWhiteboardCanvas();
+  };
+
+  const handleBoardPointerUp = async () => {
+    if (!isDrawingRef.current || !currentStrokeRef.current || !matchedRoom) return;
+    isDrawingRef.current = false;
+    const finishedStroke = currentStrokeRef.current;
+    currentStrokeRef.current = null;
+
+    const currentOrder = Array.isArray(liveCanvas.studentOrder)
+      ? [...liveCanvas.studentOrder]
+      : [];
+    if (!currentOrder.includes(studentUid)) {
+      currentOrder.push(studentUid);
+    }
+
+    const nextStrokes = [...(liveCanvas.strokes || []), finishedStroke];
+    const updated: LiveCanvasData = {
+      ...liveCanvas,
+      strokes: nextStrokes,
+      studentOrder: currentOrder,
+      updatedBy: studentName,
+      updatedAt: Date.now(),
+    };
+    setLiveCanvas(updated);
+    await set(
+      ref(db, `allowed_live_students/${matchedRoom.listKey}/liveCanvas`),
+      updated
+    ).catch(() => {});
+  };
+
+  const handleUndoMyLastStroke = async () => {
+    if (!matchedRoom || !liveCanvas.allowStudentEdit) return;
+    const allStrokes = [...(liveCanvas.strokes || [])];
+    let lastMyIdx = -1;
+    for (let i = allStrokes.length - 1; i >= 0; i--) {
+      if (allStrokes[i].uid === studentUid) {
+        lastMyIdx = i;
+        break;
+      }
+    }
+    if (lastMyIdx === -1) return;
+    allStrokes.splice(lastMyIdx, 1);
+    const updated: LiveCanvasData = {
+      ...liveCanvas,
+      strokes: allStrokes,
       updatedBy: studentName,
       updatedAt: Date.now(),
     };
@@ -824,6 +976,25 @@ export default function StudentLivePage() {
         return 'bottom-24 right-6';
     }
   }, [pipCorner]);
+
+  // Calcular líneas con su offset inicial para renderizar color por carácter
+  const canvasLinesWithOffsets = useMemo(() => {
+    const rawLines = (liveCanvas.content || '').split('\n');
+    let offset = 0;
+    return rawLines.map((lineText, idx) => {
+      const startOffset = offset;
+      offset += lineText.length + 1;
+      const runs = groupLineIntoColorRuns(lineText, liveCanvas.charColors, startOffset);
+      const uniqueColors = Array.from(new Set(runs.map((r) => r.color)));
+      return {
+        idx,
+        lineText,
+        startOffset,
+        runs,
+        uniqueColors: uniqueColors.length > 0 ? uniqueColors : ['#000000'],
+      };
+    });
+  }, [liveCanvas.content, liveCanvas.charColors]);
 
   if (checkingAccess) {
     return (
@@ -948,7 +1119,6 @@ export default function StudentLivePage() {
 
   const pollTotalVotes = activePoll?.votes ? Object.keys(activePoll.votes).length : 0;
   const myPollVote = activePoll?.votes?.[studentUid]?.optionIndex;
-  const canvasLines = (liveCanvas.content || '').split('\n');
   const studentOrderList = liveCanvas.studentOrder || [];
 
   return (
@@ -956,10 +1126,9 @@ export default function StudentLivePage() {
       {/* Canal de audio dedicado para la voz del docente y audio de pantalla */}
       <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
 
-      {/* Resplandor ambiental */}
       <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-[#8052ff]/[0.05] rounded-full blur-[150px] pointer-events-none" />
 
-      {/* CABECERA SUPERIOR: Cronómetro + Tema Actual + Participantes */}
+      {/* CABECERA SUPERIOR */}
       <header className="h-16 px-6 flex items-center justify-between gap-4 relative z-20 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#10b981]/15 border border-[#10b981]/30">
@@ -1000,7 +1169,7 @@ export default function StudentLivePage() {
         </div>
       </header>
 
-      {/* CUERPO PRINCIPAL: ESCENARIO 24PX + PIP + PANEL LATERAL */}
+      {/* CUERPO PRINCIPAL */}
       <div className="flex-1 flex px-6 pb-24 gap-4 overflow-hidden relative z-10">
         {/* Escenario Principal (Bordes 24px) */}
         <div className="flex-1 bg-[#09090b] rounded-[24px] border border-white/[0.08] shadow-[0_24px_80px_rgba(0,0,0,0.9)] overflow-hidden relative flex items-center justify-center">
@@ -1033,20 +1202,55 @@ export default function StudentLivePage() {
             )}
           </div>
 
-          {/* MODO 2: LIENZO VIRTUAL EN VIVO — FONDO BLANCO (#FFFFFF), DOCENTE NEGRO FIJO (#000000), ESTUDIANTES HCL RAZÓN ÁUREA (1° EN AZUL) */}
+          {/* MODO 2: LIENZO VIRTUAL EN VIVO — SOLO 2 MODOS (Texto manual por carácter / Pizarrón de dibujo libre) */}
           {stageMode === 'canvas' && (
             <div className="w-full h-full flex flex-col bg-[#ffffff] text-[#000000]">
               {/* Barra Superior del Lienzo Virtual */}
               <div className="px-5 py-3 border-b border-zinc-200 flex flex-wrap items-center justify-between gap-3 bg-zinc-50">
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-900">
-                    <Code2 className="w-4 h-4 text-[#0052eb]" />
-                    <span>Lienzo Virtual</span>
-                  </div>
-
-                  <span className="px-2.5 py-0.5 rounded-md bg-white border border-zinc-300 text-[11px] font-medium text-zinc-800 uppercase">
-                    {liveCanvas.language}
+                  {/* Indicador de la modalidad elegida por el docente */}
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-white border border-zinc-300 text-xs font-semibold text-zinc-900">
+                    <PenTool className="w-3.5 h-3.5 text-[#0052eb]" />
+                    <span>
+                      {liveCanvas.canvasMode === 'board'
+                        ? 'Pizarrón / Dibujo libre'
+                        : 'Texto manual'}
+                    </span>
                   </span>
+
+                  {/* Herramientas de trazo para el estudiante cuando está en Pizarrón y tiene permiso de edición */}
+                  {liveCanvas.canvasMode === 'board' && liveCanvas.allowStudentEdit && (
+                    <div className="flex items-center gap-1.5 pl-2 border-l border-zinc-300">
+                      {([
+                        { label: 'Fino', w: 2 },
+                        { label: 'Medio', w: 4 },
+                        { label: 'Grueso', w: 7 },
+                      ] as const).map((item) => (
+                        <button
+                          key={item.w}
+                          type="button"
+                          onClick={() => setStrokeWidth(item.w)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
+                            strokeWidth === item.w
+                              ? 'bg-zinc-900 text-white'
+                              : 'bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100'
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+
+                      <button
+                        type="button"
+                        onClick={handleUndoMyLastStroke}
+                        title="Deshacer mi último trazo"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-zinc-200 hover:bg-zinc-100 text-[11px] font-medium text-zinc-700 cursor-pointer"
+                      >
+                        <Undo2 className="w-3.5 h-3.5" />
+                        <span>Deshacer</span>
+                      </button>
+                    </div>
+                  )}
 
                   {/* Leyenda cromática del Lienzo Blanco */}
                   <div className="flex items-center gap-2 pl-2 border-l border-zinc-300">
@@ -1081,7 +1285,11 @@ export default function StudentLivePage() {
                     {liveCanvas.allowStudentEdit ? (
                       <>
                         <Unlock className="w-3.5 h-3.5" />
-                        <span>Puedes escribir en el lienzo</span>
+                        <span>
+                          {liveCanvas.canvasMode === 'board'
+                            ? 'Puedes dibujar en el pizarrón'
+                            : 'Puedes escribir en el lienzo'}
+                        </span>
                       </>
                     ) : (
                       <>
@@ -1091,97 +1299,108 @@ export default function StudentLivePage() {
                     )}
                   </span>
 
-                  <button
-                    type="button"
-                    onClick={handleCopyCanvas}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-white transition-all cursor-pointer"
-                  >
-                    {copiedCanvas ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>¡Copiado!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copiar código</span>
-                      </>
-                    )}
-                  </button>
+                  {liveCanvas.canvasMode === 'text' && (
+                    <button
+                      type="button"
+                      onClick={handleCopyCanvas}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-white transition-all cursor-pointer"
+                    >
+                      {copiedCanvas ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>¡Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar texto</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {/* Cuerpo del Lienzo Blanco con Coloreado por Autor (Docente = #000000, Estudiantes = HCL Razón Áurea) */}
-              <div className="flex-1 flex overflow-hidden font-mono text-sm bg-[#ffffff] relative">
-                <div className="w-14 py-4 bg-zinc-50 border-r border-zinc-200 text-right pr-3 select-none text-zinc-400 text-xs leading-6 shrink-0">
-                  {canvasLines.map((_, idx) => {
-                    const lineAuth = liveCanvas.lineAuthors?.[idx];
-                    const dotColor = lineAuth?.colorHex || '#000000';
-                    return (
+              {/* SUB-MODO A: TEXTO MANUAL CON COLOR POR CARÁCTER */}
+              {liveCanvas.canvasMode === 'text' ? (
+                <div className="flex-1 flex overflow-hidden font-mono text-sm bg-[#ffffff] relative">
+                  <div className="w-16 py-4 bg-zinc-50 border-r border-zinc-200 text-right pr-3 select-none text-zinc-400 text-xs leading-6 shrink-0">
+                    {canvasLinesWithOffsets.map((row) => (
                       <div
-                        key={idx}
-                        className="flex items-center justify-end gap-1.5 h-6"
+                        key={row.idx}
+                        className="flex items-center justify-end gap-1 h-6"
                       >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full shrink-0"
-                          style={{ backgroundColor: dotColor }}
-                        />
-                        <span>{idx + 1}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex-1 relative overflow-hidden bg-[#ffffff]">
-                  <div
-                    ref={canvasBackdropRef}
-                    aria-hidden="true"
-                    className="absolute inset-0 p-4 overflow-hidden pointer-events-none font-mono text-sm leading-6 whitespace-pre"
-                  >
-                    {canvasLines.map((lineText, idx) => {
-                      const lineAuth = liveCanvas.lineAuthors?.[idx];
-                      const lineColor = lineAuth?.colorHex || '#000000';
-                      return (
-                        <div
-                          key={idx}
-                          className="h-6 flex items-center justify-between pr-4"
-                          style={{ color: lineColor }}
-                        >
-                          <span>{lineText || ' '}</span>
-                          {lineAuth && lineText.trim().length > 0 && (
+                        <div className="flex items-center gap-0.5">
+                          {row.uniqueColors.slice(0, 3).map((cHex, i) => (
                             <span
-                              className="text-[10px] font-sans font-semibold px-1.5 py-0.2 rounded bg-zinc-100/90 ml-4 shrink-0"
-                              style={{ color: lineColor }}
-                            >
-                              {lineAuth.name.split(' ')[0]}
-                            </span>
-                          )}
+                              key={i}
+                              className="w-1.5 h-1.5 rounded-full shrink-0"
+                              style={{ backgroundColor: cHex }}
+                            />
+                          ))}
                         </div>
-                      );
-                    })}
+                        <span>{row.idx + 1}</span>
+                      </div>
+                    ))}
                   </div>
 
-                  <textarea
-                    value={liveCanvas.content}
-                    readOnly={!liveCanvas.allowStudentEdit}
-                    onChange={(e) => handleStudentEditCanvas(e.target.value)}
-                    onScroll={(e) => {
-                      if (canvasBackdropRef.current) {
-                        canvasBackdropRef.current.scrollTop = e.currentTarget.scrollTop;
-                        canvasBackdropRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                  <div className="flex-1 relative overflow-hidden bg-[#ffffff]">
+                    <div
+                      ref={canvasBackdropRef}
+                      aria-hidden="true"
+                      className="absolute inset-0 p-4 overflow-hidden pointer-events-none font-mono text-sm leading-6 whitespace-pre"
+                    >
+                      {canvasLinesWithOffsets.map((row) => (
+                        <div key={row.idx} className="h-6">
+                          {row.runs.length === 0 ? (
+                            <span> </span>
+                          ) : (
+                            row.runs.map((run, rIdx) => (
+                              <span key={rIdx} style={{ color: run.color }}>
+                                {run.text}
+                              </span>
+                            ))
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <textarea
+                      value={liveCanvas.content}
+                      readOnly={!liveCanvas.allowStudentEdit}
+                      onChange={(e) => handleStudentEditCanvas(e.target.value)}
+                      onScroll={(e) => {
+                        if (canvasBackdropRef.current) {
+                          canvasBackdropRef.current.scrollTop = e.currentTarget.scrollTop;
+                          canvasBackdropRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                        }
+                      }}
+                      spellCheck={false}
+                      placeholder={
+                        liveCanvas.allowStudentEdit
+                          ? 'Escribe aquí con tu color asignado...'
+                          : 'El docente está escribiendo en el lienzo...'
                       }
-                    }}
-                    spellCheck={false}
-                    placeholder={
-                      liveCanvas.allowStudentEdit
-                        ? 'Escribe aquí con tu color asignado...'
-                        : 'El docente está escribiendo en el lienzo...'
-                    }
-                    style={{ caretColor: myHclColor.hex }}
-                    className="absolute inset-0 w-full h-full bg-transparent p-4 text-transparent outline-none resize-none leading-6 font-mono text-sm whitespace-pre overflow-auto selection:bg-blue-500/20"
+                      style={{ caretColor: myHclColor.hex }}
+                      className="absolute inset-0 w-full h-full bg-transparent p-4 text-transparent outline-none resize-none leading-6 font-mono text-sm whitespace-pre overflow-auto selection:bg-blue-500/20"
+                    />
+                  </div>
+                </div>
+              ) : (
+                /* SUB-MODO B: PIZARRÓN / DIBUJO LIBRE SOBRE FONDO BLANCO */
+                <div className="flex-1 relative bg-[#ffffff] overflow-hidden">
+                  <canvas
+                    ref={boardCanvasRef}
+                    onPointerDown={handleBoardPointerDown}
+                    onPointerMove={handleBoardPointerMove}
+                    onPointerUp={handleBoardPointerUp}
+                    onPointerCancel={handleBoardPointerUp}
+                    className={`w-full h-full block touch-none ${
+                      liveCanvas.allowStudentEdit ? 'cursor-crosshair' : 'cursor-default'
+                    }`}
                   />
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -1384,7 +1603,6 @@ export default function StudentLivePage() {
 
             {sidePanel === 'chat' && (
               <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Recursos Fijados por el Docente */}
                 {pinnedResources.length > 0 && (
                   <div className="p-3.5 bg-[#050507] border-b border-white/[0.08] space-y-2">
                     <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#b79aff]">
@@ -1457,7 +1675,6 @@ export default function StudentLivePage() {
 
       {/* DOCK FLOTANTE INFERIOR TIPO CÁPSULA DE CRISTAL OSCURO */}
       <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-[#09090b]/90 backdrop-blur-2xl border border-white/15 shadow-[0_20px_60px_rgba(0,0,0,0.9)]">
-        {/* Micrófono Bidireccional */}
         <button
           type="button"
           onClick={handleToggleStudentMic}
@@ -1471,7 +1688,6 @@ export default function StudentLivePage() {
           {!micMuted ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
         </button>
 
-        {/* Levantar la Mano */}
         <button
           type="button"
           onClick={handleToggleHand}
@@ -1488,24 +1704,22 @@ export default function StudentLivePage() {
           </span>
         </button>
 
-        {/* Alternar Vista: Escenario de Video vs Lienzo Virtual */}
         <button
           type="button"
           onClick={() => setStageMode((m) => (m === 'canvas' ? 'video' : 'canvas'))}
-          title="Alternar entre Escenario de Video y Lienzo Virtual"
+          title="Alternar entre Escenario de Video y Lienzo en Vivo"
           className={`h-11 px-4 rounded-full flex items-center gap-2 text-xs font-medium transition-all cursor-pointer ${
             stageMode === 'canvas'
               ? 'bg-[#8052ff] text-white font-semibold shadow-[0_0_25px_rgba(128,82,255,0.45)]'
               : 'bg-white/10 hover:bg-white/15 text-white border border-white/10'
           }`}
         >
-          <Code2 className="w-4 h-4" />
+          <PenTool className="w-4 h-4" />
           <span className="hidden md:inline">Lienzo en Vivo</span>
         </button>
 
         <div className="w-px h-6 bg-white/10 mx-1" />
 
-        {/* Participantes */}
         <button
           type="button"
           onClick={() => setSidePanel((p) => (p === 'people' ? 'none' : 'people'))}
@@ -1519,7 +1733,6 @@ export default function StudentLivePage() {
           <Users className="w-4 h-4" />
         </button>
 
-        {/* Chat y Recursos Fijados */}
         <button
           type="button"
           onClick={() => setSidePanel((p) => (p === 'chat' ? 'none' : 'chat'))}
@@ -1538,7 +1751,6 @@ export default function StudentLivePage() {
           )}
         </button>
 
-        {/* Salir de la llamada */}
         <button
           type="button"
           onClick={() => router.push('/home')}

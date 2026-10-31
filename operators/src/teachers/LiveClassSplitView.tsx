@@ -33,6 +33,10 @@ import {
   Volume2,
   VolumeX,
   Radio,
+  PenTool,
+  Type,
+  Undo2,
+  Eraser,
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
 import {
@@ -48,6 +52,8 @@ import {
   WEBRTC_ICE_SERVERS,
   createCreditHash,
   getCanvasAuthorColorHCL,
+  computeNextCharColors,
+  groupLineIntoColorRuns,
 } from "@/lib/creditLiveSystem/creditHashCore";
 import { useAuth } from "@/context/AuthContext";
 
@@ -91,23 +97,26 @@ interface ActivePollData {
   votes?: Record<string, { optionIndex: number; voterName: string }>;
 }
 
-export interface CanvasLineAuthor {
+export interface WhiteboardStroke {
+  id: string;
   uid: string;
   name: string;
   role: "teacher" | "student";
   colorHex: string;
-  studentIndex: number;
+  width: number;
+  points: { x: number; y: number }[];
 }
 
 export interface LiveCanvasData {
   active: boolean;
-  language: "typescript" | "python" | "sql" | "html" | "notes";
+  canvasMode: "text" | "board";
   content: string;
+  charColors?: string[];
+  strokes?: WhiteboardStroke[];
   allowStudentEdit: boolean;
   updatedBy: string;
   updatedAt: number;
   studentOrder?: string[];
-  lineAuthors?: Record<number, CanvasLineAuthor>;
 }
 
 interface PeerSession {
@@ -120,6 +129,9 @@ interface PeerSession {
 }
 
 type PipCorner = "bottom-right" | "top-right" | "bottom-left" | "top-left";
+
+const INITIAL_CANVAS_TEXT =
+  "Notas y apuntes en vivo — IPT Academy\nEscribe aquí o cambia a Pizarrón para dibujar libremente.\n";
 
 export function LiveClassSplitView() {
   const { user, operatorProfile } = useAuth();
@@ -157,20 +169,24 @@ export function LiveClassSplitView() {
   const [pipCorner, setPipCorner] = useState<PipCorner>("bottom-right");
   const [swapMainAndPip, setSwapMainAndPip] = useState(false);
 
-  // Lienzo de Código y Notas en Vivo (Fondo blanco #FFFFFF, Docente Negro fijo #000000, Estudiantes HCL Razón Áurea empezando en Azul)
+  // Lienzo Virtual en Vivo: Solo 2 modos ("text" = Texto manual por carácter, "board" = Pizarrón / Dibujo libre)
   const [liveCanvas, setLiveCanvas] = useState<LiveCanvasData>({
     active: false,
-    language: "typescript",
-    content:
-      "// Lienzo Virtual — IPT Academy\n// Docente escribe en negro fijo (#000000) sobre fondo blanco.\n// Estudiantes escriben con muestreo HCL por razón áurea (1° en Azul).\n\nexport async function ejecutarCasoDeUso() {\n  console.log('Listo para comenzar');\n}\n",
+    canvasMode: "text",
+    content: INITIAL_CANVAS_TEXT,
+    charColors: Array(INITIAL_CANVAS_TEXT.length).fill("#000000"),
+    strokes: [],
     allowStudentEdit: false,
     updatedBy: teacherName,
     updatedAt: Date.now(),
     studentOrder: [],
-    lineAuthors: {},
   });
   const [copiedCanvas, setCopiedCanvas] = useState(false);
+  const [strokeWidth, setStrokeWidth] = useState<number>(3);
   const canvasBackdropRef = useRef<HTMLDivElement | null>(null);
+  const boardCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isDrawingRef = useRef<boolean>(false);
+  const currentStrokeRef = useRef<WhiteboardStroke | null>(null);
 
   // Micro-Encuestas / Pulso Rápido en Vivo
   const [activePoll, setActivePoll] = useState<ActivePollData | null>(null);
@@ -422,6 +438,63 @@ export function LiveClassSplitView() {
     syncLocalVideoPreview();
   }, [isLive, camOn, screenOn, stageMode, swapMainAndPip, syncLocalVideoPreview]);
 
+  // Renderizar los trazos del Pizarrón en el elemento <canvas>
+  const renderWhiteboardCanvas = useCallback(() => {
+    const canvas = boardCanvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
+        canvas.width = Math.floor(rect.width);
+        canvas.height = Math.floor(rect.height);
+      }
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const allStrokes = [...(liveCanvas.strokes || [])];
+    if (currentStrokeRef.current) {
+      allStrokes.push(currentStrokeRef.current);
+    }
+
+    for (const stroke of allStrokes) {
+      if (!stroke.points || stroke.points.length === 0) continue;
+      ctx.save();
+      ctx.strokeStyle = stroke.colorHex || "#000000";
+      ctx.fillStyle = stroke.colorHex || "#000000";
+      ctx.lineWidth = stroke.width || 3;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      if (stroke.points.length === 1) {
+        const pt = stroke.points[0];
+        ctx.beginPath();
+        ctx.arc(pt.x * canvas.width, pt.y * canvas.height, (stroke.width || 3) / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(stroke.points[0].x * canvas.width, stroke.points[0].y * canvas.height);
+        for (let i = 1; i < stroke.points.length; i++) {
+          ctx.lineTo(stroke.points[i].x * canvas.width, stroke.points[i].y * canvas.height);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }, [liveCanvas.strokes]);
+
+  useEffect(() => {
+    if (stageMode === "canvas" && liveCanvas.canvasMode === "board") {
+      renderWhiteboardCanvas();
+      const handleResize = () => renderWhiteboardCanvas();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, [stageMode, liveCanvas.canvasMode, liveCanvas.strokes, renderWhiteboardCanvas]);
+
   // Publicar estado de medios en RTDB
   const publishMediaStateToRtdb = useCallback(async () => {
     const activeCode = code8Ref.current;
@@ -462,7 +535,7 @@ export function LiveClassSplitView() {
     }
   }, []);
 
-  // Crear y negociar una conexión WebRTC limpia con un estudiante (soporta Dual Video + Audio Bidireccional)
+  // Crear y negociar una conexión WebRTC limpia con un estudiante
   const negotiateWithStudent = useCallback(
     async (studentUid: string) => {
       const activeCode = code8Ref.current;
@@ -830,25 +903,17 @@ export function LiveClassSplitView() {
         micTrackRef.current.enabled
     );
 
-    const initialLines = (liveCanvas.content || "").split("\n");
-    const initialLineAuthors: Record<number, CanvasLineAuthor> = {};
-    initialLines.forEach((_, idx) => {
-      initialLineAuthors[idx] = {
-        uid: teacherUid,
-        name: teacherName,
-        role: "teacher",
-        colorHex: "#000000",
-        studentIndex: -1,
-      };
-    });
-
+    const initialText = liveCanvas.content || INITIAL_CANVAS_TEXT;
     const initialCanvas: LiveCanvasData = {
       ...liveCanvas,
       active: false,
+      canvasMode: "text",
+      content: initialText,
+      charColors: Array(initialText.length).fill("#000000"),
+      strokes: [],
       updatedBy: teacherName,
       updatedAt: nowMs,
       studentOrder: effectiveAllowedStudents.map((s) => s.uid),
-      lineAuthors: initialLineAuthors,
     };
 
     const payload = {
@@ -979,7 +1044,11 @@ export function LiveClassSplitView() {
     const unsubCanvas = onValue(canvasRef, (snap) => {
       if (snap.exists()) {
         const data = snap.val() as LiveCanvasData;
-        setLiveCanvas(data);
+        setLiveCanvas({
+          ...data,
+          canvasMode: data.canvasMode === "board" ? "board" : "text",
+          strokes: Array.isArray(data.strokes) ? data.strokes : [],
+        });
       }
     });
 
@@ -1074,7 +1143,7 @@ export function LiveClassSplitView() {
     }
   };
 
-  // Alternar Escenario de Código en Vivo
+  // Alternar Escenario de Lienzo en Vivo
   const handleToggleStageCanvas = async () => {
     const nextMode = stageMode === "canvas" ? "video" : "canvas";
     setStageMode(nextMode);
@@ -1092,32 +1161,23 @@ export function LiveClassSplitView() {
     }
   };
 
-  // Actualizar Contenido / Idioma / Permisos del Lienzo en Vivo (Docente siempre escribe en Negro fijo #000000)
+  // Actualizar Lienzo en Vivo con color por carácter (Docente = Negro fijo #000000)
   const updateLiveCanvas = async (partial: Partial<LiveCanvasData>) => {
-    const nextLineAuthors: Record<number, CanvasLineAuthor> = {
-      ...(liveCanvas.lineAuthors || {}),
-    };
+    let nextCharColors = liveCanvas.charColors || [];
 
     if (typeof partial.content === "string") {
-      const prevLines = (liveCanvas.content || "").split("\n");
-      const nextLines = partial.content.split("\n");
-      nextLines.forEach((lineText, idx) => {
-        if (lineText !== prevLines[idx] || !nextLineAuthors[idx]) {
-          nextLineAuthors[idx] = {
-            uid: teacherUid,
-            name: teacherName,
-            role: "teacher",
-            colorHex: "#000000", // Negro fijo para el docente sobre fondo blanco
-            studentIndex: -1,
-          };
-        }
-      });
+      nextCharColors = computeNextCharColors(
+        liveCanvas.content || "",
+        liveCanvas.charColors,
+        partial.content,
+        "#000000" // Negro fijo para cada carácter escrito por el docente
+      );
     }
 
     const updated: LiveCanvasData = {
       ...liveCanvas,
       ...partial,
-      lineAuthors: nextLineAuthors,
+      charColors: nextCharColors,
       updatedBy: teacherName,
       updatedAt: Date.now(),
     };
@@ -1127,6 +1187,60 @@ export function LiveClassSplitView() {
         () => {}
       );
     }
+  };
+
+  // Eventos de dibujo libre en el Pizarrón (Docente dibuja en Negro fijo #000000)
+  const handleBoardPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = boardCanvasRef.current;
+    if (!canvas) return;
+    canvas.setPointerCapture(e.pointerId);
+    const rect = canvas.getBoundingClientRect();
+    const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const ny = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+
+    isDrawingRef.current = true;
+    currentStrokeRef.current = {
+      id: `stk_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      uid: teacherUid,
+      name: teacherName,
+      role: "teacher",
+      colorHex: "#000000",
+      width: strokeWidth,
+      points: [{ x: nx, y: ny }],
+    };
+    renderWhiteboardCanvas();
+  };
+
+  const handleBoardPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDrawingRef.current || !currentStrokeRef.current) return;
+    const canvas = boardCanvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const ny = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+
+    currentStrokeRef.current.points.push({ x: nx, y: ny });
+    renderWhiteboardCanvas();
+  };
+
+  const handleBoardPointerUp = async () => {
+    if (!isDrawingRef.current || !currentStrokeRef.current) return;
+    isDrawingRef.current = false;
+    const finishedStroke = currentStrokeRef.current;
+    currentStrokeRef.current = null;
+
+    const nextStrokes = [...(liveCanvas.strokes || []), finishedStroke];
+    await updateLiveCanvas({ strokes: nextStrokes });
+  };
+
+  const handleUndoBoardStroke = async () => {
+    const currentStrokes = liveCanvas.strokes || [];
+    if (currentStrokes.length === 0) return;
+    await updateLiveCanvas({ strokes: currentStrokes.slice(0, -1) });
+  };
+
+  const handleClearBoard = async () => {
+    await updateLiveCanvas({ strokes: [] });
   };
 
   const handleCopyCanvas = () => {
@@ -1275,6 +1389,25 @@ export function LiveClassSplitView() {
       (s) => s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)
     );
   }, [allStudents, searchQuery]);
+
+  // Calcular líneas con su offset inicial para renderizar color por carácter
+  const canvasLinesWithOffsets = useMemo(() => {
+    const rawLines = (liveCanvas.content || "").split("\n");
+    let offset = 0;
+    return rawLines.map((lineText, idx) => {
+      const startOffset = offset;
+      offset += lineText.length + 1;
+      const runs = groupLineIntoColorRuns(lineText, liveCanvas.charColors, startOffset);
+      const uniqueColors = Array.from(new Set(runs.map((r) => r.color)));
+      return {
+        idx,
+        lineText,
+        startOffset,
+        runs,
+        uniqueColors: uniqueColors.length > 0 ? uniqueColors : ["#000000"],
+      };
+    });
+  }, [liveCanvas.content, liveCanvas.charColors]);
 
   // ============================================================================
   // VISTA 1: ANTESALA DE PREPARACIÓN (Obsidian Studio & Electric Iris)
@@ -1546,7 +1679,6 @@ export function LiveClassSplitView() {
     (stageMode === "video" && camOn && screenOn);
 
   const pollTotalVotes = activePoll?.votes ? Object.keys(activePoll.votes).length : 0;
-  const canvasLines = (liveCanvas.content || "").split("\n");
   const studentOrderList =
     liveCanvas.studentOrder && liveCanvas.studentOrder.length > 0
       ? liveCanvas.studentOrder
@@ -1557,10 +1689,9 @@ export function LiveClassSplitView() {
       {/* Contenedor oculto para reproducir el audio de los estudiantes */}
       <div ref={studentAudioContainerRef} className="hidden" />
 
-      {/* Resplandor ambiental sutil */}
       <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-[#8052ff]/[0.05] rounded-full blur-[150px] pointer-events-none" />
 
-      {/* CABECERA SUPERIOR: Cronómetro + Marcador de Tema Actual + Estado de Sala */}
+      {/* CABECERA SUPERIOR */}
       <header className="h-16 px-6 flex items-center justify-between gap-4 relative z-20 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#10b981]/15 border border-[#10b981]/30">
@@ -1635,7 +1766,7 @@ export function LiveClassSplitView() {
         </div>
       </header>
 
-      {/* CUERPO PRINCIPAL: ESCENARIO 24PX + PIP + PANEL LATERAL */}
+      {/* CUERPO PRINCIPAL */}
       <div className="flex-1 flex px-6 pb-24 gap-4 overflow-hidden relative z-10">
         {/* Escenario Principal (Bordes 24px) */}
         <div className="flex-1 bg-[#09090b] rounded-[24px] border border-white/[0.08] shadow-[0_24px_80px_rgba(0,0,0,0.9)] overflow-hidden relative flex items-center justify-center">
@@ -1668,32 +1799,69 @@ export function LiveClassSplitView() {
             )}
           </div>
 
-          {/* MODO 2: LIENZO VIRTUAL EN VIVO — FONDO BLANCO (#FFFFFF), DOCENTE NEGRO FIJO (#000000), ESTUDIANTES HCL RAZÓN ÁUREA (1° EN AZUL) */}
+          {/* MODO 2: LIENZO VIRTUAL EN VIVO — SOLO 2 MODOS (Texto manual por carácter / Pizarrón de dibujo libre) */}
           {stageMode === "canvas" && (
             <div className="w-full h-full flex flex-col bg-[#ffffff] text-[#000000]">
               {/* Barra Superior del Lienzo Virtual */}
               <div className="px-5 py-3 border-b border-zinc-200 flex flex-wrap items-center justify-between gap-3 bg-zinc-50">
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-900">
-                    <Code2 className="w-4 h-4 text-[#0052eb]" />
-                    <span>Lienzo Virtual</span>
-                  </div>
-
+                  {/* Selector exclusivo de las 2 modalidades solicitadas: Texto manual vs Pizarrón / Dibujo libre */}
                   <select
-                    value={liveCanvas.language}
+                    value={liveCanvas.canvasMode || "text"}
                     onChange={(e) =>
                       updateLiveCanvas({
-                        language: e.target.value as LiveCanvasData["language"],
+                        canvasMode: e.target.value as "text" | "board",
                       })
                     }
-                    className="bg-white border border-zinc-300 rounded-lg px-2.5 py-1 text-xs text-zinc-900 font-medium outline-none focus:border-[#0052eb]"
+                    className="bg-white border border-zinc-300 rounded-xl px-3 py-1.5 text-xs text-zinc-900 font-semibold outline-none focus:border-[#0052eb] cursor-pointer shadow-xs"
                   >
-                    <option value="typescript">TypeScript / JS</option>
-                    <option value="python">Python</option>
-                    <option value="sql">SQL</option>
-                    <option value="html">HTML / CSS</option>
-                    <option value="notes">Notas y Arquitectura</option>
+                    <option value="text">Texto manual</option>
+                    <option value="board">Pizarrón / Dibujo libre</option>
                   </select>
+
+                  {/* Herramientas de trazo cuando está en modo Pizarrón */}
+                  {liveCanvas.canvasMode === "board" && (
+                    <div className="flex items-center gap-1.5 pl-2 border-l border-zinc-300">
+                      {([
+                        { label: "Fino", w: 2 },
+                        { label: "Medio", w: 4 },
+                        { label: "Grueso", w: 7 },
+                      ] as const).map((item) => (
+                        <button
+                          key={item.w}
+                          type="button"
+                          onClick={() => setStrokeWidth(item.w)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
+                            strokeWidth === item.w
+                              ? "bg-zinc-900 text-white"
+                              : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100"
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+
+                      <button
+                        type="button"
+                        onClick={handleUndoBoardStroke}
+                        title="Deshacer último trazo"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-zinc-200 hover:bg-zinc-100 text-[11px] font-medium text-zinc-700 cursor-pointer"
+                      >
+                        <Undo2 className="w-3.5 h-3.5" />
+                        <span>Deshacer</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleClearBoard}
+                        title="Limpiar pizarrón"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 hover:bg-rose-100 text-[11px] font-medium text-rose-700 cursor-pointer"
+                      >
+                        <Eraser className="w-3.5 h-3.5" />
+                        <span>Limpiar</span>
+                      </button>
+                    </div>
+                  )}
 
                   {/* Leyenda cromática activa: Docente Negro fijo (#000000) + Estudiantes HCL Razón Áurea empezando en Azul */}
                   <div className="hidden xl:flex items-center gap-2 pl-2 border-l border-zinc-300">
@@ -1754,94 +1922,103 @@ export function LiveClassSplitView() {
                     )}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={handleCopyCanvas}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-white transition-all cursor-pointer"
-                  >
-                    {copiedCanvas ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>¡Copiado!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copiar todo</span>
-                      </>
-                    )}
-                  </button>
+                  {liveCanvas.canvasMode === "text" && (
+                    <button
+                      type="button"
+                      onClick={handleCopyCanvas}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-white transition-all cursor-pointer"
+                    >
+                      {copiedCanvas ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>¡Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar texto</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {/* Cuerpo del Lienzo Blanco con Coloreado por Autor (Docente = #000000, Estudiantes = HCL Razón Áurea) */}
-              <div className="flex-1 flex overflow-hidden font-mono text-sm bg-[#ffffff] relative">
-                {/* Columna de numeración de líneas e indicador cromático del autor */}
-                <div className="w-14 py-4 bg-zinc-50 border-r border-zinc-200 text-right pr-3 select-none text-zinc-400 text-xs leading-6 shrink-0">
-                  {canvasLines.map((_, idx) => {
-                    const lineAuth = liveCanvas.lineAuthors?.[idx];
-                    const dotColor = lineAuth?.colorHex || "#000000";
-                    return (
+              {/* SUB-MODO A: TEXTO MANUAL CON COLOR POR CARÁCTER */}
+              {liveCanvas.canvasMode === "text" ? (
+                <div className="flex-1 flex overflow-hidden font-mono text-sm bg-[#ffffff] relative">
+                  {/* Columna de numeración de líneas + puntos de todos los colores presentes en esa línea */}
+                  <div className="w-16 py-4 bg-zinc-50 border-r border-zinc-200 text-right pr-3 select-none text-zinc-400 text-xs leading-6 shrink-0">
+                    {canvasLinesWithOffsets.map((row) => (
                       <div
-                        key={idx}
-                        className="flex items-center justify-end gap-1.5 h-6"
+                        key={row.idx}
+                        className="flex items-center justify-end gap-1 h-6"
                       >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full shrink-0"
-                          style={{ backgroundColor: dotColor }}
-                        />
-                        <span>{idx + 1}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Contenedor superpuesto: Capa de renderizado HCL por línea + Textarea interactivo */}
-                <div className="flex-1 relative overflow-hidden bg-[#ffffff]">
-                  <div
-                    ref={canvasBackdropRef}
-                    aria-hidden="true"
-                    className="absolute inset-0 p-4 overflow-hidden pointer-events-none font-mono text-sm leading-6 whitespace-pre"
-                  >
-                    {canvasLines.map((lineText, idx) => {
-                      const lineAuth = liveCanvas.lineAuthors?.[idx];
-                      const lineColor = lineAuth?.colorHex || "#000000";
-                      return (
-                        <div
-                          key={idx}
-                          className="h-6 flex items-center justify-between pr-4"
-                          style={{ color: lineColor }}
-                        >
-                          <span>{lineText || " "}</span>
-                          {lineAuth && lineText.trim().length > 0 && (
+                        <div className="flex items-center gap-0.5">
+                          {row.uniqueColors.slice(0, 3).map((cHex, i) => (
                             <span
-                              className="text-[10px] font-sans font-semibold px-1.5 py-0.2 rounded bg-zinc-100/90 ml-4 shrink-0"
-                              style={{ color: lineColor }}
-                            >
-                              {lineAuth.name.split(" ")[0]}
-                            </span>
-                          )}
+                              key={i}
+                              className="w-1.5 h-1.5 rounded-full shrink-0"
+                              style={{ backgroundColor: cHex }}
+                            />
+                          ))}
                         </div>
-                      );
-                    })}
+                        <span>{row.idx + 1}</span>
+                      </div>
+                    ))}
                   </div>
 
-                  <textarea
-                    value={liveCanvas.content}
-                    onChange={(e) => updateLiveCanvas({ content: e.target.value })}
-                    onScroll={(e) => {
-                      if (canvasBackdropRef.current) {
-                        canvasBackdropRef.current.scrollTop = e.currentTarget.scrollTop;
-                        canvasBackdropRef.current.scrollLeft = e.currentTarget.scrollLeft;
-                      }
-                    }}
-                    spellCheck={false}
-                    placeholder="Escribe en el lienzo..."
-                    style={{ caretColor: "#000000" }}
-                    className="absolute inset-0 w-full h-full bg-transparent p-4 text-transparent outline-none resize-none leading-6 font-mono text-sm whitespace-pre overflow-auto selection:bg-blue-500/20"
+                  {/* Contenedor superpuesto: Capa de renderizado HCL por carácter + Textarea interactivo */}
+                  <div className="flex-1 relative overflow-hidden bg-[#ffffff]">
+                    <div
+                      ref={canvasBackdropRef}
+                      aria-hidden="true"
+                      className="absolute inset-0 p-4 overflow-hidden pointer-events-none font-mono text-sm leading-6 whitespace-pre"
+                    >
+                      {canvasLinesWithOffsets.map((row) => (
+                        <div key={row.idx} className="h-6">
+                          {row.runs.length === 0 ? (
+                            <span> </span>
+                          ) : (
+                            row.runs.map((run, rIdx) => (
+                              <span key={rIdx} style={{ color: run.color }}>
+                                {run.text}
+                              </span>
+                            ))
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <textarea
+                      value={liveCanvas.content}
+                      onChange={(e) => updateLiveCanvas({ content: e.target.value })}
+                      onScroll={(e) => {
+                        if (canvasBackdropRef.current) {
+                          canvasBackdropRef.current.scrollTop = e.currentTarget.scrollTop;
+                          canvasBackdropRef.current.scrollLeft = e.currentTarget.scrollLeft;
+                        }
+                      }}
+                      spellCheck={false}
+                      placeholder="Escribe texto manual aquí..."
+                      style={{ caretColor: "#000000" }}
+                      className="absolute inset-0 w-full h-full bg-transparent p-4 text-transparent outline-none resize-none leading-6 font-mono text-sm whitespace-pre overflow-auto selection:bg-blue-500/20"
+                    />
+                  </div>
+                </div>
+              ) : (
+                /* SUB-MODO B: PIZARRÓN / DIBUJO LIBRE SOBRE FONDO BLANCO */
+                <div className="flex-1 relative bg-[#ffffff] overflow-hidden">
+                  <canvas
+                    ref={boardCanvasRef}
+                    onPointerDown={handleBoardPointerDown}
+                    onPointerMove={handleBoardPointerMove}
+                    onPointerUp={handleBoardPointerUp}
+                    onPointerCancel={handleBoardPointerUp}
+                    className="w-full h-full block cursor-crosshair touch-none"
                   />
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -1961,7 +2138,7 @@ export function LiveClassSplitView() {
           )}
         </div>
 
-        {/* PANEL LATERAL (Participantes, Chat con Recursos Fijados o Creador de Pulsos) */}
+        {/* PANEL LATERAL */}
         {sidePanel !== "none" && (
           <div className="w-85 bg-[#09090b] text-white rounded-[24px] border border-white/[0.08] flex flex-col overflow-hidden shadow-2xl shrink-0">
             <div className="px-5 py-4 border-b border-white/[0.08] flex items-center justify-between">
@@ -2351,14 +2528,14 @@ export function LiveClassSplitView() {
         <button
           type="button"
           onClick={handleToggleStageCanvas}
-          title="Abrir o cerrar Pizarra de Código y Notas en Vivo"
+          title="Abrir o cerrar Notas y Pizarrón en Vivo"
           className={`h-11 px-4 rounded-full flex items-center gap-2 text-xs font-medium transition-all cursor-pointer ${
             stageMode === "canvas"
               ? "bg-[#8052ff] text-white font-semibold shadow-[0_0_25px_rgba(128,82,255,0.45)]"
               : "bg-white/10 hover:bg-white/15 text-white border border-white/10"
           }`}
         >
-          <Code2 className="w-4 h-4" />
+          <PenTool className="w-4 h-4" />
           <span className="hidden md:inline">Lienzo en Vivo</span>
         </button>
 
