@@ -39,6 +39,8 @@ import {
 import {
   WebRtcHostBroadcaster,
   WhiteboardStroke,
+  acquireMediaStreamWithFallbacks,
+  tryAcquireMicrophoneTrack,
 } from "@/lib/liveClassWebRtc";
 
 interface EnrolledStudent {
@@ -107,6 +109,9 @@ export function LiveClassSplitView() {
   const [streamMode, setStreamMode] = useState<"camera" | "screen" | "whiteboard">("camera");
   const [micMuted, setMicMuted] = useState<boolean>(false);
   const [cameraOff, setCameraOff] = useState<boolean>(false);
+  const [hasRealAudio, setHasRealAudio] = useState<boolean>(true);
+  const [hasRealVideo, setHasRealVideo] = useState<boolean>(true);
+  const [hardwareNotice, setHardwareNotice] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
 
@@ -317,7 +322,38 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 5. Iniciar Transmisión Magistral WebRTC (Cero alertas de bloqueo)
+  // 4b. Reintentar activación de micrófono en caliente
+  const handleRetryAudio = async () => {
+    try {
+      const track = await tryAcquireMicrophoneTrack();
+      if (track) {
+        if (mediaStreamRef.current) {
+          mediaStreamRef.current.getAudioTracks().forEach((t) => {
+            t.stop();
+            mediaStreamRef.current?.removeTrack(t);
+          });
+          mediaStreamRef.current.addTrack(track);
+          if (broadcasterRef.current) {
+            broadcasterRef.current.setStream(mediaStreamRef.current);
+          }
+        }
+        setHasRealAudio(true);
+        setMicMuted(false);
+        setHardwareNotice(null);
+        if (broadcasterRef.current) {
+          broadcasterRef.current.publishHostState({ micMuted: false });
+        }
+      } else {
+        setHardwareNotice(
+          "El micrófono sigue bloqueado o en uso por otra app (Zoom, Teams, Discord o pestañas anteriores). Ciérralas y presiona 'Reintentar Micrófono'."
+        );
+      }
+    } catch (e) {
+      console.warn("Fallo reintentando micrófono:", e);
+    }
+  };
+
+  // 5. Iniciar Transmisión Magistral WebRTC (Hardware Adaptativo - Cero Bloqueos)
   const handleStartLive = async () => {
     const targetSessionId = selectedSessionId || selectedSession?.id || DEFAULT_LIVE_SESSION.id;
     if (!selectedSessionId) {
@@ -325,11 +361,17 @@ export function LiveClassSplitView() {
     }
 
     try {
-      // 1. Obtener captura de Hardware (Cámara + Micrófono)
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 1280, height: 720 },
-        audio: true,
-      });
+      // 1. Obtener captura con degradación progresiva (evita errores bloqueantes)
+      const mediaResult = await acquireMediaStreamWithFallbacks();
+      const stream = mediaResult.stream;
+
+      setHasRealAudio(mediaResult.hasRealAudio);
+      setHasRealVideo(mediaResult.hasRealVideo);
+      if (mediaResult.warningNotice) {
+        setHardwareNotice(mediaResult.warningNotice);
+      } else {
+        setHardwareNotice(null);
+      }
 
       mediaStreamRef.current = stream;
       if (previewVideoRef.current) {
@@ -349,9 +391,9 @@ export function LiveClassSplitView() {
         sessionId: targetSessionId,
         sessionTitle: selectedSession?.title || "Clase Magistral IPT",
         instructorName: selectedSession?.instructorName || "Iván Samuel Pérez Torrenegra",
-        streamMode: "camera",
-        micMuted: false,
-        cameraOff: false,
+        streamMode: mediaResult.hasRealVideo ? "camera" : "whiteboard",
+        micMuted: !mediaResult.hasRealAudio,
+        cameraOff: !mediaResult.hasRealVideo,
         viewerCount: 0,
         startedAt: new Date().toISOString(),
       });
@@ -360,17 +402,25 @@ export function LiveClassSplitView() {
 
       // 3. Inicializar MediaRecorder para grabación local si el navegador lo soporta
       try {
-        const recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp8,opus" });
-        const chunks: Blob[] = [];
-        recorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) chunks.push(e.data);
-        };
-        recorder.onstop = () => {
-          setRecordedChunks(chunks);
-        };
-        recorder.start(1000);
-        mediaRecorderRef.current = recorder;
-        setIsRecording(true);
+        if (typeof MediaRecorder !== "undefined") {
+          let mimeType = "";
+          if (MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")) {
+            mimeType = "video/webm;codecs=vp8,opus";
+          } else if (MediaRecorder.isTypeSupported("video/webm")) {
+            mimeType = "video/webm";
+          }
+          const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+          const chunks: Blob[] = [];
+          recorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) chunks.push(e.data);
+          };
+          recorder.onstop = () => {
+            setRecordedChunks(chunks);
+          };
+          recorder.start(1000);
+          mediaRecorderRef.current = recorder;
+          setIsRecording(true);
+        }
       } catch (recErr) {
         console.warn("MediaRecorder no soportado en este dispositivo:", recErr);
       }
@@ -382,10 +432,11 @@ export function LiveClassSplitView() {
       });
 
       setIsLiveActive(true);
-      setStreamMode("camera");
+      setStreamMode(mediaResult.hasRealVideo ? "camera" : "whiteboard");
     } catch (err: any) {
       console.error("Error al iniciar transmisión WebRTC:", err);
-      alert(`No se pudo acceder a la cámara o micrófono: ${err.message || err}`);
+      setHardwareNotice("Ocurrió un imprevisto inicializando dispositivos. Puedes continuar en modo pizarra o compartir pantalla.");
+      setIsLiveActive(true);
     }
   };
 
@@ -467,10 +518,8 @@ export function LiveClassSplitView() {
   // 8. Conmutar a Cámara
   const handleSwitchToCamera = async () => {
     try {
-      const camStream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 1280, height: 720 },
-        audio: true,
-      });
+      const mediaResult = await acquireMediaStreamWithFallbacks();
+      const camStream = mediaResult.stream;
 
       mediaStreamRef.current = camStream;
       if (previewVideoRef.current) {
@@ -483,6 +532,10 @@ export function LiveClassSplitView() {
       }
 
       setStreamMode("camera");
+      setHasRealVideo(mediaResult.hasRealVideo);
+      if (mediaResult.warningNotice) {
+        setHardwareNotice(mediaResult.warningNotice);
+      }
     } catch (err) {
       console.warn("Error al conmutar a cámara:", err);
     }
@@ -496,9 +549,29 @@ export function LiveClassSplitView() {
     }
   };
 
-  // 10. Alternar Micrófono
-  const toggleMic = () => {
+  // 10. Alternar Micrófono con Reintento Dinámico
+  const toggleMic = async () => {
     if (!mediaStreamRef.current) return;
+
+    if (!hasRealAudio) {
+      const track = await tryAcquireMicrophoneTrack();
+      if (track) {
+        mediaStreamRef.current.getAudioTracks().forEach((t) => {
+          t.stop();
+          mediaStreamRef.current?.removeTrack(t);
+        });
+        mediaStreamRef.current.addTrack(track);
+        if (broadcasterRef.current) {
+          broadcasterRef.current.setStream(mediaStreamRef.current);
+          broadcasterRef.current.publishHostState({ micMuted: false });
+        }
+        setHasRealAudio(true);
+        setMicMuted(false);
+        setHardwareNotice(null);
+        return;
+      }
+    }
+
     const nextState = !micMuted;
     mediaStreamRef.current.getAudioTracks().forEach((track) => {
       track.enabled = !nextState;
@@ -840,6 +913,33 @@ export function LiveClassSplitView() {
         <div className="lg:col-span-8 bg-[#0a0a0f] rounded-2xl overflow-hidden border border-white/10 flex flex-col justify-between text-white relative shadow-xl">
           {!isLiveActive ? (
             <div className="p-6 h-full flex flex-col justify-between space-y-6">
+              {hardwareNotice && (
+                <div className="bg-amber-950/40 border border-amber-500/40 p-3.5 rounded-xl flex items-start justify-between gap-3 text-amber-200 text-xs shadow-lg animate-in fade-in duration-200">
+                  <div className="flex items-start gap-2.5">
+                    <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-amber-300">Aviso de Dispositivo de Audio</p>
+                      <p className="mt-0.5 text-amber-200/90 leading-relaxed">{hardwareNotice}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleRetryAudio}
+                      className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-semibold transition cursor-pointer"
+                    >
+                      Reintentar Micrófono
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHardwareNotice(null)}
+                      className="p-1 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-white/10">
                   <div>
@@ -900,6 +1000,34 @@ export function LiveClassSplitView() {
             </div>
           ) : (
             <div className="h-full flex flex-col justify-between p-5 space-y-4">
+              {hardwareNotice && (
+                <div className="bg-amber-950/40 border border-amber-500/40 p-3.5 rounded-xl flex items-start justify-between gap-3 text-amber-200 text-xs shadow-lg animate-in fade-in duration-200">
+                  <div className="flex items-start gap-2.5">
+                    <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-amber-300">Aviso de Dispositivo de Audio</p>
+                      <p className="mt-0.5 text-amber-200/90 leading-relaxed">{hardwareNotice}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleRetryAudio}
+                      className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-semibold transition cursor-pointer"
+                    >
+                      Reintentar Micrófono
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHardwareNotice(null)}
+                      className="p-1 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Barra de Modos de Transmisión */}
               <div className="flex flex-wrap items-center justify-between gap-3 bg-[#14141c] p-2 rounded-xl border border-white/10">
                 <div className="flex items-center gap-2">
@@ -1063,11 +1191,27 @@ export function LiveClassSplitView() {
                   <button
                     onClick={toggleMic}
                     className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
-                      micMuted ? "bg-rose-500/20 text-rose-400 border border-rose-500/30" : "bg-white/10 text-white hover:bg-white/15"
+                      !hasRealAudio
+                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30"
+                        : micMuted
+                        ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                        : "bg-white/10 text-white hover:bg-white/15"
                     }`}
                   >
-                    {micMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                    <span>{micMuted ? "Micrófono Silenciado" : "Micrófono Activo"}</span>
+                    {!hasRealAudio ? (
+                      <AlertCircle className="w-4 h-4 text-amber-400 animate-pulse" />
+                    ) : micMuted ? (
+                      <MicOff className="w-4 h-4" />
+                    ) : (
+                      <Mic className="w-4 h-4" />
+                    )}
+                    <span>
+                      {!hasRealAudio
+                        ? "Micrófono Bloqueado (Clic para Reintentar)"
+                        : micMuted
+                        ? "Micrófono Silenciado"
+                        : "Micrófono Activo"}
+                    </span>
                   </button>
 
                   <button

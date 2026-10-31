@@ -44,6 +44,161 @@ export interface WhiteboardStroke {
   points: Array<{ x: number; y: number }>;
 }
 
+/**
+ * Crea una pista de audio silenciosa usando la Web Audio API.
+ * Permite que las conexiones WebRTC negocien audio aunque el micrófono físico esté ocupado.
+ */
+export function createSilentAudioTrack(): MediaStreamTrack | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return null;
+    const ctx = new AudioContextClass();
+    const osc = ctx.createOscillator();
+    const dst = ctx.createMediaStreamDestination();
+    osc.connect(dst);
+    osc.start();
+    const track = dst.stream.getAudioTracks()[0];
+    if (track) {
+      track.enabled = false;
+      return track;
+    }
+  } catch (err) {
+    console.warn("No se pudo sintetizar pista de audio:", err);
+  }
+  return null;
+}
+
+/**
+ * Crea una pista de video sintética elegante si la cámara web física no está disponible.
+ */
+export function createPlaceholderVideoTrack(title = "IPT Academy Live"): MediaStreamTrack | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1280;
+    canvas.height = 720;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.fillStyle = "#0a0a14";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      grad.addColorStop(0, "rgba(99, 102, 241, 0.2)");
+      grad.addColorStop(1, "rgba(168, 85, 247, 0.1)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 36px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(title, canvas.width / 2, canvas.height / 2 - 20);
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "20px sans-serif";
+      ctx.fillText("Modo transmisión en vivo • Pizarra y pantalla disponibles", canvas.width / 2, canvas.height / 2 + 30);
+    }
+    const stream = (canvas as any).captureStream ? (canvas as any).captureStream(15) : null;
+    return stream ? stream.getVideoTracks()[0] : null;
+  } catch (err) {
+    console.warn("No se pudo sintetizar pista de video:", err);
+  }
+  return null;
+}
+
+export interface AcquireMediaResult {
+  stream: MediaStream;
+  hasRealVideo: boolean;
+  hasRealAudio: boolean;
+  warningNotice?: string;
+}
+
+/**
+ * Adquiere el stream de medios con degradación progresiva inteligente.
+ * Previene que errores como "Could not start audio source" o bloqueos de cámara detengan la clase.
+ */
+export async function acquireMediaStreamWithFallbacks(): Promise<AcquireMediaResult> {
+  // 1. Intento completo: Video + Audio
+  try {
+    const fullStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: { echoCancellation: true, noiseSuppression: true },
+    });
+    return {
+      stream: fullStream,
+      hasRealVideo: true,
+      hasRealAudio: true,
+    };
+  } catch (err1: any) {
+    console.warn("Fallo intento 1 (Audio+Video simultáneos):", err1?.message || err1);
+  }
+
+  // 2. Intento secundario: Solo Video (el micrófono está ocupado por otra app o bloqueado)
+  try {
+    const videoStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false,
+    });
+    const silentTrack = createSilentAudioTrack();
+    if (silentTrack) videoStream.addTrack(silentTrack);
+    return {
+      stream: videoStream,
+      hasRealVideo: true,
+      hasRealAudio: false,
+      warningNotice: "Tu micrófono está en uso por otra app o en modo exclusivo de Windows. La transmisión inició con cámara web en directo.",
+    };
+  } catch (err2: any) {
+    console.warn("Fallo intento 2 (Solo video):", err2?.message || err2);
+  }
+
+  // 3. Intento terciario: Solo Audio (la cámara está ocupada o no disponible)
+  try {
+    const audioStream = await navigator.mediaDevices.getUserMedia({
+      video: false,
+      audio: true,
+    });
+    const placeholderVideo = createPlaceholderVideoTrack("IPT Academy • Modo Solo Voz");
+    if (placeholderVideo) audioStream.addTrack(placeholderVideo);
+    return {
+      stream: audioStream,
+      hasRealVideo: false,
+      hasRealAudio: true,
+      warningNotice: "La cámara no está disponible. La clase inició en modo solo voz con pizarra y chat activos.",
+    };
+  } catch (err3: any) {
+    console.warn("Fallo intento 3 (Solo audio):", err3?.message || err3);
+  }
+
+  // 4. Intento virtual: Sin hardware disponible (pantalla, pizarra y chat)
+  const tracks: MediaStreamTrack[] = [];
+  const placeholderVideo = createPlaceholderVideoTrack("IPT Academy • Sala Magistral");
+  if (placeholderVideo) tracks.push(placeholderVideo);
+  const silentTrack = createSilentAudioTrack();
+  if (silentTrack) tracks.push(silentTrack);
+
+  return {
+    stream: new MediaStream(tracks),
+    hasRealVideo: false,
+    hasRealAudio: false,
+    warningNotice: "No se detectó cámara ni micrófono activos. La sala inició en modo virtual para pizarra, diapositivas y chat.",
+  };
+}
+
+/**
+ * Intenta adquirir un track de micrófono real en caliente para reactivar audio sin detener el vivo.
+ */
+export async function tryAcquireMicrophoneTrack(): Promise<MediaStreamTrack | null> {
+  try {
+    const audioStream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true },
+    });
+    return audioStream.getAudioTracks()[0] || null;
+  } catch (err) {
+    console.warn("No se pudo reactivar el micrófono:", err);
+    return null;
+  }
+}
+
 export class WebRtcHostBroadcaster {
   private sessionId: string;
   private localStream: MediaStream | null = null;
