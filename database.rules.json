@@ -234,6 +234,18 @@
     "live_rooms": {
       ".read": true,
       ".write": true
+    },
+    "recorded_classes": {
+      ".read": true,
+      ".write": true
+    },
+    "student_recordings": {
+      ".read": true,
+      ".write": true
+    },
+    "student_email_recordings": {
+      ".read": true,
+      ".write": true
     }
   }
 }

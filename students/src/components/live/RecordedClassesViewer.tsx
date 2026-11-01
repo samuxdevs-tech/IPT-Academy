@@ -85,16 +85,23 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
   // Cargar grabaciones desde Realtime Database
   useEffect(() => {
     const recsRef = ref(db, 'recorded_classes');
-    const unsub = onValue(recsRef, (snap) => {
-      setLoading(false);
-      if (!snap.exists()) {
-        setRecordings([]);
-        return;
+    const unsub = onValue(
+      recsRef,
+      (snap) => {
+        setLoading(false);
+        if (!snap.exists()) {
+          setRecordings([]);
+          return;
+        }
+        const raw = snap.val() as Record<string, RecordedClassData>;
+        const list = Object.values(raw).sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
+        setRecordings(list);
+      },
+      (error) => {
+        console.error('Error cargando grabaciones:', error);
+        setLoading(false);
       }
-      const raw = snap.val() as Record<string, RecordedClassData>;
-      const list = Object.values(raw).sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
-      setRecordings(list);
-    });
+    );
 
     return () => unsub();
   }, []);
