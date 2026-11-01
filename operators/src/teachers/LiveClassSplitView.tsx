@@ -285,6 +285,103 @@ export function LiveClassSplitView() {
   const classStartTimeRef = useRef<number>(Date.now());
   const recordingCanvasIntervalRef = useRef<any>(null);
 
+  // ── Web Audio API Master Mixer (Mezclador Profesional para Grabación en Vivo) ──
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioDestinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+  const micSourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const micGainNodeRef = useRef<GainNode | null>(null);
+  const screenAudioSourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const screenGainNodeRef = useRef<GainNode | null>(null);
+  const studentGainNodesRef = useRef<Map<string, { source: MediaStreamAudioSourceNode; gain: GainNode }>>(new Map());
+
+  const ensureAudioMixer = useCallback((): MediaStreamAudioDestinationNode | null => {
+    try {
+      if (typeof window === "undefined") return null;
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return null;
+
+      if (!audioContextRef.current || audioContextRef.current.state === "closed") {
+        audioContextRef.current = new AudioCtx();
+      }
+      const ctx = audioContextRef.current;
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+      }
+
+      if (!audioDestinationRef.current) {
+        const dest = ctx.createMediaStreamDestination();
+        audioDestinationRef.current = dest;
+
+        // Canal de ganancia maestro para el micrófono del docente
+        const micGain = ctx.createGain();
+        micGain.gain.value = 1;
+        micGain.connect(dest);
+        micGainNodeRef.current = micGain;
+
+        // Canal de ganancia maestro para el audio del sistema / pantalla
+        const screenGain = ctx.createGain();
+        screenGain.gain.value = 1;
+        screenGain.connect(dest);
+        screenGainNodeRef.current = screenGain;
+      }
+      return audioDestinationRef.current;
+    } catch (err) {
+      console.warn("No se pudo inicializar AudioContext Mixer:", err);
+      return null;
+    }
+  }, []);
+
+  const attachMicToMixer = useCallback((stream: MediaStream) => {
+    try {
+      const dest = ensureAudioMixer();
+      const ctx = audioContextRef.current;
+      if (!ctx || !dest || !micGainNodeRef.current) return;
+
+      if (micSourceNodeRef.current) {
+        try { micSourceNodeRef.current.disconnect(); } catch {}
+        micSourceNodeRef.current = null;
+      }
+
+      if (stream.getAudioTracks().length > 0) {
+        const src = ctx.createMediaStreamSource(stream);
+        src.connect(micGainNodeRef.current);
+        micSourceNodeRef.current = src;
+        micGainNodeRef.current.gain.setValueAtTime(1, ctx.currentTime);
+      }
+    } catch (err) {
+      console.warn("Error al conectar micrófono al mezclador:", err);
+    }
+  }, [ensureAudioMixer]);
+
+  const attachScreenAudioToMixer = useCallback((stream: MediaStream) => {
+    try {
+      const dest = ensureAudioMixer();
+      const ctx = audioContextRef.current;
+      if (!ctx || !dest || !screenGainNodeRef.current) return;
+
+      if (screenAudioSourceNodeRef.current) {
+        try { screenAudioSourceNodeRef.current.disconnect(); } catch {}
+        screenAudioSourceNodeRef.current = null;
+      }
+
+      if (stream.getAudioTracks().length > 0) {
+        const src = ctx.createMediaStreamSource(stream);
+        src.connect(screenGainNodeRef.current);
+        screenAudioSourceNodeRef.current = src;
+        screenGainNodeRef.current.gain.setValueAtTime(1, ctx.currentTime);
+      }
+    } catch (err) {
+      console.warn("Error al conectar audio de pantalla:", err);
+    }
+  }, [ensureAudioMixer]);
+
+  const detachScreenAudioFromMixer = useCallback(() => {
+    if (screenAudioSourceNodeRef.current) {
+      try { screenAudioSourceNodeRef.current.disconnect(); } catch {}
+      screenAudioSourceNodeRef.current = null;
+    }
+  }, []);
+
   // Transcriptor nativo de voz en tiempo real con Web Speech API
   const startWebSpeechTranscriber = useCallback((startTimeMs: number) => {
     if (typeof window === "undefined") return;
@@ -408,11 +505,18 @@ export function LiveClassSplitView() {
         if (dummyVTrack) tracks.push(dummyVTrack);
       }
 
-      if (micTrackRef.current && micTrackRef.current.readyState === "live") {
-        tracks.push(micTrackRef.current);
-      }
-      if (screenAudioTrackRef.current && screenAudioTrackRef.current.readyState === "live") {
-        tracks.push(screenAudioTrackRef.current);
+      // Obtener el canal de audio maestro unificado desde el mezclador Web Audio
+      const mixerDest = ensureAudioMixer();
+      if (mixerDest && mixerDest.stream.getAudioTracks().length > 0) {
+        const mixedAudioTrack = mixerDest.stream.getAudioTracks()[0];
+        tracks.push(mixedAudioTrack);
+      } else {
+        if (micTrackRef.current && micTrackRef.current.readyState === "live") {
+          tracks.push(micTrackRef.current);
+        }
+        if (screenAudioTrackRef.current && screenAudioTrackRef.current.readyState === "live") {
+          tracks.push(screenAudioTrackRef.current);
+        }
       }
 
       const combinedStream = new MediaStream(tracks);
@@ -426,6 +530,8 @@ export function LiveClassSplitView() {
 
       const recorder = new MediaRecorder(combinedStream, {
         mimeType: typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(mimeType) ? mimeType : undefined,
+        audioBitsPerSecond: 128000,
+        videoBitsPerSecond: 2500000,
       });
 
       recorder.ondataavailable = (event) => {
@@ -848,21 +954,47 @@ export function LiveClassSplitView() {
       }
 
       pc.ontrack = (event) => {
-        if (event.track.kind === "audio" && studentAudioContainerRef.current) {
-          const audioElId = `stu_audio_${studentUid}`;
-          let audioEl = document.getElementById(audioElId) as HTMLAudioElement | null;
-          if (!audioEl) {
-            audioEl = document.createElement("audio");
-            audioEl.id = audioElId;
-            audioEl.autoplay = true;
-            studentAudioContainerRef.current.appendChild(audioEl);
+        if (event.track.kind === "audio") {
+          if (studentAudioContainerRef.current) {
+            const audioElId = `stu_audio_${studentUid}`;
+            let audioEl = document.getElementById(audioElId) as HTMLAudioElement | null;
+            if (!audioEl) {
+              audioEl = document.createElement("audio");
+              audioEl.id = audioElId;
+              audioEl.autoplay = true;
+              studentAudioContainerRef.current.appendChild(audioEl);
+            }
+            const incomingStream =
+              event.streams && event.streams[0]
+                ? event.streams[0]
+                : new MediaStream([event.track]);
+            audioEl.srcObject = incomingStream;
+            audioEl.play().catch(() => {});
           }
-          const incomingStream =
-            event.streams && event.streams[0]
-              ? event.streams[0]
-              : new MediaStream([event.track]);
-          audioEl.srcObject = incomingStream;
-          audioEl.play().catch(() => {});
+
+          // Mezclar el audio del estudiante en la grabación oficial de la clase
+          try {
+            const dest = ensureAudioMixer();
+            const ctx = audioContextRef.current;
+            if (ctx && dest) {
+              const studentStream =
+                event.streams && event.streams[0]
+                  ? event.streams[0]
+                  : new MediaStream([event.track]);
+              const existing = studentGainNodesRef.current.get(studentUid);
+              if (existing) {
+                try { existing.source.disconnect(); } catch {}
+              }
+              const src = ctx.createMediaStreamSource(studentStream);
+              const gain = ctx.createGain();
+              gain.gain.value = 1;
+              src.connect(gain);
+              gain.connect(dest);
+              studentGainNodesRef.current.set(studentUid, { source: src, gain });
+            }
+          } catch (mixErr) {
+            console.warn("Error al mezclar audio del estudiante:", mixErr);
+          }
         }
       };
 
@@ -1017,14 +1149,28 @@ export function LiveClassSplitView() {
   // 2. Alternar Micrófono
   const toggleMic = async () => {
     try {
-      if (micTrackRef.current) {
-        micTrackRef.current.stop();
-        micTrackRef.current = null;
+      if (micTrackRef.current && micOn) {
+        // Silenciar (Mute) sin destruir la pista para no romper WebRTC ni la grabación de MediaRecorder
+        micTrackRef.current.enabled = false;
         setMicOn(false);
         if (typeof window !== "undefined") {
           sessionStorage.setItem("ipt_live_mic_on", "0");
         }
+        if (micGainNodeRef.current && audioContextRef.current) {
+          micGainNodeRef.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+        }
+      } else if (micTrackRef.current && !micOn && micTrackRef.current.readyState === "live") {
+        // Reactivar (Unmute) la pista viva existente
+        micTrackRef.current.enabled = true;
+        setMicOn(true);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("ipt_live_mic_on", "1");
+        }
+        if (micGainNodeRef.current && audioContextRef.current) {
+          micGainNodeRef.current.gain.setValueAtTime(1, audioContextRef.current.currentTime);
+        }
       } else {
+        // Solicitar acceso inicial si aún no se había capturado
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
           video: false,
@@ -1032,6 +1178,7 @@ export function LiveClassSplitView() {
         const aTrack = stream.getAudioTracks()[0];
         if (aTrack) {
           micTrackRef.current = aTrack;
+          aTrack.enabled = true;
           aTrack.onended = () => {
             micTrackRef.current = null;
             setMicOn(false);
@@ -1044,6 +1191,7 @@ export function LiveClassSplitView() {
           if (typeof window !== "undefined") {
             sessionStorage.setItem("ipt_live_mic_on", "1");
           }
+          attachMicToMixer(stream);
         }
       }
       await broadcastMediaUpdateToAllStudents();
@@ -1062,6 +1210,7 @@ export function LiveClassSplitView() {
           screenAudioTrackRef.current.stop();
           screenAudioTrackRef.current = null;
         }
+        detachScreenAudioFromMixer();
         setScreenOn(false);
         syncLocalVideoPreview();
         await broadcastMediaUpdateToAllStudents();
@@ -1076,6 +1225,9 @@ export function LiveClassSplitView() {
         if (sVideoTrack) {
           screenVideoTrackRef.current = sVideoTrack;
           screenAudioTrackRef.current = sAudioTrack;
+          if (sAudioTrack) {
+            attachScreenAudioToMixer(new MediaStream([sAudioTrack]));
+          }
 
           sVideoTrack.onended = () => {
             screenVideoTrackRef.current = null;
@@ -1083,6 +1235,7 @@ export function LiveClassSplitView() {
               screenAudioTrackRef.current.stop();
               screenAudioTrackRef.current = null;
             }
+            detachScreenAudioFromMixer();
             setScreenOn(false);
             syncLocalVideoPreview();
             broadcastMediaUpdateToAllStudents();
@@ -1252,6 +1405,7 @@ export function LiveClassSplitView() {
             if (aTrack) {
               micTrackRef.current = aTrack;
               setMicOn(true);
+              attachMicToMixer(micStream);
             }
           } catch {}
         }
@@ -1345,6 +1499,36 @@ export function LiveClassSplitView() {
     if (Object.keys(signaturesUpdates).length > 0) {
       for (const [bId, hVal] of Object.entries(signaturesUpdates)) {
         await set(ref(rtdb, `consumed_credit_signatures/${bId}`), hVal);
+      }
+    }
+
+    // Asegurar que el micrófono esté solicitado/conectado al mezclador antes de iniciar
+    if (!micTrackRef.current) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+          video: false,
+        });
+        const aTrack = stream.getAudioTracks()[0];
+        if (aTrack) {
+          micTrackRef.current = aTrack;
+          aTrack.enabled = true;
+          aTrack.onended = () => {
+            micTrackRef.current = null;
+            setMicOn(false);
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("ipt_live_mic_on", "0");
+            }
+            broadcastMediaUpdateToAllStudents();
+          };
+          setMicOn(true);
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("ipt_live_mic_on", "1");
+          }
+          attachMicToMixer(stream);
+        }
+      } catch (micErr) {
+        console.warn("Docente inició transmisión sin micrófono:", micErr);
       }
     }
 
@@ -1706,7 +1890,8 @@ export function LiveClassSplitView() {
     if (activeCode && recordedVideoChunksRef.current.length > 0) {
       try {
         setSavingStatusMessage("Subiendo video de la clase a la nube...");
-        const videoBlob = new Blob(recordedVideoChunksRef.current, { type: "video/webm" });
+        const actualMime = mediaRecorderRef.current?.mimeType || "video/webm";
+        const videoBlob = new Blob(recordedVideoChunksRef.current, { type: actualMime });
         downloadVideoUrl = await uploadRecordedVideo(videoBlob, activeCode);
       } catch (err) {
         console.warn("No se pudo subir el video a Storage:", err);
@@ -1854,6 +2039,17 @@ export function LiveClassSplitView() {
     if (screenAudioTrackRef.current) {
       screenAudioTrackRef.current.stop();
       screenAudioTrackRef.current = null;
+    }
+
+    if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+      try { audioContextRef.current.close(); } catch {}
+      audioContextRef.current = null;
+      audioDestinationRef.current = null;
+      micSourceNodeRef.current = null;
+      micGainNodeRef.current = null;
+      screenAudioSourceNodeRef.current = null;
+      screenGainNodeRef.current = null;
+      studentGainNodesRef.current.clear();
     }
     setCamOn(false);
     setMicOn(false);
