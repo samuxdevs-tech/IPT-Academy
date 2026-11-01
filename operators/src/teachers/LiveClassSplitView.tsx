@@ -1564,6 +1564,22 @@ export function LiveClassSplitView() {
         );
 
         setSavingStatusMessage("Publicando clase para los estudiantes...");
+
+        // Construir mapa de acceso { [student.id]: true } para los estudiantes autorizados y conectados
+        const allowedStudentsMap: Record<string, boolean> = {};
+        const allowedEmailsMap: Record<string, boolean> = {};
+
+        for (const s of effectiveAllowedStudents) {
+          if (s.uid) allowedStudentsMap[s.uid] = true;
+          if (s.email) {
+            const cleanEm = s.email.toLowerCase().replace(/[.#$\[\]]/g, "_");
+            allowedEmailsMap[cleanEm] = true;
+          }
+        }
+        for (const u of Array.from(connectedUidsRef.current)) {
+          if (u) allowedStudentsMap[u] = true;
+        }
+
         const classRecord: RecordedClassData = {
           id: activeCode,
           code8: activeCode,
@@ -1575,6 +1591,8 @@ export function LiveClassSplitView() {
           endedAt: Date.now(),
           durationSeconds: sessionDurationSec,
           videoUrl: downloadVideoUrl,
+          allowed_students: allowedStudentsMap,
+          allowed_emails: allowedEmailsMap,
           subtitles: recordedSubtitlesRef.current,
           summary: aiResult.summary,
           keyPoints: aiResult.keyPoints,

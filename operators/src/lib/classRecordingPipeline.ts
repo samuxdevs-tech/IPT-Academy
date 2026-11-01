@@ -26,6 +26,8 @@ export interface RecordedClassData {
   endedAt: number;
   durationSeconds: number;
   videoUrl: string;
+  allowed_students?: Record<string, boolean>;
+  allowed_emails?: Record<string, boolean>;
   subtitles: SubtitleCue[];
   summary: string;
   keyPoints: string[];
@@ -206,11 +208,30 @@ Responde ÚNICAMENTE con el objeto JSON sin explicaciones adicionales ni markdow
 }
 
 /**
- * Guarda el registro completo de la clase grabada en Realtime Database.
+ * Guarda el registro completo de la clase grabada en Realtime Database
+ * e indexa el acceso por estudiante {studentUid}: true para consultas rápidas.
  */
 export async function saveRecordedClassRecord(classData: RecordedClassData): Promise<void> {
   const targetRef = dbRef(rtdb, `recorded_classes/${classData.id}`);
   await set(targetRef, classData);
+
+  // Indexar permiso de acceso por estudiante {studentUid}: true
+  if (classData.allowed_students) {
+    for (const sUid of Object.keys(classData.allowed_students)) {
+      if (sUid) {
+        await set(dbRef(rtdb, `student_recordings/${sUid}/${classData.id}`), true).catch(() => {});
+      }
+    }
+  }
+
+  // Indexar permiso por email sanitizado
+  if (classData.allowed_emails) {
+    for (const em of Object.keys(classData.allowed_emails)) {
+      if (em) {
+        await set(dbRef(rtdb, `student_email_recordings/${em}/${classData.id}`), true).catch(() => {});
+      }
+    }
+  }
 }
 
 function formatSecondsToTime(sec: number): string {

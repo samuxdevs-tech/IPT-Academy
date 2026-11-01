@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 import {
   Play,
   Pause,
@@ -47,6 +48,8 @@ export interface RecordedClassData {
   endedAt: number;
   durationSeconds: number;
   videoUrl: string;
+  allowed_students?: Record<string, boolean>;
+  allowed_emails?: Record<string, boolean>;
   subtitles?: SubtitleCue[];
   summary?: string;
   keyPoints?: string[];
@@ -59,6 +62,11 @@ interface RecordedClassesViewerProps {
 }
 
 export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesViewerProps) {
+  const { user } = useAuth();
+  const studentUid = user?.uid || 'mw0EaGhRIsO3mKJ5yTXi6K9hWI93';
+  const studentEmail = (user?.email || '').toLowerCase().trim();
+  const studentEmailKey = studentEmail.replace(/[.#$\[\]]/g, '_');
+
   const [recordings, setRecordings] = useState<RecordedClassData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState<RecordedClassData | null>(null);
@@ -163,17 +171,30 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
     }
   };
 
-  // Filtrado de grabaciones
-  const filteredRecordings = useMemo(() => {
-    if (!searchQuery.trim()) return recordings;
+  // Filtrar grabaciones estrictamente autorizadas para este estudiante
+  const authorizedRecordings = useMemo(() => {
+    return recordings.filter((r) => {
+      // 1. Si no tiene restricción (clase pública de la academia), permitir
+      if (!r.allowed_students && !r.allowed_emails) return true;
+      // 2. Si el student.id está explícitamente en el mapa { [student.id]: true }
+      if (r.allowed_students && r.allowed_students[studentUid] === true) return true;
+      // 3. Si el email está en allowed_emails
+      if (studentEmailKey && r.allowed_emails && r.allowed_emails[studentEmailKey] === true) return true;
+      return false;
+    });
+  }, [recordings, studentUid, studentEmailKey]);
+
+  // Filtrado por buscador sobre las grabaciones autorizadas
+  const displayRecordings = useMemo(() => {
+    if (!searchQuery.trim()) return authorizedRecordings;
     const q = searchQuery.toLowerCase();
-    return recordings.filter(
+    return authorizedRecordings.filter(
       (r) =>
         (r.title && r.title.toLowerCase().includes(q)) ||
         (r.topic && r.topic.toLowerCase().includes(q)) ||
         (r.teacherName && r.teacherName.toLowerCase().includes(q))
     );
-  }, [recordings, searchQuery]);
+  }, [authorizedRecordings, searchQuery]);
 
   function formatSec(sec: number): string {
     const s = Math.max(0, Math.floor(sec));
@@ -243,7 +264,7 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
             <div className="min-h-[300px] flex items-center justify-center">
               <div className="w-8 h-8 border-2 border-white/20 border-t-[#8052ff] rounded-full animate-spin" />
             </div>
-          ) : filteredRecordings.length === 0 ? (
+          ) : displayRecordings.length === 0 ? (
             <div className="min-h-[350px] bg-[#09090b] rounded-[24px] border border-white/[0.08] flex flex-col items-center justify-center text-center p-8 shadow-2xl">
               <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-zinc-400 mb-4">
                 <Video className="w-8 h-8" />
@@ -257,7 +278,7 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredRecordings.map((rec) => (
+              {displayRecordings.map((rec) => (
                 <div
                   key={rec.id}
                   onClick={() => setSelectedClass(rec)}
