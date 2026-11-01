@@ -1,6 +1,7 @@
 "use client";
 
 import { generateIptCertificateFolio } from '@/lib/certificateFolio';
+import { validateIdentityWithLocalVlm } from '@/lib/webllmVisionValidator';
 
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -101,6 +102,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
   );
   const [ocrScanning, setOcrScanning] = useState<boolean>(false);
   const [ocrStepText, setOcrStepText] = useState<string>('');
+  const [vlmProgress, setVlmProgress] = useState<number>(0);
   const [uploadedDocFileName, setUploadedDocFileName] = useState<string | null>(null);
   const [uploadedDocBase64, setUploadedDocBase64] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -162,9 +164,9 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
 
   const persistIdentityState = async (
     verified: boolean,
-    type = docType,
-    num = docNumber,
-    name = legalName,
+    type: string = docType,
+    num: string = docNumber,
+    name: string = legalName,
     country = ""
   ) => {
     setIsIdentityVerified(verified);
@@ -322,36 +324,34 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
       let isValidId = true;
       let rejectionReason = "";
       let verifiedCountry = "";
-      let verifiedType = docType;
+      let verifiedType: string = docType;
 
       if (uploadedDocBase64 && uploadedDocBase64.startsWith("data:image/")) {
-        setOcrStepText("2/4 Cotejando características de documento nacional (Cédula / DNI / Pasaporte)...");
+        setOcrStepText("Iniciando motor VLM en WebGPU local...");
+        setVlmProgress(5);
 
         try {
-          const res = await fetch("/api/verify-doc", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              legalName,
-              docNumber,
-              imageBase64: uploadedDocBase64
-            })
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.isValid === false) {
-              isValidId = false;
-              rejectionReason = data.reason || "El archivo subido no corresponde a un documento nacional de identidad válido.";
-            } else if (data && data.isValid === true) {
-              if (data.country) verifiedCountry = data.country;
-              if (data.detectedType) verifiedType = data.detectedType;
+          const vlmRes = await validateIdentityWithLocalVlm(
+            legalName,
+            docNumber,
+            uploadedDocBase64,
+            (prog) => {
+              setOcrStepText(prog.statusText);
+              setVlmProgress(prog.progressPercent);
             }
+          );
+
+          if (!vlmRes.isValid) {
+            isValidId = false;
+            rejectionReason = vlmRes.reason || "El archivo subido no corresponde a un documento de identidad válido.";
+          } else {
+            verifiedCountry = vlmRes.country;
+            verifiedType = vlmRes.detectedType;
           }
-        } catch (apiErr) {
-          console.warn("Validación de visión en contingencia:", apiErr);
+        } catch (apiErr: any) {
+          console.warn("Error en ejecución de VLM:", apiErr);
+          isValidId = false;
+          rejectionReason = apiErr?.message || "Error procesando el documento.";
         }
       }
 
@@ -587,9 +587,19 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
                 </label>
 
                 {ocrScanning && (
-                  <div className="p-3.5 rounded-xl bg-[#8052ff]/15 border border-[#8052ff]/40 text-xs text-white flex items-center gap-2.5">
-                    <RefreshCw className="w-4 h-4 text-[#8052ff] animate-spin shrink-0" />
-                    <span>{ocrStepText}</span>
+                  <div className="p-3.5 rounded-xl bg-[#8052ff]/15 border border-[#8052ff]/40 text-xs text-white flex flex-col gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <RefreshCw className="w-4 h-4 text-[#8052ff] animate-spin shrink-0" />
+                      <span className="font-medium text-xs leading-relaxed">{ocrStepText}</span>
+                    </div>
+                    {vlmProgress > 0 && vlmProgress < 100 && (
+                      <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="bg-[#8052ff] h-full transition-all duration-300 rounded-full"
+                          style={{ width: `${vlmProgress}%` }}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
 
