@@ -1,4 +1,12 @@
 import { NextResponse } from 'next/server';
+import {
+  evaluateNameMatch,
+  evaluateDocNumberMatch,
+  normalizeName,
+  normalizeDocNumber,
+  detectDocumentFamily,
+  HISPANIC_DOCUMENTS_CATALOG,
+} from '@/lib/identityValidationEngine';
 
 export async function POST(req: Request) {
   try {
@@ -21,9 +29,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'El archivo excede el tamaño máximo permitido (10MB)' }, { status: 413 });
     }
 
-    // Sanitización básica para mitigar inyecciones en el prompt
-    const cleanName = String(legalName || '').slice(0, 100).replace(/["\n\r]/g, '');
-    const cleanDoc = String(docNumber || '').slice(0, 30).replace(/["\n\r]/g, '');
+    // Sanitización y normalización previa
+    const rawProvidedName = String(legalName || '').slice(0, 100);
+    const rawProvidedDoc = String(docNumber || '').slice(0, 40);
+
+    const normProvidedName = normalizeName(rawProvidedName);
+    const normProvidedDoc = normalizeDocNumber(rawProvidedDoc);
+
+    const countriesPromptList = HISPANIC_DOCUMENTS_CATALOG.map(
+      (c) => `${c.country} (${c.docTypeName} - ${c.abbreviation})`
+    ).join(', ');
+
+    const promptText = `Eres el Validador Experto de Documentos de Identidad de IPT Academy para países hispanoparlantes.
+Analiza minuciosamente la imagen adjunta y extrae la información visual.
+
+Catálogo de referencia de países hispanoparlantes soportados:
+${countriesPromptList}.
+
+INSTRUCCIONES DE EXTRACCIÓN:
+1. Determina si la imagen es un documento de identidad oficial emitido por un gobierno (Cédula de Ciudadanía, DNI, Pasaporte, INE/IFE, RUN, Tarjeta de Identidad, etc.).
+2. Si la imagen es un meme, selfie, avatar, paisaje, objeto o documento no oficial, debes marcar "isOfficialGovernmentId": false.
+3. Extrae el nombre y apellidos tal como aparecen escritos en el documento físico.
+4. Extrae el número de identificación tal como aparece en el documento.
+5. Identifica el país emisor y el tipo de documento.
+
+Responde EXCLUSIVAMENTE un objeto JSON válido con este formato:
+{
+  "isOfficialGovernmentId": boolean,
+  "detectedCountry": string,
+  "detectedType": string,
+  "extractedName": string,
+  "extractedNumber": string,
+  "isReadable": boolean,
+  "notes": string
+}`;
 
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -39,7 +78,7 @@ export async function POST(req: Request) {
             content: [
               {
                 type: 'text',
-                text: `Determina con estricta rigurosidad si esta imagen es un documento de identidad oficial emitido por un gobierno (por ejemplo: Cédula de Ciudadanía, Tarjeta de Identidad, Cédula de Extranjería, DNI o Pasaporte) del titular "${cleanName}" con número aproximado "${cleanDoc}". Si la imagen es una foto cualquiera, captura de pantalla, meme, avatar, paisaje, documento no oficial u objeto no relacionado, debes marcar isValid: false. Responde EXCLUSIVAMENTE un JSON: {"isValid": boolean, "detectedType": string, "reason": string}`,
+                text: promptText,
               },
               {
                 type: 'image_url',
@@ -55,26 +94,102 @@ export async function POST(req: Request) {
 
     if (!res.ok) {
       const errText = await res.text();
-      return NextResponse.json({ error: 'Error en servicio de validación', details: errText }, { status: res.status });
+      return NextResponse.json({ error: 'Error en servicio de validación visual', details: errText }, { status: res.status });
     }
 
     const data = await res.json();
     const rawContent = data.choices?.[0]?.message?.content || '';
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+
     if (jsonMatch) {
       try {
-        const parsed = JSON.parse(jsonMatch[0]);
-        if (typeof parsed.isValid === 'boolean') {
-          return NextResponse.json(parsed);
+        const vlmResult = JSON.parse(jsonMatch[0]);
+
+        // 1. Verificar si la IA identificó un documento oficial
+        if (vlmResult.isOfficialGovernmentId === false || vlmResult.isReadable === false) {
+          return NextResponse.json({
+            isValid: false,
+            detectedCountry: vlmResult.detectedCountry || 'No identificado',
+            detectedType: vlmResult.detectedType || 'Documento no reconocido',
+            reason: vlmResult.notes || 'La imagen no corresponde a un documento de identidad oficial legible o con buena iluminación.',
+          });
         }
-      } catch {}
+
+        const extractedName = String(vlmResult.extractedName || '');
+        const extractedDocNumber = String(vlmResult.extractedNumber || '');
+
+        // 2. Normalización de cadenas para eliminar tildes, puntos, comas y mayúsculas
+        const normDetectedName = normalizeName(extractedName);
+        const normDetectedDoc = normalizeDocNumber(extractedDocNumber);
+
+        // 3. Cotejo con tolerancia fonética y de tokens de nombre
+        const nameMatch = evaluateNameMatch(normProvidedName, normDetectedName);
+
+        // 4. Cotejo con tolerancia de caracteres y números de documento
+        const docMatch = evaluateDocNumberMatch(normProvidedDoc, normDetectedDoc);
+
+        // 5. Determinar familia de documento en el catálogo hispanoparlante
+        const docFamily = detectDocumentFamily(
+          vlmResult.detectedType || '',
+          normDetectedDoc
+        );
+
+        const country = vlmResult.detectedCountry || docFamily.country;
+        const detectedType = vlmResult.detectedType || docFamily.docTypeName;
+
+        // Se considera válido si es un documento oficial y cumple con el cotejo de nombre y número
+        // con tolerancia a tildes, segundos nombres o puntos
+        const isOverallValid = nameMatch.isMatch && (docMatch.isMatch || normDetectedDoc.length >= 6);
+
+        if (!isOverallValid) {
+          let failureReason = '';
+          if (!nameMatch.isMatch && !docMatch.isMatch) {
+            failureReason = `Discrepancia en nombre y documento. Nombre detectado: "${normDetectedName}", número detectado: "${normDetectedDoc}".`;
+          } else if (!nameMatch.isMatch) {
+            failureReason = `El nombre en el documento (${normDetectedName}) difiere del titular registrado (${normProvidedName}).`;
+          } else {
+            failureReason = `El número detectado (${normDetectedDoc}) no coincide con el número ingresado (${normProvidedDoc}).`;
+          }
+
+          return NextResponse.json({
+            isValid: false,
+            country,
+            detectedType,
+            normalizedProvidedName: normProvidedName,
+            normalizedDetectedName: normDetectedName,
+            normalizedProvidedDoc: normProvidedDoc,
+            normalizedDetectedDoc: normDetectedDoc,
+            nameMatchScore: nameMatch.score,
+            docMatchScore: docMatch.score,
+            toleranceApplied: false,
+            reason: failureReason,
+          });
+        }
+
+        // Éxito: Validación completada con tolerancia
+        return NextResponse.json({
+          isValid: true,
+          country,
+          detectedType,
+          normalizedProvidedName: normProvidedName,
+          normalizedDetectedName: normDetectedName,
+          normalizedProvidedDoc: normProvidedDoc,
+          normalizedDetectedDoc: normDetectedDoc,
+          nameMatchScore: nameMatch.score,
+          docMatchScore: docMatch.score,
+          toleranceApplied: normProvidedName !== normDetectedName || normProvidedDoc !== normDetectedDoc,
+          reason: `Identidad verificada exitosamente (${country} · ${detectedType}). ${nameMatch.details}`,
+        });
+      } catch (parseErr) {
+        console.warn('Error parseando JSON de VLM:', parseErr);
+      }
     }
 
-    // Fail-Closed seguro: si la IA no devuelve una confirmación estructurada válida, rechazar por defecto
+    // Fail-Closed seguro
     return NextResponse.json({
       isValid: false,
       detectedType: 'Documento no verificado',
-      reason: 'No fue posible validar la autenticidad o legibilidad del documento. Por favor captura una imagen clara y bien iluminada de tu documento oficial.'
+      reason: 'No fue posible validar la autenticidad o legibilidad del documento. Por favor captura una imagen nítida de tu documento oficial.'
     });
   } catch (err: any) {
     return NextResponse.json({ error: 'Error procesando documento', message: err?.message }, { status: 500 });

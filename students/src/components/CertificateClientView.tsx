@@ -164,7 +164,8 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
     verified: boolean,
     type = docType,
     num = docNumber,
-    name = legalName
+    name = legalName,
+    country = ""
   ) => {
     setIsIdentityVerified(verified);
     const payload = {
@@ -173,6 +174,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
       docType: type,
       docNumber: num,
       legalName: name,
+      country: country || undefined,
       verifiedAtIso: verified ? new Date().toISOString() : null,
       verificationMethod: 'OCR_NATIONAL_ID_SCAN',
       updatedAtIso: new Date().toISOString(),
@@ -319,6 +321,8 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
       // 2. Si el archivo es una imagen, validarlo con el modelo de visión multimodal
       let isValidId = true;
       let rejectionReason = "";
+      let verifiedCountry = "";
+      let verifiedType = docType;
 
       if (uploadedDocBase64 && uploadedDocBase64.startsWith("data:image/")) {
         setOcrStepText("2/4 Cotejando características de documento nacional (Cédula / DNI / Pasaporte)...");
@@ -341,6 +345,9 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
             if (data && data.isValid === false) {
               isValidId = false;
               rejectionReason = data.reason || "El archivo subido no corresponde a un documento nacional de identidad válido.";
+            } else if (data && data.isValid === true) {
+              if (data.country) verifiedCountry = data.country;
+              if (data.detectedType) verifiedType = data.detectedType;
             }
           }
         } catch (apiErr) {
@@ -358,12 +365,12 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
         return;
       }
 
-      setOcrStepText("4/4 Aprobado. Emitiendo credencial oficial y removiendo marcas de agua...");
+      setOcrStepText(`4/4 Aprobado: ${verifiedCountry ? verifiedCountry + " · " : ""}${verifiedType || docType}. Emitiendo credencial oficial...`);
       await new Promise((r) => setTimeout(r, 400));
 
       setOcrScanning(false);
       setOcrStepText("");
-      await persistIdentityState(true, docType, docNumber, legalName);
+      await persistIdentityState(true, verifiedType || docType, docNumber, legalName, verifiedCountry);
     } catch (err: any) {
       setOcrScanning(false);
       setOcrStepText("");
