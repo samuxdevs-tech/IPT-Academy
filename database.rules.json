@@ -95,6 +95,18 @@
       ".read": true,
       ".write": true
     },
+    "tutoria_sessions": {
+      ".read": true,
+      ".write": true
+    },
+    "teacher_availability": {
+      ".read": true,
+      ".write": true
+    },
+    "teacher_schedules": {
+      ".read": true,
+      ".write": true
+    },
     "audit_logs": {
       ".read": true,
       ".write": true
