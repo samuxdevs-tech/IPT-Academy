@@ -261,6 +261,7 @@ export function LiveClassSplitView() {
   const speechRecognitionActiveRef = useRef<boolean>(false);
   const recordedSubtitlesRef = useRef<SubtitleCue[]>([]);
   const classStartTimeRef = useRef<number>(Date.now());
+  const recordingCanvasIntervalRef = useRef<any>(null);
 
   // Transcriptor nativo de voz en tiempo real con Web Speech API
   const startWebSpeechTranscriber = useCallback((startTimeMs: number) => {
@@ -339,20 +340,49 @@ export function LiveClassSplitView() {
       if (vTrack && vTrack.readyState === "live") {
         tracks.push(vTrack);
       } else {
-        const dummyCanvas = document.createElement("canvas");
-        dummyCanvas.width = 1280;
-        dummyCanvas.height = 720;
-        const ctx = dummyCanvas.getContext("2d");
-        if (ctx) {
+        // Generar flujo continuo de video a 25 fps con lienzo animado para evitar archivos WebM vacíos o congelados
+        const recCanvas = document.createElement("canvas");
+        recCanvas.width = 1280;
+        recCanvas.height = 720;
+        const ctx = recCanvas.getContext("2d");
+        let tick = 0;
+
+        if (recordingCanvasIntervalRef.current) {
+          clearInterval(recordingCanvasIntervalRef.current);
+        }
+
+        recordingCanvasIntervalRef.current = setInterval(() => {
+          if (!ctx) return;
+          tick++;
           ctx.fillStyle = "#09090b";
           ctx.fillRect(0, 0, 1280, 720);
-          ctx.fillStyle = "#8052ff";
-          ctx.font = "bold 36px sans-serif";
+
+          const grad = ctx.createRadialGradient(640, 360, 40, 640, 360, 520);
+          grad.addColorStop(0, "rgba(128, 82, 255, 0.18)");
+          grad.addColorStop(1, "rgba(9, 9, 11, 1)");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 1280, 720);
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 38px sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("IPT Course · Clase en Vivo", 640, 360);
-        }
-        const dummyStream = dummyCanvas.captureStream(10);
-        const dummyVTrack = dummyStream.getVideoTracks()[0];
+          ctx.fillText("IPT Course · Clase en Vivo", 640, 320);
+
+          ctx.fillStyle = "#8052ff";
+          ctx.font = "bold 20px sans-serif";
+          ctx.fillText("Docente: " + (teacherName || "IPT Master"), 640, 375);
+
+          const totalSecs = Math.floor(tick / 25);
+          const mins = Math.floor(totalSecs / 60);
+          const secs = totalSecs % 60;
+          const timeStr = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+          ctx.fillStyle = "#a1a1aa";
+          ctx.font = "16px monospace";
+          ctx.fillText("Grabando sesión: " + timeStr, 640, 420);
+        }, 40);
+
+        const canvasStream = recCanvas.captureStream(25);
+        const dummyVTrack = canvasStream.getVideoTracks()[0];
         if (dummyVTrack) tracks.push(dummyVTrack);
       }
 
@@ -382,14 +412,14 @@ export function LiveClassSplitView() {
         }
       };
 
-      recorder.start(3000);
+      recorder.start(1000);
       mediaRecorderRef.current = recorder;
       setIsRecording(true);
       setIsRecordingPaused(false);
     } catch (err) {
       console.warn("No se pudo iniciar MediaRecorder:", err);
     }
-  }, []);
+  }, [teacherName]);
 
   const toggleRecordingPause = () => {
     if (!mediaRecorderRef.current || mediaRecorderRef.current.state === "inactive") return;
@@ -1528,16 +1558,23 @@ export function LiveClassSplitView() {
     setSavingStatusMessage("Finalizando grabación y preparando archivo...");
 
     // 1. Detener MediaRecorder y SpeechRecognition
+    if (recordingCanvasIntervalRef.current) {
+      clearInterval(recordingCanvasIntervalRef.current);
+      recordingCanvasIntervalRef.current = null;
+    }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      try { mediaRecorderRef.current.stop(); } catch {}
+      try {
+        mediaRecorderRef.current.requestData();
+        mediaRecorderRef.current.stop();
+      } catch {}
     }
     if (speechRecognitionRef.current) {
       speechRecognitionActiveRef.current = false;
       try { speechRecognitionRef.current.stop(); } catch {}
     }
 
-    // Pequeño tiempo de espera para que se emita el último fragmento de datos
-    await new Promise((r) => setTimeout(r, 400));
+    // Pequeño tiempo de espera para que se emitan todos los fragmentos
+    await new Promise((r) => setTimeout(r, 600));
 
     // 2. Subir video a Firebase Storage si se capturaron fragmentos
     let downloadVideoUrl = "";

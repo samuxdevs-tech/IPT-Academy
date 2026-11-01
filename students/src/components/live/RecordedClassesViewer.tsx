@@ -117,12 +117,16 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
   // Controles de reproducción
   const togglePlay = () => {
     if (!videoRef.current) return;
-    if (isPlaying) {
+    if (videoRef.current.paused || videoRef.current.ended) {
+      videoRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.warn('Error al reproducir video:', err);
+        });
+    } else {
       videoRef.current.pause();
       setIsPlaying(false);
-    } else {
-      videoRef.current.play().catch(() => {});
-      setIsPlaying(true);
     }
   };
 
@@ -133,11 +137,23 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
 
   const handleLoadedMetadata = () => {
     if (!videoRef.current) return;
-    setDuration(videoRef.current.duration || selectedClass?.durationSeconds || 0);
+    const rawDur = videoRef.current.duration;
+    if (typeof rawDur === 'number' && isFinite(rawDur) && rawDur > 0) {
+      setDuration(rawDur);
+    } else if (
+      selectedClass?.durationSeconds &&
+      isFinite(selectedClass.durationSeconds) &&
+      selectedClass.durationSeconds > 0
+    ) {
+      setDuration(selectedClass.durationSeconds);
+    } else {
+      setDuration(0);
+    }
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const targetTime = parseFloat(e.target.value);
+    if (!isFinite(targetTime)) return;
     setCurrentTime(targetTime);
     if (videoRef.current) {
       videoRef.current.currentTime = targetTime;
@@ -145,6 +161,7 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
   };
 
   const handleJumpToSecond = (seconds: number) => {
+    if (!isFinite(seconds)) return;
     if (videoRef.current) {
       videoRef.current.currentTime = seconds;
       videoRef.current.play().catch(() => {});
@@ -204,11 +221,59 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
   }, [authorizedRecordings, searchQuery]);
 
   function formatSec(sec: number): string {
-    const s = Math.max(0, Math.floor(sec));
+    if (!sec || !isFinite(sec) || isNaN(sec) || sec < 0) return '00:00';
+    const s = Math.floor(sec);
     const mins = Math.floor(s / 60);
     const secs = s % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }
+
+  const effectiveDuration = useMemo(() => {
+    if (typeof duration === 'number' && isFinite(duration) && duration > 0) {
+      return duration;
+    }
+    if (
+      selectedClass?.durationSeconds &&
+      isFinite(selectedClass.durationSeconds) &&
+      selectedClass.durationSeconds > 0
+    ) {
+      return selectedClass.durationSeconds;
+    }
+    return 10;
+  }, [duration, selectedClass?.durationSeconds]);
+
+  // Si no hubo transcripción real o fue vacía, NO inventar nada
+  const isSummaryAvailable = useMemo(() => {
+    if (!selectedClass?.summary) return false;
+    const s = selectedClass.summary.trim();
+    if (s === 'No disponible') return false;
+    if (s.startsWith('En esta sesión de Sesión en Vivo se abordó')) return false;
+    if (s.length < 20) return false;
+    return true;
+  }, [selectedClass?.summary]);
+
+  const validKeyPoints = useMemo(() => {
+    if (!isSummaryAvailable || !selectedClass?.keyPoints) return [];
+    return selectedClass.keyPoints.filter(
+      (p) =>
+        p &&
+        p !== 'No disponible' &&
+        !p.startsWith('Fundamentos y conceptos principales de') &&
+        !p.startsWith('Demostración técnica en el escenario')
+    );
+  }, [isSummaryAvailable, selectedClass?.keyPoints]);
+
+  const validChapters = useMemo(() => {
+    if (!isSummaryAvailable || !selectedClass?.chapters) return [];
+    return selectedClass.chapters.filter(
+      (c) =>
+        c &&
+        c.title &&
+        c.title !== 'No disponible' &&
+        !c.title.startsWith('Introducción y objetivos de la clase') &&
+        !c.title.startsWith('Desarrollo técnico y demostración')
+    );
+  }, [isSummaryAvailable, selectedClass?.chapters]);
 
   return (
     <div className="min-h-screen bg-[#050507] text-white flex flex-col p-4 sm:p-6 lg:p-8 relative overflow-hidden">
@@ -360,6 +425,10 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
               <video
                 ref={videoRef}
                 src={selectedClass.videoUrl}
+                playsInline
+                preload="auto"
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetadata}
                 onEnded={() => setIsPlaying(false)}
@@ -382,9 +451,9 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
                 <input
                   type="range"
                   min="0"
-                  max={duration || selectedClass.durationSeconds || 100}
+                  max={effectiveDuration}
                   step="0.1"
-                  value={currentTime}
+                  value={Math.min(currentTime, effectiveDuration)}
                   onChange={handleSeek}
                   className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#8052ff]"
                 />
@@ -408,7 +477,7 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
                     </button>
 
                     <span className="text-xs font-mono text-zinc-300">
-                      {formatSec(currentTime)} / {formatSec(duration || selectedClass.durationSeconds || 0)}
+                      {formatSec(currentTime)} / {formatSec(effectiveDuration)}
                     </span>
                   </div>
 
@@ -510,19 +579,19 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
                     <span>Resumen Ejecutivo</span>
                   </h4>
                   <p className="text-xs text-zinc-300 leading-relaxed whitespace-pre-line bg-white/[0.02] p-4 rounded-2xl border border-white/[0.06]">
-                    {selectedClass.summary || 'Resumen no disponible para esta sesión.'}
+                    {isSummaryAvailable ? selectedClass.summary : 'No disponible'}
                   </p>
                 </div>
 
                 {/* Puntos Clave */}
-                {selectedClass.keyPoints && selectedClass.keyPoints.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-[#10b981] flex items-center gap-1.5 mb-2.5">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Puntos Clave y Conceptos</span>
-                    </h4>
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-[#10b981] flex items-center gap-1.5 mb-2.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Puntos Clave y Conceptos</span>
+                  </h4>
+                  {validKeyPoints.length > 0 ? (
                     <div className="space-y-2">
-                      {selectedClass.keyPoints.map((pt, idx) => (
+                      {validKeyPoints.map((pt, idx) => (
                         <div
                           key={idx}
                           className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] flex items-start gap-2.5 text-xs text-zinc-300 leading-relaxed"
@@ -532,18 +601,22 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-xs text-zinc-400 bg-white/[0.02] p-4 rounded-2xl border border-white/[0.06]">
+                      No disponible
+                    </p>
+                  )}
+                </div>
 
                 {/* Capítulos Temáticos con Salto Directo */}
-                {selectedClass.chapters && selectedClass.chapters.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5 mb-2.5">
-                      <Clock className="w-3.5 h-3.5 text-[#8052ff]" />
-                      <span>Capítulos y Momentos Clave</span>
-                    </h4>
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5 mb-2.5">
+                    <Clock className="w-3.5 h-3.5 text-[#8052ff]" />
+                    <span>Capítulos y Momentos Clave</span>
+                  </h4>
+                  {validChapters.length > 0 ? (
                     <div className="space-y-1.5">
-                      {selectedClass.chapters.map((ch, idx) => (
+                      {validChapters.map((ch, idx) => (
                         <button
                           key={idx}
                           type="button"
@@ -559,8 +632,12 @@ export default function RecordedClassesViewer({ onBackToLive }: RecordedClassesV
                         </button>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-xs text-zinc-400 bg-white/[0.02] p-4 rounded-2xl border border-white/[0.06]">
+                      No disponible
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 

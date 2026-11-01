@@ -96,34 +96,15 @@ export async function generateClassSummaryWithOpenRouter(
     process.env.OPENROUTER_API_KEY ||
     "";
 
-  // Fallback si la transcripción fue muy breve o no hubo audio
-  const fallbackSummary = {
-    summary: `En esta sesión de ${title || "Clase en Vivo"} se abordó en profundidad el tema ${
-      topic || "Fundamentos y práctica"
-    }. El docente explicó la arquitectura, ejemplos prácticos y resolvió dudas de los estudiantes en tiempo real sobre el lienzo interactivo.`,
-    keyPoints: [
-      `Fundamentos y conceptos principales de ${topic || title}`,
-      "Demostración técnica en el escenario interactivo",
-      "Buenas prácticas y patrones recomendados para producción",
-      "Resolución colaborativa de dudas en vivo",
-    ],
-    chapters: [
-      { time: "00:00", seconds: 0, title: "Introducción y objetivos de la clase" },
-      {
-        time: formatSecondsToTime(Math.floor(durationSeconds * 0.3)),
-        seconds: Math.floor(durationSeconds * 0.3),
-        title: "Desarrollo técnico y demostración",
-      },
-      {
-        time: formatSecondsToTime(Math.floor(durationSeconds * 0.7)),
-        seconds: Math.floor(durationSeconds * 0.7),
-        title: "Puntos clave y preguntas frecuentes",
-      },
-    ],
+  // Si la transcripción fue muy breve o no hubo audio, no inventar nada
+  const emptySummary = {
+    summary: "No disponible",
+    keyPoints: [] as string[],
+    chapters: [] as ClassChapter[],
   };
 
   if (!transcript || transcript.trim().length < 25) {
-    return fallbackSummary;
+    return emptySummary;
   }
 
   const prompt = `Actúa como el asistente pedagógico de IPT Course. Analiza la siguiente transcripción en tiempo real de una clase en vivo titulada "${title}" sobre el tema "${topic}" con una duración de ${Math.round(
@@ -193,7 +174,7 @@ Responde ÚNICAMENTE con el objeto JSON sin explicaciones adicionales ni markdow
                   seconds: typeof ch.seconds === "number" ? ch.seconds : parseTimeToSeconds(ch.time),
                   title: ch.title || "Tema de clase",
                 }))
-              : fallbackSummary.chapters,
+              : [],
           };
         }
       } catch (innerErr) {
@@ -204,7 +185,7 @@ Responde ÚNICAMENTE con el objeto JSON sin explicaciones adicionales ni markdow
     console.warn("Error general contactando OpenRouter:", err);
   }
 
-  return fallbackSummary;
+  return emptySummary;
 }
 
 /**
