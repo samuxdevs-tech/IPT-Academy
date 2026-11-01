@@ -11,8 +11,18 @@ import {
   Clock,
   ExternalLink,
   MessageSquare,
-  Inbox
+  Inbox,
+  Eye,
+  FileSpreadsheet,
+  FileCode,
+  Music,
+  Video as VideoIcon,
+  Image as ImageIcon
 } from "lucide-react";
+import {
+  UniversalFilePreviewModal,
+  PreviewableFile,
+} from "@/components/UniversalFilePreviewModal";
 import { ApiClient, SubmissionItem } from "@/lib/apiClient";
 import { rtdb } from "@/lib/firebase";
 import { ref, get, set, update } from "firebase/database";
@@ -24,6 +34,19 @@ export function QuickGradingView() {
   const [isAiEvaluating, setIsAiEvaluating] = useState<boolean>(false);
   const [aiSuggestion, setAiSuggestion] = useState<any | null>(null);
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
+  const [previewFile, setPreviewFile] = useState<PreviewableFile | null>(null);
+
+  const getFileIcon = (fileName: string) => {
+    const ext = (fileName.split(".").pop() || "").toLowerCase();
+    if (["mp4", "webm", "mov", "mkv"].includes(ext)) return <VideoIcon className="w-4 h-4 text-sky-400" />;
+    if (["mp3", "wav", "ogg", "m4a", "aac"].includes(ext)) return <Music className="w-4 h-4 text-purple-400" />;
+    if (["xlsx", "xls", "csv", "ods"].includes(ext)) return <FileSpreadsheet className="w-4 h-4 text-emerald-400" />;
+    if (["pdf"].includes(ext)) return <FileText className="w-4 h-4 text-rose-400" />;
+    if (["docx", "doc", "odt"].includes(ext)) return <FileText className="w-4 h-4 text-blue-400" />;
+    if (["png", "jpg", "jpeg", "webp", "gif", "svg"].includes(ext)) return <ImageIcon className="w-4 h-4 text-pink-400" />;
+    if (["txt", "md", "json", "js", "ts", "py"].includes(ext)) return <FileCode className="w-4 h-4 text-indigo-400" />;
+    return <FileText className="w-4 h-4 text-violet-400" />;
+  };
 
   const [criterionGrades, setCriterionGrades] = useState<{ [key: string]: number }>({});
   const [feedbackText, setFeedbackText] = useState<string>("");
@@ -281,37 +304,81 @@ export function QuickGradingView() {
 
           {currentSub.files && currentSub.files.length > 0 && (
             <div className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-400 block">
-                Archivos Adjuntos
-              </span>
-              <div className="space-y-1.5">
-                {currentSub.files.map((file: any, fIdx: number) => (
-                  <div
-                    key={fIdx}
-                    className="p-3 rounded-xl bg-[#181820] border border-white/5 flex items-center justify-between text-xs hover:border-white/15 transition-colors"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <FileText className="w-4 h-4 text-violet-400" />
-                      <div>
-                        <p className="font-bold text-white">{file.file_name || file.name || "Archivo"}</p>
-                        <span className="text-[10px] text-zinc-500 font-mono">
-                          {file.file_size ? `${Math.round(file.file_size / 1024)} KB` : "Documento"}
-                        </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-400">
+                  Archivos Adjuntos de la Entrega
+                </span>
+                <span className="text-[10px] font-mono text-zinc-500">
+                  {currentSub.files.length} {currentSub.files.length === 1 ? "archivo" : "archivos"}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {currentSub.files.map((file: any, fIdx: number) => {
+                  const fileName = file.file_name || file.name || "Archivo adjunto";
+                  const fileUrl = file.download_url || file.url || file.file_url || "";
+                  const fileSize = file.file_size || file.size;
+
+                  return (
+                    <div
+                      key={fIdx}
+                      className="p-3.5 rounded-xl bg-[#161620] border border-white/5 hover:border-violet-500/30 flex items-center justify-between text-xs transition-all group"
+                    >
+                      <div
+                        onClick={() => {
+                          if (fileUrl) {
+                            setPreviewFile({
+                              name: fileName,
+                              url: fileUrl,
+                              size: fileSize,
+                              type: file.file_type || file.type,
+                            });
+                          }
+                        }}
+                        className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          {getFileIcon(fileName)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-white truncate group-hover:text-violet-300 transition-colors">
+                            {fileName}
+                          </p>
+                          <div className="flex items-center gap-2 text-[10px] text-zinc-400 font-mono">
+                            {fileSize ? (
+                              <span>{Math.round(fileSize / 1024)} KB</span>
+                            ) : (
+                              <span>Documento</span>
+                            )}
+                            <span>•</span>
+                            <span className="text-violet-400">Clic para previsualizar</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                        {fileUrl && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPreviewFile({
+                                name: fileName,
+                                url: fileUrl,
+                                size: fileSize,
+                                type: file.file_type || file.type,
+                              });
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600/20 hover:bg-violet-600 text-violet-300 hover:text-white border border-violet-500/30 text-[11px] font-bold transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+                            title="Previsualizar en pantalla sin descargar"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Visualizar</span>
+                          </button>
+                        )}
                       </div>
                     </div>
-                    {file.download_url && (
-                      <a
-                        href={file.download_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-400 hover:text-violet-300"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        <span>Abrir</span>
-                      </a>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -408,6 +475,11 @@ export function QuickGradingView() {
           </div>
         </div>
       </div>
+      {/* Modal Universal de Previsualización de Archivos */}
+      <UniversalFilePreviewModal
+        file={previewFile}
+        onClose={() => setPreviewFile(null)}
+      />
     </div>
   );
 }
