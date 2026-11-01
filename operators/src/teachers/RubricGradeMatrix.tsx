@@ -90,6 +90,7 @@ export function RubricGradeMatrix() {
   const [loading, setLoading] = useState<boolean>(true);
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
   const [editingStudentUid, setEditingStudentUid] = useState<string | null>(null);
+  const [minPassingGrade, setMinPassingGrade] = useState<number>(3.0);
   const [editC1, setEditC1] = useState<number>(0);
   const [editC2, setEditC2] = useState<number>(0);
   const [editC3, setEditC3] = useState<number>(0);
@@ -197,6 +198,7 @@ export function RubricGradeMatrix() {
   useEffect(() => {
     const usersRef = ref(rtdb, "users");
     const progressRef = ref(rtdb, "progress");
+    const rectoriaRef = ref(rtdb, "rectoria_directives");
 
     let usersVal: Record<string, any> = {};
     let progressVal: Record<string, any> = {};
@@ -238,7 +240,7 @@ export function RubricGradeMatrix() {
           corte2Grade: c2,
           corte3Grade: c3,
           finalAverage: avg,
-          status: avg >= 3.0 ? "Aprobado" : avg > 0 ? "En Riesgo" : "Pendiente",
+          status: avg >= minPassingGrade ? "Aprobado" : avg > 0 ? "En Riesgo" : "Pendiente",
         });
       });
 
@@ -257,12 +259,24 @@ export function RubricGradeMatrix() {
       progressVal = snap.exists() ? snap.val() : {};
       recomputeGrades();
     });
+    const unsubR = onValue(rectoriaRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        if (typeof val?.min_passing_grade === "number") {
+          setMinPassingGrade(val.min_passing_grade);
+        } else if (typeof val?.academic_config?.min_passing_grade === "number") {
+          setMinPassingGrade(val.academic_config.min_passing_grade);
+        }
+      }
+      recomputeGrades();
+    });
 
     return () => {
       unsubU();
       unsubP();
+      unsubR();
     };
-  }, [activeCourseSlug]);
+  }, [activeCourseSlug, minPassingGrade]);
 
   const handleStartEdit = (row: StudentGradeRow) => {
     setEditingStudentUid(row.studentUid);
@@ -443,6 +457,9 @@ export function RubricGradeMatrix() {
               </h3>
               <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                 Conectado a /users y /courses
+              </span>
+              <span className="text-[10px] font-mono text-[#f59e0b] bg-[#f59e0b]/10 px-2.5 py-0.5 rounded-full border border-[#f59e0b]/20">
+                Nota Mín. Rectoría: {minPassingGrade.toFixed(1)} / 5.0
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">

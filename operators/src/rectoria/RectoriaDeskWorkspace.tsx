@@ -177,7 +177,7 @@ export function RectoriaDeskWorkspace({
   const [appeals, setAppeals] = useState<AcademicAppealItem[]>([]);
   const [selectedAppeal, setSelectedAppeal] = useState<AcademicAppealItem | null>(null);
   const [verdictType, setVerdictType] = useState<"accepted" | "ratified">("accepted");
-  const [verdictScore, setVerdictScore] = useState<number>(30);
+  const [verdictScore, setVerdictScore] = useState<number>(4.0);
   const [verdictNotes, setVerdictNotes] = useState<string>("");
   const [isSubmittingVerdict, setIsSubmittingVerdict] = useState(false);
 
@@ -277,11 +277,12 @@ export function RectoriaDeskWorkspace({
   const [isUpdatingCredits, setIsUpdatingCredits] = useState(false);
 
   // ==========================================
-  // ESTADO 5: DIRECTIVAS RECTORALES
+  // ESTADO 5: DIRECTIVAS RECTORALES Y CALIFICACIÓN
   // ==========================================
   const [pedagogicalDirectives, setPedagogicalDirectives] = useState<string>(
     "1. Enfoque Estricto: Priorizar desacoplamiento de capas y manejo tipado de errores sobre atajos cosméticos.\n2. Exigencia en Rúbricas: Calificar de acuerdo al cumplimiento estricto del estándar Clean Architecture.\n3. TutorIA: Mantener tono sobrio, explicativo, sin respuestas genéricas y jamás anunciar componentes internos de UI.\n4. Cancelación con Respeto: Aplicar devolución de créditos automática si el estudiante cancela con más de 4 horas de anticipación."
   );
+  const [minPassingGrade, setMinPassingGrade] = useState<number>(3.0);
   const [isSavingDirectives, setIsSavingDirectives] = useState(false);
   const [statusFeedback, setStatusFeedback] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -329,13 +330,20 @@ export function RectoriaDeskWorkspace({
 
   // 3. Cargar diplomas emitidos y estudiantes en tiempo real (Sincronizado con Admin)
   useEffect(() => {
-    // Directivas de Rectoría desde RTDB
+    // Directivas y Configuración Académica de Rectoría desde RTDB
     const directivesRef = ref(rtdb, "rectoria_directives");
     const unsubDirectives = onValue(directivesRef, (snap) => {
       if (snap.exists()) {
         const val = snap.val();
-        if (val && typeof val.content === "string") {
-          setPedagogicalDirectives(val.content);
+        if (val) {
+          if (typeof val.content === "string") {
+            setPedagogicalDirectives(val.content);
+          }
+          if (typeof val.min_passing_grade === "number") {
+            setMinPassingGrade(val.min_passing_grade);
+          } else if (val.academic_config && typeof val.academic_config.min_passing_grade === "number") {
+            setMinPassingGrade(val.academic_config.min_passing_grade);
+          }
         }
       }
     });
@@ -423,7 +431,7 @@ export function RectoriaDeskWorkspace({
           nationalDocNumber: c.nationalDocNumber || "Registrado",
           courseSlug: c.courseSlug || "ipt-master-fullstack",
           courseTitle: c.courseTitle || "Certificado Oficial IPT",
-          finalGpa: c.scoreAverage || 96,
+          finalGpa: c.scoreAverage ? (c.scoreAverage > 5 ? Number((c.scoreAverage / 20).toFixed(1)) : c.scoreAverage) : 4.8,
           status: c.status === "revoked" ? "revoked" : "issued",
           issuedAt: c.issuedAt || c.date || new Date().toISOString(),
           sha256Hash: c.verificationHash || k,
@@ -465,7 +473,7 @@ export function RectoriaDeskWorkspace({
           nationalDocNumber: val.nationalDocNumber || "Registrado",
           courseSlug: val.courseSlug || "ipt-master-fullstack",
           courseTitle: val.courseTitle || "Certificado Oficial IPT",
-          finalGpa: val.finalGpa || 96,
+          finalGpa: val.finalGpa ? (val.finalGpa > 5 ? Number((val.finalGpa / 20).toFixed(1)) : val.finalGpa) : 4.8,
           status: val.status || "issued",
           issuedAt: val.issuedAt || new Date().toISOString(),
           sha256Hash: val.sha256Hash || k,
@@ -1549,14 +1557,15 @@ export function RectoriaDeskWorkspace({
                         {verdictType === "accepted" && (
                           <div className="space-y-1.5">
                             <label className="text-[11px] font-mono text-zinc-400 uppercase">
-                              Nuevo Puntaje Otorgado (Máx. {selectedAppeal.maxScore} pts)
+                              Nueva Calificación Ajustada (Escala Oficial 1.0 a 5.0)
                             </label>
                             <input
                               type="number"
-                              max={selectedAppeal.maxScore}
-                              min={0}
+                              max={5.0}
+                              min={1.0}
+                              step={0.1}
                               value={verdictScore}
-                              onChange={(e) => setVerdictScore(Number(e.target.value))}
+                              onChange={(e) => setVerdictScore(Math.min(5.0, Math.max(1.0, Number(e.target.value))))}
                               className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white font-mono text-sm focus:border-emerald-500 focus:outline-none"
                             />
                           </div>
@@ -1681,7 +1690,7 @@ export function RectoriaDeskWorkspace({
                         </td>
                         <td className="py-3.5 px-4 max-w-xs truncate">{cert.courseTitle}</td>
                         <td className="py-3.5 px-4 font-mono font-bold text-emerald-400">
-                          {cert.finalGpa} / 100
+                          {(cert.finalGpa > 5 ? cert.finalGpa / 20 : cert.finalGpa).toFixed(1)} / 5.0
                         </td>
                         <td className="py-3.5 px-4">
                           <span
@@ -1827,12 +1836,12 @@ export function RectoriaDeskWorkspace({
                         </select>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs text-zinc-300">PGA Final (0-5.0)</label>
+                        <label className="text-xs text-zinc-300">Promedio Oficial (1.0 - 5.0)</label>
                         <input
                           type="number"
                           step="0.1"
-                          min="0"
-                          max="5"
+                          min="1.0"
+                          max="5.0"
                           value={diplomaGpaInput}
                           onChange={(e) => setDiplomaGpaInput(e.target.value)}
                           className="w-full px-3.5 py-2 rounded-xl bg-black/60 border border-white/15 text-white text-xs focus:border-[#f59e0b] focus:outline-none font-mono"
@@ -2392,6 +2401,68 @@ export function RectoriaDeskWorkspace({
               </p>
             </div>
 
+            {/* Parámetros de Calificación y Escala Institucional */}
+            <div className="bg-[#121217] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                <div>
+                  <h3 className="text-base font-semibold text-white flex items-center gap-2">
+                    <Scale className="w-4 h-4 text-[#f59e0b]" />
+                    <span>Estándar Oficial de Calificación y Aprobación</span>
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    Define la escala unificada de toda la academia y el umbral mínimo que exige Rectoría para aprobar actividades y cursos.
+                  </p>
+                </div>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+                  <span>Escala Unificada: 1.0 a 5.0</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block">
+                    Nota Mínima Aprobatoria Institucional (1.0 a 5.0)
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      min={1.0}
+                      max={5.0}
+                      step={0.1}
+                      value={minPassingGrade}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (!isNaN(val)) {
+                          setMinPassingGrade(Math.min(5.0, Math.max(1.0, Number(val.toFixed(1)))));
+                        }
+                      }}
+                      className="w-32 px-4 py-2.5 rounded-2xl bg-black/60 border border-white/15 text-white font-mono text-lg font-bold text-center focus:border-[#f59e0b] focus:outline-none"
+                    />
+                    <div className="space-y-0.5">
+                      <span className="text-xs text-zinc-300 font-medium block">
+                        Umbral activo: {minPassingGrade.toFixed(1)} / 5.0
+                      </span>
+                      <span className="text-[11px] text-zinc-400 block">
+                        {minPassingGrade >= 3.0
+                          ? 'Estándar universitario de exigencia alta'
+                          : 'Estándar de flexibilidad académica'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block">
+                    Impacto en el Ecosistema
+                  </span>
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    Toda entrega de tareas, rúbricas de docentes y el módulo de notas de los estudiantes evaluarán el estado <span className="text-emerald-400 font-medium">Aprobado</span> con promedio &ge; {minPassingGrade.toFixed(1)}, o <span className="text-amber-400 font-medium">En Riesgo</span> si es menor.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Directivas Pedagógicas */}
             <div className="bg-[#121217] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-5">
               <div className="space-y-2">
                 <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block">
@@ -2412,9 +2483,19 @@ export function RectoriaDeskWorkspace({
                     setIsSavingDirectives(true);
                     try {
                       const now = new Date().toISOString();
+                      const sanitizedMinPassing = Number(minPassingGrade) || 3.0;
                       await Promise.all([
                         set(ref(rtdb, "rectoria_directives"), {
                           content: pedagogicalDirectives,
+                          min_passing_grade: sanitizedMinPassing,
+                          updatedAt: now,
+                          updatedBy: userProfile.email,
+                        }),
+                        set(ref(rtdb, "rectoria_directives/academic_config"), {
+                          min_passing_grade: sanitizedMinPassing,
+                          max_grade: 5.0,
+                          min_grade: 1.0,
+                          scale: "1.0-5.0",
                           updatedAt: now,
                           updatedBy: userProfile.email,
                         }),
@@ -2424,12 +2505,12 @@ export function RectoriaDeskWorkspace({
                           severity: "info",
                           actorUid: userProfile.uid,
                           actorEmail: userProfile.email,
-                          actionDescription: `Rectoría publicó nuevas directivas pedagógicas institucionales.`,
+                          actionDescription: `Rectoría publicó nuevas directivas pedagógicas institucionales y fijó la nota mínima aprobatoria en ${sanitizedMinPassing.toFixed(1)} / 5.0.`,
                           ipAddress: "127.0.0.1",
                           location: "Despacho de Rectoría",
                         }),
                       ]);
-                      showFeedback("Directivas de Rectoría publicadas y sincronizadas con toda la base de datos.");
+                      showFeedback(`Directivas y nota mínima institucional (${sanitizedMinPassing.toFixed(1)}/5.0) publicadas y sincronizadas con toda la base de datos.`);
                     } catch (err: any) {
                       showFeedback("Error al publicar directivas: " + err.message, "error");
                     } finally {
@@ -2439,7 +2520,7 @@ export function RectoriaDeskWorkspace({
                   disabled={isSavingDirectives}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#f59e0b] hover:bg-[#d97706] text-black text-xs font-semibold cursor-pointer disabled:opacity-50"
                 >
-                  <span>{isSavingDirectives ? "Guardando..." : "Publicar Directivas Rectorales"}</span>
+                  <span>{isSavingDirectives ? "Guardando..." : "Publicar Directivas y Parámetros"}</span>
                   <Send className="w-4 h-4" />
                 </button>
               </div>

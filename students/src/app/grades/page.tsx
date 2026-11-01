@@ -39,28 +39,28 @@ const DEFAULT_GRADES_SNAPSHOT: AssignmentItem[] = [
         id: 'crit-1',
         title: 'Aislamiento y Pureza de la Capa de Dominio',
         weightPercent: 35,
-        maxPoints: 35,
+        maxPoints: 5.0,
         description: '',
       },
       {
         id: 'crit-2',
         title: 'Contratos y Validación de Esquemas en Bordes',
         weightPercent: 30,
-        maxPoints: 30,
+        maxPoints: 5.0,
         description: '',
       },
       {
         id: 'crit-3',
         title: 'Manejo Determinista de Errores y Estados',
         weightPercent: 20,
-        maxPoints: 20,
+        maxPoints: 5.0,
         description: '',
       },
       {
         id: 'crit-4',
         title: 'Claridad de Documentación y Justificación Técnica',
         weightPercent: 15,
-        maxPoints: 15,
+        maxPoints: 5.0,
         description: '',
       },
     ],
@@ -96,6 +96,7 @@ function StudentGradesContent() {
   const { subscription, switchDemoTier } = useSubscription();
   const [items, setItems] = useState<AssignmentItem[]>(DEFAULT_GRADES_SNAPSHOT);
   const [selectedCourseFilter, setSelectedCourseFilter] = useState<string>('all');
+  const [minPassingGrade, setMinPassingGrade] = useState<number>(3.0);
 
   useEffect(() => {
     // 1. Cargar caché local primero para respuesta inmediata
@@ -143,6 +144,18 @@ function StudentGradesContent() {
       );
     });
 
+    const dirRef = ref(db, 'rectoria_directives');
+    const unsubDir = onValue(dirRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        if (typeof val?.min_passing_grade === 'number') {
+          setMinPassingGrade(val.min_passing_grade);
+        } else if (typeof val?.academic_config?.min_passing_grade === 'number') {
+          setMinPassingGrade(val.academic_config.min_passing_grade);
+        }
+      }
+    });
+
     const overrideRef = ref(db, 'grades_override');
     const unsubOverride = onValue(overrideRef, (snap) => {
       if (!snap.exists()) return;
@@ -170,6 +183,7 @@ function StudentGradesContent() {
     return () => {
       unsubSubs();
       unsubOverride();
+      unsubDir();
     };
   }, [user]);
 
@@ -185,7 +199,7 @@ function StudentGradesContent() {
   const averageScore = useMemo(() => {
     if (gradedItems.length === 0) return 0;
     const sum = gradedItems.reduce((acc, cur) => acc + (cur.finalScore || 0), 0);
-    return Math.round(sum / gradedItems.length);
+    return Number((sum / gradedItems.length).toFixed(1));
   }, [gradedItems]);
 
   const currentPlanId = subscription?.planId || 'free';
@@ -226,11 +240,15 @@ function StudentGradesContent() {
           <div className="bg-[#09090b] border border-[#ffffff]/10 rounded-2xl p-5 space-y-1">
             <span className="text-xs text-[#9a9a9a] block">Promedio General Acumulado</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-[#15846e]">{averageScore}</span>
-              <span className="text-xs text-[#9a9a9a]">/ 100 puntos</span>
+              <span className={`text-3xl font-bold ${averageScore >= minPassingGrade ? 'text-[#15846e]' : 'text-[#f59e0b]'}`}>
+                {averageScore.toFixed(1)}
+              </span>
+              <span className="text-xs text-[#9a9a9a]">/ 5.0</span>
             </div>
-            <span className="text-[11px] text-[#15846e] block pt-1">
-              Nivel aprobatorio cumplido (mín. 70/100)
+            <span className={`text-[11px] block pt-1 ${averageScore >= minPassingGrade ? 'text-[#15846e]' : 'text-[#f59e0b]'}`}>
+              {averageScore >= minPassingGrade
+                ? `Rendimiento aprobatorio (mín. ${minPassingGrade.toFixed(1)} / 5.0)`
+                : `En riesgo académico (menor a ${minPassingGrade.toFixed(1)} / 5.0)`}
             </span>
           </div>
 
@@ -315,7 +333,7 @@ function StudentGradesContent() {
             <h2 className="text-base font-semibold text-white">
               Desglose Oficial de Evaluaciones y Rúbricas
             </h2>
-            <span className="text-xs font-mono text-[#9a9a9a]">Escala: 0 a 100 puntos</span>
+            <span className="text-xs font-mono text-[#9a9a9a]">Escala Oficial: 1.0 a 5.0 · Mín. Aprobatorio: {minPassingGrade.toFixed(1)}</span>
           </div>
 
           <div className="divide-y divide-[#ffffff]/10">
@@ -338,7 +356,7 @@ function StudentGradesContent() {
                           Nota Definitiva
                         </span>
                         <span className="text-lg font-bold text-white">
-                          {item.finalScore} / 100
+                          {(item.finalScore ?? 0).toFixed(1)} / 5.0
                         </span>
                       </div>
                     )}
@@ -348,7 +366,7 @@ function StudentGradesContent() {
                           En Revisión por Rectoría
                         </span>
                         <span className="text-sm font-bold text-white">
-                          Nota actual: {item.finalScore}/100 ({item.appealRecord?.folio})
+                          Nota actual: {(item.finalScore ?? 0).toFixed(1)} / 5.0 ({item.appealRecord?.folio})
                         </span>
                       </div>
                     )}
@@ -381,7 +399,7 @@ function StudentGradesContent() {
                             {crit.title}
                           </span>
                           <span className="font-mono text-white shrink-0">
-                            {crit.awardedPoints}/{crit.maxPoints}
+                            {(crit.awardedPoints ?? 0).toFixed(1)} / 5.0 ({crit.weightPercent}%)
                           </span>
                         </div>
                         <div className="w-full h-1.5 rounded-full bg-[#ffffff]/10 overflow-hidden">
@@ -390,7 +408,7 @@ function StudentGradesContent() {
                             style={{
                               width: `${Math.min(
                                 100,
-                                Math.round(((crit.awardedPoints || 0) / crit.maxPoints) * 100)
+                                Math.round(((crit.awardedPoints || 0) / 5.0) * 100)
                               )}%`,
                             }}
                           />

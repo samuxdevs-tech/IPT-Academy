@@ -57,7 +57,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
         id: 'crit-1',
         title: 'Aislamiento y Pureza de la Capa de Dominio',
         weightPercent: 35,
-        maxPoints: 35,
+        maxPoints: 5.0,
         description:
           'Las entidades y reglas de negocio no importan librerías de infraestructura, frameworks web ni clientes HTTP.',
       },
@@ -65,7 +65,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
         id: 'crit-2',
         title: 'Contratos y Validación de Esquemas en Bordes',
         weightPercent: 30,
-        maxPoints: 30,
+        maxPoints: 5.0,
         description:
           'Todo dato externo es validado con esquemas deterministas antes de instanciar objetos de valor.',
       },
@@ -73,7 +73,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
         id: 'crit-3',
         title: 'Manejo Determinista de Errores y Estados',
         weightPercent: 20,
-        maxPoints: 20,
+        maxPoints: 5.0,
         description:
           'Uso de resultados tipados (Result Pattern) en lugar de excepciones genéricas no controladas.',
       },
@@ -81,7 +81,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
         id: 'crit-4',
         title: 'Claridad de Documentación y Justificación Técnica',
         weightPercent: 15,
-        maxPoints: 15,
+        maxPoints: 5.0,
         description:
           'El diagrama y la explicación justifican con precisión el porqué de cada frontera modular.',
       },
@@ -106,7 +106,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
         id: 'crit-201',
         title: 'Garantía de Idempotencia Estricta',
         weightPercent: 40,
-        maxPoints: 40,
+        maxPoints: 5.0,
         description:
           'Múltiples peticiones idénticas con la misma clave producen exactamente un único efecto lateral en el estado.',
       },
@@ -114,7 +114,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
         id: 'crit-202',
         title: 'Algoritmo de Exponential Backoff con Jitter',
         weightPercent: 30,
-        maxPoints: 30,
+        maxPoints: 5.0,
         description:
           'Los reintentos espacian la carga progresivamente evitando tormentas de peticiones al servidor.',
       },
@@ -122,7 +122,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
         id: 'crit-203',
         title: 'Pruebas de Concurrencia y Casos Borde',
         weightPercent: 30,
-        maxPoints: 30,
+        maxPoints: 5.0,
         description:
           'Demostración de que dos solicitudes simultáneas no corrompen el saldo del usuario.',
       },
@@ -147,7 +147,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
         id: 'crit-301',
         title: 'Atomicidad entre Estado y Registro Outbox',
         weightPercent: 45,
-        maxPoints: 45,
+        maxPoints: 5.0,
         description:
           'El cambio de negocio y el evento se guardan en la misma transacción ACID.',
       },
@@ -155,7 +155,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
         id: 'crit-302',
         title: 'Tolerancia a Fallos y Reintento de Despacho',
         weightPercent: 35,
-        maxPoints: 35,
+        maxPoints: 5.0,
         description:
           'Los mensajes pendientes se reenvían de forma segura hasta recibir confirmación (ACK).',
       },
@@ -163,7 +163,7 @@ const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
         id: 'crit-303',
         title: 'Limpieza y Particionado de Eventos Procesados',
         weightPercent: 20,
-        maxPoints: 20,
+        maxPoints: 5.0,
         description: 'Estrategia clara para evitar el crecimiento infinito de la tabla Outbox.',
       },
     ],
@@ -189,6 +189,8 @@ function StudentAssignmentsContent() {
     return INITIAL_ASSIGNMENTS;
   });
 
+  const [minPassingGrade, setMinPassingGrade] = useState<number>(3.0);
+
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY_ASSIGNMENTS, JSON.stringify(assignments));
@@ -197,6 +199,18 @@ function StudentAssignmentsContent() {
 
   // Sincronización en tiempo real con Firebase RTDB (submissions y academic_appeals)
   useEffect(() => {
+    const dirRef = ref(db, 'rectoria_directives');
+    const unsubDir = onValue(dirRef, (snap) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        if (typeof val?.min_passing_grade === 'number') {
+          setMinPassingGrade(val.min_passing_grade);
+        } else if (typeof val?.academic_config?.min_passing_grade === 'number') {
+          setMinPassingGrade(val.academic_config.min_passing_grade);
+        }
+      }
+    });
+
     const subsRef = ref(db, 'submissions');
     const unsubSubs = onValue(subsRef, (snap) => {
       if (!snap.exists()) return;
@@ -272,6 +286,7 @@ function StudentAssignmentsContent() {
     return () => {
       unsubSubs();
       unsubAppeals();
+      unsubDir();
     };
   }, [user]);
 
@@ -570,7 +585,7 @@ function StudentAssignmentsContent() {
               <span className="text-xs font-semibold uppercase tracking-wider text-[#9a9a9a]">
                 Actividades del Curso ({(assignments || []).length})
               </span>
-              <span className="text-[11px] font-mono text-[#8052ff]">100 pts máx.</span>
+              <span className="text-[11px] font-mono text-[#8052ff]">Escala 1.0 a 5.0</span>
             </div>
 
             {assignments.map((item) => {
@@ -590,7 +605,7 @@ function StudentAssignmentsContent() {
                     <span className="text-[11px] font-mono text-[#9a9a9a]">{item.code}</span>
                     {item.status === 'graded' && (
                       <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#15846e]/15 text-[#15846e] border border-[#15846e]/30">
-                        Calificada · {item.finalScore}/100
+                        Calificada · {(item.finalScore ?? 0).toFixed(1)} / 5.0
                       </span>
                     )}
                     {item.status === 'submitted' && (
@@ -744,7 +759,7 @@ function StudentAssignmentsContent() {
                       Matriz de Rúbrica Oficial
                     </h3>
                     <p className="text-xs text-[#9a9a9a]">
-                      Criterios objetivos de calificación ponderada sobre 100 puntos.
+                      Criterios objetivos de evaluación sobre escala académica 1.0 a 5.0 (Aprobación institucional: mín. {minPassingGrade.toFixed(1)}).
                     </p>
                   </div>
                   {(activeAssignment.status === 'graded' ||
@@ -752,7 +767,7 @@ function StudentAssignmentsContent() {
                     <div className="text-right">
                       <span className="text-xs text-[#9a9a9a] block">Nota Definitiva</span>
                       <span className="text-2xl font-bold text-[#15846e]">
-                        {activeAssignment.finalScore} / 100
+                        {(activeAssignment.finalScore ?? 0).toFixed(1)} / 5.0
                       </span>
                     </div>
                   )}
@@ -770,8 +785,8 @@ function StudentAssignmentsContent() {
                           <span className="text-xs font-semibold text-white">{crit.title}</span>
                           <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-[#ffffff]/5 border border-[#ffffff]/10 text-white">
                             {hasScore
-                              ? `${crit.awardedPoints} / ${crit.maxPoints} pts`
-                              : `Peso: ${crit.weightPercent}% (${crit.maxPoints} pts)`}
+                              ? `${(crit.awardedPoints ?? 0).toFixed(1)} / 5.0 (${crit.weightPercent}%)`
+                              : `Peso: ${crit.weightPercent}% (Escala 1.0 a 5.0)`}
                           </span>
                         </div>
                         <p className="text-xs text-[#9a9a9a] leading-relaxed">
@@ -1062,7 +1077,7 @@ function StudentAssignmentsContent() {
                 >
                   {activeAssignment.rubric.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.title} ({c.awardedPoints ?? 0}/{c.maxPoints} pts)
+                      {c.title} ({(c.awardedPoints ?? 0).toFixed(1)}/5.0 - Peso: {c.weightPercent}%)
                     </option>
                   ))}
                 </select>

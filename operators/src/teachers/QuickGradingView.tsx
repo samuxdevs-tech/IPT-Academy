@@ -25,7 +25,7 @@ import {
 } from "@/components/UniversalFilePreviewModal";
 import { ApiClient, SubmissionItem } from "@/lib/apiClient";
 import { rtdb } from "@/lib/firebase";
-import { ref, get, set, update } from "firebase/database";
+import { ref, get, set, update, onValue, DataSnapshot } from "firebase/database";
 
 export function QuickGradingView() {
   const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
@@ -49,6 +49,7 @@ export function QuickGradingView() {
   };
 
   const [criterionGrades, setCriterionGrades] = useState<{ [key: string]: number }>({});
+  const [minPassingGrade, setMinPassingGrade] = useState<number>(3.0);
   const [feedbackText, setFeedbackText] = useState<string>("");
 
   useEffect(() => {
@@ -93,6 +94,22 @@ export function QuickGradingView() {
     }
 
     fetchRealSubmissions();
+
+    const rectoriaRef = ref(rtdb, "rectoria_directives");
+    const unsubR = onValue(rectoriaRef, (snap: DataSnapshot) => {
+      if (snap.exists()) {
+        const val = snap.val();
+        if (typeof val?.min_passing_grade === "number") {
+          setMinPassingGrade(val.min_passing_grade);
+        } else if (typeof val?.academic_config?.min_passing_grade === "number") {
+          setMinPassingGrade(val.academic_config.min_passing_grade);
+        }
+      }
+    });
+
+    return () => {
+      unsubR();
+    };
   }, []);
 
   const currentSub = submissions[currentIndex];
@@ -425,7 +442,14 @@ export function QuickGradingView() {
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
               Calificación por Criterios
             </span>
-            <div className="text-right">
+            <div className="text-right flex items-center gap-2">
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                calculateFinalGrade() >= minPassingGrade
+                  ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                  : "text-amber-400 bg-amber-500/10 border-amber-500/20"
+              }`}>
+                {calculateFinalGrade() >= minPassingGrade ? `Aprobado (≥ ${minPassingGrade.toFixed(1)})` : `En Riesgo (< ${minPassingGrade.toFixed(1)})`}
+              </span>
               <span className="text-xl font-bold font-mono text-violet-400">
                 {calculateFinalGrade().toFixed(1)} / 5.0
               </span>

@@ -97,7 +97,7 @@ export default function CertificateModal({
         issueDate: now.toISOString(),
         issueDateFormatted: formattedDate,
         completionHours: 34,
-        scoreAverage: scoreAverage || 96,
+        scoreAverage: scoreAverage ? (scoreAverage > 5 ? Number((scoreAverage / 20).toFixed(1)) : scoreAverage) : 5.0,
         progressPercent: progressPercent || 100,
         verificationHash: `IPT-${cleanUid}${Date.now().toString(16).toUpperCase()}`,
         status: 'valid',
@@ -114,7 +114,7 @@ export default function CertificateModal({
             nationalDocNumber: 'Registrado',
             courseSlug: courseSlug,
             courseTitle: courseTitle,
-            finalGpa: scoreAverage || 96,
+            finalGpa: scoreAverage ? (scoreAverage > 5 ? Number((scoreAverage / 20).toFixed(1)) : scoreAverage) : 5.0,
             status: 'issued',
             issuedAt: new Date().toISOString(),
             sha256Hash: newCertificate.verificationHash,
@@ -581,7 +581,7 @@ export default function CertificateModal({
                           Fecha: {cert?.issueDateFormatted || 'Octubre 2026'}
                         </p>
                         <p className="text-[8px] text-emerald-700 font-bold leading-none mt-1">
-                          Calificación: {cert?.scoreAverage || scoreAverage}%
+                          Calificación: {((cert?.scoreAverage || scoreAverage || 5.0) > 5 ? ((cert?.scoreAverage || scoreAverage || 5.0) / 20) : (cert?.scoreAverage || scoreAverage || 5.0)).toFixed(1)} / 5.0
                         </p>
                       </div>
                     </div>
