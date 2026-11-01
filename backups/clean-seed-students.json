@@ -1,0 +1,153 @@
+{
+  "admins": {
+    "CAGz5BSpHIfw5hnlgTFGR924gwL2": true
+  },
+  "security_roles": {
+    "dDypL7S5fSXH4RO3ZcFC4w7Gklu1": {
+      "email": "rectoria@ivanperez.tech",
+      "role": "admin",
+      "updatedBy": "system"
+    },
+    "greguE3mPXOR7GVs31KJs7ODlak2": {
+      "email": "docente@ivanperez.tech",
+      "role": "instructor",
+      "updatedBy": "system"
+    }
+  },
+  "roles": {
+    "CAGz5BSpHIfw5hnlgTFGR924gwL2": "owner"
+  },
+  "rectoria_directives": {
+    "academic_config": {
+      "max_grade": 5,
+      "min_grade": 1,
+      "min_passing_grade": 3.5,
+      "scale": "1.0-5.0",
+      "updatedAt": "2026-11-01T18:38:06.165Z",
+      "updatedBy": "administrator@ivanperez.tech"
+    },
+    "content": "1. Enfoque Estricto: Priorizar desacoplamiento de capas y manejo tipado de errores sobre atajos cosméticos.\n2. Exigencia en Rúbricas: Calificar de acuerdo al cumplimiento estricto del estándar Clean Architecture.\n3. TutorIA: Mantener tono sobrio, explicativo, sin respuestas genéricas y jamás anunciar componentes internos de UI.\n4. Cancelación con Respeto: Aplicar devolución de créditos automática si el estudiante cancela con más de 4 horas de anticipación.",
+    "min_passing_grade": 3.5,
+    "updatedAt": "2026-11-01T18:38:06.165Z",
+    "updatedBy": "administrator@ivanperez.tech"
+  },
+  "courses": {
+    "ipt-master-fullstack": {
+      "category": "Ingeniería de Software",
+      "courseModality": "static",
+      "courseType": "static",
+      "description": "Aprende a diseñar sistemas distribuidos, microservicios y aplicaciones de producción con los estándares de IPT.",
+      "isFreePublic": true,
+      "level": "Profesional",
+      "licenseHash": "LIC-IPT-MASTER-A8F2-99BC",
+      "modules": [
+        {
+          "description": "Conceptos clave de diseño de sistemas, escalabilidad y APIs de alto rendimiento.",
+          "id": "mod-01",
+          "lessons": [
+            {
+              "description": "Configuración inicial y principios de diseño modular.",
+              "duration": "12:00",
+              "id": "les-01",
+              "inVideoCheckpoints": [
+                {
+                  "correctIndex": 0,
+                  "explanation": "El desacoplamiento permite escalar componentes individualmente y mantener la resiliencia del sistema.",
+                  "id": "cp-01",
+                  "options": [
+                    "Escalabilidad independiente y aislamiento de fallos",
+                    "Reducir el consumo de memoria a cero",
+                    "Evitar el uso de bases de datos"
+                  ],
+                  "prompt": "¿Cuál es el beneficio primordial de desacoplar los servicios en microservicios?",
+                  "timestampSeconds": 180
+                }
+              ],
+              "order": 1,
+              "title": "Lección 1: Introducción a la Arquitectura Distribuida",
+              "videoType": "youtube",
+              "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            }
+          ],
+          "order": 1,
+          "resources": [
+            {
+              "description": "Documento oficial con patrones de diseño y diagramas C4.",
+              "fileSize": "2.4 MB",
+              "id": "res-01",
+              "title": "Guía de Arquitectura de Sistemas Distribuidos",
+              "type": "document",
+              "url": "https://example.com/recursos/guia-arquitectura-ipt.pdf"
+            }
+          ],
+          "title": "Módulo 1: Fundamentos de Arquitectura Cloud y Microservicios"
+        }
+      ],
+      "progressionMode": "free",
+      "published": true,
+      "slug": "ipt-master-fullstack",
+      "subtitle": "Formación especializada en ingeniería cloud, microservicios y sistemas de producción",
+      "thumbnail": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=1200",
+      "title": "IPT Master"
+    }
+  },
+  "lms_plan_configs": {
+    "free": {
+      "allowsAllStatic": false,
+      "allowsLiveAccess": false,
+      "currency": "COP",
+      "id": "free",
+      "maxDynamicCourses": 0,
+      "monthlyLiveCredits": 0,
+      "name": "Plan Free",
+      "priceMonthly": 0,
+      "taxRatePercent": 0,
+      "trialDays": 0,
+      "trialLiveCredits": 0
+    },
+    "pro": {
+      "allowsAllStatic": true,
+      "allowsLiveAccess": false,
+      "currency": "COP",
+      "id": "pro",
+      "maxDynamicCourses": 1,
+      "monthlyLiveCredits": 2,
+      "name": "Plan Pro",
+      "priceMonthly": 89000,
+      "taxRatePercent": 19,
+      "trialDays": 20,
+      "trialLiveCredits": 1
+    },
+    "pro_plus": {
+      "allowsAllStatic": true,
+      "allowsLiveAccess": true,
+      "currency": "COP",
+      "id": "pro_plus",
+      "maxDynamicCourses": 3,
+      "monthlyLiveCredits": 8,
+      "name": "Plan Pro+",
+      "priceMonthly": 189000,
+      "taxRatePercent": 19,
+      "trialDays": 15,
+      "trialLiveCredits": 1
+    }
+  },
+  "rectoria_trial_offers": {
+    "active": true,
+    "badge": "Fomento IPT 2026",
+    "description": "Acceso completo al aula virtual, entregas de proyectos corregidas por docentes con rúbricas de ingeniería, historial académico y escenarios interactivos.",
+    "discountNote": "Tarifa subsidiada por la Rectoría General para estudiantes destacados.",
+    "durationDays": 7,
+    "headline": "Pase de Fomento Académico Rectoral",
+    "isFreeTrial": false,
+    "perks": [
+      "Entrega de tareas y corrección docente con rúbricas oficiales",
+      "Kárdex y registro acumulado de rendimiento académico",
+      "Acceso completo a escenarios interactivos y laboratorios",
+      "Cancelación flexible en 1 clic sin penalidades"
+    ],
+    "priceCop": 19000,
+    "priceUsd": 4.99,
+    "targetPlan": "pro"
+  }
+}

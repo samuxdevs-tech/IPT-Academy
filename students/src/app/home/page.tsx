@@ -25,7 +25,9 @@ import {
   Calendar,
   UserCheck,
   Radio,
+  CalendarClock,
 } from 'lucide-react';
+import { StudentTutoriaBookingModal } from '@/components/calendar/StudentTutoriaBookingModal';
 
 interface SpecializationItem {
   slug: string;
@@ -49,6 +51,7 @@ export default function StudentCampusPage() {
   } = useSubscription();
   const { liveSessions: rawLiveSessions } = useLms();
   const liveSessions = Array.isArray(rawLiveSessions) ? rawLiveSessions : [];
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   const [allCoursesList, setAllCoursesList] = useState<SpecializationItem[]>([]);
 
@@ -122,11 +125,6 @@ export default function StudentCampusPage() {
 
   const [selectedCourseIndex, setSelectedCourseIndex] = useState(0);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
-
-  // Estado para Fila Virtual 1 a 1 (Exclusivo Your Plan)
-  const [inQueue1on1, setInQueue1on1] = useState(false);
-  const [queueTopic, setQueueTopic] = useState('');
-  const [queueTicketCode, setQueueTicketCode] = useState<string | null>(null);
 
   useEffect(() => {
     if (selectedCourseIndex >= (userCourses?.length || 0)) {
@@ -211,21 +209,6 @@ export default function StudentCampusPage() {
       return '';
     }
   }, [subscription]);
-
-  const handleJoin1on1Queue = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (entitlements.availableLiveCredits <= 0) {
-      if (currentPlanId === 'free' || currentPlanId === 'pro') {
-        openPricingModal('pro_plus');
-      } else if (currentPlanId === 'pro_plus') {
-        openPricingModal('your_plan');
-      }
-      return;
-    }
-    const ticket = `1A1-${Math.floor(100 + Math.random() * 900)}`;
-    setQueueTicketCode(ticket);
-    setInQueue1on1(true);
-  };
 
   return (
     <div className="relative min-h-screen bg-[#000000] text-white selection:bg-[#8052ff] selection:text-white overflow-x-hidden font-sans">
@@ -520,144 +503,77 @@ export default function StudentCampusPage() {
 
 
         {/* =========================================================================
-            FILA VIRTUAL DE ASESORÍA Y TUTORÍA 1 A 1
+            AGENDAMIENTO DE TUTORÍA 1 A 1 SINCRÓNICA CON EL DOCENTE
            ========================================================================= */}
-        <div className="rounded-3xl border-2 border-[#15846e]/50 bg-gradient-to-br from-[#15846e]/15 via-[#09090b] to-[#09090b] p-6 sm:p-8 space-y-6">
+        <div className="rounded-3xl border border-violet-500/30 bg-gradient-to-br from-violet-600/15 via-[#09090d] to-[#09090d] p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#15846e]/20 border border-[#15846e]/40 text-[#15846e] text-xs font-semibold">
-                <Radio className="w-3.5 h-3.5 animate-pulse" />
-                <span>Atención y Asesoría 1 a 1 en Tiempo Real</span>
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-400 text-xs font-semibold">
+                <CalendarClock className="w-3.5 h-3.5" />
+                <span>Asesoría y Tutoría 1 a 1 Sincrónica</span>
               </div>
-              <h3 className="text-2xl font-normal text-white pt-1">
-                Fila Virtual de Asesorías 1 a 1 con el Profesor
+              <h3 className="text-2xl font-bold text-white tracking-tight pt-1">
+                Agenda tu Cita Personalizada con el Docente
               </h3>
-              <p className="text-xs text-[#bdbdbd] max-w-2xl">
-                Durante el horario de oficina del instructor puedes tomar turno para conectarte en
-                una sesión privada individual de 15 minutos y resolver bloqueos específicos de tu
-                programa.
+              <p className="text-xs text-zinc-400 max-w-2xl leading-relaxed">
+                Selecciona en 3 clics el día y la hora disponible en el calendario oficial del profesor para resolver dudas, revisar proyectos o recibir orientación individualizada.
               </p>
             </div>
 
-            <div className="px-4 py-3 rounded-2xl bg-[#000000] border border-[#15846e]/40 text-right shrink-0">
-              <span className="text-[10px] font-mono uppercase text-[#15846e] block">
-                Estado de Sala 1 a 1
+            <div className="px-5 py-3.5 rounded-2xl bg-black/60 border border-white/10 text-right shrink-0">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-violet-400 block mb-0.5">
+                Créditos de Tutoría
               </span>
-              <span className="text-sm font-bold text-white">
+              <span className="text-base font-bold text-white font-mono">
                 {entitlements.availableLiveCredits > 0
-                  ? `${entitlements.availableLiveCredits} créditos disponibles`
-                  : 'Sin créditos disponibles'}
+                  ? `${entitlements.availableLiveCredits} disponibles`
+                  : '0 disponibles'}
               </span>
             </div>
           </div>
 
-          {/* Validar créditos primero: credits > 0 */}
-          {entitlements.availableLiveCredits > 0 ? (
-            !inQueue1on1 ? (
-              <form
-                onSubmit={handleJoin1on1Queue}
-                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2"
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-white/5 pt-4">
+            <div className="flex items-center gap-2 text-xs text-zinc-400">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Sesiones sincrónicas de 60 minutos con sala en vivo inmediata.</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/calendar"
+                className="px-4 py-2.5 rounded-xl border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-all text-center"
               >
-                <input
-                  type="text"
-                  required
-                  value={queueTopic}
-                  onChange={(e) => setQueueTopic(e.target.value)}
-                  placeholder="Describe brevemente el tema o bloqueo que deseas revisar 1 a 1 con el profesor..."
-                  className="flex-1 px-4 py-3.5 rounded-2xl bg-[#000000] border border-[#ffffff]/15 text-xs text-white placeholder:text-[#9a9a9a]/60 focus:outline-none focus:border-[#15846e]"
-                />
+                Ver Mi Calendario
+              </Link>
+
+              {entitlements.availableLiveCredits > 0 ? (
                 <button
-                  type="submit"
-                  className="px-6 py-3.5 rounded-full bg-[#15846e] hover:bg-[#116b59] text-white text-xs font-semibold shrink-0 cursor-pointer transition-all"
+                  type="button"
+                  onClick={() => setIsBookingModalOpen(true)}
+                  className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Tomar Turno 1 a 1 Ahora (1 Crédito)
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Agendar Cita en 3 Clics</span>
                 </button>
-              </form>
-            ) : (
-              <div className="p-5 rounded-2xl bg-[#000000] border border-[#15846e] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#15846e]">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Turno Activo #{queueTicketCode} · Posición #1 en Fila</span>
-                  </div>
-                  <p className="text-sm font-semibold text-white">Tema: {queueTopic}</p>
-                  <p className="text-xs text-[#9a9a9a]">
-                    Tu sala privada 1 a 1 está lista para ingresar.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setInQueue1on1(false)}
-                    className="px-4 py-2.5 rounded-full border border-[#ffffff]/15 text-xs text-[#bdbdbd] hover:text-white cursor-pointer"
-                  >
-                    Liberar Turno
-                  </button>
-                  <Link
-                    href="/live?mode=1on1"
-                    className="px-5 py-2.5 rounded-full bg-[#15846e] text-white text-xs font-semibold"
-                  >
-                    Entrar a Sala Privada 1 a 1
-                  </Link>
-                </div>
-              </div>
-            )
-          ) : (
-            /* SI credits <= 0 SE VALIDA EL PLAN */
-            <div className="pt-2">
-              {(currentPlanId === 'free' || currentPlanId === 'pro') && (
-                <div className="rounded-2xl border border-[#ffb829]/40 bg-black/60 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#ffb829] block">
-                      Aumentar Membresía para Tutoría 1 a 1
-                    </span>
-                    <p className="text-xs text-[#d1d5db]">
-                      No dispones de créditos para solicitar asesoría individual. Actualiza a Plan Pro+ para recibir tus créditos mensuales de tutoría y clases en vivo.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => openPricingModal('pro_plus')}
-                    className="px-5 py-2.5 rounded-full bg-[#ffb829] hover:bg-[#e5a524] text-black text-xs font-bold shrink-0 transition-colors cursor-pointer shadow-[0_0_15px_rgba(255,184,41,0.3)]"
-                  >
-                    Aumentar a Plan Pro+
-                  </button>
-                </div>
-              )}
-
-              {currentPlanId === 'pro_plus' && (
-                <div className="rounded-2xl border border-[#8052ff]/40 bg-black/60 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#a78bfa] block">
-                      Créditos Agotados en este Ciclo · Plan Pro+
-                    </span>
-                    <p className="text-xs text-[#d1d5db]">
-                      Has utilizado tus créditos de este ciclo. Tus créditos se regenerarán automáticamente en <strong className="text-white font-semibold">{daysUntilRenewal} días</strong>{formattedRenewalDate ? ` (el ${formattedRenewalDate})` : ''}, o puedes aumentar a <strong className="text-[#a78bfa]">Your Plan</strong> para recibir 12 créditos mensuales y temario individual 1 a 1 a la medida.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => openPricingModal('your_plan')}
-                    className="px-5 py-2.5 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-white text-xs font-bold shrink-0 transition-colors cursor-pointer shadow-[0_0_20px_rgba(128,82,255,0.4)]"
-                  >
-                    Aumentar a Your Plan
-                  </button>
-                </div>
-              )}
-
-              {currentPlanId === 'your_plan' && (
-                <div className="rounded-2xl border border-[#15846e]/40 bg-black/60 p-5">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#34d399] block mb-1">
-                    Créditos de Ciclo Consumidos · Your Plan
-                  </span>
-                  <p className="text-xs text-[#d1d5db]">
-                    Has utilizado tus 12 créditos de este ciclo. Tu balance se regenerará en <strong className="text-white font-semibold">{daysUntilRenewal} días</strong>{formattedRenewalDate ? ` (el ${formattedRenewalDate})` : ''}.
-                  </p>
-                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => openPricingModal('pro_plus')}
+                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Obtener Créditos de Tutoría</span>
+                </button>
               )}
             </div>
-          )}
+          </div>
         </div>
+
+        {/* Modal de Agendamiento Directo */}
+        <StudentTutoriaBookingModal
+          isOpen={isBookingModalOpen}
+          onClose={() => setIsBookingModalOpen(false)}
+        />
       </div>
 
       {/* Modal de Intercambio de Curso Dinámico (Para Plan Pro) */}

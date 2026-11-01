@@ -11,10 +11,12 @@ import {
   ArrowRight,
   Video,
   FileCheck2,
+  Sparkles,
 } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useLms } from '@/context/LmsContext';
 import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
+import { StudentTutoriaBookingModal } from '@/components/calendar/StudentTutoriaBookingModal';
 
 interface CalendarScheduleItem {
   id: string;
@@ -34,6 +36,7 @@ export default function InstitutionalCalendarPage() {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [exportNotice, setExportNotice] = useState<string | null>(null);
   const [rtdbEvents, setRtdbEvents] = useState<any[]>([]);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState<boolean>(false);
 
   // Sincronización en tiempo real con Firebase RTDB (lms_calendar agendado por docentes)
   useEffect(() => {
@@ -169,18 +172,27 @@ export default function InstitutionalCalendarPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {visibleEvents.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                onClick={handleDownloadCalendar}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#8052ff] hover:bg-[#6e3ff3] text-xs font-medium text-white transition-all cursor-pointer shadow-[0_0_20px_rgba(128,82,255,0.3)]"
+                onClick={() => setIsBookingModalOpen(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-violet-600 hover:bg-violet-500 text-xs font-semibold text-white transition-all cursor-pointer shadow-[0_0_25px_rgba(128,82,255,0.35)]"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>Exportar a Mi Calendario</span>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Agendar Tutoría 1 a 1</span>
               </button>
-            )}
-          </div>
+
+              {visibleEvents.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleDownloadCalendar}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#181822] hover:bg-[#20202c] border border-white/10 text-xs font-medium text-white transition-all cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Exportar</span>
+                </button>
+              )}
+            </div>
         </div>
 
         {exportNotice && (
@@ -200,6 +212,7 @@ export default function InstitutionalCalendarPage() {
         <div className="flex flex-wrap items-center gap-2">
           {[
             { id: 'all', label: 'Todos los eventos' },
+            { id: 'tutoring', label: 'Tutorías 1 a 1' },
             { id: 'live_class', label: 'Clases en Vivo' },
             { id: 'assignment_due', label: 'Fechas Límite de Tareas' },
           ].map((tab) => (
@@ -274,6 +287,11 @@ export default function InstitutionalCalendarPage() {
           </div>
         )}
       </div>
+
+      <StudentTutoriaBookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+      />
     </div>
     </AcademicFeatureGate>
   );
