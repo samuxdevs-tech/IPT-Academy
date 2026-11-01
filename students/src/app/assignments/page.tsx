@@ -33,6 +33,7 @@ import { useSubscription } from '@/context/SubscriptionContext';
 import { AcademicFeatureGate } from '@/components/AcademicFeatureGate';
 
 import { RubricCriterion, AssignmentItem } from '@/types/assignments';
+import { uploadStudentFileToR2 } from '@/lib/r2Storage';
 export type { RubricCriterion, AssignmentItem };
 
 const INITIAL_ASSIGNMENTS: AssignmentItem[] = [
@@ -288,6 +289,8 @@ function StudentAssignmentsContent() {
   const [stagedFiles, setStagedFiles] = useState<
     { name: string; sizeMb: number; type: string }[]
   >([]);
+  const [rawFiles, setRawFiles] = useState<File[]>([]);
+  const [isUploadingToR2, setIsUploadingToR2] = useState(false);
   const [isRecordingVoice, setIsRecordingVoice] = useState(false);
   const [voiceDurationSec, setVoiceDurationSec] = useState(0);
   const voiceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -329,12 +332,14 @@ function StudentAssignmentsContent() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
     const added = files.map((f) => ({
       name: f.name,
       sizeMb: Number((f.size / (1024 * 1024)).toFixed(2)) || 0.25,
       type: f.type || 'application/octet-stream',
     }));
     setStagedFiles((prev) => [...prev, ...added]);
+    setRawFiles((prev) => [...prev, ...files]);
   };
 
   const handleDeliverAssignment = async (e: React.FormEvent) => {
@@ -349,6 +354,25 @@ function StudentAssignmentsContent() {
     const studentName = user?.displayName || user?.email?.split('@')[0] || 'Estudiante IPT';
     const studentEmail = user?.email || 'estudiante@iptapps.com';
 
+    setIsUploadingToR2(true);
+    setSubmitBanner('Subiendo archivos de evidencia a la nube segura...');
+
+    let uploadedFilesList: any[] = [];
+    if (rawFiles.length > 0) {
+      for (const rf of rawFiles) {
+        try {
+          const uploaded = await uploadStudentFileToR2(rf, studentUid, activeAssignment.id);
+          uploadedFilesList.push(uploaded);
+        } catch (uploadErr) {
+          console.warn('Error subiendo archivo a R2:', uploadErr);
+        }
+      }
+    }
+
+    if (uploadedFilesList.length === 0 && stagedFiles.length > 0) {
+      uploadedFilesList = stagedFiles;
+    }
+
     const submissionPayload = {
       id: `sub_${activeAssignment.id}_${studentUid}`,
       assignment_id: activeAssignment.id,
@@ -360,8 +384,8 @@ function StudentAssignmentsContent() {
       submission_text_content: notesInput.trim() || 'Entrega técnica adjunta.',
       repo_url: repoUrlInput.trim() || null,
       files:
-        stagedFiles.length > 0
-          ? stagedFiles
+        uploadedFilesList.length > 0
+          ? uploadedFilesList
           : [{ name: 'entrega-arquitectura.pdf', sizeMb: 1.1, type: 'application/pdf' }],
       voice_note_duration_sec: voiceDurationSec > 0 ? voiceDurationSec : null,
       submitted_at: nowIso,
@@ -398,9 +422,11 @@ function StudentAssignmentsContent() {
     setNotesInput('');
     setRepoUrlInput('');
     setStagedFiles([]);
+    setRawFiles([]);
+    setIsUploadingToR2(false);
     setVoiceDurationSec(0);
     setSubmitBanner(
-      'Tu entrega ha sido sincronizada en tiempo real con el Studio Docente para su evaluación.'
+      'Tu entrega ha sido subida y sincronizada en tiempo real con el Studio Docente para su evaluación.'
     );
   };
 
@@ -958,9 +984,10 @@ function StudentAssignmentsContent() {
                           <span>{f.name}</span>
                           <button
                             type="button"
-                            onClick={() =>
-                              setStagedFiles((prev) => prev.filter((_, i) => i !== idx))
-                            }
+                            onClick={() => {
+                              setStagedFiles((prev) => prev.filter((_, i) => i !== idx));
+                              setRawFiles((prev) => prev.filter((_, i) => i !== idx));
+                            }}
                             className="text-[#9a9a9a] hover:text-white cursor-pointer"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -973,10 +1000,19 @@ function StudentAssignmentsContent() {
                   <div className="flex justify-end pt-2">
                     <button
                       type="submit"
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-white text-xs font-semibold shadow-[0_0_25px_rgba(128,82,255,0.4)] transition-all cursor-pointer"
+                      disabled={isUploadingToR2}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] disabled:opacity-50 text-white text-xs font-semibold shadow-[0_0_25px_rgba(128,82,255,0.4)] transition-all cursor-pointer"
                     >
-                      <Send className="w-4 h-4" />
-                      <span>Registrar Entrega Oficial</span>
+                      {isUploadingToR2 ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                      <span>
+                        {isUploadingToR2
+                          ? 'Subiendo archivos a la nube...'
+                          : 'Registrar Entrega Oficial'}
+                      </span>
                     </button>
                   </div>
                 </form>

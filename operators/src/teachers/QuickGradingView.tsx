@@ -316,8 +316,17 @@ export function QuickGradingView() {
               <div className="space-y-2">
                 {currentSub.files.map((file: any, fIdx: number) => {
                   const fileName = file.file_name || file.name || "Archivo adjunto";
-                  const fileUrl = file.download_url || file.url || file.file_url || "";
-                  const fileSize = file.file_size || file.size;
+                  const fileUrl =
+                    file.download_url ||
+                    file.url ||
+                    file.file_url ||
+                    file.r2_url ||
+                    file.storage_url ||
+                    "";
+                  const fileSize =
+                    file.file_size ||
+                    file.size ||
+                    (file.sizeMb ? Math.round(file.sizeMb * 1024 * 1024) : undefined);
 
                   return (
                     <div
@@ -335,7 +344,9 @@ export function QuickGradingView() {
                             });
                           }
                         }}
-                        className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                        className={`flex items-center gap-3 min-w-0 flex-1 ${
+                          fileUrl ? "cursor-pointer" : "cursor-default"
+                        }`}
                       >
                         <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                           {getFileIcon(fileName)}
@@ -351,13 +362,15 @@ export function QuickGradingView() {
                               <span>Documento</span>
                             )}
                             <span>•</span>
-                            <span className="text-violet-400">Clic para previsualizar</span>
+                            <span className={fileUrl ? "text-violet-400" : "text-amber-400"}>
+                              {fileUrl ? "Clic para previsualizar" : "Archivo local sin enlace"}
+                            </span>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                        {fileUrl && (
+                        {fileUrl ? (
                           <button
                             type="button"
                             onClick={() => {
@@ -374,6 +387,10 @@ export function QuickGradingView() {
                             <Eye className="w-3.5 h-3.5" />
                             <span>Visualizar</span>
                           </button>
+                        ) : (
+                          <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md">
+                            Sin enlace en la nube
+                          </span>
                         )}
                       </div>
                     </div>
