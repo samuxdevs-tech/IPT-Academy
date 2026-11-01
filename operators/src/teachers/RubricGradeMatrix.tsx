@@ -5,6 +5,8 @@ import {
   Table,
   Download,
   Plus,
+  Trash2,
+  Sliders,
   CheckCircle2,
   Inbox,
   Edit3,
@@ -106,6 +108,13 @@ export function RubricGradeMatrix() {
   const [newCutId, setNewCutId] = useState<string>("cut_1");
   const [newWeight, setNewWeight] = useState<number>(20);
   const [newDueDate, setNewDueDate] = useState<string>("");
+  const [newEvaluationMode, setNewEvaluationMode] = useState<"rubric" | "direct">("direct");
+  const [customCriteriaList, setCustomCriteriaList] = useState<
+    Array<{ id: string; title: string; weightPercent: number }>
+  >([
+    { id: "crit-1", title: "Implementación y Dominio Técnico", weightPercent: 60 },
+    { id: "crit-2", title: "Documentación y Sustentación", weightPercent: 40 },
+  ]);
 
   // Segmentación / Targeting de la tarea
   const [assignmentTarget, setAssignmentTarget] = useState<"course" | "individual" | "batch">("course");
@@ -349,32 +358,21 @@ export function RubricGradeMatrix() {
       targetStudentName,
       targetGroupId,
       targetGroupName,
-      rubric: [
-        {
-          id: "crit-1",
-          title: "Calidad Técnica e Implementación",
-          description: "Cumplimiento de requerimientos funcionales y buenas prácticas.",
-          weightPercent: 60,
-          maxPoints: 5.0,
-          levels: [
-            { id: "l1", label: "Excelente (5.0)", points: 5.0, description: "Solución completa y verificada." },
-            { id: "l2", label: "Aceptable (3.5)", points: 3.5, description: "Cumple los requisitos principales." },
-            { id: "l3", label: "Por mejorar (2.0)", points: 2.0, description: "Faltan componentes esenciales." },
-          ],
-        },
-        {
-          id: "crit-2",
-          title: "Documentación y Sustentación",
-          description: "Claridad en la explicación arquitectónica y conclusiones.",
-          weightPercent: 40,
-          maxPoints: 5.0,
-          levels: [
-            { id: "l1", label: "Excelente (5.0)", points: 5.0, description: "Análisis claro y bien estructurado." },
-            { id: "l2", label: "Aceptable (3.5)", points: 3.5, description: "Documentación básica suficiente." },
-            { id: "l3", label: "Por mejorar (2.0)", points: 2.0, description: "Sin justificación detallada." },
-          ],
-        },
-      ],
+      rubric:
+        newEvaluationMode === "direct"
+          ? []
+          : customCriteriaList.map((c) => ({
+              id: c.id,
+              title: c.title,
+              description: "Criterio evaluado sobre escala institucional 1.0 a 5.0",
+              weightPercent: c.weightPercent,
+              maxPoints: 5.0,
+              levels: [
+                { id: "l1", label: "Excelente (5.0)", points: 5.0, description: "Solución completa y verificada." },
+                { id: "l2", label: "Aceptable (3.5)", points: 3.5, description: "Cumple los requisitos principales." },
+                { id: "l3", label: "Por mejorar (2.0)", points: 2.0, description: "Faltan componentes esenciales." },
+              ],
+            })),
     };
 
     const nextAssignments = [...assignments, newAssignment];
@@ -928,6 +926,112 @@ export function RubricGradeMatrix() {
                   placeholder="Detalla los entregables esperados y los criterios de revisión..."
                   className="w-full bg-[#181820] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-violet-500 resize-none"
                 />
+              </div>
+
+              {/* Selector de Modalidad de Evaluación */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-semibold text-zinc-300 block">
+                  Modalidad de Evaluación de la Tarea:
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewEvaluationMode("direct")}
+                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                      newEvaluationMode === "direct"
+                        ? "bg-violet-600/20 border-violet-500 text-white shadow-sm"
+                        : "bg-[#181820] border-white/5 text-zinc-400 hover:border-white/10"
+                    }`}
+                  >
+                    <span className="text-xs font-bold block">1. Calificación Directa</span>
+                    <span className="text-[10px] text-zinc-400 block mt-0.5">
+                      Nota sobre 5.0 con observaciones libres
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewEvaluationMode("rubric")}
+                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                      newEvaluationMode === "rubric"
+                        ? "bg-violet-600/20 border-violet-500 text-white shadow-sm"
+                        : "bg-[#181820] border-white/5 text-zinc-400 hover:border-white/10"
+                    }`}
+                  >
+                    <span className="text-xs font-bold block">2. Rúbrica Personalizable</span>
+                    <span className="text-[10px] text-zinc-400 block mt-0.5">
+                      Criterios propios definidos por el docente
+                    </span>
+                  </button>
+                </div>
+
+                {newEvaluationMode === "rubric" && (
+                  <div className="p-3.5 rounded-xl bg-[#161620] border border-white/10 space-y-2.5 animate-in fade-in">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-white">Criterios de Evaluación ({customCriteriaList.length})</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCustomCriteriaList((prev) => [
+                            ...prev,
+                            { id: `crit-${Date.now()}`, title: `Criterio ${prev.length + 1}`, weightPercent: 20 },
+                          ])
+                        }
+                        className="text-[11px] text-violet-400 hover:underline flex items-center gap-1 cursor-pointer font-semibold"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Añadir criterio</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {customCriteriaList.map((crit) => (
+                        <div key={crit.id} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={crit.title}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setCustomCriteriaList((prev) =>
+                                prev.map((c) => (c.id === crit.id ? { ...c, title: val } : c))
+                              );
+                            }}
+                            className="flex-1 bg-[#121217] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-violet-500 focus:outline-none"
+                            placeholder="Nombre del criterio"
+                          />
+                          <div className="flex items-center gap-1 shrink-0">
+                            <input
+                              type="number"
+                              min="5"
+                              max="100"
+                              value={crit.weightPercent}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setCustomCriteriaList((prev) =>
+                                  prev.map((c) => (c.id === crit.id ? { ...c, weightPercent: val } : c))
+                                );
+                              }}
+                              className="w-16 bg-[#121217] border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white text-center font-mono focus:border-violet-500 focus:outline-none"
+                            />
+                            <span className="text-xs text-zinc-400 font-mono">%</span>
+                          </div>
+                          {customCriteriaList.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCustomCriteriaList((prev) => prev.filter((c) => c.id !== crit.id))
+                              }
+                              className="p-1.5 text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer"
+                              title="Eliminar criterio"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-3">

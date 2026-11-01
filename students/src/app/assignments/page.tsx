@@ -450,8 +450,13 @@ function StudentAssignmentsContent() {
     if (!appealReason.trim()) return;
 
     const crit =
-      activeAssignment.rubric.find((c) => c.id === appealCriterionId) ||
-      activeAssignment.rubric[0];
+      activeAssignment.rubric?.find((c) => c.id === appealCriterionId) ||
+      activeAssignment.rubric?.[0] || {
+        id: 'crit-direct',
+        title: 'Calificación Global y Observaciones del Docente',
+        awardedPoints: activeAssignment.finalScore ?? 0,
+        maxPoints: 5.0,
+      };
     const folio = `APL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const nowIso = new Date().toISOString();
     const nowStr = nowIso.slice(0, 16).replace('T', ' ');
@@ -774,7 +779,20 @@ function StudentAssignmentsContent() {
                 </div>
 
                 <div className="space-y-3">
-                  {activeAssignment.rubric.map((crit) => {
+                  {(!activeAssignment.rubric || activeAssignment.rubric.length === 0) ? (
+                    <div className="p-4 rounded-2xl bg-[#000000] border border-[#ffffff]/10 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-white">Modalidad: Calificación Directa con Observaciones</span>
+                        <span className="text-[11px] font-mono text-[#8052ff] bg-[#8052ff]/10 px-2.5 py-0.5 rounded-full border border-[#8052ff]/20">
+                          Sin Rúbrica Fija
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#9a9a9a]">
+                        Esta actividad es evaluada de manera integral por el docente titular con base en la evidencia entregada y observaciones cualitativas.
+                      </p>
+                    </div>
+                  ) : (
+                  activeAssignment.rubric.map((crit) => {
                     const hasScore = typeof crit.awardedPoints === 'number';
                     return (
                       <div
@@ -802,7 +820,7 @@ function StudentAssignmentsContent() {
                         )}
                       </div>
                     );
-                  })}
+                  }))}
                 </div>
               </div>
 
@@ -1070,17 +1088,23 @@ function StudentAssignmentsContent() {
                 <label className="text-xs font-medium text-white block">
                   Criterio de la rúbrica que deseas apelar:
                 </label>
-                <select
-                  value={appealCriterionId}
-                  onChange={(e) => setAppealCriterionId(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#000000] border border-[#ffffff]/15 text-xs text-white focus:outline-none focus:border-[#8052ff]"
-                >
-                  {activeAssignment.rubric.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.title} ({(c.awardedPoints ?? 0).toFixed(1)}/5.0 - Peso: {c.weightPercent}%)
-                    </option>
-                  ))}
-                </select>
+                {activeAssignment.rubric && activeAssignment.rubric.length > 0 ? (
+                  <select
+                    value={appealCriterionId}
+                    onChange={(e) => setAppealCriterionId(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#000000] border border-[#ffffff]/15 text-xs text-white focus:outline-none focus:border-[#8052ff]"
+                  >
+                    {activeAssignment.rubric.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.title} ({(c.awardedPoints ?? 0).toFixed(1)}/5.0 - Peso: {c.weightPercent}%)
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="p-3 rounded-xl bg-[#000000] border border-[#ffffff]/15 text-xs text-zinc-300">
+                    <span>Calificación global con observaciones ({((activeAssignment.finalScore ?? 0)).toFixed(1)} / 5.0)</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1.5">
