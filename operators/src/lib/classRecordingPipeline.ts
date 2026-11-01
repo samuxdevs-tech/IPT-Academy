@@ -1,6 +1,6 @@
 import { ref as dbRef, set } from "firebase/database";
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
-import { rtdb, storage } from "@/lib/firebase";
+import { rtdb } from "@/lib/firebase";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 export interface SubtitleCue {
   id: string;
@@ -34,17 +34,50 @@ export interface RecordedClassData {
 }
 
 /**
- * Sube el video grabado a Firebase Storage y retorna la URL pública de descarga.
+ * Cliente de Cloudflare R2 con compatibilidad S3.
+ */
+function getR2Client(): S3Client {
+  const accountId = process.env.NEXT_PUBLIC_R2_ACCOUNT_ID || "9a58145ae69d0014e5693b482fead1ad";
+  const accessKeyId = process.env.NEXT_PUBLIC_R2_ACCESS_KEY_ID || "b61b164a6deed094d7fd8f2fe917ce22";
+  const secretAccessKey =
+    process.env.NEXT_PUBLIC_R2_SECRET_ACCESS_KEY ||
+    "ef9d25e7e4d6e8dfb9d63e2496345a4655694644f68b0a3fcc9986306876185a";
+
+  return new S3Client({
+    region: "auto",
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  });
+}
+
+/**
+ * Sube el video grabado a Cloudflare R2 y retorna la URL pública directa de reproducción.
  */
 export async function uploadRecordedVideo(blob: Blob, code8: string): Promise<string> {
   const fileName = `recorded_classes/${code8}_${Date.now()}.webm`;
-  const fileRef = storageRef(storage, fileName);
-  const metadata = {
-    contentType: blob.type || "video/webm",
-  };
-  const snapshot = await uploadBytes(fileRef, blob, metadata);
-  const downloadUrl = await getDownloadURL(snapshot.ref);
-  return downloadUrl;
+  const bucketName = process.env.NEXT_PUBLIC_R2_BUCKET_NAME || "ipt-academy";
+  const publicBaseUrl = (
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
+    "https://pub-f0322ab131db477f82e5ebddb5095957.r2.dev"
+  ).replace(/\/$/, "");
+
+  const arrayBuffer = await blob.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+
+  const client = getR2Client();
+  await client.send(
+    new PutObjectCommand({
+      Bucket: bucketName,
+      Key: fileName,
+      Body: uint8Array,
+      ContentType: blob.type || "video/webm",
+    })
+  );
+
+  return `${publicBaseUrl}/${fileName}`;
 }
 
 /**
