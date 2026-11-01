@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, User, IdTokenResult } from "firebase/auth";
 import { getDatabase, ref, get } from "firebase/database";
+import { getStorage } from "firebase/storage";
 
 function sanitizeEnv(val: string | undefined, fallback: string): string {
   if (!val) return fallback;
@@ -50,6 +51,7 @@ export const app =
   getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const rtdb = getDatabase(app, resolvedDatabaseUrl);
+export const storage = getStorage(app);
 
 export interface OperatorUserProfile {
   uid: string;

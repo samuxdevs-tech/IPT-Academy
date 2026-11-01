@@ -37,8 +37,18 @@ import {
   Type,
   Undo2,
   Eraser,
+  Disc,
+  Pause,
+  Play,
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
+import {
+  uploadRecordedVideo,
+  generateClassSummaryWithOpenRouter,
+  saveRecordedClassRecord,
+  SubtitleCue,
+  RecordedClassData,
+} from "@/lib/classRecordingPipeline";
 import {
   ref,
   set,
@@ -237,6 +247,168 @@ export function LiveClassSplitView() {
   const peerRenegotiateStampRef = useRef<Map<string, number>>(new Map());
   const peerSessionsRef = useRef<Map<string, PeerSession>>(new Map());
   const railwayWsRef = useRef<WebSocket | null>(null);
+
+  // Estados y referencias para grabación de video y transcripción Web Speech en vivo
+  const [isRecording, setIsRecording] = useState(false);
+  const [isRecordingPaused, setIsRecordingPaused] = useState(false);
+  const [isSavingRecording, setIsSavingRecording] = useState(false);
+  const [savingStatusMessage, setSavingStatusMessage] = useState<string | null>(null);
+  const [recordedSubtitlesCount, setRecordedSubtitlesCount] = useState(0);
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedVideoChunksRef = useRef<Blob[]>([]);
+  const speechRecognitionRef = useRef<any>(null);
+  const speechRecognitionActiveRef = useRef<boolean>(false);
+  const recordedSubtitlesRef = useRef<SubtitleCue[]>([]);
+  const classStartTimeRef = useRef<number>(Date.now());
+
+  // Transcriptor nativo de voz en tiempo real con Web Speech API
+  const startWebSpeechTranscriber = useCallback((startTimeMs: number) => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      console.warn("Web Speech API no disponible en este navegador");
+      return;
+    }
+
+    try {
+      if (speechRecognitionRef.current) {
+        try { speechRecognitionRef.current.abort(); } catch {}
+        speechRecognitionRef.current = null;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "es-CO";
+
+      recognition.onresult = (event: any) => {
+        const now = Date.now();
+        const relativeSeconds = Math.max(0, Math.floor((now - startTimeMs) / 1000));
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            const phrase = event.results[i][0].transcript.trim();
+            if (phrase.length > 0) {
+              const startSec = Math.max(0, relativeSeconds - 3);
+              const endSec = relativeSeconds;
+              const cue: SubtitleCue = {
+                id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                start: startSec,
+                end: Math.max(startSec + 1, endSec),
+                text: phrase,
+              };
+              recordedSubtitlesRef.current.push(cue);
+              setRecordedSubtitlesCount(recordedSubtitlesRef.current.length);
+            }
+          }
+        }
+      };
+
+      recognition.onerror = (e: any) => {
+        if (e.error !== "no-speech") {
+          console.warn("SpeechRecognition error:", e.error);
+        }
+      };
+
+      recognition.onend = () => {
+        if (speechRecognitionActiveRef.current && isLiveRef.current) {
+          try {
+            recognition.start();
+          } catch {}
+        }
+      };
+
+      speechRecognitionActiveRef.current = true;
+      recognition.start();
+      speechRecognitionRef.current = recognition;
+    } catch (err) {
+      console.warn("No se pudo iniciar Web Speech API:", err);
+    }
+  }, []);
+
+  // Iniciar MediaRecorder capturando el flujo de video y audio activo del docente
+  const startMediaRecording = useCallback(() => {
+    try {
+      recordedVideoChunksRef.current = [];
+      const tracks: MediaStreamTrack[] = [];
+
+      const vTrack = screenVideoTrackRef.current || camTrackRef.current;
+      if (vTrack && vTrack.readyState === "live") {
+        tracks.push(vTrack);
+      } else {
+        const dummyCanvas = document.createElement("canvas");
+        dummyCanvas.width = 1280;
+        dummyCanvas.height = 720;
+        const ctx = dummyCanvas.getContext("2d");
+        if (ctx) {
+          ctx.fillStyle = "#09090b";
+          ctx.fillRect(0, 0, 1280, 720);
+          ctx.fillStyle = "#8052ff";
+          ctx.font = "bold 36px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("IPT Course · Clase en Vivo", 640, 360);
+        }
+        const dummyStream = dummyCanvas.captureStream(10);
+        const dummyVTrack = dummyStream.getVideoTracks()[0];
+        if (dummyVTrack) tracks.push(dummyVTrack);
+      }
+
+      if (micTrackRef.current && micTrackRef.current.readyState === "live") {
+        tracks.push(micTrackRef.current);
+      }
+      if (screenAudioTrackRef.current && screenAudioTrackRef.current.readyState === "live") {
+        tracks.push(screenAudioTrackRef.current);
+      }
+
+      const combinedStream = new MediaStream(tracks);
+      let mimeType = "video/webm;codecs=vp9,opus";
+      if (typeof MediaRecorder !== "undefined" && !MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "video/webm;codecs=vp8,opus";
+      }
+      if (typeof MediaRecorder !== "undefined" && !MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "video/webm";
+      }
+
+      const recorder = new MediaRecorder(combinedStream, {
+        mimeType: typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(mimeType) ? mimeType : undefined,
+      });
+
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          recordedVideoChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.start(3000);
+      mediaRecorderRef.current = recorder;
+      setIsRecording(true);
+      setIsRecordingPaused(false);
+    } catch (err) {
+      console.warn("No se pudo iniciar MediaRecorder:", err);
+    }
+  }, []);
+
+  const toggleRecordingPause = () => {
+    if (!mediaRecorderRef.current || mediaRecorderRef.current.state === "inactive") return;
+    if (isRecordingPaused) {
+      try { mediaRecorderRef.current.resume(); } catch {}
+      setIsRecordingPaused(false);
+      if (speechRecognitionRef.current) {
+        speechRecognitionActiveRef.current = true;
+        try { speechRecognitionRef.current.start(); } catch {}
+      }
+    } else {
+      try { mediaRecorderRef.current.pause(); } catch {}
+      setIsRecordingPaused(true);
+      if (speechRecognitionRef.current) {
+        speechRecognitionActiveRef.current = false;
+        try { speechRecognitionRef.current.stop(); } catch {}
+      }
+    }
+  };
 
   // Cronómetro en vivo de la sesión
   useEffect(() => {
@@ -1195,6 +1367,13 @@ export function LiveClassSplitView() {
     setCode8(generatedCode);
     setIsLive(true);
     setTimeout(() => syncLocalVideoPreview(), 50);
+
+    // Iniciar grabación de video y transcripción Web Speech en vivo
+    classStartTimeRef.current = nowMs;
+    recordedSubtitlesRef.current = [];
+    setRecordedSubtitlesCount(0);
+    startMediaRecording();
+    startWebSpeechTranscriber(nowMs);
   };
 
   // Escuchar espectadores conectados, manos levantadas, chat, lienzo y encuestas
@@ -1341,6 +1520,77 @@ export function LiveClassSplitView() {
   // Finalizar clase y limpiar listas efímeras (expulsa y desconecta a todos los estudiantes)
   const handleEndLiveClass = async () => {
     const activeCode = code8Ref.current || code8;
+    const sessionDurationSec = startedAtMs
+      ? Math.max(1, Math.floor((Date.now() - startedAtMs) / 1000))
+      : 60;
+
+    setIsSavingRecording(true);
+    setSavingStatusMessage("Finalizando grabación y preparando archivo...");
+
+    // 1. Detener MediaRecorder y SpeechRecognition
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      try { mediaRecorderRef.current.stop(); } catch {}
+    }
+    if (speechRecognitionRef.current) {
+      speechRecognitionActiveRef.current = false;
+      try { speechRecognitionRef.current.stop(); } catch {}
+    }
+
+    // Pequeño tiempo de espera para que se emita el último fragmento de datos
+    await new Promise((r) => setTimeout(r, 400));
+
+    // 2. Subir video a Firebase Storage si se capturaron fragmentos
+    let downloadVideoUrl = "";
+    if (activeCode && recordedVideoChunksRef.current.length > 0) {
+      try {
+        setSavingStatusMessage("Subiendo video de la clase a la nube...");
+        const videoBlob = new Blob(recordedVideoChunksRef.current, { type: "video/webm" });
+        downloadVideoUrl = await uploadRecordedVideo(videoBlob, activeCode);
+      } catch (err) {
+        console.warn("No se pudo subir el video a Storage:", err);
+      }
+    }
+
+    // 3. Generar resumen pedagógico y puntos clave con OpenRouter (modelo Free)
+    if (activeCode) {
+      try {
+        setSavingStatusMessage("Generando resumen y puntos clave con IA...");
+        const compiledTranscript = recordedSubtitlesRef.current.map((c) => c.text).join(" ");
+        const aiResult = await generateClassSummaryWithOpenRouter(
+          compiledTranscript,
+          currentTopic,
+          classTitle,
+          sessionDurationSec
+        );
+
+        setSavingStatusMessage("Publicando clase para los estudiantes...");
+        const classRecord: RecordedClassData = {
+          id: activeCode,
+          code8: activeCode,
+          title: classTitle,
+          topic: currentTopic,
+          teacherName,
+          teacherUid,
+          startedAt: startedAtMs || Date.now() - sessionDurationSec * 1000,
+          endedAt: Date.now(),
+          durationSeconds: sessionDurationSec,
+          videoUrl: downloadVideoUrl,
+          subtitles: recordedSubtitlesRef.current,
+          summary: aiResult.summary,
+          keyPoints: aiResult.keyPoints,
+          chapters: aiResult.chapters,
+          createdAt: Date.now(),
+        };
+
+        await saveRecordedClassRecord(classRecord);
+      } catch (saveErr) {
+        console.warn("Error guardando el registro de clase grabada:", saveErr);
+      }
+    }
+
+    setIsSavingRecording(false);
+    setSavingStatusMessage(null);
+
     isLiveRef.current = false;
     code8Ref.current = null;
     connectedUidsRef.current.clear();
@@ -2010,6 +2260,44 @@ export function LiveClassSplitView() {
             <span className="text-xs font-mono text-white pl-1 border-l border-[#10b981]/30">
               {elapsedStr}
             </span>
+          </div>
+
+          {/* Indicador de Grabación y Transcripción STT */}
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${
+                isRecordingPaused
+                  ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                  : "bg-rose-500/15 border-rose-500/30 text-rose-400"
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isRecordingPaused ? "bg-amber-400" : "bg-rose-500 animate-pulse"
+                }`}
+              />
+              <span className="hidden md:inline">{isRecordingPaused ? "PAUSADO" : "REC"}</span>
+              <span className="text-[11px] font-mono text-zinc-300 border-l border-white/10 pl-2">
+                {recordedSubtitlesCount} subtítulos
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={toggleRecordingPause}
+              title={
+                isRecordingPaused
+                  ? "Reanudar grabación y transcripción"
+                  : "Pausar grabación y transcripción"
+              }
+              className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-colors cursor-pointer"
+            >
+              {isRecordingPaused ? (
+                <Play className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <Pause className="w-3.5 h-3.5 text-amber-400" />
+              )}
+            </button>
           </div>
 
           <span className="text-sm font-medium text-zinc-200 truncate hidden sm:inline">
@@ -2872,6 +3160,24 @@ export function LiveClassSplitView() {
           <span className="hidden sm:inline">Finalizar</span>
         </button>
       </div>
+
+      {/* Overlay de procesamiento al finalizar clase */}
+      {isSavingRecording && (
+        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-[#8052ff]/20 border border-[#8052ff]/40 flex items-center justify-center mb-6 shadow-[0_0_50px_rgba(128,82,255,0.35)]">
+            <Sparkles className="w-8 h-8 text-[#b79aff] animate-spin" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">
+            Procesando Clase y Resumen con IA
+          </h3>
+          <p className="text-sm text-zinc-400 max-w-md mb-6">
+            {savingStatusMessage || "Guardando persistencia de la clase..."}
+          </p>
+          <div className="w-64 h-1.5 rounded-full bg-white/10 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-[#8052ff] via-[#b79aff] to-[#10b981] animate-pulse w-full" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -40,6 +40,7 @@ import {
   VideoOff,
   ArrowRight,
 } from 'lucide-react';
+import RecordedClassesViewer from '@/components/live/RecordedClassesViewer';
 
 interface ActiveMatchedRoom {
   code8: string;
@@ -139,6 +140,7 @@ export default function StudentLivePage() {
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [matchedRoom, setMatchedRoom] = useState<ActiveMatchedRoom | null>(null);
   const [hasJoinedRoom, setHasJoinedRoom] = useState(false);
+  const [viewMode, setViewMode] = useState<'live' | 'recordings'>('live');
   const [elapsedStr, setElapsedStr] = useState('00:00');
 
   // Controles de llamada del estudiante (Micrófono y Cámara desde la pantalla previa)
@@ -1393,6 +1395,11 @@ export default function StudentLivePage() {
     );
   }
 
+  // Vista de Grabaciones de Clases con Reproductor y Resúmenes IA
+  if (viewMode === 'recordings') {
+    return <RecordedClassesViewer onBackToLive={() => setViewMode('live')} />;
+  }
+
   // ============================================================================
   // VISTA A: SALA DE ESPERA CUANDO EL DOCENTE AÚN NO HA INICIADO TRANSMISIÓN
   // ============================================================================
@@ -1412,13 +1419,23 @@ export default function StudentLivePage() {
             <p className="text-sm text-zinc-400 max-w-md leading-relaxed mb-6">
               En cuanto el profesor inicie tu clase programada, entrarás automáticamente al escenario en vivo sin necesidad de ingresar códigos.
             </p>
-            <button
-              type="button"
-              onClick={() => router.push('/home')}
-              className="px-6 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/10 border border-white/10 text-xs font-medium text-white transition-colors cursor-pointer"
-            >
-              Volver al campus
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => router.push('/home')}
+                className="px-6 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/10 border border-white/10 text-xs font-medium text-white transition-colors cursor-pointer"
+              >
+                Volver al campus
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('recordings')}
+                className="px-6 py-2.5 rounded-full bg-[#8052ff]/20 hover:bg-[#8052ff]/30 border border-[#8052ff]/40 text-xs font-medium text-white transition-colors cursor-pointer flex items-center gap-2 shadow-[0_0_20px_rgba(128,82,255,0.25)]"
+              >
+                <Video className="w-3.5 h-3.5 text-[#b79aff]" />
+                <span>Ver clases grabadas</span>
+              </button>
+            </div>
           </div>
 
           <div className="lg:col-span-5 bg-[#09090b]/90 backdrop-blur-xl rounded-[24px] p-6 border border-white/[0.08] space-y-4 shadow-2xl">
@@ -1677,15 +1694,25 @@ export default function StudentLivePage() {
               </button>
             </div>
 
-            {/* Acciones inferiores: Volver al campus / Entrar a la clase */}
+            {/* Acciones inferiores: Volver al campus / Ver grabaciones / Entrar a la clase */}
             <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => forceCutAndExitClass('manual_leave')}
-                className="w-full sm:w-auto px-6 py-3 rounded-full bg-white/[0.05] hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-300 transition-colors cursor-pointer"
-              >
-                Volver al campus
-              </button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => forceCutAndExitClass('manual_leave')}
+                  className="px-5 py-3 rounded-full bg-white/[0.05] hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-300 transition-colors cursor-pointer"
+                >
+                  Volver al campus
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('recordings')}
+                  className="px-4 py-3 rounded-full bg-white/[0.05] hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-300 transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Video className="w-3.5 h-3.5 text-[#8052ff]" />
+                  <span>Grabaciones</span>
+                </button>
+              </div>
 
               <button
                 type="button"
@@ -2385,6 +2412,15 @@ export default function StudentLivePage() {
               {pinnedResources.length}
             </span>
           )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setViewMode('recordings')}
+          title="Ver clases grabadas"
+          className="w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer bg-white/10 hover:bg-white/15 text-white"
+        >
+          <Video className="w-4 h-4" />
         </button>
 
         <button
