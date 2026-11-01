@@ -136,6 +136,19 @@ async function sha256Hex(message: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function sanitizeForRtdb<T>(val: T): T {
+  if (val === undefined) return null as any;
+  if (val === null || typeof val !== "object") return val;
+  if (Array.isArray(val)) return val.map(sanitizeForRtdb) as any;
+  const cleaned: Record<string, any> = {};
+  for (const [k, v] of Object.entries(val)) {
+    if (v !== undefined) {
+      cleaned[k] = sanitizeForRtdb(v);
+    }
+  }
+  return cleaned as any;
+}
+
 export function RectoriaDeskWorkspace({
   userProfile,
   onGoToTeacher,
@@ -768,24 +781,24 @@ export function RectoriaDeskWorkspace({
         ...existingSub,
         id: existingSub.id || `sub_${targetStudentForCredits.uid}`,
         userId: targetStudentForCredits.uid,
-        userName: targetStudentForCredits.name || existingSub.userName,
-        userEmail: targetStudentForCredits.email || existingSub.userEmail,
+        userName: targetStudentForCredits.name || existingSub.userName || "Estudiante",
+        userEmail: targetStudentForCredits.email || existingSub.userEmail || "",
         planId: existingSub.planId || targetStudentForCredits.planId || "free",
         status: existingSub.status || "active",
         liveClassCreditsRemaining: credits,
         remainingCredits: credits,
         rectoriaCreditsOverride: credits,
-        allowLiveAccess: credits > 0 ? true : Boolean(existingSub.allowLiveAccess),
+        allowLiveAccess: credits > 0 ? true : Boolean(existingSub.adminOverrides?.allowLiveAccess || existingSub.allowLiveAccess || false),
         adminOverrides: {
           ...(existingSub.adminOverrides || {}),
-          allowLiveAccess: credits > 0 ? true : existingSub.adminOverrides?.allowLiveAccess,
+          allowLiveAccess: credits > 0 ? true : Boolean(existingSub.adminOverrides?.allowLiveAccess || false),
         },
         updatedAt: now.toISOString(),
         creditsModifiedBy: userProfile.email,
         creditsModificationReason: creditsChangeReason.trim() || "Ajuste por Despacho de Rectoría",
       };
 
-      await set(ref(rtdb, `lms_subscriptions/${targetStudentForCredits.uid}`), subData);
+      await set(ref(rtdb, `lms_subscriptions/${targetStudentForCredits.uid}`), sanitizeForRtdb(subData));
 
       // Auditoría forense atómica
       await Promise.all([
@@ -887,8 +900,8 @@ export function RectoriaDeskWorkspace({
         ...existingSub,
         id: existingSub.id || `sub_${targetStudentForTier.uid}`,
         userId: targetStudentForTier.uid,
-        userName: targetStudentForTier.name || existingSub.userName,
-        userEmail: targetStudentForTier.email || existingSub.userEmail,
+        userName: targetStudentForTier.name || existingSub.userName || "Estudiante",
+        userEmail: targetStudentForTier.email || existingSub.userEmail || "",
         planId: targetNextPlan,
         status: "active",
         cancelAtPeriodEnd: false,
@@ -900,10 +913,10 @@ export function RectoriaDeskWorkspace({
         liveClassCreditsRemaining: credits,
         remainingCredits: credits,
         rectoriaCreditsOverride: credits,
-        allowLiveAccess: credits > 0 ? true : Boolean(existingSub.allowLiveAccess),
+        allowLiveAccess: credits > 0 ? true : Boolean(existingSub.adminOverrides?.allowLiveAccess || existingSub.allowLiveAccess || false),
         adminOverrides: {
           ...(existingSub.adminOverrides || {}),
-          allowLiveAccess: credits > 0 ? true : existingSub.adminOverrides?.allowLiveAccess,
+          allowLiveAccess: credits > 0 ? true : Boolean(existingSub.adminOverrides?.allowLiveAccess || false),
         },
         creditsConsumedInCycle: 0,
         updatedAt: now.toISOString(),
@@ -911,7 +924,7 @@ export function RectoriaDeskWorkspace({
         authHashType: isUpgradeAction ? "upgrade_sha256" : "downgrade_sha256",
       };
 
-      await set(ref(rtdb, `lms_subscriptions/${targetStudentForTier.uid}`), subData);
+      await set(ref(rtdb, `lms_subscriptions/${targetStudentForTier.uid}`), sanitizeForRtdb(subData));
 
       // Registrar atómicamente en ambos canales de auditoría
       await Promise.all([
