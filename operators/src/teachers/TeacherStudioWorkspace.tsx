@@ -250,7 +250,10 @@ export function TeacherStudioWorkspace({
         {activeTab === "rubrics" && <RubricGradeMatrix />}
         {activeTab === "live" && <LiveClassSplitView />}
         {activeTab === "calendar" && (
-          <TeacherCalendarView onOpenTutoriaDirectives={() => setActiveTab("tutoria")} />
+          <TeacherCalendarView
+            onOpenTutoriaDirectives={() => setActiveTab("tutoria")}
+            onNavigateToLive={() => setActiveTab("live")}
+          />
         )}
         {activeTab === "tutoria" && (
           <TutoriaDirectivesChat onBack={() => setActiveTab("calendar")} />

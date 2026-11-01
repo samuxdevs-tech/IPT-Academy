@@ -40,6 +40,10 @@ import {
   Disc,
   Pause,
   Play,
+  AlertTriangle,
+  CheckCircle2,
+  AlertCircle,
+  CalendarClock,
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
 import {
@@ -82,7 +86,15 @@ interface ScheduledClassItem {
   id: string;
   title: string;
   startUtc: string;
+  endUtc?: string;
   courseTitle: string;
+  category?: string;
+  completed?: boolean;
+  status?: string;
+  studentName?: string;
+  studentUid?: string;
+  bookedCount?: number;
+  quorumRequired?: number;
 }
 
 interface ChatMessage {
@@ -170,6 +182,16 @@ export function LiveClassSplitView() {
   const [bookedStudents, setBookedStudents] = useState<StudentCandidate[]>([]);
   const [manualSelectedUids, setManualSelectedUids] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Modal posterior al finalizar clase y sincronización de calendario
+  const [showPostClassModal, setShowPostClassModal] = useState<boolean>(false);
+  const [classEndedInfo, setClassEndedInfo] = useState<{ id: string; title: string } | null>(null);
+  const [autoMarkCalendarPref, setAutoMarkCalendarPref] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("ipt_auto_mark_calendar_completed") === "true";
+    }
+    return false;
+  });
 
   // Estado visual de dispositivos
   const [micOn, setMicOn] = useState(false);
@@ -558,7 +580,15 @@ export function LiveClassSplitView() {
             id: e.id || `cls_${Date.now()}`,
             title: e.title || "Clase en Vivo",
             startUtc: e.startUtc || new Date().toISOString(),
+            endUtc: e.endUtc,
             courseTitle: e.courseTitle || "IPT Academy",
+            category: e.category,
+            completed: Boolean(e.completed || e.status === "completed"),
+            status: e.status || "confirmed",
+            studentName: e.studentName,
+            studentUid: e.studentUid,
+            bookedCount: e.bookedCount,
+            quorumRequired: e.quorumRequired,
           }))
           .sort((a, b) => new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime());
 
@@ -595,6 +625,26 @@ export function LiveClassSplitView() {
       unsubSigs();
     };
   }, []);
+
+  // Ventana de visibilidad de clases agendadas: 1 hora antes hasta 24 horas después
+  const visibleScheduledClasses = useMemo(() => {
+    const now = Date.now();
+    const oneHourBefore = now - 60 * 60 * 1000;
+    const twentyFourHoursAfter = now + 24 * 60 * 60 * 1000;
+    return scheduledClasses.filter((cls) => {
+      const t = new Date(cls.startUtc).getTime();
+      return t >= oneHourBefore && t <= twentyFourHoursAfter;
+    });
+  }, [scheduledClasses]);
+
+  useEffect(() => {
+    if (visibleScheduledClasses.length > 0) {
+      if (!selectedScheduledId || !visibleScheduledClasses.some((c) => c.id === selectedScheduledId)) {
+        setSelectedScheduledId(visibleScheduledClasses[0].id);
+        setClassTitle(visibleScheduledClasses[0].title);
+      }
+    }
+  }, [visibleScheduledClasses, selectedScheduledId]);
 
   // Sincronizar vistas previas de video local (Principal + PiP)
   const syncLocalVideoPreview = useCallback(() => {
@@ -1547,9 +1597,84 @@ export function LiveClassSplitView() {
     };
   }, [isLive, code8]);
 
+  // Marcar clase como vista en el calendario y subsistemas vinculados
+  const markClassCompleted = async (classId: string, title?: string) => {
+    try {
+      const nowIso = new Date().toISOString();
+
+      // 1. Actualizar en lms_calendar
+      const calSnap = await get(ref(rtdb, "lms_calendar"));
+      if (calSnap.exists()) {
+        const val = calSnap.val();
+        let eventsList: any[] = Array.isArray(val) ? [...val] : Object.values(val);
+        let updated = false;
+        eventsList = eventsList.map((ev) => {
+          if (ev && (ev.id === classId || (title && ev.title === title))) {
+            updated = true;
+            return {
+              ...ev,
+              completed: true,
+              status: "completed",
+              attendanceStatus: "attended",
+              completedAtUtc: nowIso,
+            };
+          }
+          return ev;
+        });
+        if (updated) {
+          await set(ref(rtdb, "lms_calendar"), eventsList);
+        }
+      }
+
+      // 2. Actualizar en lms_live_sessions
+      const liveSnap = await get(ref(rtdb, "lms_live_sessions"));
+      if (liveSnap.exists()) {
+        const val = liveSnap.val();
+        let liveList: any[] = Array.isArray(val) ? [...val] : Object.values(val);
+        liveList = liveList.map((ls) => {
+          if (ls && (ls.id === classId || (title && ls.title === title))) {
+            return {
+              ...ls,
+              completed: true,
+              cloudRecordingState: "finished",
+              completedAtUtc: nowIso,
+            };
+          }
+          return ls;
+        });
+        await set(ref(rtdb, "lms_live_sessions"), liveList);
+      }
+
+      // 3. Actualizar tutoria_sessions si aplica
+      await update(ref(rtdb, `tutoria_sessions/${classId}`), {
+        status: "completed",
+        completed: true,
+        completedAtUtc: nowIso,
+      }).catch(() => {});
+
+      // 4. Actualizar bookings vinculados
+      const bookingsSnap = await get(ref(rtdb, "lms_live_bookings"));
+      if (bookingsSnap.exists()) {
+        const bookings = bookingsSnap.val();
+        for (const [bId, bVal] of Object.entries(bookings as Record<string, any>)) {
+          if (bVal && (bVal.sessionId === classId || bId === classId)) {
+            await update(ref(rtdb, `lms_live_bookings/${bId}`), {
+              status: "attended",
+              attendedAtUtc: nowIso,
+            }).catch(() => {});
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Error marking class completed in calendar:", err);
+    }
+  };
+
   // Finalizar clase y limpiar listas efímeras (expulsa y desconecta a todos los estudiantes)
   const handleEndLiveClass = async () => {
     const activeCode = code8Ref.current || code8;
+    const finalScheduledId = selectedScheduledId;
+    const finalClassTitle = classTitle;
     const sessionDurationSec = startedAtMs
       ? Math.max(1, Math.floor((Date.now() - startedAtMs) / 1000))
       : 60;
@@ -1739,6 +1864,20 @@ export function LiveClassSplitView() {
     setSidePanel("none");
     setStageMode("video");
     syncLocalVideoPreview();
+
+    // Sincronización posterior de la clase en el calendario
+    const pref = typeof window !== "undefined" ? localStorage.getItem("ipt_auto_mark_calendar_completed") : null;
+    if (pref === "true") {
+      if (finalScheduledId) {
+        await markClassCompleted(finalScheduledId, finalClassTitle);
+      }
+    } else {
+      setClassEndedInfo({
+        id: finalScheduledId || `session_${Date.now()}`,
+        title: finalClassTitle || "Sesión en Vivo",
+      });
+      setShowPostClassModal(true);
+    }
   };
 
   // Actualizar Tema Actual en Vivo
@@ -2169,39 +2308,198 @@ export function LiveClassSplitView() {
 
             {listMode === "fixed" ? (
               <div className="space-y-4 mb-6">
-                {scheduledClasses.length > 0 ? (
-                  <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1.5">
-                      Horario programado
-                    </label>
-                    <select
-                      value={selectedScheduledId}
-                      onChange={(e) => {
-                        setSelectedScheduledId(e.target.value);
-                        const found = scheduledClasses.find((c) => c.id === e.target.value);
-                        if (found) setClassTitle(found.title);
-                      }}
-                      className="w-full bg-[#050507] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-[#8052ff]"
-                    >
-                      {scheduledClasses.map((cls) => (
-                        <option key={cls.id} value={cls.id}>
-                          {cls.title} —{" "}
-                          {new Date(cls.startUtc).toLocaleTimeString("es-CO", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </option>
-                      ))}
-                    </select>
+                <div>
+                  <div className="flex items-center justify-between text-[11px] text-zinc-400 mb-2">
+                    <span className="font-semibold text-zinc-300">
+                      Clases en Agenda (1h antes hasta 24h después)
+                    </span>
+                    <span className="text-[10px] text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full font-mono">
+                      {visibleScheduledClasses.length} en ventana
+                    </span>
                   </div>
-                ) : (
-                  <div className="p-3.5 rounded-xl bg-[#050507] border border-white/[0.06] flex items-center gap-3">
-                    <Clock className="w-4 h-4 text-[#8052ff] shrink-0" />
-                    <div className="text-xs text-zinc-300">
-                      Sesión inmediata con los estudiantes inscritos hoy.
+
+                  {visibleScheduledClasses.length > 0 ? (
+                    <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+                      {visibleScheduledClasses.map((cls) => {
+                        const start = new Date(cls.startUtc);
+                        const end = cls.endUtc ? new Date(cls.endUtc) : new Date(start.getTime() + 60 * 60000);
+                        const diffMinutes = Math.round((start.getTime() - Date.now()) / 60000);
+                        const isVeryEarly = diffMinutes > 10;
+                        const isDelayed = diffMinutes < -10;
+                        const isOptimal = Math.abs(diffMinutes) <= 10;
+                        const isSelected = selectedScheduledId === cls.id;
+
+                        const today = new Date();
+                        const isToday =
+                          start.getDate() === today.getDate() &&
+                          start.getMonth() === today.getMonth() &&
+                          start.getFullYear() === today.getFullYear();
+                        const dateBadgeText = isToday
+                          ? "Hoy"
+                          : start.toLocaleDateString("es-CO", { day: "numeric", month: "short" });
+
+                        return (
+                          <div
+                            key={cls.id}
+                            onClick={() => {
+                              setSelectedScheduledId(cls.id);
+                              setClassTitle(cls.title);
+                            }}
+                            className={`p-4 rounded-2xl border transition-all cursor-pointer relative ${
+                              isSelected
+                                ? "bg-gradient-to-br from-[#1c162e] to-[#12121a] border-violet-500 shadow-[0_0_30px_rgba(128,82,255,0.3)] ring-1 ring-violet-500/50"
+                                : "bg-[#0c0c12] hover:bg-[#14141c] border-white/10 hover:border-white/20"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                                  {dateBadgeText}
+                                </span>
+                                <span className="text-xs font-mono font-bold text-white flex items-center gap-1">
+                                  <Clock className="w-3.5 h-3.5 text-violet-400" />
+                                  {start.toLocaleTimeString("es-CO", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}{" "}
+                                  –{" "}
+                                  {end.toLocaleTimeString("es-CO", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-1.5">
+                                {cls.category === "tutoring" ? (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-500/15 text-violet-300 border border-violet-500/25">
+                                    Tutoría 1-1
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/25">
+                                    Clase en Vivo
+                                  </span>
+                                )}
+                                {cls.completed && (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-800 text-zinc-400 border border-white/5">
+                                    Vista
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <h4 className="text-sm font-bold text-white leading-snug mb-1">
+                              {cls.title}
+                            </h4>
+                            <p className="text-[11px] text-zinc-400 mb-3">
+                              {cls.studentName ? (
+                                <span>
+                                  Estudiante asignado: <strong className="text-zinc-200">{cls.studentName}</strong>
+                                </span>
+                              ) : (
+                                <span>{cls.courseTitle}</span>
+                              )}
+                            </p>
+
+                            {/* Alerta de Tolerancia de Puntualidad (±10m) y Botón de Inicio */}
+                            {isVeryEarly ? (
+                              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                <div className="flex items-start gap-2">
+                                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                                  <div>
+                                    <span className="text-xs font-semibold text-amber-300 block">
+                                      Entrada muy anticipada ({diffMinutes} min antes)
+                                    </span>
+                                    <span className="text-[10px] text-amber-200/70">
+                                      Estás fuera de la ventana óptima reglamentaria (±10m).
+                                    </span>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedScheduledId(cls.id);
+                                    setClassTitle(cls.title);
+                                    handleStartLiveClass();
+                                  }}
+                                  disabled={effectiveAllowedStudents.length === 0}
+                                  className="py-1.5 px-3 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-semibold transition-all shrink-0 cursor-pointer text-center"
+                                >
+                                  Entrar forzadamente
+                                </button>
+                              </div>
+                            ) : isDelayed ? (
+                              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                <div className="flex items-start gap-2">
+                                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                                  <div>
+                                    <span className="text-xs font-semibold text-rose-300 block">
+                                      Inicio con retraso ({Math.abs(diffMinutes)} min tarde)
+                                    </span>
+                                    <span className="text-[10px] text-rose-200/70">
+                                      La sesión presenta más de 10 minutos de retraso.
+                                    </span>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedScheduledId(cls.id);
+                                    setClassTitle(cls.title);
+                                    handleStartLiveClass();
+                                  }}
+                                  disabled={effectiveAllowedStudents.length === 0}
+                                  className="py-1.5 px-3 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-semibold transition-all shrink-0 cursor-pointer text-center"
+                                >
+                                  Entrar forzadamente
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                                  <div>
+                                    <span className="text-xs font-semibold text-emerald-300 block">
+                                      Ventana puntual óptima (±10m)
+                                    </span>
+                                    <span className="text-[10px] text-emerald-200/70">
+                                      Puntualidad en regla. Listo para iniciar.
+                                    </span>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedScheduledId(cls.id);
+                                    setClassTitle(cls.title);
+                                    handleStartLiveClass();
+                                  }}
+                                  disabled={effectiveAllowedStudents.length === 0}
+                                  className="py-1.5 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-all shadow-md shadow-emerald-600/30 shrink-0 cursor-pointer text-center"
+                                >
+                                  Iniciar Clase Puntual
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="p-5 rounded-2xl bg-[#0c0c12] border border-white/10 text-center space-y-2">
+                      <Clock className="w-6 h-6 text-[#8052ff] mx-auto" />
+                      <p className="text-xs font-semibold text-white">
+                        No hay clases agendadas en las próximas 24 horas
+                      </p>
+                      <p className="text-[11px] text-zinc-400 max-w-xs mx-auto">
+                        Puedes transmitir una sesión inmediata con los estudiantes actualmente habilitados o agendar desde el calendario.
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 <div>
                   <div className="flex items-center justify-between text-[11px] text-zinc-400 mb-2">
@@ -3230,6 +3528,70 @@ export function LiveClassSplitView() {
           </p>
           <div className="w-64 h-1.5 rounded-full bg-white/10 overflow-hidden">
             <div className="h-full bg-gradient-to-r from-[#8052ff] via-[#b79aff] to-[#10b981] animate-pulse w-full" />
+          </div>
+        </div>
+      )}
+
+      {/* Modal Posterior al Colgar/Finalizar Clase: Sincronización en Calendario */}
+      {showPostClassModal && (
+        <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#121217] border border-white/10 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl text-center space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-2xl bg-violet-600/15 border border-violet-500/30 text-violet-400 flex items-center justify-center mx-auto shadow-inner">
+              <CheckCircle2 className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white tracking-tight">¡La clase ha acabado!</h3>
+              <p className="text-sm text-zinc-300 mt-1.5 font-medium">
+                ¿Desea dar la clase por vista en el calendario?
+              </p>
+              {classEndedInfo?.title && (
+                <p className="text-xs text-zinc-500 mt-1 font-mono">
+                  {classEndedInfo.title}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (classEndedInfo?.id) {
+                    await markClassCompleted(classEndedInfo.id, classEndedInfo.title);
+                  }
+                  setShowPostClassModal(false);
+                  setClassEndedInfo(null);
+                }}
+                className="w-full py-3 px-4 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm transition-all shadow-lg shadow-violet-600/30 cursor-pointer"
+              >
+                Si
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPostClassModal(false);
+                  setClassEndedInfo(null);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white font-medium text-xs transition-all border border-white/5 cursor-pointer"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem("ipt_auto_mark_calendar_completed", "true");
+                    setAutoMarkCalendarPref(true);
+                  }
+                  if (classEndedInfo?.id) {
+                    await markClassCompleted(classEndedInfo.id, classEndedInfo.title);
+                  }
+                  setShowPostClassModal(false);
+                  setClassEndedInfo(null);
+                }}
+                className="w-full py-2 px-4 rounded-xl text-xs text-zinc-400 hover:text-violet-300 font-medium transition-all hover:bg-violet-500/10 cursor-pointer"
+              >
+                Si y no volver a preguntar
+              </button>
+            </div>
           </div>
         </div>
       )}
