@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_GROQ_API_KEY:
       process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.GROQ_API_KEY || "",
+    NEXT_PUBLIC_OPENROUTER_API_KEY:
+      process.env.NEXT_PUBLIC_OPENROUTER_API_KEY ||
+      process.env.OPENROUTER_API_KEY ||
+      "",
   },
   experimental: {
     agentUpgrade: "security",

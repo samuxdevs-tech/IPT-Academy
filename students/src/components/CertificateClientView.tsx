@@ -30,7 +30,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { IptLogoIcon } from '@/components/IptLogoIcon';
 import { rtdb } from '@/lib/firebase';
-import { ref, onValue, set, get, remove } from 'firebase/database';
+import { ref, onValue, set, get, remove, update } from 'firebase/database';
 
 interface CertificateClientViewProps {
   courseSlug?: string;
@@ -83,7 +83,7 @@ const CERTIFICATE_CATALOG: CourseCertTemplate[] = [
   },
 ];
 
-const OCR_STORAGE_KEY = 'ipt_ocr_identity_vlm_v5_failclosed';
+const OCR_STORAGE_KEY = 'ipt_ocr_identity_v6_vlm_strictly_verified';
 
 export default function CertificateClientView({ courseSlug }: CertificateClientViewProps) {
   const { user } = useAuth();
@@ -122,6 +122,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
         localStorage.removeItem('ipt_ocr_identity_verified_v2');
         localStorage.removeItem('ipt_ocr_identity_verified_v3');
         localStorage.removeItem('ipt_ocr_identity_vlm_v4_strict');
+        localStorage.removeItem('ipt_ocr_identity_vlm_v5_failclosed');
         if (user?.uid) {
           localStorage.removeItem(`ipt_identity_confirmed_${user.uid}`);
           sessionStorage.removeItem(`ipt_identity_dismissed_${user.uid}`);
@@ -205,6 +206,10 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
     if (user?.uid) {
       try {
         await remove(ref(rtdb, `users/${user.uid}/identityVerification`));
+        await update(ref(rtdb, `users/${user.uid}/profile`), {
+          identityConfirmed: false,
+          identityConfirmedAt: null,
+        });
       } catch {}
     }
   };

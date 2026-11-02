@@ -230,24 +230,118 @@ Responde EXCLUSIVAMENTE un JSON:
     console.warn('WebLLM VLM local no disponible o memoria insuficiente. Activando contingencia de alta velocidad:', localErr);
   }
 
-  // 2. Fallback de contingencia a la API del servidor (por ejemplo si el usuario no tiene 4.5GB VRAM)
+  // 2. Fallback de contingencia de alta velocidad con Gemini 2.5 Flash Vision
   if (onProgress) {
     onProgress({ progressPercent: 85, statusText: 'Cotejando credencial con el servicio seguro...' });
   }
 
-  const res = await fetch('/api/verify-doc', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ legalName, docNumber, imageBase64 }),
-  });
+  const openRouterApiKey =
+    process.env.NEXT_PUBLIC_OPENROUTER_API_KEY ||
+    process.env.OPENROUTER_API_KEY ||
+    '';
 
-  if (!res.ok) {
-    throw new Error('No se pudo verificar el documento.');
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${openRouterApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: promptText,
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: imageBase64,
+                },
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`El servicio de validación respondió con código ${res.status}.`);
+    }
+
+    const rawData = await res.json();
+    const rawContent = rawData.choices?.[0]?.message?.content || '';
+    const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+
+    if (!jsonMatch) {
+      throw new Error('No se pudo extraer la información del documento.');
+    }
+
+    const vlmResult = JSON.parse(jsonMatch[0]);
+
+    if (vlmResult.isOfficialGovernmentId === false || vlmResult.isReadable === false) {
+      return {
+        isValid: false,
+        country: vlmResult.detectedCountry || 'No identificado',
+        detectedType: vlmResult.detectedType || 'Documento no reconocido',
+        normalizedProvidedName: normProvidedName,
+        normalizedDetectedName: normalizeName(vlmResult.extractedName || ''),
+        normalizedProvidedDoc: normProvidedDoc,
+        normalizedDetectedDoc: normalizeDocNumber(vlmResult.extractedNumber || ''),
+        nameMatchScore: 0,
+        docMatchScore: 0,
+        toleranceApplied: false,
+        reason: vlmResult.notes || 'La imagen no corresponde a un documento de identidad oficial emitido por el gobierno.',
+        source: 'cloud-api-fallback',
+      };
+    }
+
+    const extractedName = String(vlmResult.extractedName || '');
+    const extractedDocNumber = String(vlmResult.extractedNumber || '');
+
+    const normDetectedName = normalizeName(extractedName);
+    const normDetectedDoc = normalizeDocNumber(extractedDocNumber);
+
+    const nameMatch = evaluateNameMatch(normProvidedName, normDetectedName);
+    const docMatch = evaluateDocNumberMatch(normProvidedDoc, normDetectedDoc);
+    const docFamily = detectDocumentFamily(vlmResult.detectedType || '', normDetectedDoc);
+
+    const country = vlmResult.detectedCountry || docFamily.country;
+    const detectedType = vlmResult.detectedType || docFamily.docTypeName;
+    const isOverallValid = nameMatch.isMatch && (docMatch.isMatch || normDetectedDoc.length >= 6);
+
+    let failureReason = '';
+    if (!isOverallValid) {
+      if (!nameMatch.isMatch && !docMatch.isMatch) {
+        failureReason = `Discrepancia en nombre y documento. Nombre detectado: "${normDetectedName}", número: "${normDetectedDoc}".`;
+      } else if (!nameMatch.isMatch) {
+        failureReason = `El nombre en el documento (${normDetectedName}) difiere del titular registrado (${normProvidedName}).`;
+      } else {
+        failureReason = `El número detectado (${normDetectedDoc}) no coincide con el registrado (${normProvidedDoc}).`;
+      }
+    }
+
+    return {
+      isValid: isOverallValid,
+      country,
+      detectedType,
+      normalizedProvidedName: normProvidedName,
+      normalizedDetectedName: normDetectedName,
+      normalizedProvidedDoc: normProvidedDoc,
+      normalizedDetectedDoc: normDetectedDoc,
+      nameMatchScore: nameMatch.score,
+      docMatchScore: docMatch.score,
+      toleranceApplied: normProvidedName !== normDetectedName || normProvidedDoc !== normDetectedDoc,
+      reason: isOverallValid
+        ? `Identidad verificada exitosamente (${country} · ${detectedType}). ${nameMatch.details}`
+        : failureReason,
+      source: 'cloud-api-fallback',
+    };
+  } catch (apiErr: any) {
+    throw new Error(apiErr?.message || 'Error al comunicarse con el servicio de validación visual.');
   }
-
-  const apiData = await res.json();
-  return {
-    ...apiData,
-    source: 'cloud-api-fallback',
-  };
 }
