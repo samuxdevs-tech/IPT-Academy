@@ -83,7 +83,7 @@ const CERTIFICATE_CATALOG: CourseCertTemplate[] = [
   },
 ];
 
-const OCR_STORAGE_KEY = 'ipt_ocr_identity_vlm_v4_strict';
+const OCR_STORAGE_KEY = 'ipt_ocr_identity_vlm_v5_failclosed';
 
 export default function CertificateClientView({ courseSlug }: CertificateClientViewProps) {
   const { user } = useAuth();
@@ -121,6 +121,7 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
         localStorage.removeItem('ipt_certificate_ocr_identity_v1');
         localStorage.removeItem('ipt_ocr_identity_verified_v2');
         localStorage.removeItem('ipt_ocr_identity_verified_v3');
+        localStorage.removeItem('ipt_ocr_identity_vlm_v4_strict');
         if (user?.uid) {
           localStorage.removeItem(`ipt_identity_confirmed_${user.uid}`);
           sessionStorage.removeItem(`ipt_identity_dismissed_${user.uid}`);
@@ -366,39 +367,46 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
     setOcrStepText("1/4 Analizando estructura óptica y geometría del documento...");
 
     try {
-      // 2. Si el archivo es una imagen, validarlo con el modelo de visión multimodal
-      let isValidId = true;
-      let rejectionReason = "";
+      // 2. Validar que el archivo sea estrictamente una imagen (JPG/PNG/WebP) y no un PDF o documento ajeno
+      if (!uploadedDocBase64 || !uploadedDocBase64.startsWith("data:image/")) {
+        setOcrScanning(false);
+        setOcrStepText("");
+        setValidationError("Formato no compatible: Debes adjuntar una fotografía o escaneo en imagen (JPG, PNG o WebP) de tu cédula o documento oficial. Los archivos PDF o documentos de texto no son analizables por la visión óptica.");
+        return;
+      }
+
+      // Principio Fail-Closed estricto: inválido por defecto a menos que el VLM apruebe explícitamente
+      let isValidId = false;
+      let rejectionReason = "No fue posible autenticar el documento como documento de identidad oficial emitido por el gobierno.";
       let verifiedCountry = "";
       let verifiedType: string = docType;
 
-      if (uploadedDocBase64 && uploadedDocBase64.startsWith("data:image/")) {
-        setOcrStepText("Iniciando motor VLM en WebGPU local...");
-        setVlmProgress(5);
+      setOcrStepText("Iniciando motor VLM en WebGPU local...");
+      setVlmProgress(5);
 
-        try {
-          const vlmRes = await validateIdentityWithLocalVlm(
-            legalName,
-            docNumber,
-            uploadedDocBase64,
-            (prog) => {
-              setOcrStepText(prog.statusText);
-              setVlmProgress(prog.progressPercent);
-            }
-          );
-
-          if (!vlmRes.isValid) {
-            isValidId = false;
-            rejectionReason = vlmRes.reason || "El archivo subido no corresponde a un documento de identidad válido.";
-          } else {
-            verifiedCountry = vlmRes.country;
-            verifiedType = vlmRes.detectedType;
+      try {
+        const vlmRes = await validateIdentityWithLocalVlm(
+          legalName,
+          docNumber,
+          uploadedDocBase64,
+          (prog) => {
+            setOcrStepText(prog.statusText);
+            setVlmProgress(prog.progressPercent);
           }
-        } catch (apiErr: any) {
-          console.warn("Error en ejecución de VLM:", apiErr);
+        );
+
+        if (vlmRes && vlmRes.isValid === true) {
+          isValidId = true;
+          verifiedCountry = vlmRes.country || "";
+          verifiedType = vlmRes.detectedType || docType;
+        } else {
           isValidId = false;
-          rejectionReason = apiErr?.message || "Error procesando el documento.";
+          rejectionReason = vlmRes?.reason || "El archivo subido no corresponde a un documento de identidad oficial válido para este estudiante.";
         }
+      } catch (apiErr: any) {
+        console.warn("Error en ejecución de VLM:", apiErr);
+        isValidId = false;
+        rejectionReason = apiErr?.message || "Error procesando la imagen del documento.";
       }
 
       setOcrStepText(`3/4 Validando coincidencia de datos: ${docType} ${docNumber} con ${legalName}...`);
@@ -610,14 +618,20 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
                     {uploadedDocFileName || 'Adjuntar copia de cédula / documento'}
                   </span>
                   <span className="text-[10px] text-[#9a9a9a] mt-0.5">
-                    Formatos JPG, PNG o PDF (Máx. 10MB)
+                    Formatos JPG, PNG o WebP (Foto clara de tu cédula/DNI)
                   </span>
                   <input
                     type="file"
-                    accept="image/*,application/pdf"
+                    accept="image/jpeg,image/png,image/webp"
                     onChange={(e) => {
                       if (e.target.files && e.target.files[0]) {
                         const file = e.target.files[0];
+                        if (file.type === 'application/pdf' || (!file.type.startsWith('image/') && !file.name.match(/\.(jpe?g|png|webp)$/i))) {
+                          setValidationError('Formato no admitido: Por favor sube una imagen fotográfica (JPG, PNG o WebP) de tu cédula o documento de identidad. Los archivos PDF no son admitidos.');
+                          setUploadedDocFileName(null);
+                          setUploadedDocBase64(null);
+                          return;
+                        }
                         setUploadedDocFileName(file.name);
                         setValidationError(null);
                         const reader = new FileReader();
