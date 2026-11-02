@@ -30,7 +30,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { IptLogoIcon } from '@/components/IptLogoIcon';
 import { rtdb } from '@/lib/firebase';
-import { ref, onValue, set, get } from 'firebase/database';
+import { ref, onValue, set, get, remove } from 'firebase/database';
 
 interface CertificateClientViewProps {
   courseSlug?: string;
@@ -83,7 +83,7 @@ const CERTIFICATE_CATALOG: CourseCertTemplate[] = [
   },
 ];
 
-const OCR_STORAGE_KEY = 'ipt_ocr_identity_verified_v2';
+const OCR_STORAGE_KEY = 'ipt_ocr_identity_vlm_v4_strict';
 
 export default function CertificateClientView({ courseSlug }: CertificateClientViewProps) {
   const { user } = useAuth();
@@ -115,7 +115,20 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
 
   // Sincronizar estado de identidad con Firebase RTDB y almacenamiento local
   useEffect(() => {
-    // 1. Carga inicial contingente desde localStorage
+    // Purgar inmediatamente cachés y firmas previas para exigir re-verificación obligatoria
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('ipt_certificate_ocr_identity_v1');
+        localStorage.removeItem('ipt_ocr_identity_verified_v2');
+        localStorage.removeItem('ipt_ocr_identity_verified_v3');
+        if (user?.uid) {
+          localStorage.removeItem(`ipt_identity_confirmed_${user.uid}`);
+          sessionStorage.removeItem(`ipt_identity_dismissed_${user.uid}`);
+        }
+      } catch {}
+    }
+
+    // 1. Carga inicial desde localStorage estricto v4
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(OCR_STORAGE_KEY);
@@ -125,6 +138,8 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
           if (parsed.docType) setDocType(parsed.docType);
           if (parsed.docNumber) setDocNumber(parsed.docNumber);
           if (parsed.legalName) setLegalName(parsed.legalName);
+        } else {
+          setIsIdentityVerified(false);
         }
       } catch {}
     }
@@ -156,11 +171,42 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
               );
             } catch {}
           }
+        } else {
+          setIsIdentityVerified(false);
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.removeItem(OCR_STORAGE_KEY);
+            } catch {}
+          }
         }
       });
       return () => unsub();
     }
   }, [user?.uid]);
+
+  const handleResetIdentity = async () => {
+    setIsIdentityVerified(false);
+    setUploadedDocBase64(null);
+    setUploadedDocFileName(null);
+    setValidationError(null);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(OCR_STORAGE_KEY);
+        localStorage.removeItem('ipt_certificate_ocr_identity_v1');
+        localStorage.removeItem('ipt_ocr_identity_verified_v2');
+        localStorage.removeItem('ipt_ocr_identity_verified_v3');
+        if (user?.uid) {
+          localStorage.removeItem(`ipt_identity_confirmed_${user.uid}`);
+          sessionStorage.removeItem(`ipt_identity_dismissed_${user.uid}`);
+        }
+      } catch {}
+    }
+    if (user?.uid) {
+      try {
+        await remove(ref(rtdb, `users/${user.uid}/identityVerification`));
+      } catch {}
+    }
+  };
 
   const persistIdentityState = async (
     verified: boolean,
@@ -609,9 +655,19 @@ export default function CertificateClientView({ courseSlug }: CertificateClientV
                   className="w-full py-3 px-4 rounded-full bg-[#8052ff] hover:bg-[#6d3df5] text-white text-xs font-semibold shadow-[0_0_25px_rgba(128,82,255,0.35)] transition-all cursor-pointer"
                 >
                   {isIdentityVerified
-                    ? 'Actualizar Documento de Identidad'
+                    ? 'Re-verificar Documento con VLM'
                     : 'Validar Documento y Emitir Certificado'}
                 </button>
+
+                {isIdentityVerified && (
+                  <button
+                    type="button"
+                    onClick={handleResetIdentity}
+                    className="w-full py-2 px-3 rounded-full bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 text-[11px] font-medium transition-all cursor-pointer text-center"
+                  >
+                    Restablecer y Exigir Nueva Verificación
+                  </button>
+                )}
               </form>
             </div>
           </div>
