@@ -372,6 +372,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         }
         if (Array.isArray(parsed.bookings)) {
           parsed.bookings.forEach((b: LiveBooking) => engine.liveBookings.set(b.id, b));
+          const userB = parsed.bookings.filter((b: LiveBooking) => b.userId === effectiveUid || (b as any).studentUid === effectiveUid);
+          setLiveBookings(structuredClone(userB));
         }
       }
     } catch {}
@@ -392,7 +394,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         userProfile: engine.users.get(effectiveUid) || null,
         invoices: [],
         notifications: [],
-        bookings: [],
+        bookings: Array.from(engine.liveBookings.values()).filter((b) => b.userId === effectiveUid || (b as any).studentUid === effectiveUid),
         virtualTimeIso: clockRef.current.now().toISOString(),
       };
       localStorage.setItem(`${LOCAL_STORAGE_KEY}_${effectiveUid}`, JSON.stringify(snapshot));
@@ -465,9 +467,27 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       () => {}
     );
 
+    const bookingsRef = ref(db, 'lms_live_bookings');
+    const unsubBookings = onValue(
+      bookingsRef,
+      (snap) => {
+        if (snap.exists()) {
+          const val = snap.val();
+          const all = (Array.isArray(val) ? val.filter(Boolean) : Object.values(val)) as any[];
+          const userBookings = all.filter(
+            (b) => b && (b.userId === user.uid || b.studentUid === user.uid)
+          );
+          userBookings.forEach((b: LiveBooking) => engine.liveBookings.set(b.id, b));
+          setLiveBookings(structuredClone(userBookings));
+        }
+      },
+      () => {}
+    );
+
     return () => {
       unsubSub();
       unsubReqs();
+      unsubBookings();
     };
   }, [effectiveUid, effectiveEmail, effectiveName, user?.uid, syncEngineToStorageAndRtdb]);
 

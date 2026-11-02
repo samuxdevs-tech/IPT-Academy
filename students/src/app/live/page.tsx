@@ -113,6 +113,9 @@ interface ScheduledSessionItem {
   title: string;
   instructor: string;
   startUtc: string;
+  category?: string;
+  isTutoria?: boolean;
+  studentUid?: string;
 }
 
 type PipCorner = 'bottom-right' | 'top-right' | 'bottom-left' | 'top-left';
@@ -598,16 +601,47 @@ export default function StudentLivePage() {
       if (snap.exists()) {
         const val = snap.val();
         const arr = (Array.isArray(val) ? val.filter(Boolean) : Object.values(val)) as any[];
+        const nowMs = Date.now();
         const liveItems: ScheduledSessionItem[] = arr
-          .filter((e) => e && (e.category === 'live_class' || e.category === 'tutoring'))
+          .filter((e) => {
+            if (!e) return false;
+            if (e.category !== 'live_class' && e.category !== 'tutoring') return false;
+            if (
+              e.completed === true ||
+              e.status === 'completed' ||
+              e.status === 'ended' ||
+              e.status === 'finished' ||
+              e.status === 'cancelled'
+            ) {
+              return false;
+            }
+            const endMs = e.endUtc
+              ? new Date(e.endUtc).getTime()
+              : new Date(e.startUtc).getTime() + 60 * 60 * 1000;
+            if (endMs < nowMs - 15 * 60 * 1000) {
+              return false;
+            }
+            if (e.category === 'tutoring') {
+              const belongsToMe =
+                (e.studentUid && e.studentUid === studentUid) ||
+                (e.studentEmail && e.studentEmail.toLowerCase() === studentEmail);
+              if (!belongsToMe) return false;
+            }
+            return true;
+          })
           .map((e) => ({
             id: e.id || `cls_${Date.now()}`,
             title: e.title || 'Clase en Vivo',
             instructor: e.instructor || 'Docente IPT',
             startUtc: e.startUtc || new Date().toISOString(),
+            category: e.category,
+            isTutoria: e.category === 'tutoring',
+            studentUid: e.studentUid,
           }))
           .sort((a, b) => new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime());
         setScheduledSessions(liveItems);
+      } else {
+        setScheduledSessions([]);
       }
     });
 
@@ -1465,7 +1499,7 @@ export default function StudentLivePage() {
                 </p>
               ) : (
                 scheduledSessions.map((sess) => {
-                  const isBooked = bookedLiveSessionIds.includes(sess.id);
+                  const isBooked = Boolean(sess.isTutoria || (sess.studentUid && sess.studentUid === studentUid) || bookedLiveSessionIds.includes(sess.id));
                   return (
                     <div
                       key={sess.id}
