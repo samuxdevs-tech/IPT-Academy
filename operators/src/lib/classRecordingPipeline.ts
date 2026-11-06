@@ -83,6 +83,64 @@ export async function uploadRecordedVideo(blob: Blob, code8: string): Promise<st
 }
 
 /**
+ * Sube un recurso pedagógico (PDF, PNG, JPEG, etc.) a Cloudflare R2 con fallback a DataURL.
+ */
+export async function uploadClassResource(
+  file: File,
+  code8: string
+): Promise<{ url: string; fileName: string; type: "pdf" | "image" | "doc" | "link"; size: number }> {
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const ext = safeName.split(".").pop()?.toLowerCase() || "";
+  let resourceType: "pdf" | "image" | "doc" | "link" = "doc";
+  if (ext === "pdf" || file.type === "application/pdf") {
+    resourceType = "pdf";
+  } else if (["png", "jpg", "jpeg", "webp", "svg", "gif"].includes(ext) || file.type.startsWith("image/")) {
+    resourceType = "image";
+  }
+
+  const fileName = `class_resources/${code8}_${Date.now()}_${safeName}`;
+  const bucketName = process.env.NEXT_PUBLIC_R2_BUCKET_NAME || "ipt-academy";
+  const publicBaseUrl = (
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
+    "https://pub-f0322ab131db477f82e5ebddb5095957.r2.dev"
+  ).replace(/\/$/, "");
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    const client = getR2Client();
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: fileName,
+        Body: uint8Array,
+        ContentType: file.type || "application/octet-stream",
+      })
+    );
+    return {
+      url: `${publicBaseUrl}/${fileName}`,
+      fileName: file.name,
+      type: resourceType,
+      size: file.size,
+    };
+  } catch (err) {
+    console.warn("R2 upload error, falling back to data URL:", err);
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve({
+          url: reader.result as string,
+          fileName: file.name,
+          type: resourceType,
+          size: file.size,
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
+/**
  * Llama a OpenRouter (modelo free de Google Gemini o LLaMA) para resumir pedagógicamente la clase.
  */
 export async function generateClassSummaryWithOpenRouter(

@@ -39,8 +39,36 @@ import {
   Video,
   VideoOff,
   ArrowRight,
+  Eye,
+  EyeOff,
+  FileText,
+  Image as ImageIcon,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Move,
 } from 'lucide-react';
 import RecordedClassesViewer from '@/components/live/RecordedClassesViewer';
+
+export interface PinnedResource {
+  id: string;
+  title: string;
+  url: string;
+  type?: 'pdf' | 'image' | 'doc' | 'link';
+  fileName?: string;
+  fileSize?: number;
+  createdAt: number;
+}
+
+export interface ActiveClassResource {
+  id: string;
+  title: string;
+  url: string;
+  type: 'pdf' | 'image' | 'doc' | 'link';
+  fileName?: string;
+  visible: boolean;
+  updatedAt: number;
+}
 
 interface ActiveMatchedRoom {
   code8: string;
@@ -68,13 +96,6 @@ interface ChatMessage {
   senderRole: 'teacher' | 'student';
   text: string;
   time: string;
-}
-
-interface PinnedResource {
-  id: string;
-  title: string;
-  url: string;
-  createdAt: number;
 }
 
 interface ActivePollData {
@@ -180,14 +201,37 @@ export default function StudentLivePage() {
   });
   const [copiedCanvas, setCopiedCanvas] = useState(false);
   const [strokeWidth, setStrokeWidth] = useState<number>(3);
+  const [boardTool, setBoardTool] = useState<"pen" | "hand">("pen");
+  const [boardPan, setBoardPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [boardZoom, setBoardZoom] = useState<number>(1);
+
   const canvasBackdropRef = useRef<HTMLDivElement | null>(null);
   const boardCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDrawingRef = useRef<boolean>(false);
   const currentStrokeRef = useRef<WhiteboardStroke | null>(null);
+  const boardPanRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const boardZoomRef = useRef<number>(1);
+  const isPanningRef = useRef<boolean>(false);
+  const panStartRef = useRef<{ x: number; y: number; initialPanX: number; initialPanY: number }>({
+    x: 0,
+    y: 0,
+    initialPanX: 0,
+    initialPanY: 0,
+  });
 
-  // Micro-Encuestas y Recursos Fijados
+  useEffect(() => {
+    boardPanRef.current = boardPan;
+  }, [boardPan]);
+
+  useEffect(() => {
+    boardZoomRef.current = boardZoom;
+  }, [boardZoom]);
+
+  // Micro-Encuestas y Recursos Pedagógicos en Vivo
   const [activePoll, setActivePoll] = useState<ActivePollData | null>(null);
   const [pinnedResources, setPinnedResources] = useState<PinnedResource[]>([]);
+  const [activeResource, setActiveResource] = useState<ActiveClassResource | null>(null);
+  const [showStudentResourceViewer, setShowStudentResourceViewer] = useState<boolean>(true);
 
   // Para agendar cuando no hay sala activa en este segundo
   const [scheduledSessions, setScheduledSessions] = useState<ScheduledSessionItem[]>([]);
@@ -416,7 +460,7 @@ export default function StudentLivePage() {
     attachVideoStreams,
   ]);
 
-  // Renderizar los trazos del Pizarrón en el elemento <canvas>
+  // Renderizar los trazos del Pizarrón en el elemento <canvas> (Tablero Inteligente Infinito)
   const renderWhiteboardCanvas = useCallback(() => {
     const canvas = boardCanvasRef.current;
     if (!canvas) return;
@@ -430,9 +474,35 @@ export default function StudentLivePage() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const pan = boardPanRef.current;
+    const zoom = boardZoomRef.current;
+
+    // 1. Limpiar fondo blanco
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // 2. Cuadrícula Infinita Inteligente (dot-grid técnico)
+    const gridSize = 36;
+    const step = gridSize * zoom;
+    if (step >= 8) {
+      const offsetX = ((pan.x % step) + step) % step;
+      const offsetY = ((pan.y % step) + step) % step;
+      ctx.fillStyle = '#e2e8f0';
+      const dotRadius = Math.max(1, Math.min(2.5, 1.2 * zoom));
+      for (let x = offsetX; x < canvas.width; x += step) {
+        for (let y = offsetY; y < canvas.height; y += step) {
+          ctx.beginPath();
+          ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    // 3. Aplicar Pan y Zoom al espacio infinito
+    ctx.setTransform(zoom, 0, 0, zoom, pan.x, pan.y);
+
+    // 4. Renderizar trazos en el mundo infinito
     const allStrokes = [...(liveCanvas.strokes || [])];
     if (currentStrokeRef.current) {
       allStrokes.push(currentStrokeRef.current);
@@ -447,22 +517,29 @@ export default function StudentLivePage() {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
+      // Soporte retrocompatible para trazos legacy normalizados (0..1)
+      const isLegacy = stroke.points.every((p) => p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1);
+      const scaleBaseW = isLegacy ? 1280 : 1;
+      const scaleBaseH = isLegacy ? 720 : 1;
+
       if (stroke.points.length === 1) {
         const pt = stroke.points[0];
         ctx.beginPath();
-        ctx.arc(pt.x * canvas.width, pt.y * canvas.height, (stroke.width || 3) / 2, 0, Math.PI * 2);
+        ctx.arc(pt.x * scaleBaseW, pt.y * scaleBaseH, (stroke.width || 3) / 2, 0, Math.PI * 2);
         ctx.fill();
       } else {
         ctx.beginPath();
-        ctx.moveTo(stroke.points[0].x * canvas.width, stroke.points[0].y * canvas.height);
+        ctx.moveTo(stroke.points[0].x * scaleBaseW, stroke.points[0].y * scaleBaseH);
         for (let i = 1; i < stroke.points.length; i++) {
-          ctx.lineTo(stroke.points[i].x * canvas.width, stroke.points[i].y * canvas.height);
+          ctx.lineTo(stroke.points[i].x * scaleBaseW, stroke.points[i].y * scaleBaseH);
         }
         ctx.stroke();
       }
       ctx.restore();
     }
-  }, [liveCanvas.strokes]);
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }, [liveCanvas.strokes, boardPan, boardZoom]);
 
   useEffect(() => {
     if (stageMode === 'canvas' && liveCanvas.canvasMode === 'board') {
@@ -471,7 +548,7 @@ export default function StudentLivePage() {
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
     }
-  }, [stageMode, liveCanvas.canvasMode, liveCanvas.strokes, renderWhiteboardCanvas]);
+  }, [stageMode, liveCanvas.canvasMode, liveCanvas.strokes, boardPan, boardZoom, renderWhiteboardCanvas]);
 
   // Desbloquear audio automáticamente al primer clic
   useEffect(() => {
@@ -621,9 +698,11 @@ export default function StudentLivePage() {
             if (endMs < nowMs - 15 * 60 * 1000) {
               return false;
             }
-            if (e.category === 'tutoring') {
+            const isTut = e.category === 'tutoring' || /tutor[ií]a/i.test(e.title || '');
+            if (isTut) {
               const belongsToMe =
-                (e.studentUid && e.studentUid === studentUid) ||
+                !e.studentUid ||
+                (e.studentUid === studentUid) ||
                 (e.studentEmail && e.studentEmail.toLowerCase() === studentEmail);
               if (!belongsToMe) return false;
             }
@@ -635,7 +714,7 @@ export default function StudentLivePage() {
             instructor: e.instructor || 'Docente IPT',
             startUtc: e.startUtc || new Date().toISOString(),
             category: e.category,
-            isTutoria: e.category === 'tutoring',
+            isTutoria: Boolean(e.category === 'tutoring' || /tutor[ií]a/i.test(e.title || '')),
             studentUid: e.studentUid,
           }))
           .sort((a, b) => new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime());

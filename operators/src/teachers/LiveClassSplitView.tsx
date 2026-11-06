@@ -44,10 +44,21 @@ import {
   CheckCircle2,
   AlertCircle,
   CalendarClock,
+  Eye,
+  EyeOff,
+  FileText,
+  Image as ImageIcon,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Move,
+  UploadCloud,
+  FileUp,
 } from "lucide-react";
 import { rtdb } from "@/lib/firebase";
 import {
   uploadRecordedVideo,
+  uploadClassResource,
   generateClassSummaryWithOpenRouter,
   saveRecordedClassRecord,
   SubtitleCue,
@@ -105,11 +116,24 @@ interface ChatMessage {
   time: string;
 }
 
-interface PinnedResource {
+export interface PinnedResource {
   id: string;
   title: string;
   url: string;
+  type?: "pdf" | "image" | "doc" | "link";
+  fileName?: string;
+  fileSize?: number;
   createdAt: number;
+}
+
+export interface ActiveClassResource {
+  id: string;
+  title: string;
+  url: string;
+  type: "pdf" | "image" | "doc" | "link";
+  fileName?: string;
+  visible: boolean;
+  updatedAt: number;
 }
 
 interface ActivePollData {
@@ -217,10 +241,32 @@ export function LiveClassSplitView() {
   });
   const [copiedCanvas, setCopiedCanvas] = useState(false);
   const [strokeWidth, setStrokeWidth] = useState<number>(3);
+  const [strokeColor, setStrokeColor] = useState<string>("#000000");
+  const [boardTool, setBoardTool] = useState<"pen" | "hand" | "eraser">("pen");
+  const [boardPan, setBoardPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [boardZoom, setBoardZoom] = useState<number>(1);
+
   const canvasBackdropRef = useRef<HTMLDivElement | null>(null);
   const boardCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDrawingRef = useRef<boolean>(false);
   const currentStrokeRef = useRef<WhiteboardStroke | null>(null);
+  const boardPanRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const boardZoomRef = useRef<number>(1);
+  const isPanningRef = useRef<boolean>(false);
+  const panStartRef = useRef<{ x: number; y: number; initialPanX: number; initialPanY: number }>({
+    x: 0,
+    y: 0,
+    initialPanX: 0,
+    initialPanY: 0,
+  });
+
+  useEffect(() => {
+    boardPanRef.current = boardPan;
+  }, [boardPan]);
+
+  useEffect(() => {
+    boardZoomRef.current = boardZoom;
+  }, [boardZoom]);
 
   // Micro-Encuestas / Pulso Rápido en Vivo
   const [activePoll, setActivePoll] = useState<ActivePollData | null>(null);
@@ -229,11 +275,15 @@ export function LiveClassSplitView() {
     "Sí, todo claro\nTengo una duda\nRepitamos el ejemplo"
   );
 
-  // Recursos Fijados (Pin) en el Chat
+  // Recursos Pedagógicos Multimedia y Fijados (PDF, PNG, JPG, enlaces)
   const [pinnedResources, setPinnedResources] = useState<PinnedResource[]>([]);
+  const [activeResource, setActiveResource] = useState<ActiveClassResource | null>(null);
+  const [showResourceViewer, setShowResourceViewer] = useState(true);
+  const [isUploadingResource, setIsUploadingResource] = useState(false);
   const [showPinForm, setShowPinForm] = useState(false);
   const [pinTitle, setPinTitle] = useState("");
   const [pinUrl, setPinUrl] = useState("");
+  const fileInputResourceRef = useRef<HTMLInputElement | null>(null);
 
   // Paneles laterales durante la sesión
   const [sidePanel, setSidePanel] = useState<"none" | "people" | "chat" | "polls">("none");
@@ -284,6 +334,25 @@ export function LiveClassSplitView() {
   const recordedSubtitlesRef = useRef<SubtitleCue[]>([]);
   const classStartTimeRef = useRef<number>(Date.now());
   const recordingCanvasIntervalRef = useRef<any>(null);
+
+  // ── Referencias en tiempo real para el Compositor Maestro de Grabación en Vivo ──
+  const stageModeRef = useRef<"video" | "canvas">(stageMode);
+  const liveCanvasRef = useRef<LiveCanvasData>(liveCanvas);
+  const camOnRef = useRef<boolean>(camOn);
+  const screenOnRef = useRef<boolean>(screenOn);
+  const teacherNameRef = useRef<string>(teacherName);
+  const classTitleRef = useRef<string>(classTitle);
+
+  useEffect(() => { stageModeRef.current = stageMode; }, [stageMode]);
+  useEffect(() => { liveCanvasRef.current = liveCanvas; }, [liveCanvas]);
+  useEffect(() => { camOnRef.current = camOn; }, [camOn]);
+  useEffect(() => { screenOnRef.current = screenOn; }, [screenOn]);
+  useEffect(() => { teacherNameRef.current = teacherName; }, [teacherName]);
+  useEffect(() => { classTitleRef.current = classTitle; }, [classTitle]);
+
+  const compositorCamVideoRef = useRef<HTMLVideoElement | null>(null);
+  const compositorScreenVideoRef = useRef<HTMLVideoElement | null>(null);
+  const masterRecordingCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // ── Web Audio API Master Mixer (Mezclador Profesional para Grabación en Vivo) ──
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -449,63 +518,269 @@ export function LiveClassSplitView() {
     }
   }, []);
 
-  // Iniciar MediaRecorder capturando el flujo de video y audio activo del docente
+  // Iniciar MediaRecorder capturando el flujo unificado del Compositor Maestro (Lienzo, Pizarrón, Cámara y Pantalla)
   const startMediaRecording = useCallback(() => {
     try {
       recordedVideoChunksRef.current = [];
-      const tracks: MediaStreamTrack[] = [];
 
-      const vTrack = screenVideoTrackRef.current || camTrackRef.current;
-      if (vTrack && vTrack.readyState === "live") {
-        tracks.push(vTrack);
-      } else {
-        // Generar flujo continuo de video a 25 fps con lienzo animado para evitar archivos WebM vacíos o congelados
-        const recCanvas = document.createElement("canvas");
-        recCanvas.width = 1280;
-        recCanvas.height = 720;
-        const ctx = recCanvas.getContext("2d");
-        let tick = 0;
+      // 1. Crear Canvas Compositor Maestro de Grabación en HD (1280x720 @ 30 FPS)
+      const recCanvas = document.createElement("canvas");
+      recCanvas.width = 1280;
+      recCanvas.height = 720;
+      masterRecordingCanvasRef.current = recCanvas;
+      const ctx = recCanvas.getContext("2d", { alpha: false });
+      let tick = 0;
 
-        if (recordingCanvasIntervalRef.current) {
-          clearInterval(recordingCanvasIntervalRef.current);
-        }
+      if (recordingCanvasIntervalRef.current) {
+        clearInterval(recordingCanvasIntervalRef.current);
+      }
 
-        recordingCanvasIntervalRef.current = setInterval(() => {
-          if (!ctx) return;
-          tick++;
+      // Loop del Compositor Maestro: Renderiza cada 33ms (30 FPS) el estado visual real del escenario
+      recordingCanvasIntervalRef.current = setInterval(() => {
+        if (!ctx) return;
+        tick++;
+
+        const currentStage = stageModeRef.current;
+        const currentCanvas = liveCanvasRef.current;
+        const isCamActive = Boolean(camOnRef.current && camTrackRef.current && camTrackRef.current.readyState === "live");
+        const isScreenActive = Boolean(screenOnRef.current && screenVideoTrackRef.current && screenVideoTrackRef.current.readyState === "live");
+        const currentTeacherName = teacherNameRef.current || "Docente Titular";
+        const currentClassTitle = classTitleRef.current || "Clase en Vivo";
+
+        if (currentStage === "canvas") {
+          // ══════════════════════════════════════════════════════════════════════════
+          // MODO 1: LIENZO VIRTUAL EN VIVO (Texto manual o Pizarrón de dibujo libre)
+          // ══════════════════════════════════════════════════════════════════════════
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, 1280, 720);
+
+          if (currentCanvas.canvasMode === "board") {
+            // Dibujar Pizarrón / Dibujo libre directamente desde boardCanvasRef
+            const bCanvas = boardCanvasRef.current;
+            if (bCanvas && bCanvas.width > 0 && bCanvas.height > 0) {
+              ctx.drawImage(bCanvas, 0, 0, 1280, 720);
+            }
+          } else {
+            // Dibujar Lienzo de Texto manual con sintaxis por carácter HCL
+            ctx.fillStyle = "#f4f4f5";
+            ctx.fillRect(0, 0, 1280, 48);
+            ctx.fillStyle = "#e4e4e7";
+            ctx.fillRect(0, 47, 1280, 1);
+
+            ctx.fillStyle = "#18181b";
+            ctx.font = "bold 15px sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText("Lienzo Virtual IPT · Apuntes en Vivo", 24, 30);
+
+            const rawLines = (currentCanvas.content || "").split("\n");
+            let offset = 0;
+            let textY = 82;
+            ctx.font = "15px 'Courier New', Courier, monospace";
+
+            for (let i = 0; i < Math.min(rawLines.length, 24); i++) {
+              const lineText = rawLines[i];
+              const startOffset = offset;
+              offset += lineText.length + 1;
+
+              if (lineText.length === 0) {
+                textY += 25;
+                continue;
+              }
+
+              const runs = groupLineIntoColorRuns(lineText, currentCanvas.charColors || [], startOffset);
+              let runX = 28;
+              for (const run of runs) {
+                ctx.fillStyle = run.color || "#000000";
+                ctx.fillText(run.text, runX, textY);
+                runX += ctx.measureText(run.text).width;
+              }
+              textY += 25;
+            }
+
+            if (!currentCanvas.content) {
+              ctx.fillStyle = "#a1a1aa";
+              ctx.font = "italic 16px sans-serif";
+              ctx.fillText("Apuntes del docente en vivo...", 28, 90);
+            }
+          }
+
+          // PiP Flotante en modo Lienzo (Cámara o Pantalla en esquina inferior derecha)
+          const activePipVideo = isScreenActive
+            ? compositorScreenVideoRef.current
+            : isCamActive
+            ? compositorCamVideoRef.current
+            : null;
+
+          if (activePipVideo && activePipVideo.readyState >= 2) {
+            const pipW = 280;
+            const pipH = 158;
+            const pipX = 1280 - pipW - 24;
+            const pipY = 720 - pipH - 24;
+
+            ctx.save();
+            ctx.shadowColor = "rgba(0,0,0,0.35)";
+            ctx.shadowBlur = 18;
+            ctx.fillStyle = "#09090b";
+            ctx.fillRect(pipX - 2, pipY - 2, pipW + 4, pipH + 4);
+            ctx.restore();
+
+            try {
+              ctx.drawImage(activePipVideo, pipX, pipY, pipW, pipH);
+            } catch {}
+
+            ctx.fillStyle = "rgba(0,0,0,0.75)";
+            ctx.fillRect(pipX + 8, pipY + pipH - 26, 120, 20);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 11px sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(isScreenActive ? "Pantalla Docente" : "Docente en Vivo", pipX + 14, pipY + pipH - 12);
+          }
+        } else {
+          // ══════════════════════════════════════════════════════════════════════════
+          // MODO 2: ESCENARIO DE VIDEO / PANTALLA COMPARTIDA
+          // ══════════════════════════════════════════════════════════════════════════
           ctx.fillStyle = "#09090b";
           ctx.fillRect(0, 0, 1280, 720);
 
-          const grad = ctx.createRadialGradient(640, 360, 40, 640, 360, 520);
-          grad.addColorStop(0, "rgba(128, 82, 255, 0.18)");
-          grad.addColorStop(1, "rgba(9, 9, 11, 1)");
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, 0, 1280, 720);
+          if (isScreenActive && compositorScreenVideoRef.current && compositorScreenVideoRef.current.readyState >= 2) {
+            // Pantalla compartida en el escenario principal (Letterboxed)
+            const sVid = compositorScreenVideoRef.current;
+            const vRatio = sVid.videoWidth && sVid.videoHeight ? sVid.videoWidth / sVid.videoHeight : 16 / 9;
+            let dW = 1280;
+            let dH = 1280 / vRatio;
+            if (dH > 720) {
+              dH = 720;
+              dW = 720 * vRatio;
+            }
+            const dX = (1280 - dW) / 2;
+            const dY = (720 - dH) / 2;
+            try {
+              ctx.drawImage(sVid, dX, dY, dW, dH);
+            } catch {}
 
-          ctx.fillStyle = "#ffffff";
-          ctx.font = "bold 38px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("IPT Course · Clase en Vivo", 640, 320);
+            // Cámara en PiP si ambas están encendidas
+            if (isCamActive && compositorCamVideoRef.current && compositorCamVideoRef.current.readyState >= 2) {
+              const cVid = compositorCamVideoRef.current;
+              const pipW = 280;
+              const pipH = 158;
+              const pipX = 1280 - pipW - 24;
+              const pipY = 720 - pipH - 24;
 
-          ctx.fillStyle = "#8052ff";
-          ctx.font = "bold 20px sans-serif";
-          ctx.fillText("Docente: " + (teacherName || "IPT Master"), 640, 375);
+              ctx.save();
+              ctx.shadowColor = "rgba(0,0,0,0.6)";
+              ctx.shadowBlur = 20;
+              ctx.fillStyle = "#000000";
+              ctx.fillRect(pipX - 2, pipY - 2, pipW + 4, pipH + 4);
+              ctx.restore();
 
-          const totalSecs = Math.floor(tick / 25);
-          const mins = Math.floor(totalSecs / 60);
-          const secs = totalSecs % 60;
-          const timeStr = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-          ctx.fillStyle = "#a1a1aa";
-          ctx.font = "16px monospace";
-          ctx.fillText("Grabando sesión: " + timeStr, 640, 420);
-        }, 40);
+              try {
+                ctx.drawImage(cVid, pipX, pipY, pipW, pipH);
+              } catch {}
 
-        const canvasStream = recCanvas.captureStream(25);
-        const dummyVTrack = canvasStream.getVideoTracks()[0];
-        if (dummyVTrack) tracks.push(dummyVTrack);
-      }
+              ctx.fillStyle = "rgba(0,0,0,0.75)";
+              ctx.fillRect(pipX + 8, pipY + pipH - 26, 110, 20);
+              ctx.fillStyle = "#ffffff";
+              ctx.font = "bold 11px sans-serif";
+              ctx.textAlign = "left";
+              ctx.fillText("Docente en Vivo", pipX + 14, pipY + pipH - 12);
+            }
+          } else if (isCamActive && compositorCamVideoRef.current && compositorCamVideoRef.current.readyState >= 2) {
+            // Cámara principal del docente full stage (Letterboxed)
+            const cVid = compositorCamVideoRef.current;
+            const vRatio = cVid.videoWidth && cVid.videoHeight ? cVid.videoWidth / cVid.videoHeight : 16 / 9;
+            let dW = 1280;
+            let dH = 1280 / vRatio;
+            if (dH > 720) {
+              dH = 720;
+              dW = 720 * vRatio;
+            }
+            const dX = (1280 - dW) / 2;
+            const dY = (720 - dH) / 2;
+            try {
+              ctx.drawImage(cVid, dX, dY, dW, dH);
+            } catch {}
+          } else {
+            // Escenario oficial IPT cuando no hay cámara ni pantalla encendida
+            const grad = ctx.createRadialGradient(640, 360, 40, 640, 360, 520);
+            grad.addColorStop(0, "rgba(128, 82, 255, 0.22)");
+            grad.addColorStop(1, "rgba(9, 9, 11, 1)");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 1280, 720);
 
-      // Obtener el canal de audio maestro unificado desde el mezclador Web Audio
+            // Círculo avatar con inicial
+            ctx.save();
+            ctx.shadowColor = "rgba(128, 82, 255, 0.35)";
+            ctx.shadowBlur = 30;
+            ctx.fillStyle = "#1e1338";
+            ctx.beginPath();
+            ctx.arc(640, 290, 60, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "rgba(128, 82, 255, 0.6)";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 44px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText((currentTeacherName || "IPT").charAt(0).toUpperCase(), 640, 305);
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 24px sans-serif";
+            ctx.fillText(currentTeacherName, 640, 395);
+
+            ctx.fillStyle = "#a1a1aa";
+            ctx.font = "14px sans-serif";
+            ctx.fillText(currentClassTitle, 640, 430);
+
+            // Onda de audio visual
+            const waveBars = 12;
+            const barW = 6;
+            const gap = 8;
+            const startX = 640 - (waveBars * (barW + gap)) / 2;
+            ctx.fillStyle = "#8052ff";
+            for (let b = 0; b < waveBars; b++) {
+              const h = 8 + Math.abs(Math.sin((tick * 0.15) + b * 0.5)) * 22;
+              ctx.fillRect(startX + b * (barW + gap), 475 - h / 2, barW, h);
+            }
+          }
+        }
+
+        // Overlay superior discreto
+        ctx.save();
+        ctx.fillStyle = "rgba(9, 9, 11, 0.72)";
+        ctx.fillRect(20, 20, 340, 36);
+        ctx.strokeStyle = "rgba(255,255,255,0.1)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(20, 20, 340, 36);
+
+        ctx.fillStyle = "#8052ff";
+        ctx.font = "bold 13px sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText("● IPT Master", 32, 42);
+
+        ctx.fillStyle = "#e4e4e7";
+        ctx.font = "12px sans-serif";
+        const displayTitle = currentClassTitle.slice(0, 26);
+        ctx.fillText(displayTitle, 120, 42);
+
+        const totalSecs = Math.floor(tick / 30);
+        const m = Math.floor(totalSecs / 60);
+        const s = totalSecs % 60;
+        const timerStr = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+        ctx.fillStyle = "#a1a1aa";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "right";
+        ctx.fillText(timerStr, 345, 42);
+        ctx.restore();
+      }, 33); // 30 FPS continuo y estable
+
+      // 2. Extraer el video stream del Canvas Compositor Maestro
+      const canvasStream = recCanvas.captureStream(30);
+      const masterVideoTrack = canvasStream.getVideoTracks()[0];
+      const tracks: MediaStreamTrack[] = [masterVideoTrack];
+
+      // 3. Obtener el canal de audio maestro unificado desde el mezclador Web Audio
       const mixerDest = ensureAudioMixer();
       if (mixerDest && mixerDest.stream.getAudioTracks().length > 0) {
         const mixedAudioTrack = mixerDest.stream.getAudioTracks()[0];
@@ -547,7 +822,7 @@ export function LiveClassSplitView() {
     } catch (err) {
       console.warn("No se pudo iniciar MediaRecorder:", err);
     }
-  }, [teacherName]);
+  }, [ensureAudioMixer]);
 
   const toggleRecordingPause = () => {
     if (!mediaRecorderRef.current || mediaRecorderRef.current.state === "inactive") return;
@@ -792,13 +1067,38 @@ export function LiveClassSplitView() {
         pipVideoRef.current.srcObject = null;
       }
     }
+
+    // Alimentar elementos de decodificación continua para el Compositor Maestro
+    if (compositorCamVideoRef.current) {
+      if (cTrack) {
+        const curr = (compositorCamVideoRef.current.srcObject as MediaStream)?.getVideoTracks();
+        if (!curr || curr[0] !== cTrack) {
+          compositorCamVideoRef.current.srcObject = new MediaStream([cTrack]);
+          compositorCamVideoRef.current.play().catch(() => {});
+        }
+      } else {
+        compositorCamVideoRef.current.srcObject = null;
+      }
+    }
+
+    if (compositorScreenVideoRef.current) {
+      if (sTrack) {
+        const curr = (compositorScreenVideoRef.current.srcObject as MediaStream)?.getVideoTracks();
+        if (!curr || curr[0] !== sTrack) {
+          compositorScreenVideoRef.current.srcObject = new MediaStream([sTrack]);
+          compositorScreenVideoRef.current.play().catch(() => {});
+        }
+      } else {
+        compositorScreenVideoRef.current.srcObject = null;
+      }
+    }
   }, [stageMode, swapMainAndPip]);
 
   useEffect(() => {
     syncLocalVideoPreview();
   }, [isLive, camOn, screenOn, stageMode, swapMainAndPip, syncLocalVideoPreview]);
 
-  // Renderizar los trazos del Pizarrón en el elemento <canvas>
+  // Renderizar los trazos del Pizarrón en el elemento <canvas> (Tablero Inteligente Infinito)
   const renderWhiteboardCanvas = useCallback(() => {
     const canvas = boardCanvasRef.current;
     if (!canvas) return;
@@ -812,9 +1112,35 @@ export function LiveClassSplitView() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const pan = boardPanRef.current;
+    const zoom = boardZoomRef.current;
+
+    // 1. Limpiar fondo blanco
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // 2. Cuadrícula Infinita Inteligente (dot-grid técnico)
+    const gridSize = 36;
+    const step = gridSize * zoom;
+    if (step >= 8) {
+      const offsetX = ((pan.x % step) + step) % step;
+      const offsetY = ((pan.y % step) + step) % step;
+      ctx.fillStyle = "#e2e8f0";
+      const dotRadius = Math.max(1, Math.min(2.5, 1.2 * zoom));
+      for (let x = offsetX; x < canvas.width; x += step) {
+        for (let y = offsetY; y < canvas.height; y += step) {
+          ctx.beginPath();
+          ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    // 3. Aplicar Pan y Zoom al espacio infinito
+    ctx.setTransform(zoom, 0, 0, zoom, pan.x, pan.y);
+
+    // 4. Renderizar trazos en el mundo infinito
     const allStrokes = [...(liveCanvas.strokes || [])];
     if (currentStrokeRef.current) {
       allStrokes.push(currentStrokeRef.current);
@@ -829,22 +1155,29 @@ export function LiveClassSplitView() {
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
+      // Soporte retrocompatible para trazos legacy normalizados (0..1)
+      const isLegacy = stroke.points.every((p) => p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1);
+      const scaleBaseW = isLegacy ? 1280 : 1;
+      const scaleBaseH = isLegacy ? 720 : 1;
+
       if (stroke.points.length === 1) {
         const pt = stroke.points[0];
         ctx.beginPath();
-        ctx.arc(pt.x * canvas.width, pt.y * canvas.height, (stroke.width || 3) / 2, 0, Math.PI * 2);
+        ctx.arc(pt.x * scaleBaseW, pt.y * scaleBaseH, (stroke.width || 3) / 2, 0, Math.PI * 2);
         ctx.fill();
       } else {
         ctx.beginPath();
-        ctx.moveTo(stroke.points[0].x * canvas.width, stroke.points[0].y * canvas.height);
+        ctx.moveTo(stroke.points[0].x * scaleBaseW, stroke.points[0].y * scaleBaseH);
         for (let i = 1; i < stroke.points.length; i++) {
-          ctx.lineTo(stroke.points[i].x * canvas.width, stroke.points[i].y * canvas.height);
+          ctx.lineTo(stroke.points[i].x * scaleBaseW, stroke.points[i].y * scaleBaseH);
         }
         ctx.stroke();
       }
       ctx.restore();
     }
-  }, [liveCanvas.strokes]);
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }, [liveCanvas.strokes, boardPan, boardZoom]);
 
   useEffect(() => {
     if (stageMode === "canvas" && liveCanvas.canvasMode === "board") {
@@ -853,7 +1186,7 @@ export function LiveClassSplitView() {
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
-  }, [stageMode, liveCanvas.canvasMode, liveCanvas.strokes, renderWhiteboardCanvas]);
+  }, [stageMode, liveCanvas.canvasMode, liveCanvas.strokes, boardPan, boardZoom, renderWhiteboardCanvas]);
 
   // Publicar estado de medios en RTDB
   const publishMediaStateToRtdb = useCallback(async () => {
@@ -1651,6 +1984,7 @@ export function LiveClassSplitView() {
     const canvasRef = ref(rtdb, `allowed_live_students/${listKey}/liveCanvas`);
     const pollRef = ref(rtdb, `allowed_live_students/${listKey}/activePoll`);
     const pinsRef = ref(rtdb, `allowed_live_students/${listKey}/pinnedResources`);
+    const activeResourceRef = ref(rtdb, `allowed_live_students/${listKey}/activeResource`);
 
     const unsubViewers = onValue(viewersRef, (snap) => {
       const val = snap.exists() ? snap.val() : {};
@@ -1725,6 +2059,18 @@ export function LiveClassSplitView() {
       setPinnedResources(arr);
     });
 
+    const unsubActiveRes = onValue(activeResourceRef, (snap) => {
+      if (!snap.exists()) {
+        setActiveResource(null);
+        return;
+      }
+      const val = snap.val() as ActiveClassResource;
+      setActiveResource(val);
+      if (val.visible) {
+        setShowResourceViewer(true);
+      }
+    });
+
     return () => {
       unsubViewers();
       unsubHands();
@@ -1732,6 +2078,7 @@ export function LiveClassSplitView() {
       unsubCanvas();
       unsubPoll();
       unsubPins();
+      unsubActiveRes();
     };
   }, [isLive, code8, negotiateWithStudent, closePeerSession]);
 
@@ -1786,6 +2133,9 @@ export function LiveClassSplitView() {
     try {
       const nowIso = new Date().toISOString();
 
+      const norm = (s?: string) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const normTarget = norm(title);
+
       // 1. Actualizar en lms_calendar
       const calSnap = await get(ref(rtdb, "lms_calendar"));
       if (calSnap.exists()) {
@@ -1793,7 +2143,15 @@ export function LiveClassSplitView() {
         let eventsList: any[] = Array.isArray(val) ? [...val] : Object.values(val);
         let updated = false;
         eventsList = eventsList.map((ev) => {
-          if (ev && (ev.id === classId || (title && ev.title === title))) {
+          const normEv = norm(ev?.title);
+          const isMatch = Boolean(
+            ev && (
+              (classId && ev.id === classId) ||
+              (title && ev.title === title) ||
+              (normTarget && normEv && (normEv === normTarget || normEv.includes(normTarget) || normTarget.includes(normEv)))
+            )
+          );
+          if (isMatch) {
             updated = true;
             return {
               ...ev,
@@ -1816,7 +2174,15 @@ export function LiveClassSplitView() {
         const val = liveSnap.val();
         let liveList: any[] = Array.isArray(val) ? [...val] : Object.values(val);
         liveList = liveList.map((ls) => {
-          if (ls && (ls.id === classId || (title && ls.title === title))) {
+          const normLs = norm(ls?.title);
+          const isMatch = Boolean(
+            ls && (
+              (classId && ls.id === classId) ||
+              (title && ls.title === title) ||
+              (normTarget && normLs && (normLs === normTarget || normLs.includes(normTarget) || normTarget.includes(normLs)))
+            )
+          );
+          if (isMatch) {
             return {
               ...ls,
               completed: true,
@@ -2061,19 +2427,15 @@ export function LiveClassSplitView() {
     setStageMode("video");
     syncLocalVideoPreview();
 
-    // Sincronización posterior de la clase en el calendario
-    const pref = typeof window !== "undefined" ? localStorage.getItem("ipt_auto_mark_calendar_completed") : null;
-    if (pref === "true") {
-      if (finalScheduledId) {
-        await markClassCompleted(finalScheduledId, finalClassTitle);
-      }
-    } else {
-      setClassEndedInfo({
-        id: finalScheduledId || `session_${Date.now()}`,
-        title: finalClassTitle || "Sesión en Vivo",
-      });
-      setShowPostClassModal(true);
+    // Sincronización posterior de la clase en el calendario (marcar SIEMPRE automáticamente como completada)
+    if (finalScheduledId || finalClassTitle) {
+      await markClassCompleted(finalScheduledId || "", finalClassTitle);
     }
+    setClassEndedInfo({
+      id: finalScheduledId || `session_${Date.now()}`,
+      title: finalClassTitle || "Sesión en Vivo",
+    });
+    setShowPostClassModal(true);
   };
 
   // Actualizar Tema Actual en Vivo
@@ -2134,41 +2496,78 @@ export function LiveClassSplitView() {
     }
   };
 
-  // Eventos de dibujo libre en el Pizarrón (Docente dibuja en Negro fijo #000000)
+  // Eventos de dibujo y navegación en el Tablero Inteligente Infinito
   const handleBoardPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = boardCanvasRef.current;
     if (!canvas) return;
     canvas.setPointerCapture(e.pointerId);
     const rect = canvas.getBoundingClientRect();
-    const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const ny = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
 
-    isDrawingRef.current = true;
-    currentStrokeRef.current = {
-      id: `stk_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      uid: teacherUid,
-      name: teacherName,
-      role: "teacher",
-      colorHex: "#000000",
-      width: strokeWidth,
-      points: [{ x: nx, y: ny }],
-    };
-    renderWhiteboardCanvas();
+    // Paneo con botón secundario (derecho = 2), rueda central (= 1) o herramienta Mano
+    if (e.button === 1 || e.button === 2 || boardTool === "hand") {
+      isPanningRef.current = true;
+      panStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        initialPanX: boardPanRef.current.x,
+        initialPanY: boardPanRef.current.y,
+      };
+      return;
+    }
+
+    if (e.button === 0 && (boardTool === "pen" || boardTool === "eraser")) {
+      const pan = boardPanRef.current;
+      const zoom = boardZoomRef.current;
+      const wx = (e.clientX - rect.left - pan.x) / zoom;
+      const wy = (e.clientY - rect.top - pan.y) / zoom;
+
+      isDrawingRef.current = true;
+      currentStrokeRef.current = {
+        id: `stk_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        uid: teacherUid,
+        name: teacherName,
+        role: "teacher",
+        colorHex: boardTool === "eraser" ? "#ffffff" : strokeColor,
+        width: boardTool === "eraser" ? strokeWidth * 4 : strokeWidth,
+        points: [{ x: wx, y: wy }],
+      };
+      renderWhiteboardCanvas();
+    }
   };
 
   const handleBoardPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (isPanningRef.current) {
+      const dx = e.clientX - panStartRef.current.x;
+      const dy = e.clientY - panStartRef.current.y;
+      const newPan = {
+        x: Math.round(panStartRef.current.initialPanX + dx),
+        y: Math.round(panStartRef.current.initialPanY + dy),
+      };
+      boardPanRef.current = newPan;
+      setBoardPan(newPan);
+      renderWhiteboardCanvas();
+      return;
+    }
+
     if (!isDrawingRef.current || !currentStrokeRef.current) return;
     const canvas = boardCanvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const ny = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    const pan = boardPanRef.current;
+    const zoom = boardZoomRef.current;
+    const wx = (e.clientX - rect.left - pan.x) / zoom;
+    const wy = (e.clientY - rect.top - pan.y) / zoom;
 
-    currentStrokeRef.current.points.push({ x: nx, y: ny });
+    currentStrokeRef.current.points.push({ x: wx, y: wy });
     renderWhiteboardCanvas();
   };
 
   const handleBoardPointerUp = async () => {
+    if (isPanningRef.current) {
+      isPanningRef.current = false;
+      return;
+    }
+
     if (!isDrawingRef.current || !currentStrokeRef.current) return;
     isDrawingRef.current = false;
     const finishedStroke = currentStrokeRef.current;
@@ -2176,6 +2575,84 @@ export function LiveClassSplitView() {
 
     const nextStrokes = [...(liveCanvas.strokes || []), finishedStroke];
     await updateLiveCanvas({ strokes: nextStrokes });
+  };
+
+  const handleBoardWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const canvas = boardCanvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    if (e.ctrlKey || e.metaKey || e.altKey || boardTool === "hand") {
+      const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
+      const prevZoom = boardZoomRef.current;
+      const nextZoom = Math.min(4.0, Math.max(0.2, Number((prevZoom * zoomFactor).toFixed(2))));
+      const prevPan = boardPanRef.current;
+      const newPanX = mouseX - (mouseX - prevPan.x) * (nextZoom / prevZoom);
+      const newPanY = mouseY - (mouseY - prevPan.y) * (nextZoom / prevZoom);
+      const newPan = { x: Math.round(newPanX), y: Math.round(newPanY) };
+
+      boardZoomRef.current = nextZoom;
+      boardPanRef.current = newPan;
+      setBoardZoom(nextZoom);
+      setBoardPan(newPan);
+      renderWhiteboardCanvas();
+    } else {
+      const prevPan = boardPanRef.current;
+      const newPan = {
+        x: Math.round(prevPan.x - e.deltaX),
+        y: Math.round(prevPan.y - e.deltaY),
+      };
+      boardPanRef.current = newPan;
+      setBoardPan(newPan);
+      renderWhiteboardCanvas();
+    }
+  };
+
+  const handleZoomIn = () => {
+    const canvas = boardCanvasRef.current;
+    const centerX = canvas ? canvas.width / 2 : 640;
+    const centerY = canvas ? canvas.height / 2 : 360;
+    const prevZoom = boardZoomRef.current;
+    const nextZoom = Math.min(4.0, Number((prevZoom * 1.25).toFixed(2)));
+    const prevPan = boardPanRef.current;
+    const newPan = {
+      x: Math.round(centerX - (centerX - prevPan.x) * (nextZoom / prevZoom)),
+      y: Math.round(centerY - (centerY - prevPan.y) * (nextZoom / prevZoom)),
+    };
+    boardZoomRef.current = nextZoom;
+    boardPanRef.current = newPan;
+    setBoardZoom(nextZoom);
+    setBoardPan(newPan);
+    renderWhiteboardCanvas();
+  };
+
+  const handleZoomOut = () => {
+    const canvas = boardCanvasRef.current;
+    const centerX = canvas ? canvas.width / 2 : 640;
+    const centerY = canvas ? canvas.height / 2 : 360;
+    const prevZoom = boardZoomRef.current;
+    const nextZoom = Math.max(0.2, Number((prevZoom / 1.25).toFixed(2)));
+    const prevPan = boardPanRef.current;
+    const newPan = {
+      x: Math.round(centerX - (centerX - prevPan.x) * (nextZoom / prevZoom)),
+      y: Math.round(centerY - (centerY - prevPan.y) * (nextZoom / prevZoom)),
+    };
+    boardZoomRef.current = nextZoom;
+    boardPanRef.current = newPan;
+    setBoardZoom(nextZoom);
+    setBoardPan(newPan);
+    renderWhiteboardCanvas();
+  };
+
+  const handleResetBoardView = () => {
+    boardZoomRef.current = 1;
+    boardPanRef.current = { x: 0, y: 0 };
+    setBoardZoom(1);
+    setBoardPan({ x: 0, y: 0 });
+    renderWhiteboardCanvas();
   };
 
   const handleUndoBoardStroke = async () => {
@@ -2192,6 +2669,123 @@ export function LiveClassSplitView() {
     navigator.clipboard.writeText(liveCanvas.content || "");
     setCopiedCanvas(true);
     setTimeout(() => setCopiedCanvas(false), 2000);
+  };
+
+  // Subir y almacenar Recursos Pedagógicos Multimedia (PDF, PNG, JPEG, SVG)
+  const handleFileUploadResource = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !isLive || !code8) return;
+    setIsUploadingResource(true);
+    try {
+      const uploaded = await uploadClassResource(file, code8);
+      const listKey = `allowed_list_${code8}`;
+      const pinRef = push(ref(rtdb, `allowed_live_students/${listKey}/pinnedResources`));
+      const resItem: PinnedResource = {
+        id: pinRef.key || `res_${Date.now()}`,
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        url: uploaded.url,
+        type: uploaded.type,
+        fileName: uploaded.fileName,
+        fileSize: uploaded.size,
+        createdAt: Date.now(),
+      };
+      await set(pinRef, resItem);
+
+      // Proyectar automáticamente en la clase como recurso visible
+      const activeRes: ActiveClassResource = {
+        id: resItem.id,
+        title: resItem.title,
+        url: resItem.url,
+        type: uploaded.type,
+        fileName: resItem.fileName,
+        visible: true,
+        updatedAt: Date.now(),
+      };
+      await set(ref(rtdb, `allowed_live_students/${listKey}/activeResource`), activeRes);
+      setActiveResource(activeRes);
+      setShowResourceViewer(true);
+    } catch (err) {
+      console.error("Error subiendo recurso a la clase:", err);
+    } finally {
+      setIsUploadingResource(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
+  // Alternar Mostrar / Ocultar Recurso en la Clase con un Botón
+  const handleToggleResourceVisibility = async (resource?: PinnedResource | ActiveClassResource) => {
+    if (!isLive || !code8) return;
+    const listKey = `allowed_list_${code8}`;
+    const activeResRef = ref(rtdb, `allowed_live_students/${listKey}/activeResource`);
+
+    if (resource && (!activeResource || activeResource.id !== resource.id)) {
+      // Activar y mostrar este recurso específico
+      const targetType =
+        resource.type ||
+        (resource.url.toLowerCase().endsWith(".pdf")
+          ? "pdf"
+          : resource.url.match(/\.(png|jpg|jpeg|webp|gif|svg)/i)
+          ? "image"
+          : "link");
+      const newActive: ActiveClassResource = {
+        id: resource.id,
+        title: resource.title,
+        url: resource.url,
+        type: targetType as "pdf" | "image" | "doc" | "link",
+        fileName: resource.fileName || resource.title,
+        visible: true,
+        updatedAt: Date.now(),
+      };
+      await set(activeResRef, newActive);
+      setActiveResource(newActive);
+      setShowResourceViewer(true);
+    } else if (activeResource) {
+      // Alternar visibilidad del recurso activo actual
+      const nextVisible = !activeResource.visible;
+      const updated: ActiveClassResource = {
+        ...activeResource,
+        visible: nextVisible,
+        updatedAt: Date.now(),
+      };
+      await set(activeResRef, updated);
+      setActiveResource(updated);
+      setShowResourceViewer(nextVisible);
+    }
+  };
+
+  // Fijar un Recurso / Enlace arriba del Chat
+  const handlePinResource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pinTitle.trim() || !pinUrl.trim() || !isLive || !code8) return;
+    const normalizedUrl = pinUrl.trim().startsWith("http")
+      ? pinUrl.trim()
+      : `https://${pinUrl.trim()}`;
+    const pinRef = push(
+      ref(rtdb, `allowed_live_students/allowed_list_${code8}/pinnedResources`)
+    );
+    const newRes: PinnedResource = {
+      id: pinRef.key || `pin_${Date.now()}`,
+      title: pinTitle.trim(),
+      url: normalizedUrl,
+      type: normalizedUrl.toLowerCase().endsWith(".pdf") ? "pdf" : "link",
+      createdAt: Date.now(),
+    };
+    await set(pinRef, newRes);
+    setPinTitle("");
+    setPinUrl("");
+    setShowPinForm(false);
+  };
+
+  const handleRemovePin = async (pinId: string) => {
+    if (!isLive || !code8) return;
+    const listKey = `allowed_list_${code8}`;
+    await remove(
+      ref(rtdb, `allowed_live_students/${listKey}/pinnedResources/${pinId}`)
+    ).catch(() => {});
+    if (activeResource && activeResource.id === pinId) {
+      await remove(ref(rtdb, `allowed_live_students/${listKey}/activeResource`)).catch(() => {});
+      setActiveResource(null);
+    }
   };
 
   // Lanzar Micro-Encuesta / Pulso Rápido en Vivo
@@ -2218,33 +2812,6 @@ export function LiveClassSplitView() {
       () => {}
     );
     setActivePoll(null);
-  };
-
-  // Fijar un Recurso / Enlace arriba del Chat
-  const handlePinResource = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!pinTitle.trim() || !pinUrl.trim() || !isLive || !code8) return;
-    const normalizedUrl = pinUrl.trim().startsWith("http")
-      ? pinUrl.trim()
-      : `https://${pinUrl.trim()}`;
-    const pinRef = push(
-      ref(rtdb, `allowed_live_students/allowed_list_${code8}/pinnedResources`)
-    );
-    await set(pinRef, {
-      title: pinTitle.trim(),
-      url: normalizedUrl,
-      createdAt: Date.now(),
-    });
-    setPinTitle("");
-    setPinUrl("");
-    setShowPinForm(false);
-  };
-
-  const handleRemovePin = async (pinId: string) => {
-    if (!isLive || !code8) return;
-    await remove(
-      ref(rtdb, `allowed_live_students/allowed_list_${code8}/pinnedResources/${pinId}`)
-    ).catch(() => {});
   };
 
   // Control de Voz del Docente sobre Estudiantes ("Dar la palabra" / "Silenciar")
@@ -2898,8 +3465,37 @@ export function LiveClassSplitView() {
           )}
         </div>
 
-        {/* Derecha: Contador de Conectados */}
+        {/* Derecha: Contador de Conectados y Control de Recurso */}
         <div className="flex items-center gap-2.5">
+          {activeResource && (
+            <button
+              type="button"
+              onClick={() => handleToggleResourceVisibility()}
+              title={
+                activeResource.visible
+                  ? "Ocultar recurso proyectado en la clase"
+                  : "Mostrar recurso a los alumnos"
+              }
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                activeResource.visible
+                  ? "bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_18px_rgba(16,185,129,0.45)]"
+                  : "bg-white/10 hover:bg-white/20 text-white border border-white/15"
+              }`}
+            >
+              {activeResource.visible ? (
+                <>
+                  <EyeOff className="w-3.5 h-3.5" />
+                  <span>Ocultar recurso</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Mostrar recurso ({activeResource.title.slice(0, 15)})</span>
+                </>
+              )}
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setSidePanel((p) => (p === "people" ? "none" : "people"))}
@@ -2929,6 +3525,24 @@ export function LiveClassSplitView() {
               className={`w-full h-full object-contain ${
                 camOn || screenOn ? "block" : "hidden"
               }`}
+            />
+
+            {/* Elementos auxiliares para decodificación y renderizado en el Compositor Maestro de Grabación */}
+            <video
+              ref={compositorCamVideoRef}
+              autoPlay
+              playsInline
+              muted
+              aria-hidden="true"
+              style={{ position: "fixed", top: -9999, left: -9999, width: 320, height: 180, pointerEvents: "none", opacity: 0 }}
+            />
+            <video
+              ref={compositorScreenVideoRef}
+              autoPlay
+              playsInline
+              muted
+              aria-hidden="true"
+              style={{ position: "fixed", top: -9999, left: -9999, width: 640, height: 360, pointerEvents: "none", opacity: 0 }}
             />
 
             {!camOn && !screenOn && (
@@ -2964,28 +3578,103 @@ export function LiveClassSplitView() {
                     <option value="board">Pizarrón / Dibujo libre</option>
                   </select>
 
-                  {/* Herramientas de trazo cuando está en modo Pizarrón */}
+                  {/* Herramientas de trazo y navegación cuando está en modo Pizarrón Infinito */}
                   {liveCanvas.canvasMode === "board" && (
-                    <div className="flex items-center gap-1.5 pl-2 border-l border-zinc-300">
-                      {([
-                        { label: "Fino", w: 2 },
-                        { label: "Medio", w: 4 },
-                        { label: "Grueso", w: 7 },
-                      ] as const).map((item) => (
+                    <div className="flex items-center gap-2 pl-2 border-l border-zinc-300">
+                      {/* Selector de Herramienta: Lápiz / Mano / Borrador */}
+                      <div className="flex items-center gap-1 bg-zinc-200/70 p-0.5 rounded-lg">
                         <button
-                          key={item.w}
                           type="button"
-                          onClick={() => setStrokeWidth(item.w)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
-                            strokeWidth === item.w
-                              ? "bg-zinc-900 text-white"
-                              : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100"
+                          onClick={() => setBoardTool("pen")}
+                          title="Lápiz (Dibujo libre)"
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                            boardTool === "pen"
+                              ? "bg-white text-zinc-900 shadow-xs"
+                              : "text-zinc-600 hover:text-zinc-900"
                           }`}
                         >
-                          {item.label}
+                          <PenTool className="w-3.5 h-3.5" />
+                          <span>Lápiz</span>
                         </button>
-                      ))}
 
+                        <button
+                          type="button"
+                          onClick={() => setBoardTool("hand")}
+                          title="Mano (Mover y arrastrar el tablero infinito)"
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                            boardTool === "hand"
+                              ? "bg-[#8052ff] text-white shadow-xs"
+                              : "text-zinc-600 hover:text-zinc-900"
+                          }`}
+                        >
+                          <Move className="w-3.5 h-3.5" />
+                          <span>Mano (Mover)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setBoardTool("eraser")}
+                          title="Borrador"
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                            boardTool === "eraser"
+                              ? "bg-white text-rose-600 shadow-xs"
+                              : "text-zinc-600 hover:text-zinc-900"
+                          }`}
+                        >
+                          <Eraser className="w-3.5 h-3.5" />
+                          <span>Borrador</span>
+                        </button>
+                      </div>
+
+                      {/* Paleta de colores para el docente */}
+                      {boardTool === "pen" && (
+                        <div className="flex items-center gap-1 pl-1 border-l border-zinc-300">
+                          {[
+                            { color: "#000000", label: "Negro" },
+                            { color: "#2563eb", label: "Azul" },
+                            { color: "#dc2626", label: "Rojo" },
+                            { color: "#059669", label: "Verde" },
+                            { color: "#7c3aed", label: "Morado" },
+                          ].map((item) => (
+                            <button
+                              key={item.color}
+                              type="button"
+                              onClick={() => setStrokeColor(item.color)}
+                              title={`Color ${item.label}`}
+                              className={`w-5 h-5 rounded-full transition-transform cursor-pointer ${
+                                strokeColor === item.color
+                                  ? "scale-125 ring-2 ring-offset-1 ring-zinc-800"
+                                  : "opacity-75 hover:opacity-100"
+                              }`}
+                              style={{ backgroundColor: item.color }}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Grosores */}
+                      <div className="flex items-center gap-1 pl-1 border-l border-zinc-300">
+                        {([
+                          { label: "Fino", w: 2 },
+                          { label: "Medio", w: 4 },
+                          { label: "Grueso", w: 7 },
+                        ] as const).map((item) => (
+                          <button
+                            key={item.w}
+                            type="button"
+                            onClick={() => setStrokeWidth(item.w)}
+                            className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
+                              strokeWidth === item.w
+                                ? "bg-zinc-900 text-white"
+                                : "bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100"
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Deshacer y Limpiar */}
                       <button
                         type="button"
                         onClick={handleUndoBoardStroke}
@@ -2999,7 +3688,7 @@ export function LiveClassSplitView() {
                       <button
                         type="button"
                         onClick={handleClearBoard}
-                        title="Limpiar pizarrón"
+                        title="Limpiar todo el pizarrón"
                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200 hover:bg-rose-100 text-[11px] font-medium text-rose-700 cursor-pointer"
                       >
                         <Eraser className="w-3.5 h-3.5" />
@@ -3150,18 +3839,140 @@ export function LiveClassSplitView() {
                   </div>
                 </div>
               ) : (
-                /* SUB-MODO B: PIZARRÓN / DIBUJO LIBRE SOBRE FONDO BLANCO */
-                <div className="flex-1 relative bg-[#ffffff] overflow-hidden">
+                /* SUB-MODO B: PIZARRÓN / DIBUJO LIBRE SOBRE FONDO BLANCO (TABLERO INTELIGENTE INFINITO) */
+                <div className="flex-1 relative bg-[#ffffff] overflow-hidden select-none">
                   <canvas
                     ref={boardCanvasRef}
                     onPointerDown={handleBoardPointerDown}
                     onPointerMove={handleBoardPointerMove}
                     onPointerUp={handleBoardPointerUp}
                     onPointerCancel={handleBoardPointerUp}
-                    className="w-full h-full block cursor-crosshair touch-none"
+                    onWheel={handleBoardWheel}
+                    onContextMenu={(e) => e.preventDefault()}
+                    className={`w-full h-full block touch-none ${
+                      boardTool === "hand" ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"
+                    }`}
                   />
+
+                  {/* HUD FLOTANTE DE CONTROL DEL TABLERO INTELIGENTE (ZOOM Y NAVEGACIÓN INFINITA) */}
+                  <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1.5 p-1.5 bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-2xl text-white">
+                    <button
+                      type="button"
+                      onClick={handleZoomOut}
+                      title="Alejar tablero (-)"
+                      className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-white transition-colors cursor-pointer"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleResetBoardView}
+                      title="Restablecer zoom al 100% y centrar"
+                      className="px-2.5 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-mono font-bold flex items-center justify-center transition-colors cursor-pointer min-w-14"
+                    >
+                      {Math.round(boardZoom * 100)}%
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleZoomIn}
+                      title="Acercar tablero (+)"
+                      className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-white transition-colors cursor-pointer"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+
+                    <div className="w-[1px] h-5 bg-zinc-700 mx-0.5" />
+
+                    <button
+                      type="button"
+                      onClick={handleResetBoardView}
+                      title="Centrar tablero en el origen"
+                      className="px-2.5 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Centrar</span>
+                    </button>
+                  </div>
+
+                  {/* MINI BADGE DE ESTADO DEL TABLERO INFINITO */}
+                  <div className="absolute top-4 right-4 z-10 pointer-events-none hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-zinc-300/80 text-[11px] font-semibold text-zinc-700 shadow-sm">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Tablero Inteligente Infinito</span>
+                  </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* VISOR DE RECURSO PROYECTADO EN LA CLASE (PDF, PNG, JPEG, ETC.) */}
+          {activeResource && activeResource.visible && showResourceViewer && (
+            <div className="absolute inset-4 z-30 bg-[#09090b]/95 backdrop-blur-2xl rounded-2xl border border-white/20 shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              {/* Barra superior del visor */}
+              <div className="px-4 py-2.5 bg-black/80 border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
+                <div className="flex items-center gap-2.5 truncate">
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                      activeResource.type === "pdf"
+                        ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                        : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                    }`}
+                  >
+                    {activeResource.type === "pdf"
+                      ? "PDF"
+                      : activeResource.type === "image"
+                      ? "IMAGEN"
+                      : "RECURSO"}
+                  </span>
+                  <span className="text-xs font-semibold text-white truncate">
+                    {activeResource.title}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-medium text-emerald-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Visible en la clase
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href={activeResource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Abrir en pestaña nueva"
+                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => handleToggleResourceVisibility()}
+                    title="Ocultar recurso para todos en la clase"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>Ocultar de la clase</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Contenedor del documento / imagen */}
+              <div className="flex-1 relative bg-[#050507] overflow-auto flex items-center justify-center p-2">
+                {activeResource.type === "image" ? (
+                  <img
+                    src={activeResource.url}
+                    alt={activeResource.title}
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl select-none"
+                  />
+                ) : (
+                  <iframe
+                    src={activeResource.url}
+                    title={activeResource.title}
+                    className="w-full h-full rounded-lg border-0 bg-white"
+                  />
+                )}
+              </div>
             </div>
           )}
 
@@ -3388,21 +4199,51 @@ export function LiveClassSplitView() {
 
             {sidePanel === "chat" && (
               <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="p-3.5 bg-[#050507] border-b border-white/[0.08] space-y-2">
+                <div className="p-3.5 bg-[#050507] border-b border-white/[0.08] space-y-2.5">
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#b79aff]">
                       <Pin className="w-3.5 h-3.5 text-[#8052ff]" />
-                      Recursos Fijados ({pinnedResources.length})
+                      Recursos de Clase ({pinnedResources.length})
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowPinForm((s) => !s)}
-                      className="inline-flex items-center gap-1 text-[11px] font-medium text-[#8052ff] hover:text-white cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Fijar enlace</span>
-                    </button>
+
+                    <div className="flex items-center gap-1.5">
+                      {/* Input oculto para subir archivos reales (PDF, PNG, JPG, etc.) */}
+                      <input
+                        type="file"
+                        ref={fileInputResourceRef}
+                        onChange={handleFileUploadResource}
+                        accept=".pdf,.png,.jpg,.jpeg,.webp,.svg,.gif,.txt"
+                        className="hidden"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => fileInputResourceRef.current?.click()}
+                        disabled={isUploadingResource}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#8052ff] hover:bg-[#6e3ff3] text-white text-[11px] font-semibold transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                      >
+                        <FileUp className="w-3.5 h-3.5" />
+                        <span>Subir archivo</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowPinForm((s) => !s)}
+                        className="p-1 rounded-lg bg-white/10 hover:bg-white/15 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                        title="Fijar enlace web"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Estado de subida de archivo */}
+                  {isUploadingResource && (
+                    <div className="flex items-center gap-2 p-2 rounded-xl bg-[#8052ff]/15 border border-[#8052ff]/30 text-xs text-[#c4adff] animate-pulse">
+                      <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                      <span>Subiendo y preparando recurso para la clase...</span>
+                    </div>
+                  )}
 
                   {showPinForm && (
                     <form onSubmit={handlePinResource} className="space-y-2 pt-1">
@@ -3410,7 +4251,7 @@ export function LiveClassSplitView() {
                         type="text"
                         value={pinTitle}
                         onChange={(e) => setPinTitle(e.target.value)}
-                        placeholder="Título (ej. Repositorio de la clase)"
+                        placeholder="Título (ej. Guía PDF o Repositorio)"
                         className="w-full bg-[#09090b] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-[#8052ff]"
                       />
                       <div className="flex gap-1.5">
@@ -3418,7 +4259,7 @@ export function LiveClassSplitView() {
                           type="text"
                           value={pinUrl}
                           onChange={(e) => setPinUrl(e.target.value)}
-                          placeholder="https://..."
+                          placeholder="https://... o enlace a documento"
                           className="flex-1 bg-[#09090b] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-[#8052ff]"
                         />
                         <button
@@ -3432,30 +4273,83 @@ export function LiveClassSplitView() {
                   )}
 
                   {pinnedResources.length > 0 && (
-                    <div className="space-y-1.5 max-h-28 overflow-y-auto">
-                      {pinnedResources.map((pin) => (
-                        <div
-                          key={pin.id}
-                          className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-[#8052ff]/10 border border-[#8052ff]/30 text-xs"
-                        >
-                          <a
-                            href={pin.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-white hover:text-[#b79aff] truncate font-medium"
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto pr-0.5">
+                      {pinnedResources.map((pin) => {
+                        const isThisActiveAndVisible =
+                          activeResource?.id === pin.id && activeResource.visible;
+                        return (
+                          <div
+                            key={pin.id}
+                            className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl border text-xs transition-all ${
+                              isThisActiveAndVisible
+                                ? "bg-emerald-500/10 border-emerald-500/35"
+                                : "bg-[#8052ff]/10 border-[#8052ff]/30"
+                            }`}
                           >
-                            <ExternalLink className="w-3.5 h-3.5 text-[#8052ff] shrink-0" />
-                            <span className="truncate">{pin.title}</span>
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => handleRemovePin(pin.id)}
-                            className="text-zinc-500 hover:text-rose-400 cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
+                            <div className="flex items-center gap-2 truncate flex-1">
+                              {pin.type === "pdf" ? (
+                                <FileText className="w-4 h-4 text-rose-400 shrink-0" />
+                              ) : pin.type === "image" ? (
+                                <ImageIcon className="w-4 h-4 text-blue-400 shrink-0" />
+                              ) : (
+                                <ExternalLink className="w-4 h-4 text-[#8052ff] shrink-0" />
+                              )}
+                              <span className="truncate font-medium text-white">
+                                {pin.title}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {/* Botón Mostrar / Ocultar en Clase */}
+                              <button
+                                type="button"
+                                onClick={() => handleToggleResourceVisibility(pin)}
+                                title={
+                                  isThisActiveAndVisible
+                                    ? "Ocultar recurso en clase"
+                                    : "Mostrar recurso en la clase"
+                                }
+                                className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                  isThisActiveAndVisible
+                                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
+                                    : "bg-white/10 text-zinc-300 hover:text-white hover:bg-white/20"
+                                }`}
+                              >
+                                {isThisActiveAndVisible ? (
+                                  <>
+                                    <EyeOff className="w-3 h-3" />
+                                    <span>Ocultar</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Eye className="w-3 h-3" />
+                                    <span>Mostrar</span>
+                                  </>
+                                )}
+                              </button>
+
+                              <a
+                                href={pin.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Abrir en pestaña"
+                                className="p-1 text-zinc-400 hover:text-white transition-colors"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+
+                              <button
+                                type="button"
+                                onClick={() => handleRemovePin(pin.id)}
+                                title="Eliminar de recursos fijados"
+                                className="p-1 text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -3662,6 +4556,25 @@ export function LiveClassSplitView() {
         </button>
 
         <div className="w-px h-6 bg-white/10 mx-1" />
+
+        {/* Botón directo Mostrar / Ocultar Recurso en la Clase */}
+        {activeResource && (
+          <button
+            type="button"
+            onClick={() => handleToggleResourceVisibility()}
+            title={activeResource.visible ? "Ocultar recurso en clase" : "Mostrar recurso en clase"}
+            className={`h-11 px-4 rounded-full flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer ${
+              activeResource.visible
+                ? "bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_20px_rgba(16,185,129,0.45)]"
+                : "bg-white/10 hover:bg-white/15 text-white border border-white/10"
+            }`}
+          >
+            {activeResource.visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <span className="hidden md:inline">
+              {activeResource.visible ? "Ocultar Recurso" : "Mostrar Recurso"}
+            </span>
+          </button>
+        )}
 
         <button
           type="button"

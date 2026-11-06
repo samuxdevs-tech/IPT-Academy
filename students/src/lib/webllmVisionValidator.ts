@@ -230,10 +230,16 @@ Responde EXCLUSIVAMENTE un JSON:
     console.warn('WebLLM VLM local no disponible o memoria insuficiente. Activando contingencia de alta velocidad:', localErr);
   }
 
-  // 2. Fallback de contingencia de alta velocidad con Gemini 2.5 Flash Vision
+  // 2. Fallback de contingencia de alta velocidad con Gemini Vision Oficial (gemini-3.5-flash-lite)
   if (onProgress) {
-    onProgress({ progressPercent: 85, statusText: 'Cotejando credencial con el servicio seguro...' });
+    onProgress({ progressPercent: 85, statusText: 'Cotejando credencial con el servicio seguro de visión...' });
   }
+
+  const geminiApiKey =
+    process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_AI_API_KEY ||
+    '';
 
   const openRouterApiKey =
     process.env.NEXT_PUBLIC_OPENROUTER_API_KEY ||
@@ -241,44 +247,82 @@ Responde EXCLUSIVAMENTE un JSON:
     '';
 
   try {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${openRouterApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'user',
-            content: [
+    let rawContent = '';
+
+    if (geminiApiKey) {
+      // Separar MIME type y base64 puro
+      let mimeType = 'image/jpeg';
+      let pureBase64 = imageBase64;
+      if (imageBase64.startsWith('data:')) {
+        const commaIdx = imageBase64.indexOf(',');
+        if (commaIdx !== -1) {
+          const meta = imageBase64.substring(0, commaIdx);
+          pureBase64 = imageBase64.substring(commaIdx + 1);
+          const mimeMatch = meta.match(/data:([^;]+)/);
+          if (mimeMatch) mimeType = mimeMatch[1];
+        }
+      }
+
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiApiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
               {
-                type: 'text',
-                text: promptText,
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: imageBase64,
-                },
+                parts: [
+                  { text: promptText },
+                  {
+                    inlineData: {
+                      mimeType,
+                      data: pureBase64,
+                    },
+                  },
+                ],
               },
             ],
-          },
-        ],
-      }),
-    });
+          }),
+        }
+      );
 
-    if (!res.ok) {
-      throw new Error(`El servicio de validación respondió con código ${res.status}.`);
+      if (res.ok) {
+        const gemData = await res.json().catch(() => null);
+        rawContent = gemData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      }
     }
 
-    const rawData = await res.json();
-    const rawContent = rawData.choices?.[0]?.message?.content || '';
+    if (!rawContent && openRouterApiKey) {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openRouterApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: promptText },
+                { type: 'image_url', image_url: { url: imageBase64 } },
+              ],
+            },
+          ],
+        }),
+      });
+
+      if (res.ok) {
+        const rawData = await res.json().catch(() => null);
+        rawContent = rawData?.choices?.[0]?.message?.content || '';
+      }
+    }
+
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
 
     if (!jsonMatch) {
-      throw new Error('No se pudo extraer la información del documento.');
+      throw new Error('El modelo de visión no pudo interpretar el formato del documento.');
     }
 
     const vlmResult = JSON.parse(jsonMatch[0]);

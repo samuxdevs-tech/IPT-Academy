@@ -475,7 +475,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           const val = snap.val();
           const all = (Array.isArray(val) ? val.filter(Boolean) : Object.values(val)) as any[];
           const userBookings = all.filter(
-            (b) => b && (b.userId === user.uid || b.studentUid === user.uid)
+            (b) => b && (b.userId === (user?.uid || effectiveUid) || b.studentUid === (user?.uid || effectiveUid) || (effectiveEmail && b.studentEmail && String(b.studentEmail).toLowerCase() === effectiveEmail.toLowerCase()))
           );
           userBookings.forEach((b: LiveBooking) => engine.liveBookings.set(b.id, b));
           setLiveBookings(structuredClone(userBookings));
