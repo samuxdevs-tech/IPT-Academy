@@ -909,6 +909,19 @@ export default function StudentLivePage() {
       setPinnedResources(arr);
     });
 
+    const activeResourceRef = ref(db, `allowed_live_students/${listKey}/activeResource`);
+    const unsubActiveRes = onValue(activeResourceRef, (snap) => {
+      if (!snap.exists()) {
+        setActiveResource(null);
+        return;
+      }
+      const val = snap.val() as ActiveClassResource;
+      setActiveResource(val);
+      if (val.visible) {
+        setShowStudentResourceViewer(true);
+      }
+    });
+
     const controlRef = ref(
       db,
       `allowed_live_students/${listKey}/participantControls/${studentUid}`
@@ -1106,6 +1119,7 @@ export default function StudentLivePage() {
       unsubCanvas();
       unsubPoll();
       unsubPins();
+      unsubActiveRes();
       unsubControl();
       unsubOffer();
       if (unsubTeacherIce) unsubTeacherIce();
@@ -1314,42 +1328,78 @@ export default function StudentLivePage() {
     ).catch(() => {});
   };
 
-  // Dibujo libre del estudiante en el Pizarrón (usando su color HCL Razón Áurea)
+  // Eventos de navegación y dibujo en el Tablero Inteligente Infinito
   const handleBoardPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!matchedRoom || !liveCanvas.allowStudentEdit) return;
     const canvas = boardCanvasRef.current;
     if (!canvas) return;
     canvas.setPointerCapture(e.pointerId);
     const rect = canvas.getBoundingClientRect();
-    const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const ny = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
 
-    isDrawingRef.current = true;
-    currentStrokeRef.current = {
-      id: `stk_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      uid: studentUid,
-      name: studentName,
-      role: 'student',
-      colorHex: myHclColor.hex,
-      width: strokeWidth,
-      points: [{ x: nx, y: ny }],
-    };
-    renderWhiteboardCanvas();
+    // Paneo con botón secundario (derecho = 2), rueda central (= 1) o herramienta Mano
+    if (e.button === 1 || e.button === 2 || boardTool === 'hand' || !liveCanvas.allowStudentEdit) {
+      isPanningRef.current = true;
+      panStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        initialPanX: boardPanRef.current.x,
+        initialPanY: boardPanRef.current.y,
+      };
+      return;
+    }
+
+    if (e.button === 0 && boardTool === 'pen' && liveCanvas.allowStudentEdit) {
+      const pan = boardPanRef.current;
+      const zoom = boardZoomRef.current;
+      const wx = (e.clientX - rect.left - pan.x) / zoom;
+      const wy = (e.clientY - rect.top - pan.y) / zoom;
+
+      isDrawingRef.current = true;
+      currentStrokeRef.current = {
+        id: `stk_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        uid: studentUid,
+        name: studentName,
+        role: 'student',
+        colorHex: myHclColor.hex,
+        width: strokeWidth,
+        points: [{ x: wx, y: wy }],
+      };
+      renderWhiteboardCanvas();
+    }
   };
 
   const handleBoardPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (isPanningRef.current) {
+      const dx = e.clientX - panStartRef.current.x;
+      const dy = e.clientY - panStartRef.current.y;
+      const newPan = {
+        x: Math.round(panStartRef.current.initialPanX + dx),
+        y: Math.round(panStartRef.current.initialPanY + dy),
+      };
+      boardPanRef.current = newPan;
+      setBoardPan(newPan);
+      renderWhiteboardCanvas();
+      return;
+    }
+
     if (!isDrawingRef.current || !currentStrokeRef.current) return;
     const canvas = boardCanvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const ny = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    const pan = boardPanRef.current;
+    const zoom = boardZoomRef.current;
+    const wx = (e.clientX - rect.left - pan.x) / zoom;
+    const wy = (e.clientY - rect.top - pan.y) / zoom;
 
-    currentStrokeRef.current.points.push({ x: nx, y: ny });
+    currentStrokeRef.current.points.push({ x: wx, y: wy });
     renderWhiteboardCanvas();
   };
 
   const handleBoardPointerUp = async () => {
+    if (isPanningRef.current) {
+      isPanningRef.current = false;
+      return;
+    }
+
     if (!isDrawingRef.current || !currentStrokeRef.current || !matchedRoom) return;
     isDrawingRef.current = false;
     const finishedStroke = currentStrokeRef.current;
@@ -1373,6 +1423,84 @@ export default function StudentLivePage() {
       ref(db, `allowed_live_students/${matchedRoom.listKey}/liveCanvas`),
       updated
     ).catch(() => {});
+  };
+
+  const handleBoardWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const canvas = boardCanvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    if (e.ctrlKey || e.metaKey || e.altKey || boardTool === 'hand') {
+      const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
+      const prevZoom = boardZoomRef.current;
+      const nextZoom = Math.min(4.0, Math.max(0.2, Number((prevZoom * zoomFactor).toFixed(2))));
+      const prevPan = boardPanRef.current;
+      const newPanX = mouseX - (mouseX - prevPan.x) * (nextZoom / prevZoom);
+      const newPanY = mouseY - (mouseY - prevPan.y) * (nextZoom / prevZoom);
+      const newPan = { x: Math.round(newPanX), y: Math.round(newPanY) };
+
+      boardZoomRef.current = nextZoom;
+      boardPanRef.current = newPan;
+      setBoardZoom(nextZoom);
+      setBoardPan(newPan);
+      renderWhiteboardCanvas();
+    } else {
+      const prevPan = boardPanRef.current;
+      const newPan = {
+        x: Math.round(prevPan.x - e.deltaX),
+        y: Math.round(prevPan.y - e.deltaY),
+      };
+      boardPanRef.current = newPan;
+      setBoardPan(newPan);
+      renderWhiteboardCanvas();
+    }
+  };
+
+  const handleZoomIn = () => {
+    const canvas = boardCanvasRef.current;
+    const centerX = canvas ? canvas.width / 2 : 640;
+    const centerY = canvas ? canvas.height / 2 : 360;
+    const prevZoom = boardZoomRef.current;
+    const nextZoom = Math.min(4.0, Number((prevZoom * 1.25).toFixed(2)));
+    const prevPan = boardPanRef.current;
+    const newPan = {
+      x: Math.round(centerX - (centerX - prevPan.x) * (nextZoom / prevZoom)),
+      y: Math.round(centerY - (centerY - prevPan.y) * (nextZoom / prevZoom)),
+    };
+    boardZoomRef.current = nextZoom;
+    boardPanRef.current = newPan;
+    setBoardZoom(nextZoom);
+    setBoardPan(newPan);
+    renderWhiteboardCanvas();
+  };
+
+  const handleZoomOut = () => {
+    const canvas = boardCanvasRef.current;
+    const centerX = canvas ? canvas.width / 2 : 640;
+    const centerY = canvas ? canvas.height / 2 : 360;
+    const prevZoom = boardZoomRef.current;
+    const nextZoom = Math.max(0.2, Number((prevZoom / 1.25).toFixed(2)));
+    const prevPan = boardPanRef.current;
+    const newPan = {
+      x: Math.round(centerX - (centerX - prevPan.x) * (nextZoom / prevZoom)),
+      y: Math.round(centerY - (centerY - prevPan.y) * (nextZoom / prevZoom)),
+    };
+    boardZoomRef.current = nextZoom;
+    boardPanRef.current = newPan;
+    setBoardZoom(nextZoom);
+    setBoardPan(newPan);
+    renderWhiteboardCanvas();
+  };
+
+  const handleResetBoardView = () => {
+    boardZoomRef.current = 1;
+    boardPanRef.current = { x: 0, y: 0 };
+    setBoardZoom(1);
+    setBoardPan({ x: 0, y: 0 });
+    renderWhiteboardCanvas();
   };
 
   const handleUndoMyLastStroke = async () => {
@@ -1891,8 +2019,37 @@ export default function StudentLivePage() {
           </div>
         </div>
 
-        {/* Derecha: Participantes */}
+        {/* Derecha: Participantes y Recurso en Vivo */}
         <div className="flex items-center gap-2.5">
+          {activeResource && activeResource.visible && (
+            <button
+              type="button"
+              onClick={() => setShowStudentResourceViewer((s) => !s)}
+              title={
+                showStudentResourceViewer
+                  ? "Ocultar recurso de mi vista"
+                  : "Ver recurso de la clase"
+              }
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                showStudentResourceViewer
+                  ? "bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                  : "bg-white/10 hover:bg-white/20 text-white border border-white/15"
+              }`}
+            >
+              {showStudentResourceViewer ? (
+                <>
+                  <EyeOff className="w-3.5 h-3.5" />
+                  <span>Ocultar recurso</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Ver recurso ({activeResource.title.slice(0, 15)})</span>
+                </>
+              )}
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setSidePanel((p) => (p === 'people' ? 'none' : 'people'))}
@@ -2132,20 +2289,172 @@ export default function StudentLivePage() {
                   </div>
                 </div>
               ) : (
-                /* SUB-MODO B: PIZARRÓN / DIBUJO LIBRE SOBRE FONDO BLANCO */
-                <div className="flex-1 relative bg-[#ffffff] overflow-hidden">
+                /* SUB-MODO B: PIZARRÓN / DIBUJO LIBRE SOBRE FONDO BLANCO (TABLERO INTELIGENTE INFINITO) */
+                <div className="flex-1 relative bg-[#ffffff] overflow-hidden select-none">
                   <canvas
                     ref={boardCanvasRef}
                     onPointerDown={handleBoardPointerDown}
                     onPointerMove={handleBoardPointerMove}
                     onPointerUp={handleBoardPointerUp}
                     onPointerCancel={handleBoardPointerUp}
+                    onWheel={handleBoardWheel}
+                    onContextMenu={(e) => e.preventDefault()}
                     className={`w-full h-full block touch-none ${
-                      liveCanvas.allowStudentEdit ? 'cursor-crosshair' : 'cursor-default'
+                      boardTool === 'hand'
+                        ? 'cursor-grab active:cursor-grabbing'
+                        : liveCanvas.allowStudentEdit
+                        ? 'cursor-crosshair'
+                        : 'cursor-grab active:cursor-grabbing'
                     }`}
                   />
+
+                  {/* HUD FLOTANTE DE CONTROL DEL TABLERO INTELIGENTE (ZOOM Y CENTRADO) */}
+                  <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1.5 p-1.5 bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/60 rounded-2xl shadow-2xl text-white">
+                    {liveCanvas.allowStudentEdit && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setBoardTool('pen')}
+                          title="Lápiz"
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
+                            boardTool === 'pen'
+                              ? 'bg-white text-zinc-900'
+                              : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          <PenTool className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBoardTool('hand')}
+                          title="Mano (Mover tablero)"
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
+                            boardTool === 'hand'
+                              ? 'bg-[#8052ff] text-white'
+                              : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          <Move className="w-3.5 h-3.5" />
+                        </button>
+                        <div className="w-[1px] h-5 bg-zinc-700 mx-0.5" />
+                      </>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleZoomOut}
+                      title="Alejar tablero (-)"
+                      className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-white transition-colors cursor-pointer"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleResetBoardView}
+                      title="Restablecer zoom al 100% y centrar"
+                      className="px-2.5 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-mono font-bold flex items-center justify-center transition-colors cursor-pointer min-w-14"
+                    >
+                      {Math.round(boardZoom * 100)}%
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleZoomIn}
+                      title="Acercar tablero (+)"
+                      className="w-8 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-white transition-colors cursor-pointer"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+
+                    <div className="w-[1px] h-5 bg-zinc-700 mx-0.5" />
+
+                    <button
+                      type="button"
+                      onClick={handleResetBoardView}
+                      title="Centrar tablero en el origen"
+                      className="px-2.5 h-8 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Centrar</span>
+                    </button>
+                  </div>
+
+                  {/* MINI BADGE DE ESTADO */}
+                  <div className="absolute top-4 right-4 z-10 pointer-events-none hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-zinc-300/80 text-[11px] font-semibold text-zinc-700 shadow-sm">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Tablero Inteligente Infinito</span>
+                  </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* VISOR DE RECURSO PROYECTADO POR EL DOCENTE (PDF, PNG, JPEG, ETC.) */}
+          {activeResource && activeResource.visible && showStudentResourceViewer && (
+            <div className="absolute inset-4 z-30 bg-[#09090b]/95 backdrop-blur-2xl rounded-2xl border border-white/20 shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="px-4 py-2.5 bg-black/80 border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
+                <div className="flex items-center gap-2.5 truncate">
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                      activeResource.type === "pdf"
+                        ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                        : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                    }`}
+                  >
+                    {activeResource.type === "pdf"
+                      ? "PDF"
+                      : activeResource.type === "image"
+                      ? "IMAGEN"
+                      : "RECURSO"}
+                  </span>
+                  <span className="text-xs font-semibold text-white truncate">
+                    {activeResource.title}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-medium text-emerald-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Proyectado en vivo
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href={activeResource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Abrir en pestaña nueva"
+                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowStudentResourceViewer(false)}
+                    title="Ocultar de mi vista"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>Ocultar</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 relative bg-[#050507] overflow-auto flex items-center justify-center p-2">
+                {activeResource.type === "image" ? (
+                  <img
+                    src={activeResource.url}
+                    alt={activeResource.title}
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl select-none"
+                  />
+                ) : (
+                  <iframe
+                    src={activeResource.url}
+                    title={activeResource.title}
+                    className="w-full h-full rounded-lg border-0 bg-white"
+                  />
+                )}
+              </div>
             </div>
           )}
 
@@ -2370,20 +2679,47 @@ export default function StudentLivePage() {
                   <div className="p-3.5 bg-[#050507] border-b border-white/[0.08] space-y-2">
                     <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#b79aff]">
                       <Pin className="w-3.5 h-3.5 text-[#8052ff]" />
-                      Recursos Fijados por el Docente
+                      Recursos de la Clase ({pinnedResources.length})
                     </span>
-                    <div className="space-y-1.5 max-h-28 overflow-y-auto">
+                    <div className="space-y-1.5 max-h-36 overflow-y-auto">
                       {pinnedResources.map((pin) => (
-                        <a
+                        <div
                           key={pin.id}
-                          href={pin.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-[#8052ff]/10 hover:bg-[#8052ff]/20 border border-[#8052ff]/30 text-xs text-white font-medium transition-colors"
+                          className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-[#8052ff]/10 hover:bg-[#8052ff]/20 border border-[#8052ff]/30 text-xs text-white transition-colors"
                         >
-                          <span className="truncate">{pin.title}</span>
-                          <ExternalLink className="w-3.5 h-3.5 text-[#8052ff] shrink-0" />
-                        </a>
+                          <div className="flex items-center gap-2 truncate">
+                            {pin.type === 'pdf' ? (
+                              <FileText className="w-4 h-4 text-rose-400 shrink-0" />
+                            ) : pin.type === 'image' ? (
+                              <ImageIcon className="w-4 h-4 text-blue-400 shrink-0" />
+                            ) : (
+                              <ExternalLink className="w-4 h-4 text-[#8052ff] shrink-0" />
+                            )}
+                            <span className="truncate font-medium">{pin.title}</span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {activeResource?.id === pin.id && activeResource.visible && (
+                              <button
+                                type="button"
+                                onClick={() => setShowStudentResourceViewer((s) => !s)}
+                                className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold cursor-pointer"
+                              >
+                                {showStudentResourceViewer ? 'Ocultar' : 'Ver'}
+                              </button>
+                            )}
+
+                            <a
+                              href={pin.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Abrir en pestaña nueva"
+                              className="p-1 text-zinc-400 hover:text-white"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
