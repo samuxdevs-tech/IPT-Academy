@@ -47,6 +47,9 @@ import {
   ZoomOut,
   RotateCcw,
   Move,
+  AppWindow,
+  Layers,
+  Minimize2,
 } from 'lucide-react';
 import RecordedClassesViewer from '@/components/live/RecordedClassesViewer';
 
@@ -67,6 +70,8 @@ export interface ActiveClassResource {
   type: 'pdf' | 'image' | 'doc' | 'link';
   fileName?: string;
   visible: boolean;
+  isFloating?: boolean;
+  floatingCorner?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
   updatedAt: number;
 }
 
@@ -232,6 +237,10 @@ export default function StudentLivePage() {
   const [pinnedResources, setPinnedResources] = useState<PinnedResource[]>([]);
   const [activeResource, setActiveResource] = useState<ActiveClassResource | null>(null);
   const [showStudentResourceViewer, setShowStudentResourceViewer] = useState<boolean>(true);
+  const [imageFloatingMode, setImageFloatingMode] = useState<boolean>(false);
+  const [imageFloatingCorner, setImageFloatingCorner] = useState<
+    'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
+  >('top-right');
 
   // Para agendar cuando no hay sala activa en este segundo
   const [scheduledSessions, setScheduledSessions] = useState<ScheduledSessionItem[]>([]);
@@ -920,6 +929,12 @@ export default function StudentLivePage() {
       if (val.visible) {
         setShowStudentResourceViewer(true);
       }
+      if (val.isFloating !== undefined) {
+        setImageFloatingMode(Boolean(val.isFloating));
+      }
+      if (val.floatingCorner) {
+        setImageFloatingCorner(val.floatingCorner);
+      }
     });
 
     const controlRef = ref(
@@ -1532,6 +1547,25 @@ export default function StudentLivePage() {
     navigator.clipboard.writeText(liveCanvas.content || '');
     setCopiedCanvas(true);
     setTimeout(() => setCopiedCanvas(false), 2000);
+  };
+
+  const handleToggleImageFloatingMode = () => {
+    const nextFloating = !imageFloatingMode;
+    setImageFloatingMode(nextFloating);
+    if (nextFloating && stageMode !== 'canvas') {
+      setStageMode('canvas');
+    }
+  };
+
+  const cycleImageFloatingCorner = () => {
+    const corners: ('top-right' | 'bottom-right' | 'bottom-left' | 'top-left')[] = [
+      'top-right',
+      'bottom-right',
+      'bottom-left',
+      'top-left',
+    ];
+    const nextIdx = (corners.indexOf(imageFloatingCorner) + 1) % corners.length;
+    setImageFloatingCorner(corners[nextIdx]);
   };
 
   // Votar en el Pulso Rápido en Vivo
@@ -2392,70 +2426,150 @@ export default function StudentLivePage() {
 
           {/* VISOR DE RECURSO PROYECTADO POR EL DOCENTE (PDF, PNG, JPEG, ETC.) */}
           {activeResource && activeResource.visible && showStudentResourceViewer && (
-            <div className="absolute inset-4 z-30 bg-[#09090b]/95 backdrop-blur-2xl rounded-2xl border border-white/20 shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-              <div className="px-4 py-2.5 bg-black/80 border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
-                <div className="flex items-center gap-2.5 truncate">
-                  <span
-                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                      activeResource.type === "pdf"
-                        ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
-                        : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                    }`}
-                  >
-                    {activeResource.type === "pdf"
-                      ? "PDF"
-                      : activeResource.type === "image"
-                      ? "IMAGEN"
-                      : "RECURSO"}
-                  </span>
-                  <span className="text-xs font-semibold text-white truncate">
-                    {activeResource.title}
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-medium text-emerald-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Proyectado en vivo
-                  </span>
+            activeResource.type === "image" && imageFloatingMode ? (
+              /* MODALIDAD FLOTANTE (OPCIONAL): VENTANA FLOTANTE CON LIENZO DE FONDO */
+              <div
+                className={`absolute z-30 w-72 sm:w-88 md:w-[420px] max-h-[58vh] bg-[#09090b]/95 backdrop-blur-2xl rounded-2xl border border-white/25 shadow-[0_25px_70px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 group ${
+                  imageFloatingCorner === "top-right"
+                    ? "top-4 right-4"
+                    : imageFloatingCorner === "bottom-right"
+                    ? "bottom-4 right-4"
+                    : imageFloatingCorner === "bottom-left"
+                    ? "bottom-4 left-4"
+                    : "top-4 left-4"
+                }`}
+              >
+                {/* Barra superior de la ventana flotante */}
+                <div className="px-3.5 py-2 bg-black/85 border-b border-white/10 flex items-center justify-between gap-2 shrink-0">
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#8052ff]/20 text-[#c4adff] border border-[#8052ff]/40 text-[10px] font-bold">
+                      <AppWindow className="w-3 h-3" />
+                      <span>Flotante</span>
+                    </span>
+                    <span className="text-xs font-semibold text-white truncate">
+                      {activeResource.title}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={cycleImageFloatingCorner}
+                      title="Mover ventana flotante a otra esquina"
+                      className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                    >
+                      <CornerDownRight className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleToggleImageFloatingMode}
+                      title="Restaurar a pantalla completa"
+                      className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowStudentResourceViewer(false)}
+                      title="Ocultar de mi vista"
+                      className="p-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 transition-colors cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <a
-                    href={activeResource.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Abrir en pestaña nueva"
-                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition-colors cursor-pointer"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowStudentResourceViewer(false)}
-                    title="Ocultar de mi vista"
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 text-xs font-medium transition-colors cursor-pointer"
-                  >
-                    <EyeOff className="w-3.5 h-3.5" />
-                    <span>Ocultar</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex-1 relative bg-[#050507] overflow-auto flex items-center justify-center p-2">
-                {activeResource.type === "image" ? (
+                {/* Contenedor compacto de la imagen flotante */}
+                <div className="p-2.5 bg-black/50 overflow-hidden flex items-center justify-center max-h-[46vh]">
                   <img
                     src={activeResource.url}
                     alt={activeResource.title}
-                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl select-none"
+                    className="max-w-full max-h-[42vh] object-contain rounded-lg shadow-xl select-none"
                   />
-                ) : (
-                  <iframe
-                    src={activeResource.url}
-                    title={activeResource.title}
-                    className="w-full h-full rounded-lg border-0 bg-white"
-                  />
-                )}
+                </div>
               </div>
-            </div>
+            ) : (
+              /* MODALIDAD ESTÁNDAR: VISOR PRINCIPAL SOBRE EL ESCENARIO */
+              <div className="absolute inset-4 z-30 bg-[#09090b]/95 backdrop-blur-2xl rounded-2xl border border-white/20 shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-4 py-2.5 bg-black/80 border-b border-white/10 flex items-center justify-between gap-3 shrink-0">
+                  <div className="flex items-center gap-2.5 truncate">
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                        activeResource.type === "pdf"
+                          ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                          : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                      }`}
+                    >
+                      {activeResource.type === "pdf"
+                        ? "PDF"
+                        : activeResource.type === "image"
+                        ? "IMAGEN"
+                        : "RECURSO"}
+                    </span>
+                    <span className="text-xs font-semibold text-white truncate">
+                      {activeResource.title}
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-medium text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Proyectado en vivo
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {/* Opción NO obligatoria para recursos de imagen: Convertirse en ventana flotante y mostrar lienzo en el fondo */}
+                    {activeResource.type === "image" && (
+                      <button
+                        type="button"
+                        onClick={handleToggleImageFloatingMode}
+                        title="Convertir en ventana flotante y mostrar lienzo de fondo"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#8052ff]/20 hover:bg-[#8052ff]/35 border border-[#8052ff]/40 text-[#c4adff] hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-xs"
+                      >
+                        <AppWindow className="w-3.5 h-3.5 text-[#b79aff]" />
+                        <span>Ventana flotante + Lienzo</span>
+                      </button>
+                    )}
+
+                    <a
+                      href={activeResource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Abrir en pestaña nueva"
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowStudentResourceViewer(false)}
+                      title="Ocultar de mi vista"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 text-xs font-medium transition-colors cursor-pointer"
+                    >
+                      <EyeOff className="w-3.5 h-3.5" />
+                      <span>Ocultar</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex-1 relative bg-[#050507] overflow-auto flex items-center justify-center p-2">
+                  {activeResource.type === "image" ? (
+                    <img
+                      src={activeResource.url}
+                      alt={activeResource.title}
+                      className="max-w-full max-h-full object-contain rounded-lg shadow-2xl select-none"
+                    />
+                  ) : (
+                    <iframe
+                      src={activeResource.url}
+                      title={activeResource.title}
+                      className="w-full h-full rounded-lg border-0 bg-white"
+                    />
+                  )}
+                </div>
+              </div>
+            )
           )}
 
           {/* VENTANA FLOTANTE PiP (Picture-in-Picture Dinámico) */}
